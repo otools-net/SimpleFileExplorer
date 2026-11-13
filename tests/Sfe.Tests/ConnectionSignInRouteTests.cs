@@ -141,6 +141,31 @@ public sealed class ConnectionSignInRouteTests
     }
 
     [TestMethod]
+    public async Task ItsOwnerSignsAConnectionInAgainThroughTheRedirect()
+    {
+        await using var factory = Factory();
+        var admin = await ApiClients.SetUpAsync(factory, Cancel);
+        var alice = await AdministratorOfTheLibraryAsync(factory);
+        var begun = await BeginAsync(admin, ConnectionLevel.Account, SignInKind.OAuthRedirect);
+        await CallbackAsync(admin, $"code=good:dave&state={Uri.EscapeDataString(begun.State!)}");
+        var made = await SingleConnectionAsync(factory);
+        var reauthorize = $"/api/connections/{made.Id}/reauthorize";
+        var again = new SignInAgain(SignInKind.OAuthRedirect);
+
+        // Another account's connection, even for a library administrator: not found.
+        using var foreign = await alice.PostAsJsonAsync(reauthorize, again, Json, Cancel);
+        using var mine = await admin.PostAsJsonAsync(reauthorize, again, Json, Cancel);
+        var state = (await mine.Content.ReadFromJsonAsync<SignInBegun>(Json, Cancel))!.State!;
+        var landed = await CallbackAsync(admin, $"code=good:zoe&state={Uri.EscapeDataString(state)}");
+
+        Assert.AreEqual(HttpStatusCode.NotFound, foreign.StatusCode);
+        Assert.AreEqual($"{ConnectionSignInEndpoints.ClientPage}?reconnected={made.Id}&otherAccount=true", landed);
+        var after = await SingleConnectionAsync(factory);
+        Assert.AreEqual(made.Id, after.Id);
+        Assert.AreEqual("zoe@fake", after.Account);
+    }
+
+    [TestMethod]
     public async Task ALevelTheAccountMayNotMakeIsRefused()
     {
         await using var factory = Factory();

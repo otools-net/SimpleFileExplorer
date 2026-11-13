@@ -228,8 +228,15 @@ in `FolderRules`:
   1000); routes in `ConnectionSignInEndpoints` (any of `connections.own` / `library` / `server`, then the level's
   own right, asked again at completion); the callback redirects to `connections?made={id}` or `?error=signed-out |
   refused | expired | failed` under the app's path base (client page in item 4); signed out it answers 401
-- [ ] Refresh tokens; state "needs reconnecting" when Dropbox refuses them; reconnect keeps the connection's id,
-  groups and rules; the root folder inside Dropbox chosen at creation
+- [x] Refresh tokens; state "needs reconnecting" when Dropbox refuses them; reconnect keeps the connection's id,
+  groups and rules; the root folder inside Dropbox chosen at creation. As built: the SDK refreshes the access token
+  itself from the stored refresh token, which does not change (nothing written back); a refused refresh is
+  `CredentialsEnded` (`DropboxErrors`), and whoever uses the storage marks the connection
+  (`MarkNeedsReconnectingAsync`; the routes of phase 3 do it); `POST connections/{id}/reauthorize` signs in again
+  through the same flow (`BeginReconnectAsync`, `PendingSignIn.ConnectionId`, `ReauthorizeAsync`), the callback
+  landing on `connections?reconnected={id}[&otherAccount=true]`; who may make or sign in again is one rule over the
+  draft (`ConnectionSignInEndpoints.MayManage`: the owner only at account level). The root folder is typed at
+  creation (`ConnectRequest.RootPath`); choosing it by browsing comes with the listing of phase 3
 - [ ] Client: My account › Connections, Administration › Connections (library and server levels, who may use),
   add dialog driven by the provider's description; phone sheets; user docs with the Dropbox app steps
 

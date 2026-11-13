@@ -72,8 +72,16 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
 - `GET api/connections/oauth/callback` (needs the session, 401 signed out) changes state on a GET: the state is the
   CSRF defence. It redirects to `{PathBase}/connections?made={id}` or `?error=signed-out|refused|expired|failed`,
   never to an address from the query. `POST …/authorize/complete` ends the code flow.
-- Rights: the routes need one of `connections.own`, `connections.library`, `connections.server`; the level's own
-  right is checked inside (`ConnectionSignInEndpoints.RightFor`), and again at completion.
+- Rights: the routes need one of `connections.own`, `connections.library`, `connections.server`; then
+  `ConnectionSignInEndpoints.MayManage` over the draft (account: its owner with `own`, never an administrator for
+  someone else; library: the request's library with `library`; server: `server`), asked again at completion.
+- Signing in again: `POST api/connections/{id}/reauthorize` (`SignInAgain`), same flow with
+  `PendingSignIn.ConnectionId`; completion calls `ReauthorizeAsync` (same id, groups, rules) and the callback lands on
+  `connections?reconnected={id}`, with `&otherAccount=true` when the provider's account changed. Not found for a
+  connection the session may not manage.
+- Refresh: the Dropbox SDK gets access tokens from the stored refresh token by itself; it never changes, so nothing
+  is written back. A refused one is `CredentialsEnded`: the code using the storage marks the connection
+  (`MarkNeedsReconnectingAsync`).
 
 ## Audit lines
 

@@ -49,8 +49,9 @@ public sealed class ConnectionSignInFlowTests
 
         var made = await CompleteAsync(begun.State, _world.Alice, "good:alice");
         Assert.AreEqual(AccessStatus.Ok, made.Status);
-        Assert.AreEqual(_world.Alice, made.Value!.OwnerId);
-        Assert.AreEqual("alice@fake", made.Value.Account);
+        Assert.AreEqual(_world.Alice, made.Value!.Connection.OwnerId);
+        Assert.AreEqual("alice@fake", made.Value.Connection.Account);
+        Assert.IsFalse(made.Value.Reconnected);
 
         Assert.AreEqual(AccessStatus.NotFound, (await CompleteAsync(begun.State, _world.Alice, "good:alice")).Status);
         await using var db = _world.Db();
@@ -127,11 +128,46 @@ public sealed class ConnectionSignInFlowTests
             begun.State,
             _world.Alice,
             new Dictionary<string, string> { ["code"] = "good:x" },
-            level => level != ConnectionLevel.Server,
+            draft => draft.Level != ConnectionLevel.Server,
             Token
         );
 
         Assert.AreEqual(AccessStatus.NotFound, made.Status);
+    }
+
+    [TestMethod]
+    public async Task SigningInAgainKeepsTheConnectionAndTellsAnotherAccount()
+    {
+        var first = await BeginAsync(_world.Alice, Request(ConnectionLevel.Account, SignInKind.OAuthCode));
+        var made = (await CompleteAsync(first.State, _world.Alice, "good:alice")).Value!.Connection;
+        await _world.Connections.MarkNeedsReconnectingAsync(made.Id, Token);
+
+        var same = await ReconnectAsync(made.Id, "good:alice");
+        Assert.IsTrue(same.Reconnected);
+        Assert.IsFalse(same.OtherAccount);
+        Assert.AreEqual(made.Id, same.Connection.Id);
+        Assert.AreEqual(ConnectionState.Ready, same.Connection.State);
+
+        var other = await ReconnectAsync(made.Id, "good:other");
+        Assert.IsTrue(other.OtherAccount);
+        Assert.AreEqual("other@fake", other.Connection.Account);
+        await using var db = _world.Db();
+        Assert.AreEqual(1, await db.Connections.CountAsync(Token));
+    }
+
+    [TestMethod]
+    public async Task OnlyWhoMayManageItSignsAConnectionInAgain()
+    {
+        var first = await BeginAsync(_world.Alice, Request(ConnectionLevel.Account, SignInKind.OAuthCode));
+        var made = (await CompleteAsync(first.State, _world.Alice, "good:alice")).Value!.Connection;
+        var context = new SignInContext(_world.Bob, _world.Tenant, Back);
+        var again = new SignInAgain(SignInKind.OAuthCode);
+
+        var refused = await _world.SignIns.BeginReconnectAsync(made.Id, again, context, _ => false, Token);
+        var unknown = await _world.SignIns.BeginReconnectAsync(999, again, context, _ => true, Token);
+
+        Assert.AreEqual(AccessStatus.NotFound, refused.Status);
+        Assert.AreEqual(AccessStatus.NotFound, unknown.Status);
     }
 
     [TestMethod]
@@ -156,6 +192,21 @@ public sealed class ConnectionSignInFlowTests
         Assert.AreEqual(1, pending.Count);
     }
 
+    private async Task<SignInDone> ReconnectAsync(int id, string code)
+    {
+        var begun = await _world.SignIns.BeginReconnectAsync(
+            id,
+            new SignInAgain(SignInKind.OAuthCode),
+            new(_world.Alice, _world.Tenant, Back),
+            _ => true,
+            Token
+        );
+        Assert.AreEqual(AccessStatus.Ok, begun.Status, begun.Problem);
+        var done = await CompleteAsync(begun.Value!.State, _world.Alice, code);
+        Assert.AreEqual(AccessStatus.Ok, done.Status, done.Problem);
+        return done.Value!;
+    }
+
     private ConnectRequest Request(ConnectionLevel level, SignInKind method) =>
         new(FakeProvider.FakeKind, level, "Mine", method);
 
@@ -166,7 +217,7 @@ public sealed class ConnectionSignInFlowTests
         return begun.Value!;
     }
 
-    private Task<AccessResult<ConnectionInfo>> CompleteAsync(string? state, int userId, string code) =>
+    private Task<AccessResult<SignInDone>> CompleteAsync(string? state, int userId, string code) =>
         _world.SignIns.CompleteAsync(
             state,
             userId,

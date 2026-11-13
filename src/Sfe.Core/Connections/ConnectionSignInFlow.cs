@@ -4,9 +4,10 @@ using Sfe.Core.Settings;
 namespace Sfe.Core.Connections;
 
 /// <summary>
-/// Making a connection by signing in to the provider: begun with what the person asks (kind, level, name, method),
-/// checked before anyone is sent to the provider, then completed with what the person brings back (OAuth: the code,
-/// through the redirect or typed). Who may make a connection at a level is asked by the Api before both calls.
+/// Signing in to a provider to make a connection, or to sign an existing one in again (its sign-in refused or lost):
+/// begun with what the person asks, checked before anyone is sent to the provider, then completed with what the
+/// person brings back (OAuth: the code, through the redirect or typed). Who may do it is decided by the Api from the
+/// draft (level, owner, library), before both calls.
 /// </summary>
 public sealed class ConnectionSignInFlow(
     ConnectionProviders providers,
@@ -17,6 +18,7 @@ public sealed class ConnectionSignInFlow(
 {
     public const string TooManyProblem = "Too many sign-ins are waiting: try again in a few minutes.";
 
+    /// <summary>Begins making a connection.</summary>
     public async Task<AccessResult<SignInBegun>> BeginAsync(
         ConnectRequest request,
         SignInContext context,
@@ -34,19 +36,92 @@ public sealed class ConnectionSignInFlow(
         var checkedDraft = await connections.CheckAsync(draft, cancellationToken);
         if (checkedDraft.Status != AccessStatus.Ok)
             return checkedDraft.As<SignInBegun>();
+        return await StartAsync(new(draft, null, request.Method, request.Fields), context, cancellationToken);
+    }
 
-        var options = settings.ServerLevel().Connections;
-        var provider = providers.Find(request.Kind)!;
-        if (provider.SignInMethods(options).All(m => m.Kind != request.Method))
+    /// <summary>
+    /// Begins signing connection <paramref name="connectionId"/> in again; not found when <paramref name="mayManage"/>
+    /// refuses its draft (who it belongs to).
+    /// </summary>
+    public async Task<AccessResult<SignInBegun>> BeginReconnectAsync(
+        int connectionId,
+        SignInAgain request,
+        SignInContext context,
+        Func<ConnectionDraft, bool> mayManage,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (await connections.FindAsync(connectionId, cancellationToken) is not { } connection)
+            return AccessResult<SignInBegun>.Missing();
+        var draft = new ConnectionDraft(
+            connection.Kind,
+            connection.Name,
+            connection.Level,
+            connection.OwnerId,
+            connection.TenantId,
+            connection.RootPath
+        );
+        if (!mayManage(draft))
+            return AccessResult<SignInBegun>.Missing();
+        if (providers.Find(connection.Kind) is null)
+            return AccessResult<SignInBegun>.Conflict(ConnectionService.UnusableProblem);
+        return await StartAsync(new(draft, connectionId, request.Method, request.Fields), context, cancellationToken);
+    }
+
+    /// <summary>
+    /// Ends the sign-in of <paramref name="state"/> begun by <paramref name="userId"/> (once: a state is spent by
+    /// any attempt). Not found: unknown, late, used, another account's, or <paramref name="mayManage"/> refuses it now.
+    /// </summary>
+    /// <param name="mayManage">Asked again with the draft: the account may have lost the right meanwhile.</param>
+    public async Task<AccessResult<SignInDone>> CompleteAsync(
+        string? state,
+        int userId,
+        IReadOnlyDictionary<string, string> fields,
+        Func<ConnectionDraft, bool> mayManage,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (pending.Take(state, userId) is not { } signIn || !mayManage(signIn.Draft))
+            return AccessResult<SignInDone>.Missing();
+        if (providers.Find(signIn.Draft.Kind) is not { } provider)
+            return AccessResult<SignInDone>.Missing();
+
+        ConnectionGrant grant;
+        try
+        {
+            grant = await provider.CompleteSignInAsync(
+                new(signIn.Method, Options(), signIn.Pending, signIn.ReturnAddress, fields),
+                cancellationToken
+            );
+        }
+        catch (RemoteStorageException error)
+        {
+            return AccessResult<SignInDone>.Conflict(error.Message);
+        }
+        return await FinishAsync(signIn.Draft, signIn.ConnectionId, grant, userId, cancellationToken);
+    }
+
+    /// <summary>The person refused at the provider, or it failed: the state is spent, nothing changed.</summary>
+    public void Abandon(string? state, int userId) => pending.Take(state, userId);
+
+    private async Task<AccessResult<SignInBegun>> StartAsync(
+        SignInPlan plan,
+        SignInContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        var options = Options();
+        var provider = providers.Find(plan.Draft.Kind)!;
+        if (provider.SignInMethods(options).All(m => m.Kind != plan.Method))
             return AccessResult<SignInBegun>.Invalid("method", "This kind of connection does not sign in this way.");
 
         var state = PendingSignIns.NewState();
-        var back = request.Method == SignInKind.OAuthRedirect ? context.ReturnAddress : null;
+        var back = plan.Method == SignInKind.OAuthRedirect ? context.ReturnAddress : null;
         SignInStep step;
         try
         {
             step = await provider.BeginSignInAsync(
-                new(request.Method, options, back, state, request.Fields ?? new Dictionary<string, string>()),
+                new(plan.Method, options, back, state, plan.Fields ?? new Dictionary<string, string>()),
                 cancellationToken
             );
         }
@@ -57,50 +132,51 @@ public sealed class ConnectionSignInFlow(
 
         if (step.Grant is { } grant)
         {
-            var made = await connections.CreateAsync(draft, grant, context.UserId, cancellationToken);
-            return made.Status == AccessStatus.Ok
-                ? AccessResult<SignInBegun>.Ok(new(made.Value))
-                : made.As<SignInBegun>();
+            var done = await FinishAsync(plan.Draft, plan.ConnectionId, grant, context.UserId, cancellationToken);
+            return done.Status == AccessStatus.Ok
+                ? AccessResult<SignInBegun>.Ok(new(done.Value!.Connection))
+                : done.As<SignInBegun>();
         }
-        if (!pending.Add(new PendingSignIn(state, context.UserId, draft, request.Method, step.Pending, back)))
+        var waiting = new PendingSignIn(
+            state,
+            context.UserId,
+            plan.Draft,
+            plan.Method,
+            step.Pending,
+            back,
+            plan.ConnectionId
+        );
+        if (!pending.Add(waiting))
             return AccessResult<SignInBegun>.Conflict(TooManyProblem);
         return AccessResult<SignInBegun>.Ok(new(null, step.Address, state, step.Fields ?? []));
     }
 
-    /// <summary>
-    /// Ends the sign-in of <paramref name="state"/> begun by <paramref name="userId"/> (once: a state is spent by
-    /// any attempt) and makes the connection. Not found: unknown, late, used, or another account's.
-    /// </summary>
-    /// <param name="mayMake">Asked again with the level: the account may have lost the right meanwhile.</param>
-    public async Task<AccessResult<ConnectionInfo>> CompleteAsync(
-        string? state,
+    private async Task<AccessResult<SignInDone>> FinishAsync(
+        ConnectionDraft draft,
+        int? connectionId,
+        ConnectionGrant grant,
         int userId,
-        IReadOnlyDictionary<string, string> fields,
-        Func<ConnectionLevel, bool> mayMake,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken
     )
     {
-        if (pending.Take(state, userId) is not { } signIn || !mayMake(signIn.Draft.Level))
-            return AccessResult<ConnectionInfo>.Missing();
-
-        var options = settings.ServerLevel().Connections;
-        if (providers.Find(signIn.Draft.Kind) is not { } provider)
-            return AccessResult<ConnectionInfo>.Missing();
-        ConnectionGrant grant;
-        try
+        if (connectionId is { } id)
         {
-            grant = await provider.CompleteSignInAsync(
-                new(signIn.Method, options, signIn.Pending, signIn.ReturnAddress, fields),
-                cancellationToken
-            );
+            var again = await connections.ReauthorizeAsync(id, grant, userId, cancellationToken);
+            return again.Status == AccessStatus.Ok
+                ? AccessResult<SignInDone>.Ok(new(again.Value!.Connection, true, again.Value.OtherAccount))
+                : again.As<SignInDone>();
         }
-        catch (RemoteStorageException error)
-        {
-            return AccessResult<ConnectionInfo>.Conflict(error.Message);
-        }
-        return await connections.CreateAsync(signIn.Draft, grant, userId, cancellationToken);
+        var made = await connections.CreateAsync(draft, grant, userId, cancellationToken);
+        return made.Status == AccessStatus.Ok ? AccessResult<SignInDone>.Ok(new(made.Value!)) : made.As<SignInDone>();
     }
 
-    /// <summary>The person refused at the provider, or the provider failed: the state is spent, nothing made.</summary>
-    public void Abandon(string? state, int userId) => pending.Take(state, userId);
+    private Options.ConnectionOptions Options() => settings.ServerLevel().Connections;
+
+    /// <summary>A sign-in about to start: for a new connection, or for <see cref="ConnectionId"/>.</summary>
+    private sealed record SignInPlan(
+        ConnectionDraft Draft,
+        int? ConnectionId,
+        SignInKind Method,
+        IReadOnlyDictionary<string, string>? Fields
+    );
 }

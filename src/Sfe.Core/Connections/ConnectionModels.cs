@@ -90,6 +90,7 @@ public sealed record SignInContext(int UserId, int TenantId, string ReturnAddres
 
 /// <summary>A sign-in waiting for the person (<see cref="PendingSignIns"/>).</summary>
 /// <param name="Pending">The provider's <see cref="SignInStep.Pending"/>: server side only.</param>
+/// <param name="ConnectionId">Set when an existing connection is signed in to again.</param>
 public sealed record PendingSignIn(
     string State,
     int UserId,
@@ -97,8 +98,14 @@ public sealed record PendingSignIn(
     SignInKind Method,
     string? Pending,
     string? ReturnAddress,
+    int? ConnectionId = null,
     DateTimeOffset Expires = default
 );
+
+/// <summary>A sign-in ended: the connection made, or signed in to again.</summary>
+/// <param name="Reconnected">An existing connection was signed in to again (same id, groups and rules).</param>
+/// <param name="OtherAccount">Signed in again to another account of the provider than before.</param>
+public sealed record SignInDone(ConnectionInfo Connection, bool Reconnected = false, bool OtherAccount = false);
 
 /// <summary>A sign-in begun: done (<paramref name="Connection"/>), or what the person does next.</summary>
 /// <param name="Address">Where the browser goes (the provider's page).</param>
@@ -110,3 +117,6 @@ public sealed record SignInBegun(
     string? State = null,
     IReadOnlyList<SignInField>? Fields = null
 );
+
+/// <summary>Signing an existing connection in again (<see cref="ConnectionSignInFlow.BeginReconnectAsync"/>).</summary>
+public sealed record SignInAgain(SignInKind Method, IReadOnlyDictionary<string, string>? Fields = null);

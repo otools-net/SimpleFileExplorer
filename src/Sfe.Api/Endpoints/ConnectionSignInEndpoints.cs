@@ -2,21 +2,20 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Connections;
-using ConnectionInfo = Sfe.Core.Connections.ConnectionInfo;
 
 namespace Sfe.Api.Endpoints;
 
 /// <summary>
-/// Making a connection by signing in to the provider (<see cref="ConnectionSignInFlow"/>): begin, then the provider's
-/// redirect back (<see cref="ConnectionProviderEndpoints.CallbackPath"/>) or the code typed by the person. The right
-/// depends on the level: <c>connections.own</c>, <c>connections.library</c>, <c>connections.server</c>.
+/// Making a connection, or signing one in again, by signing in to the provider (<see cref="ConnectionSignInFlow"/>):
+/// begin, then the provider's redirect back (<see cref="ConnectionProviderEndpoints.CallbackPath"/>) or the code
+/// typed by the person. Who may: <see cref="MayManage"/>.
 /// </summary>
 public static class ConnectionSignInEndpoints
 {
     /// <summary>Where the browser lands in the client after the redirect sign-in (under the app's address).</summary>
     public const string ClientPage = "/connections";
 
-    private static readonly string[] MakeRights =
+    private static readonly string[] ManageRights =
     [
         Rights.OwnConnections,
         Rights.LibraryConnections,
@@ -29,7 +28,7 @@ public static class ConnectionSignInEndpoints
 
         connections
             .MapPost("/authorize", Authorize)
-            .RequireRight(MakeRights)
+            .RequireRight(ManageRights)
             .WithName("AuthorizeConnection")
             .WithSummary(
                 "Begins making a connection: checks what is asked, then answers the provider's address to send the "
@@ -37,47 +36,67 @@ public static class ConnectionSignInEndpoints
             );
 
         connections
+            .MapPost("/{id:int}/reauthorize", Reauthorize)
+            .RequireRight(ManageRights)
+            .WithName("ReauthorizeConnection")
+            .WithSummary(
+                "Begins signing a connection in again (its sign-in was refused or lost): the same connection, groups "
+                    + "and rules afterwards. Its owner (account level) or who manages its level."
+            );
+
+        connections
             .MapPost("/authorize/complete", Complete)
-            .RequireRight(MakeRights)
+            .RequireRight(ManageRights)
             .WithName("CompleteConnectionAuthorization")
             .WithSummary(
-                "Ends a sign-in with what the person brings back (the code the provider shows) and makes the "
-                    + "connection. A state is used once, by the account that began it, within 10 minutes."
+                "Ends a sign-in with what the person brings back (the code the provider shows). A state is used once, "
+                    + "by the account that began it, within 10 minutes."
             );
 
         connections
             .MapGet(ConnectionProviderEndpoints.CallbackPath["/connections".Length..], Callback)
-            .RequireRight(MakeRights)
+            .RequireRight(ManageRights)
             .WithName("ConnectionOAuthCallback")
             .WithSummary(
                 "Where the provider sends the browser back: ends the sign-in begun by this session's account and "
-                    + "redirects into the web client (`connections?made=` or `connections?error=`)."
+                    + "redirects into the web client (`connections?made=`, `?reconnected=` or `?error=`)."
             );
 
         return api;
     }
 
-    /// <summary>The right to make a connection at <paramref name="level"/>.</summary>
-    public static string RightFor(ConnectionLevel level) =>
-        level switch
+    /// <summary>
+    /// Whether the session may make, or sign in again, a connection like <paramref name="draft"/>: account level,
+    /// its owner with <c>connections.own</c> (never an administrator for someone else); library level, that
+    /// library's (the request's) with <c>connections.library</c>; server level, <c>connections.server</c>.
+    /// </summary>
+    public static bool MayManage(AccessState state, ConnectionDraft draft) =>
+        state.User is { } user
+        && draft.Level switch
         {
-            ConnectionLevel.Account => Rights.OwnConnections,
-            ConnectionLevel.Library => Rights.LibraryConnections,
-            _ => Rights.ServerConnections,
+            ConnectionLevel.Account => draft.OwnerId == user.Id && state.Has(Rights.OwnConnections),
+            ConnectionLevel.Library => draft.TenantId == state.Tenant?.Id && state.Has(Rights.LibraryConnections),
+            ConnectionLevel.Server => state.Has(Rights.ServerConnections),
+            _ => false,
         };
 
     private static async Task<
         Results<Ok<SignInBegun>, ValidationProblem, ProblemHttpResult, ForbidHttpResult>
-    > Authorize(
-        ConnectRequest request,
-        HttpRequest http,
-        CurrentAccess current,
-        ConnectionSignInFlow flow,
-        CancellationToken cancellationToken
-    )
+    > Authorize(ConnectRequest request, [AsParameters] SignInServices services, CancellationToken cancellationToken)
     {
+        var (http, current, flow) = services;
         var state = await current.GetAsync();
-        if (state.User is not { } user || state.Tenant is null || !state.Has(RightFor(request.Level)))
+        if (state.User is not { } user || state.Tenant is null)
+            return TypedResults.Forbid();
+        var draft = new ConnectionDraft(
+            request.Kind,
+            request.Name,
+            request.Level,
+            user.Id,
+            state.TenantId,
+            request.RootPath
+        );
+        if (!MayManage(state, draft))
             return TypedResults.Forbid();
 
         var context = new SignInContext(user.Id, state.TenantId, ConnectionProviderEndpoints.ReturnAddress(http));
@@ -90,7 +109,36 @@ public static class ConnectionSignInEndpoints
         };
     }
 
-    private static async Task<Results<Ok<ConnectionInfo>, ValidationProblem, ProblemHttpResult, NotFound>> Complete(
+    private static async Task<Results<Ok<SignInBegun>, ValidationProblem, ProblemHttpResult, NotFound>> Reauthorize(
+        int id,
+        SignInAgain request,
+        [AsParameters] SignInServices services,
+        CancellationToken cancellationToken
+    )
+    {
+        var (http, current, flow) = services;
+        var state = await current.GetAsync();
+        if (state.User is not { } user || state.Tenant is null)
+            return TypedResults.NotFound();
+
+        var context = new SignInContext(user.Id, state.TenantId, ConnectionProviderEndpoints.ReturnAddress(http));
+        var begun = await flow.BeginReconnectAsync(
+            id,
+            request,
+            context,
+            draft => MayManage(state, draft),
+            cancellationToken
+        );
+        return begun.Status switch
+        {
+            AccessStatus.Ok => TypedResults.Ok(begun.Value!),
+            AccessStatus.Invalid => TypedResults.ValidationProblem(begun.Errors!),
+            AccessStatus.NotFound => TypedResults.NotFound(),
+            _ => TypedResults.Problem(begun.Problem, statusCode: StatusCodes.Status409Conflict),
+        };
+    }
+
+    private static async Task<Results<Ok<SignInDone>, ValidationProblem, ProblemHttpResult, NotFound>> Complete(
         SignInCompletionInput input,
         CurrentAccess current,
         ConnectionSignInFlow flow,
@@ -101,19 +149,19 @@ public static class ConnectionSignInEndpoints
         if (state.User is not { } user)
             return TypedResults.NotFound();
 
-        var made = await flow.CompleteAsync(
+        var done = await flow.CompleteAsync(
             input.State,
             user.Id,
             input.Fields ?? new Dictionary<string, string>(),
-            level => state.Has(RightFor(level)),
+            draft => MayManage(state, draft),
             cancellationToken
         );
-        return made.Status switch
+        return done.Status switch
         {
-            AccessStatus.Ok => TypedResults.Ok(made.Value!),
-            AccessStatus.Invalid => TypedResults.ValidationProblem(made.Errors!),
+            AccessStatus.Ok => TypedResults.Ok(done.Value!),
+            AccessStatus.Invalid => TypedResults.ValidationProblem(done.Errors!),
             AccessStatus.NotFound => TypedResults.NotFound(),
-            _ => TypedResults.Problem(made.Problem, statusCode: StatusCodes.Status409Conflict),
+            _ => TypedResults.Problem(done.Problem, statusCode: StatusCodes.Status409Conflict),
         };
     }
 
@@ -139,20 +187,29 @@ public static class ConnectionSignInEndpoints
             return Back(http, "error=refused");
         }
 
-        var made = await flow.CompleteAsync(
+        var done = await flow.CompleteAsync(
             state,
             user.Id,
             new Dictionary<string, string> { ["code"] = code },
-            level => access.Has(RightFor(level)),
+            draft => MayManage(access, draft),
             cancellationToken
         );
-        return made.Status switch
+        return done.Status switch
         {
-            AccessStatus.Ok => Back(http, $"made={made.Value!.Id}"),
+            AccessStatus.Ok => Back(http, Landing(done.Value!)),
             AccessStatus.NotFound => Back(http, "error=expired"),
             _ => Back(http, "error=failed"),
         };
     }
+
+    /// <summary>What the client's page is told of a sign-in ended.</summary>
+    private static string Landing(SignInDone done) =>
+        done switch
+        {
+            { Reconnected: true, OtherAccount: true } => $"reconnected={done.Connection.Id}&otherAccount=true",
+            { Reconnected: true } => $"reconnected={done.Connection.Id}",
+            _ => $"made={done.Connection.Id}",
+        };
 
     /// <summary>
     /// Into the client, under the app's own address only (never an address from the request's query).
