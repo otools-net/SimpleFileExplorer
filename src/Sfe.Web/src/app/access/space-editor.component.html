@@ -1,0 +1,122 @@
+<sfe-sheet #sheet [heading]="draft()?.id === null ? 'New space' : 'Space ' + (draft()?.name ?? '')" [wide]="true">
+    @if (draft(); as draft) {
+        <form class="access-form" novalidate (submit)="save($event)">
+            @if (draft.id === null) {
+                <p class="access-note">
+                    A space is a separate home for one library: its own folder, index, tags and settings, and its own groups and
+                    accounts. It starts with three groups, Administrators, Users and Guests; you add accounts on its page afterwards.
+                </p>
+            }
+            <div class="field">
+                <label class="field-label" for="space-name">Name</label>
+                <input id="space-name" type="text" autocomplete="off" placeholder="e.g. Family, Work, Holiday photos"
+                       [value]="draft.name" (input)="change({ name: valueOf($event) })">
+                <span class="field-hint">Shown in the ⋮ menu and on the sign-in page.</span>
+                @if (errors()['name']; as error) {
+                    <span class="field-error">{{ error }}</span>
+                }
+            </div>
+            @if (draft.id === null) {
+                <div class="field">
+                    <div class="help-row">
+                        <span class="field-label">Library folder</span>
+                        <sfe-help about="The library folder">
+                            <p>The folder whose files this space shows, with everything below it. Scans index it, and the space keeps its own
+                               tags, settings, duplicates and background tasks for it.</p>
+                            <p>Example: a <em>Family</em> space on <code>D:\Media\Family</code> and a <em>Work</em> space on
+                               <code>D:\Media\Work</code>: each sees only its own folder.</p>
+                            <p>Only folders inside those the server's configuration allows can be picked (<code>Sfe:Tenants:AllowedRoots</code>,
+                               else the first space's folder). The folder can't be changed once the space exists.</p>
+                        </sfe-help>
+                    </div>
+                    <div class="folder-picker">
+                        <p class="folder-picker-path">
+                            <svg sfeIcon="folder"></svg><span>{{ draft.root || 'Pick a folder below' }}</span>
+                        </p>
+                        @if (picker(); as picker) {
+                            <ul>
+                                @if (picker.path) {
+                                    <li><button type="button" class="link-button" title="The folder above" (click)="browse(picker.parent)">‥</button></li>
+                                }
+                                @for (folder of picker.folders; track folder.path) {
+                                    <li>
+                                        <button type="button" class="link-button" [title]="'Use ' + folder.path + ', or open it'" (click)="browse(folder.path)">{{ folder.name }}</button>
+                                    </li>
+                                } @empty {
+                                    <li class="muted">No folders here.</li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                    <span class="field-hint">Click a folder to choose it; click again inside it to go deeper.</span>
+                    @if (errors()['root']; as error) {
+                        <span class="field-error">{{ error }}</span>
+                    }
+                </div>
+                <div class="field">
+                    <label class="field-label" for="space-slug">Short name <span class="field-hint">(optional)</span></label>
+                    <input id="space-slug" type="text" autocomplete="off" spellcheck="false" [value]="draft.slug" placeholder="Made from the name"
+                           (input)="change({ slug: valueOf($event) })" aria-describedby="space-slug-hint">
+                    <span class="field-hint" id="space-slug-hint">Lowercase letters, digits and '-': names the space's index and cache folders on the server. It can't change later.</span>
+                    @if (errors()['slug']; as error) {
+                        <span class="field-error">{{ error }}</span>
+                    }
+                </div>
+                <label class="check">
+                    <input type="checkbox" [checked]="draft.guestAccess" (change)="change({ guestAccess: checkedOf($event) })">
+                    <span>Let visitors in without an account<span class="field-hint">With the rights of its Guests group. Can be changed later on the space's page.</span></span>
+                </label>
+            } @else {
+                @if (!draft.isDefault) {
+                    <label class="check">
+                        <input type="checkbox" [checked]="draft.disabled" (change)="change({ disabled: checkedOf($event) })">
+                        <span>Disabled<span class="field-hint">Nobody can open it and its background tasks stop. Its index, tags, groups and settings are kept.</span></span>
+                    </label>
+                }
+                <div class="access-subhead help-row">
+                    <h3>Rights switched off in this space</h3>
+                    <sfe-help about="Switched-off rights">
+                        <p>A right ticked here is taken from everyone in this space, whatever their groups say; only server administrators
+                           can tick it, the space's own administrators can't give it back.</p>
+                        <p>Example: tick <em>Delete duplicates</em> on a space whose files must never be deleted from the web page.</p>
+                        <p><strong>Files read-only</strong> ticks every right that creates, changes or deletes files (marked
+                           <em>Changes files</em>): people can still tag and use the space. <strong>Read-only</strong> ticks every right
+                           that changes anything (marked <em>Changes things</em> too): the space can only be looked at.</p>
+                    </sfe-help>
+                </div>
+                <div class="access-presets">
+                    <span class="field-hint">Switch off at once</span>
+                    <button type="button" class="button small" title="Tick every right that creates, changes or deletes files in this space"
+                            (click)="switchOff(fileChangingRights(rights()))">Files read-only</button>
+                    <button type="button" class="button small" title="Tick every right that changes something in this space"
+                            (click)="switchOff(changingRights(rights()))">Read-only</button>
+                </div>
+                <fieldset class="access-choices rights">
+                    <legend class="visually-hidden">Rights switched off in this space</legend>
+                    @for (right of rights(); track right.id) {
+                        @let mark = rightMark(right);
+                        <label class="check" [title]="right.description">
+                            <input type="checkbox" [checked]="draft.disabledRights.has(right.id)" (change)="toggleRight(right.id, checkedOf($event))">
+                            <span>
+                                <span class="right-title">{{ right.title }}
+                                    @if (mark) {
+                                        <span class="access-badge right-mark" [class.danger]="mark.kind === 'files'" [title]="mark.hint">{{ mark.label }}</span>
+                                    }
+                                </span>
+                                <span class="field-hint">{{ right.area }}</span>
+                            </span>
+                        </label>
+                    }
+                </fieldset>
+            }
+            @if (problem(); as problem) {
+                <p class="form-error" role="alert">{{ problem }}</p>
+            }
+            <button type="submit" hidden aria-hidden="true" tabindex="-1"></button>
+        </form>
+    }
+    <button sheetFooter type="button" class="button" title="Close without saving (Esc)" (click)="sheet.close()">Cancel</button>
+    <span sheetFooter class="spacer"></span>
+    <button sheetFooter type="button" class="button primary" [title]="draft()?.id === null ? 'Create the space and index its folder' : 'Save the space'"
+            [disabled]="saving()" (click)="save()">{{ draft()?.id === null ? 'Create' : 'Save' }}</button>
+</sfe-sheet>

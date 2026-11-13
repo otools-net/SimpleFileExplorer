@@ -62,75 +62,7 @@ export class AccessModelComponent {}
     imports: [IconComponent, AccessModelComponent, SpaceDetailComponent, SpaceEditorComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'access-page' },
-    template: `
-        @if (error(); as error) {
-            <p class="form-error">{{ error }}</p>
-        } @else if (!loaded()) {
-            <div class="tag-loading"><span class="spinner"></span></div>
-        } @else if (selected(); as space) {
-            <header class="space-head">
-                @if (serverWide()) {
-                    <button type="button" class="link-button space-back" title="Back to the list of spaces" (click)="openSpace(null)">
-                        <svg sfeIcon="left"></svg>All spaces
-                    </button>
-                } @else {
-                    <sfe-access-model />
-                }
-                <div class="space-title">
-                    <svg sfeIcon="space"></svg>
-                    <h3>{{ space.name }}</h3>
-                    <span class="access-badges">
-                        @if (space.current) {
-                            <span class="access-badge accent" title="The space you are browsing">You are here</span>
-                        }
-                        @if (space.disabled) {
-                            <span class="access-badge danger" title="Nobody can open it">Disabled</span>
-                        }
-                    </span>
-                    <span class="spacer"></span>
-                    @if (details(space.id); as details) {
-                        <button type="button" class="button small" title="Rename the space, disable it, switch rights off in it" (click)="editor().open(details)">Edit space</button>
-                        @if (!details.isDefault) {
-                            <button type="button" class="button small" [title]="'Delete the space ' + details.name + ' (asks first)'" (click)="remove(details)">Delete</button>
-                        }
-                    }
-                </div>
-            </header>
-            <sfe-space-detail [space]="space" (changed)="onChanged($event)" />
-        } @else {
-            <sfe-access-model />
-            <div class="access-actions">
-                <button type="button" class="button primary" title="Create a space on a folder of the server" (click)="editor().open(null)">
-                    <svg sfeIcon="plus"></svg>New space
-                </button>
-            </div>
-            <ul class="space-cards">
-                @for (space of spaces(); track space.id) {
-                    <li>
-                        <button type="button" class="space-card" [class.disabled]="space.disabled" [title]="'Open ' + space.name + ': its groups, accounts and visitors'"
-                                (click)="openSpace(space.id)">
-                            <span class="space-card-title">
-                                <svg sfeIcon="space"></svg>
-                                <strong>{{ space.name }}</strong>
-                                @if (space.id === config.tenant()?.id) {
-                                    <span class="access-badge accent">You are here</span>
-                                }
-                                @if (space.disabled) {
-                                    <span class="access-badge danger">Disabled</span>
-                                }
-                            </span>
-                            <span class="space-card-line"><svg sfeIcon="folder"></svg><span class="access-path">{{ space.root }}</span></span>
-                            <span class="space-card-line"><svg sfeIcon="group"></svg>{{ plural(space.groups, 'group') }}</span>
-                            <span class="space-card-line"><svg sfeIcon="user"></svg>{{ plural(space.members, 'account') }}</span>
-                            <span class="space-card-line"><svg sfeIcon="globe"></svg>{{ space.guestAccess ? 'Visitors let in' : 'No visitors' }}</span>
-                            <span class="space-card-open">Open<svg sfeIcon="right"></svg></span>
-                        </button>
-                    </li>
-                }
-            </ul>
-        }
-        <sfe-space-editor (saved)="onSaved($event)" />
-    `,
+    templateUrl: './spaces-page.component.html',
 })
 export class SpacesPageComponent implements OnInit {
     private readonly api = inject(Api);

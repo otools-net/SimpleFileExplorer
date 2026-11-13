@@ -164,3 +164,16 @@ node agents/tools/readability/split-models.mjs --imports  # importers take each 
   (aliases and `type` kept); then the `export *` lines of `core/models.ts` can go.
 - Check: both `tsc --noEmit` (app, spec), `npm test`, and the client build (`references.mjs --only client`): only
   `main.js` moved by a few bytes (two guard functions changed modules).
+
+## Inline templates into .html files
+
+```sh
+node agents/tools/readability/move-templates.mjs --dry-run src/Sfe.Web/src/app   # what would move (over 40 lines)
+node agents/tools/readability/move-templates.mjs src/Sfe.Web/src/app/access       # moves them
+```
+
+- `template: \`…\`` of a `@Component` becomes `templateUrl: './<file>.html'` (`<class>.component.html` when the file
+  holds several components); the `.html` holds the string's value (escapes resolved), its common indentation
+  removed unless it has `<pre>`, `<textarea>` or `ngPreserveWhitespaces`. `${…}` templates are reported, not moved.
+- Check: `npm test` and the client build (`references.mjs --only client`) identical file for file (checked
+  2026-11-13 on the first 13).
