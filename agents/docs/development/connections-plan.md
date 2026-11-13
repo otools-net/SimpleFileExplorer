@@ -239,6 +239,9 @@ in `FolderRules`:
   creation (`ConnectRequest.RootPath`); choosing it by browsing comes with the listing of phase 3
 - [ ] Client: My account › Connections, Administration › Connections (library and server levels, who may use),
   add dialog driven by the provider's description; phone sheets; user docs with the Dropbox app steps
+  - Server part built first: `GET api/connections` (`ConnectionsView`: usable, and managed with `manage` /
+    `remove` flags), `PATCH` / `DELETE api/connections/{id}`, `PUT …/libraries` (`connections.server`), `PUT
+    …/groups` (`connections.library`, the request's library); one rule in `ConnectionManagers`
 
 ### Phase 3: browse and download
 

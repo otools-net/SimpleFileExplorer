@@ -83,6 +83,17 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   is written back. A refused one is `CredentialsEnded`: the code using the storage marks the connection
   (`MarkNeedsReconnectingAsync`).
 
+## Listing and managing (`ConnectionEndpoints`)
+
+- `GET api/connections`: `usable` (`ConnectionAccess.UsableAsync` for the session) and `managed`: its own (with
+  `connections.own`), its library's and the server's offered there (`connections.library`), the server's
+  (`connections.server`), every account's for server administrators; each with `manage` and `remove` flags.
+- `ConnectionManagers` is the one rule (also used by the sign-in routes): manage = make, sign in again, rename,
+  switch; remove = manage, or a server administrator for an account's connection. Anything else answers 404.
+- `PUT …/libraries` needs `connections.server`; `PUT …/groups` needs `connections.library` and acts on the request's
+  library only (`ConnectionSharing` answers 404 when the connection isn't that library's or offered to it). A
+  library's administrator gives a server connection to groups but can't rename or remove it.
+
 ## Audit lines
 
 - Security warnings: a connection made, signed in again to another account, offered to more libraries, a group added

@@ -24,7 +24,8 @@ secret routes, the sign-in routes; no page but the settings tab (app key field).
 | `9d867a6` | phase 1 item 4: services, `ConnectionAccess`, `ConnectionCredentials`, feature note |
 | `6c46d0f` | phase 2 item 1: `DropboxProvider` sign-in, app key setting, `ProviderSecrets`, provider routes |
 | `3d06f19` | phase 2 item 2: `ConnectionSignInFlow`, `PendingSignIns`, `ConnectionSignInEndpoints` |
-| last | phase 2 item 3: `POST connections/{id}/reauthorize`, `MayManage`, `SignInDone` |
+| `ad8cd48` | phase 2 item 3: `POST connections/{id}/reauthorize`, `MayManage`, `SignInDone` |
+| last | phase 2 item 4, server part: `ConnectionEndpoints` (list, update, remove, libraries, groups) |
 
 Checks run for the last commit: the new suites, `npm test` (1179 passed), the full `dotnet test`, `measure.mjs
 --check`, `check-links.mjs`. The migration was applied on LocalDB and its deletes checked there by hand.
@@ -33,9 +34,9 @@ Checks run for the last commit: the new suites, `npm test` (1179 passed), the fu
 
 1. Phase 2 item 4, the client pages: My account › Connections, Administration › Connections (secret field, return
    address, Test: `api/connections/providers/{kind}`), the add dialog driven by `config.connections.kinds`, the
-   `connections` page the callback lands on (`?made=`, `?reconnected=`, `?otherAccount=true`, `?error=`), list and
-   management routes still to write (`ConnectionService` / `ConnectionSharing` have the operations), phone sheets,
-   user docs with screenshots. Then the manual check list `agents/tools/dropbox-check/README.md`.
+   `connections` page the callback lands on (`?made=`, `?reconnected=`, `?otherAccount=true`, `?error=`), over the
+   routes of `ConnectionEndpoints` (`GET api/connections` gives what to show and the `manage` / `remove` flags);
+   phone sheets, user docs with screenshots. Then the manual check list `agents/tools/dropbox-check/README.md`.
 2. Then phases 3 to 7 as the plan lists them.
 
 Per commit, as the epic asks: tick the item in the plan with an "As built" sentence, update the status board and

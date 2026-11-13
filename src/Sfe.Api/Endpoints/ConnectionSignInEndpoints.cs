@@ -8,19 +8,12 @@ namespace Sfe.Api.Endpoints;
 /// <summary>
 /// Making a connection, or signing one in again, by signing in to the provider (<see cref="ConnectionSignInFlow"/>):
 /// begin, then the provider's redirect back (<see cref="ConnectionProviderEndpoints.CallbackPath"/>) or the code
-/// typed by the person. Who may: <see cref="MayManage"/>.
+/// typed by the person. Who may: <see cref="ConnectionManagers.MayManage(AccessState, ConnectionDraft)"/>.
 /// </summary>
 public static class ConnectionSignInEndpoints
 {
     /// <summary>Where the browser lands in the client after the redirect sign-in (under the app's address).</summary>
     public const string ClientPage = "/connections";
-
-    private static readonly string[] ManageRights =
-    [
-        Rights.OwnConnections,
-        Rights.LibraryConnections,
-        Rights.ServerConnections,
-    ];
 
     public static RouteGroupBuilder MapConnectionSignInEndpoints(this RouteGroupBuilder api)
     {
@@ -28,7 +21,7 @@ public static class ConnectionSignInEndpoints
 
         connections
             .MapPost("/authorize", Authorize)
-            .RequireRight(ManageRights)
+            .RequireRight(ConnectionManagers.Rights)
             .WithName("AuthorizeConnection")
             .WithSummary(
                 "Begins making a connection: checks what is asked, then answers the provider's address to send the "
@@ -37,7 +30,7 @@ public static class ConnectionSignInEndpoints
 
         connections
             .MapPost("/{id:int}/reauthorize", Reauthorize)
-            .RequireRight(ManageRights)
+            .RequireRight(ConnectionManagers.Rights)
             .WithName("ReauthorizeConnection")
             .WithSummary(
                 "Begins signing a connection in again (its sign-in was refused or lost): the same connection, groups "
@@ -46,7 +39,7 @@ public static class ConnectionSignInEndpoints
 
         connections
             .MapPost("/authorize/complete", Complete)
-            .RequireRight(ManageRights)
+            .RequireRight(ConnectionManagers.Rights)
             .WithName("CompleteConnectionAuthorization")
             .WithSummary(
                 "Ends a sign-in with what the person brings back (the code the provider shows). A state is used once, "
@@ -55,7 +48,7 @@ public static class ConnectionSignInEndpoints
 
         connections
             .MapGet(ConnectionProviderEndpoints.CallbackPath["/connections".Length..], Callback)
-            .RequireRight(ManageRights)
+            .RequireRight(ConnectionManagers.Rights)
             .WithName("ConnectionOAuthCallback")
             .WithSummary(
                 "Where the provider sends the browser back: ends the sign-in begun by this session's account and "
@@ -64,21 +57,6 @@ public static class ConnectionSignInEndpoints
 
         return api;
     }
-
-    /// <summary>
-    /// Whether the session may make, or sign in again, a connection like <paramref name="draft"/>: account level,
-    /// its owner with <c>connections.own</c> (never an administrator for someone else); library level, that
-    /// library's (the request's) with <c>connections.library</c>; server level, <c>connections.server</c>.
-    /// </summary>
-    public static bool MayManage(AccessState state, ConnectionDraft draft) =>
-        state.User is { } user
-        && draft.Level switch
-        {
-            ConnectionLevel.Account => draft.OwnerId == user.Id && state.Has(Rights.OwnConnections),
-            ConnectionLevel.Library => draft.TenantId == state.Tenant?.Id && state.Has(Rights.LibraryConnections),
-            ConnectionLevel.Server => state.Has(Rights.ServerConnections),
-            _ => false,
-        };
 
     private static async Task<
         Results<Ok<SignInBegun>, ValidationProblem, ProblemHttpResult, ForbidHttpResult>
@@ -96,7 +74,7 @@ public static class ConnectionSignInEndpoints
             state.TenantId,
             request.RootPath
         );
-        if (!MayManage(state, draft))
+        if (!ConnectionManagers.MayManage(state, draft))
             return TypedResults.Forbid();
 
         var context = new SignInContext(user.Id, state.TenantId, ConnectionProviderEndpoints.ReturnAddress(http));
@@ -126,7 +104,7 @@ public static class ConnectionSignInEndpoints
             id,
             request,
             context,
-            draft => MayManage(state, draft),
+            draft => ConnectionManagers.MayManage(state, draft),
             cancellationToken
         );
         return begun.Status switch
@@ -153,7 +131,7 @@ public static class ConnectionSignInEndpoints
             input.State,
             user.Id,
             input.Fields ?? new Dictionary<string, string>(),
-            draft => MayManage(state, draft),
+            draft => ConnectionManagers.MayManage(state, draft),
             cancellationToken
         );
         return done.Status switch
@@ -191,7 +169,7 @@ public static class ConnectionSignInEndpoints
             state,
             user.Id,
             new Dictionary<string, string> { ["code"] = code },
-            draft => MayManage(access, draft),
+            draft => ConnectionManagers.MayManage(access, draft),
             cancellationToken
         );
         return done.Status switch

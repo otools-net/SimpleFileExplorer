@@ -1,3 +1,5 @@
+using Sfe.Core.Connections;
+
 namespace Sfe.Api.Endpoints;
 
 /// <summary>How a kind of connection is set up on this server (Administration › Connections).</summary>
@@ -22,3 +24,20 @@ public sealed record SignInCompletionInput(string? State, Dictionary<string, str
 /// <summary>What the provider's redirect brings back (bound with <c>[AsParameters]</c>).</summary>
 /// <param name="Error">Set when the person refused at the provider, or it failed.</param>
 internal sealed record OAuthCallback(string? Code, string? State, string? Error, HttpRequest Request);
+
+/// <summary>The connections of a session (<c>GET api/connections</c>).</summary>
+/// <param name="Usable">Those it may use in its library, and how far.</param>
+/// <param name="Managed">Those it manages, by name.</param>
+public sealed record ConnectionsView(IReadOnlyList<UsableConnection> Usable, IReadOnlyList<ManagedConnection> Managed);
+
+/// <summary>A connection the session manages, and what it may do with it.</summary>
+/// <param name="Manage">Rename, switch, sign in again (an account's own, or its level's right).</param>
+/// <param name="Remove">Remove (also the server's administrators for an account's connection).</param>
+public sealed record ManagedConnection(Sfe.Core.Connections.ConnectionInfo Connection, bool Manage, bool Remove);
+
+/// <summary>The libraries a server-level connection is offered to.</summary>
+/// <param name="AllLibraries">Every library, those made later too.</param>
+public sealed record ConnectionLibrariesInput(bool AllLibraries, int[]? LibraryIds);
+
+/// <summary>The groups of the request's library using a connection, with their level (Read or Write).</summary>
+public sealed record ConnectionGroupsInput(Dictionary<int, Sfe.Core.Access.FolderLevel>? Groups);
