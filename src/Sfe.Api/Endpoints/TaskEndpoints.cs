@@ -134,14 +134,13 @@ public static class TaskEndpoints
         );
 
     private static async Task<Results<Accepted<TaskActionResult>, Conflict<TaskActionResult>, NotFound>> Start(
-        BackgroundTasks tasks,
-        LibraryPaths paths,
-        CurrentAccess current,
+        [AsParameters] TaskServices services,
         string task,
         string? path,
         CancellationToken cancellationToken
     )
     {
+        var (tasks, _, paths, current) = services;
         if (!TryParseTask(task, out var kind))
             return TypedResults.NotFound();
         // A task on a folder (a scan) runs only where the subject may scan.
@@ -202,14 +201,13 @@ public static class TaskEndpoints
     }
 
     private static async Task<Results<Ok<TaskScheduleView>, NotFound, ValidationProblem>> UpdateSchedule(
-        TaskScheduleService schedules,
-        LibraryPaths paths,
-        CurrentAccess current,
+        [AsParameters] TaskServices services,
         int id,
         TaskScheduleInput input,
         CancellationToken cancellationToken
     )
     {
+        var (_, schedules, paths, current) = services;
         if (await UnseenFolder(paths, current, input.Path) is { } unseen)
             return unseen;
         var (found, view, errors) = await schedules.UpdateAsync(id, input, cancellationToken);
