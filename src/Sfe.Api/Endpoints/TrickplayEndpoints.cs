@@ -12,6 +12,17 @@ public static class TrickplayEndpoints
     private const int DefaultActivityLimit = 100;
     private const int MaxActivityLimit = 1000;
 
+    private static readonly string GetTrickplayStatesDescription = $"""
+        Takes up to {TrickplayService.MaxStatePaths} library paths; videos with nothing to do are left out of
+        `files`. `running` tells whether the job is busy at all: the client may check less often when not.
+        """;
+
+    private const string GetTrickplayDescription = """
+        404 when the video has no trickplay yet. A video of the configured folders is then queued, ahead of the
+        background pass, unless `queue=false` (a thumbnail preview only shows what exists). Sheets are JPEG
+        images; their URL should carry the description's `version` (e.g. `&v=`): they are cached by the browser.
+        """;
+
     public static RouteGroupBuilder MapTrickplayEndpoints(this RouteGroupBuilder api)
     {
         var trickplay = api.MapGroup("/trickplay").WithTags("Trickplay");
@@ -45,12 +56,7 @@ public static class TrickplayEndpoints
             .FolderScoped("videos the subject may not view are left out")
             .WithName("GetTrickplayStates")
             .WithSummary("Which of the given videos are waiting for their trickplay or being processed.")
-            .WithDescription(
-                $"""
-                Takes up to {TrickplayService.MaxStatePaths} library paths; videos with nothing to do are left out of
-                `files`. `running` tells whether the job is busy at all: the client may check less often when not.
-                """
-            );
+            .WithDescription(GetTrickplayStatesDescription);
 
         trickplay
             .MapGet("/files/{**path}", Get)
@@ -59,13 +65,7 @@ public static class TrickplayEndpoints
             .FolderScoped("files.view at the video")
             .WithName("GetTrickplay")
             .WithSummary("Trickplay of a video: its description, or one of its sheets with `?sheet=n`.")
-            .WithDescription(
-                """
-                404 when the video has no trickplay yet. A video of the configured folders is then queued, ahead of the
-                background pass, unless `queue=false` (a thumbnail preview only shows what exists). Sheets are JPEG
-                images; their URL should carry the description's `version` (e.g. `&v=`): they are cached by the browser.
-                """
-            );
+            .WithDescription(GetTrickplayDescription);
 
         return api;
     }

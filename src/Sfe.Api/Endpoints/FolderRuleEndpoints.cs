@@ -21,6 +21,17 @@ public static class FolderRuleEndpoints
     private const string ManagersSeeAll =
         "folder rules are managed for the whole space: managers see every folder's rules and names";
 
+    private static readonly string SetFolderRuleDescription = $"""
+        The nearest rule above a path decides each group's and account's level there; a group without one has
+        `write`. An account rule only adds to what its groups give. A space has at most
+        {FolderRuleService.MaxRules} rules. {TenantParameter}
+        """;
+
+    private static readonly string RepointFolderRulesDescription = $"""
+        For a folder moved or renamed outside SFE. 409 while `from` still exists, or when `to` (or a folder
+        below it) has rules already. {TenantParameter}
+        """;
+
     public static RouteGroupBuilder MapFolderRuleEndpoints(this RouteGroupBuilder api)
     {
         var access = api.MapGroup("/access").WithTags("Access");
@@ -41,13 +52,7 @@ public static class FolderRuleEndpoints
                 "Sets the level of a group or an account at a folder (`hidden`, `read`, `write`), "
                     + "or removes its rule (`level: null`); answers every rule."
             )
-            .WithDescription(
-                $"""
-                The nearest rule above a path decides each group's and account's level there; a group without one has
-                `write`. An account rule only adds to what its groups give. A space has at most
-                {FolderRuleService.MaxRules} rules. {TenantParameter}
-                """
-            );
+            .WithDescription(SetFolderRuleDescription);
 
         access
             .MapPost("/folder-rules/repoint", Repoint)
@@ -57,12 +62,7 @@ public static class FolderRuleEndpoints
             .WithSummary(
                 "Moves the rules of a folder that is no longer there (and of its sub-folders) to another folder."
             )
-            .WithDescription(
-                $"""
-                For a folder moved or renamed outside SFE. 409 while `from` still exists, or when `to` (or a folder
-                below it) has rules already. {TenantParameter}
-                """
-            );
+            .WithDescription(RepointFolderRulesDescription);
 
         access
             .MapGet("/folder-access", Report)

@@ -16,6 +16,26 @@ public static class SessionEndpoints
     private const string LocalAdministratorsOnly =
         "SFE is in Local mode: only its administrators sign in. Ask one to set it to External to let others in.";
 
+    private const string SignInDescription = """
+        `remember` keeps the session after the browser closes (for `Sfe:Security:SessionDays` without use). A
+        Local server (`Sfe:Mode`) lets only administrators in (server administrators, members of a space's
+        Administrators group): others get 400 `local-administrators-only`.
+        """;
+
+    private static readonly string FastSignInDescription = $"""
+        Only with `Sfe:FastSignIn` (Administration › System › Start-up), from the server's own computer, while
+        the server has a single enabled administrator. The link (`token`) is made when SFE starts, works once
+        and for {FastSignIn.Lifetime.TotalMinutes:0} minute. Whatever happens, the answer sends the browser to
+        the app.
+        """;
+
+    private static readonly string RequestAccountRecoveryDescription = $"""
+        For a server administrator locked out (wrong passwords from someone else) or who forgot the password.
+        The code appears in the server's console and in `recovery-code.txt` beside the setup code file, for
+        {AccountRecovery.Lifetime.TotalMinutes:0} minutes; asking again shows the same code. The answer is the
+        same whatever the name, so it doesn't tell which accounts exist.
+        """;
+
     public static RouteGroupBuilder MapSessionEndpoints(this RouteGroupBuilder api)
     {
         var session = api.MapGroup("/session").WithTags("Session");
@@ -34,13 +54,7 @@ public static class SessionEndpoints
             .RequireRateLimiting(SignInRateLimit)
             .WithName("SignIn")
             .WithSummary("Signs in with a name and password.")
-            .WithDescription(
-                """
-                `remember` keeps the session after the browser closes (for `Sfe:Security:SessionDays` without use). A
-                Local server (`Sfe:Mode`) lets only administrators in (server administrators, members of a space's
-                Administrators group): others get 400 `local-administrators-only`.
-                """
-            );
+            .WithDescription(SignInDescription);
 
         session.MapPost("/logout", SignOut).AllowAnonymous().WithName("SignOut").WithSummary("Signs out.");
 
@@ -67,14 +81,7 @@ public static class SessionEndpoints
                 "Signs the server's only administrator in with the one-time link of the browser SFE opened at start, "
                     + "then opens the app."
             )
-            .WithDescription(
-                $"""
-                Only with `Sfe:FastSignIn` (Administration › System › Start-up), from the server's own computer, while
-                the server has a single enabled administrator. The link (`token`) is made when SFE starts, works once
-                and for {FastSignIn.Lifetime.TotalMinutes:0} minute. Whatever happens, the answer sends the browser to
-                the app.
-                """
-            );
+            .WithDescription(FastSignInDescription);
 
         session
             .MapPost("/recovery", RequestRecovery)
@@ -85,14 +92,7 @@ public static class SessionEndpoints
                 "Asks for a one-time code to recover a server administrator's account; the server shows it only where "
                     + "it runs."
             )
-            .WithDescription(
-                $"""
-                For a server administrator locked out (wrong passwords from someone else) or who forgot the password.
-                The code appears in the server's console and in `recovery-code.txt` beside the setup code file, for
-                {AccountRecovery.Lifetime.TotalMinutes:0} minutes; asking again shows the same code. The answer is the
-                same whatever the name, so it doesn't tell which accounts exist.
-                """
-            );
+            .WithDescription(RequestAccountRecoveryDescription);
 
         session
             .MapPost("/recovery/complete", CompleteRecovery)

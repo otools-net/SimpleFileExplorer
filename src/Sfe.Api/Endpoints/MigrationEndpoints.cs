@@ -23,6 +23,17 @@ public static class MigrationEndpoints
 
     private static readonly Lazy<IReadOnlyList<ChangelogEntry>> Changelog = new(LoadChangelog);
 
+    private const string GetMigrationDescription = """
+        While an update is due (`required`, `running`, `failed`), or the install belongs to a later version
+        (`newer`), every other route answers 503 `migration-required`. `log` and the text of `error` name
+        folders and servers: they are given only with the setup code in the header `X-SFE-Setup-Code` (as the
+        update page sends it once typed); without it `log` is empty and `error` only says that there is one.
+        """;
+
+    private const string CreateMigrationBackupDescription =
+        "Answers the link the browser downloads it from, once. Only while an update is due: afterwards, "
+        + "Administration › System.";
+
     public static RouteGroupBuilder MapMigrationEndpoints(this RouteGroupBuilder api)
     {
         var migration = api.MapGroup("/migration").WithTags("Session");
@@ -34,14 +45,7 @@ public static class MigrationEndpoints
             .WithSummary(
                 "Whether the install waits for its update to this version, with the changes since its version."
             )
-            .WithDescription(
-                """
-                While an update is due (`required`, `running`, `failed`), or the install belongs to a later version
-                (`newer`), every other route answers 503 `migration-required`. `log` and the text of `error` name
-                folders and servers: they are given only with the setup code in the header `X-SFE-Setup-Code` (as the
-                update page sends it once typed); without it `log` is empty and `error` only says that there is one.
-                """
-            );
+            .WithDescription(GetMigrationDescription);
 
         migration
             .MapPost("/", StartMigration)
@@ -63,10 +67,7 @@ public static class MigrationEndpoints
             .WithSummary(
                 "Makes a backup (zip) of the databases and configuration files before the update; needs the setup code."
             )
-            .WithDescription(
-                "Answers the link the browser downloads it from, once. Only while an update is due: afterwards, "
-                    + "Administration › System."
-            );
+            .WithDescription(CreateMigrationBackupDescription);
 
         migration
             .MapGet("/backup/{token}", DownloadBackup)

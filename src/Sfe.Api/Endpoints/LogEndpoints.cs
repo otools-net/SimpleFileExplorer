@@ -8,6 +8,18 @@ namespace Sfe.Api.Endpoints;
 
 public static class LogEndpoints
 {
+    private static readonly string SearchLogsDescription = $"""
+        Filters, all optional: `q` (text found in the message, the logger's name or the exception, ignoring
+        case), `levels` (comma-separated: `trace`, `debug`, `information`, `warning`, `securityWarning`,
+        `error`, `critical`; `securityWarning` = security events: wrong passwords, lockouts, wrong setup codes,
+        recoveries), `from` and `to` (ISO 8601 moments; `to` excluded), `tenant` (a space's id; `0` = the
+        server's own entries, outside any space). Server administrators see every space's entries; others only
+        those of their space, whatever `tenant` says. Pages of `limit` entries (default
+        {AuditLogService.DefaultPageSize}, at most {AuditLogService.MaxPageSize}); pass `next` as `before` for
+        the following page. The last seconds' entries may not be there yet: the log is written every few
+        seconds.
+        """;
+
     public static RouteGroupBuilder MapLogEndpoints(this RouteGroupBuilder api)
     {
         var logs = api.MapGroup("/logs").WithTags("Logs");
@@ -16,19 +28,7 @@ public static class LogEndpoints
             .RequireRight(Rights.ViewLogs)
             .WithName("SearchLogs")
             .WithSummary("Entries of the server's log, newest first: warnings, errors and messages.")
-            .WithDescription(
-                $"""
-                Filters, all optional: `q` (text found in the message, the logger's name or the exception, ignoring
-                case), `levels` (comma-separated: `trace`, `debug`, `information`, `warning`, `securityWarning`,
-                `error`, `critical`; `securityWarning` = security events: wrong passwords, lockouts, wrong setup codes,
-                recoveries), `from` and `to` (ISO 8601 moments; `to` excluded), `tenant` (a space's id; `0` = the
-                server's own entries, outside any space). Server administrators see every space's entries; others only
-                those of their space, whatever `tenant` says. Pages of `limit` entries (default
-                {AuditLogService.DefaultPageSize}, at most {AuditLogService.MaxPageSize}); pass `next` as `before` for
-                the following page. The last seconds' entries may not be there yet: the log is written every few
-                seconds.
-                """
-            );
+            .WithDescription(SearchLogsDescription);
 
         return api;
     }

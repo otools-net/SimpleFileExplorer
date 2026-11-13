@@ -19,6 +19,29 @@ public static class UploadEndpoints
     /// <summary>Names one check may carry (a folder upload sends its files in several).</summary>
     public const int MaxCheckNames = 1000;
 
+    private static readonly string CheckUploadsDescription =
+        $"Asked before uploading, so that the person decides about names taken (Replace, Skip, Keep both) "
+        + $"before sending anything. At most {MaxCheckNames} names.";
+
+    private static readonly string StartUploadDescription = $"""
+        Checks the folder, the name (a path below the folder for a folder upload: its folders are made at the
+        finish), the size (`Files:Uploads:MaxFileSizeMegabytes`, the free space kept) and answers the upload
+        (201) with its `id`. Then `PUT /<id>?offset=` sends the bytes in chunks of at most
+        {Uploads.MaxChunkBytes / 1024 / 1024} MB, and `POST /<id>/finish` puts the file in the folder.
+        """;
+
+    private static readonly string SendUploadChunkDescription = $"""
+        `offset` must be the bytes the server has: another one answers 409 with the upload, to resend from
+        there (a reply lost on the way). A chunk passing the size, or {Uploads.MaxChunkBytes / 1024 / 1024} MB,
+        is refused (400). Answers the upload.
+        """;
+
+    private static readonly string FinishUploadDescription = $"""
+        `conflicts` says what to do when the name is taken: `ask` (409 `{FileEndpoints.ExistsType}`, to ask and
+        finish again), `replace` (the file there goes to the trash; needs the right to delete there), `skip`
+        (the upload is removed, 204), `keepBoth` (` (2)` added). Answers the new file as listings show it.
+        """;
+
     public static RouteGroupBuilder MapUploadEndpoints(this RouteGroupBuilder api)
     {
         var uploads = api.MapGroup("/files/uploads").WithTags("Files");
@@ -29,24 +52,14 @@ public static class UploadEndpoints
             .FolderScoped("files.upload at the folder; names taken are told whether the caller sees them or not")
             .WithName("CheckUploads")
             .WithSummary("Which of these names are already taken in the folder.")
-            .WithDescription(
-                $"Asked before uploading, so that the person decides about names taken (Replace, Skip, Keep both) "
-                    + $"before sending anything. At most {MaxCheckNames} names."
-            );
+            .WithDescription(CheckUploadsDescription);
         uploads
             .MapPost("", Start)
             .RequireRight(Rights.UploadFiles)
             .FolderScoped("files.upload at the folder and at each folder a folder upload makes")
             .WithName("StartUpload")
             .WithSummary("Starts an upload.")
-            .WithDescription(
-                $"""
-                Checks the folder, the name (a path below the folder for a folder upload: its folders are made at the
-                finish), the size (`Files:Uploads:MaxFileSizeMegabytes`, the free space kept) and answers the upload
-                (201) with its `id`. Then `PUT /<id>?offset=` sends the bytes in chunks of at most
-                {Uploads.MaxChunkBytes / 1024 / 1024} MB, and `POST /<id>/finish` puts the file in the folder.
-                """
-            );
+            .WithDescription(StartUploadDescription);
         uploads
             .MapGet("", List)
             .RequireRight(Rights.UploadFiles, Rights.FileSettings)
@@ -67,26 +80,14 @@ public static class UploadEndpoints
             .WithMetadata(new RequestSizeLimitAttribute(Uploads.MaxChunkBytes + 1))
             .WithName("SendUploadChunk")
             .WithSummary("Appends a chunk (the body) at `offset`.")
-            .WithDescription(
-                $"""
-                `offset` must be the bytes the server has: another one answers 409 with the upload, to resend from
-                there (a reply lost on the way). A chunk passing the size, or {Uploads.MaxChunkBytes / 1024 / 1024} MB,
-                is refused (400). Answers the upload.
-                """
-            );
+            .WithDescription(SendUploadChunkDescription);
         uploads
             .MapPost("/{id:regex(^[0-9a-f]{{32}}$)}/finish", Finish)
             .RequireRight(Rights.UploadFiles)
             .FolderScoped("files.upload again (it may have changed), files.delete at a file replaced")
             .WithName("FinishUpload")
             .WithSummary("Puts a fully sent upload into its folder.")
-            .WithDescription(
-                $"""
-                `conflicts` says what to do when the name is taken: `ask` (409 `{FileEndpoints.ExistsType}`, to ask and
-                finish again), `replace` (the file there goes to the trash; needs the right to delete there), `skip`
-                (the upload is removed, 204), `keepBoth` (` (2)` added). Answers the new file as listings show it.
-                """
-            );
+            .WithDescription(FinishUploadDescription);
         uploads
             .MapDelete("/{id:regex(^[0-9a-f]{{32}}$)}", Cancel)
             .RequireRight(Rights.UploadFiles, Rights.FileSettings)

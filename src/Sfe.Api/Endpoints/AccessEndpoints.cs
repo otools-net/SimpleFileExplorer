@@ -16,6 +16,17 @@ public static class AccessEndpoints
     private const string TenantParameter =
         "`tenant`: the id of another space than the request's one (server administrators only).";
 
+    private const string UpdateUserDescription = """
+        Server administrators replace every group of the account (`groupIds`: those of all its spaces). A
+        space's administrator changes only the account's groups in that space, unless the account belongs to
+        that space alone and is no server administrator.
+        """;
+
+    private static readonly string UpdateGroupDescription = $"""
+        The Guests group cannot get a right guests may never have. Only server administrators add accounts that
+        are in none of the space's groups yet. {TenantParameter}
+        """;
+
     public static RouteGroupBuilder MapAccessEndpoints(this RouteGroupBuilder api)
     {
         var access = api.MapGroup("/access").WithTags("Access");
@@ -48,13 +59,7 @@ public static class AccessEndpoints
             .RequireRight(Rights.ManageMembers, Rights.ManageUsers)
             .WithName("UpdateUser")
             .WithSummary("Changes an account (a new password or status ends its sessions).")
-            .WithDescription(
-                """
-                Server administrators replace every group of the account (`groupIds`: those of all its spaces). A
-                space's administrator changes only the account's groups in that space, unless the account belongs to
-                that space alone and is no server administrator.
-                """
-            );
+            .WithDescription(UpdateUserDescription);
 
         access
             .MapDelete("/users/{id:int}", DeleteUser)
@@ -84,12 +89,7 @@ public static class AccessEndpoints
             .RequireRight(Rights.ManageMembers)
             .WithName("UpdateGroup")
             .WithSummary("Changes a group's name, directory group, rights and members.")
-            .WithDescription(
-                $"""
-                The Guests group cannot get a right guests may never have. Only server administrators add accounts that
-                are in none of the space's groups yet. {TenantParameter}
-                """
-            );
+            .WithDescription(UpdateGroupDescription);
 
         access
             .MapDelete("/groups/{id:int}", DeleteGroup)

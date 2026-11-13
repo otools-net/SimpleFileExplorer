@@ -8,6 +8,11 @@ namespace Sfe.Api.Endpoints;
 
 public static class QuickLinkEndpoints
 {
+    private static readonly string AddQuickLinksDescription = $"""
+        Every new path must be a folder or file of the library. A list holds at most {QuickLinkService.MaxLinks}
+        links: an addition going past it is refused as a whole.
+        """;
+
     public static RouteGroupBuilder MapQuickLinkEndpoints(this RouteGroupBuilder api)
     {
         var links = api.MapGroup("/me/quick-links").WithTags("Quick links").RequireRight(Rights.QuickLinks);
@@ -27,12 +32,7 @@ public static class QuickLinkEndpoints
             .WithSummary(
                 "Adds folders and files to the quick links, or moves those already there; answers the whole list."
             )
-            .WithDescription(
-                $"""
-                Every new path must be a folder or file of the library. A list holds at most {QuickLinkService.MaxLinks}
-                links: an addition going past it is refused as a whole.
-                """
-            );
+            .WithDescription(AddQuickLinksDescription);
 
         links
             .MapDelete("/", Remove)

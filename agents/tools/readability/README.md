@@ -201,3 +201,15 @@ node agents/tools/readability/break-template-lines.mjs --check src/Sfe.Web/src/a
 - Left alone: control-flow lines (`@if (…) {`), attribute values longer than a line, and text in files with
   `<pre>`, `<textarea>` or `ngPreserveWhitespaces` (their tags are broken).
 - Check: the client build identical (`references.mjs --only client`, content hashes).
+
+## Route descriptions into fields
+
+```sh
+dotnet run agents/tools/readability/extract-descriptions/ExtractDescriptions.cs -- src/Sfe.Api/Endpoints/*Endpoints.cs
+dotnet csharpier format src/Sfe.Api/Endpoints
+```
+
+- Each `.WithDescription(…)` of a `Map…` method whose argument spans lines (a raw string, or strings joined by `+`)
+  becomes a field named after the route's `.WithName("X")`, `XDescription`, just before that method: `const` without
+  holes, `static readonly` when interpolated. A raw string's lines move together, so its value is the same.
+- Check: `references.mjs --only openapi,routes` identical.

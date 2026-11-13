@@ -9,6 +9,10 @@ namespace Sfe.Api.Endpoints;
 
 public static class KeepAliveEndpoints
 {
+    private const string PingKeepAliveDescription =
+        "Waits for the pings, at most `Sfe:KeepAlive:TimeoutSeconds`; a folder still blocked from an earlier "
+        + "ping is not pinged again.";
+
     public static RouteGroupBuilder MapKeepAliveEndpoints(this RouteGroupBuilder api)
     {
         var keepAlive = api.MapGroup("/keep-alive").WithTags("Keep alive");
@@ -39,10 +43,7 @@ public static class KeepAliveEndpoints
                 "Pings the space's folders now (also while keep alive is off, as with `Always`), "
                     + "and answers their state."
             )
-            .WithDescription(
-                "Waits for the pings, at most `Sfe:KeepAlive:TimeoutSeconds`; a folder still blocked from an earlier "
-                    + "ping is not pinged again."
-            );
+            .WithDescription(PingKeepAliveDescription);
 
         return api;
     }

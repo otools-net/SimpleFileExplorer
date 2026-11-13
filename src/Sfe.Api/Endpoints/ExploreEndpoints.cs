@@ -41,6 +41,74 @@ public static class ExploreEndpoints
     /// <summary>Folders and files of an archive chosen at most for one extraction.</summary>
     public const int MaxExtractChosen = 10_000;
 
+    private static readonly string ExploreArchiveDescription = $"""
+        `folder` is a folder's id (from a previous answer; the root without it) or `at` its path inside the
+        archive. The first question about an archive reads its list once, in the background: 202 with the
+        entries read so far until it is ready (ask again). `after` is the previous page's `next`; `limit` at
+        most {MaxPageSize} (default {PageSize}). An archive not read yet starts its read,
+        {CatalogBuildLimits.PerMinute} a minute per caller at most (429 past it). 409 (`{NotExplorableType}`)
+        for a file that isn't an archive SFE explores (one file compressed alone, a compressed tar over
+        `Files:Archives:MaxCompressedTarMegabytes`, a name its bytes deny); 422 (`{UnreadableType}`) when it
+        can't be read now. `complete` false: the list stopped (`stopped` says why).
+        """;
+
+    private static readonly string SearchArchiveDescription = $"""
+        `q` (at least {MinSearchLength} characters) is looked for in the names of the whole archive, the catalog
+        looked through for {SearchBudgetMilliseconds} ms at most per request: a page may hold fewer than `limit`
+        (default {SearchPageSize}, at most {MaxPageSize}) and still have a `next` (ask again with `after`). Each
+        item has `where`, the path of its folder. With `folder` (a folder's id), only what is right inside that
+        folder, in its order (folders first, by name), without `where`. 202 while the list is read, as for
+        `GET explore`.
+        """;
+
+    private static readonly string GetArchiveEntryDescription = $"""
+        `archive` is the archive's path, UTF-8 in base64url; `id` the entry's id in its listing; `name` its name
+        (the browser's file name). Sandboxed as the library's files are, inline only for what the browser shows
+        safely (pictures, audio, video, plain text), downloaded otherwise or with `download=true`. Larger than
+        `Files:Archives:MaxPreviewMegabytes` only with `download=true` (413 `{TooLargeType}` otherwise). An
+        entry claiming more than `Files:Archives:MaxCompressionRatio` times its packed size is refused (422);
+        one that would unpack more than `Files:Archives:MaxSkippedMegabytes` of the files before it (a solid 7z
+        or rar, a compressed tar) too (413 `{TooLargeType}`: extract it). Its data is held to the size the
+        archive declares: more or less is a broken archive, and the download is cut off. `unlock` (from
+        `unlock`) opens an encrypted entry, or any of an archive whose list is encrypted.
+        """;
+
+    private const string GetArchiveEntryAtDescription = """
+        `at` is the file's path inside the archive (folders separated by `/`; as written, else in any case): the
+        address the links and pictures of a document of the archive lead to. The same rights, checks and answers
+        as by id.
+        """;
+
+    private static readonly string GetArchiveEntryTextDescription = $"""
+        `id` is the entry's id in the archive's listing (or `at` its path in the archive); `encoding` reads it
+        in that encoding rather than the one it seems to have. Up to {TextEndpoints.MaxBytes / (1024 * 1024)} MB
+        (413 `{TooLargeType}`: download it); 415 `{TextEndpoints.NotTextType}` when it isn't text. `access`
+        allows nothing: an entry is never saved over. The same checks as `GET explore/entry` (password,
+        compression ratio, files before it in a solid block).
+        """;
+
+    private static readonly string ExtractArchiveDescription = $"""
+        Starts an extraction job and answers its first state (202), followed as moves and copies are
+        (`GET api/files/jobs/:id`, `answer`, `cancel`). `newFolder` (default): into a new folder named after the
+        archive (after its one top folder when it has one), never mixed with what is there; else straight into
+        `target`, where name clashes are asked as `conflicts` says. `folders` and `files` (at most
+        {MaxExtractChosen}, ids of the archive's listing: its list must have been read, else 409
+        `{ReadingType}`) choose what is extracted, each from its own name. Names leading out of the folder,
+        links, names the system refuses, and files claiming more than `Files:Archives:MaxCompressionRatio` times
+        their packed size are left out and listed in the result. A protected archive needs `unlock` (or
+        `password`): a wrong one fails the job before anything stays. Cancelled or failed, nothing half written
+        stays. At most {RequestLimits.UnlocksPerMinute} a minute per caller.
+        """;
+
+    private static readonly string UnlockArchiveDescription = $"""
+        Checked on the archive itself: its encrypted list (7z, rar), else its smallest encrypted file read
+        through (its checks and authentication). 422 (`{WrongPasswordType}`) for a wrong one, 409
+        (`{NotProtectedType}`) for an archive that has nothing encrypted, 202 while its list is still being
+        read. At most {RequestLimits.UnlocksPerMinute} a minute per caller (429). The password stays in the
+        server's memory only, behind the unlock: never logged, never answered; the unlock serves its caller
+        only, for this archive as it is, until 15 minutes unused or a sign-out.
+        """;
+
     public static RouteGroupBuilder MapExploreEndpoints(this RouteGroupBuilder api)
     {
         var explore = api.MapGroup("/files/explore").WithTags("Files");
@@ -54,18 +122,7 @@ public static class ExploreEndpoints
             .WithSummary(
                 "A folder of an archive (zip, 7z, rar, tar), in pages: its folders first, then its files, by name."
             )
-            .WithDescription(
-                $"""
-                `folder` is a folder's id (from a previous answer; the root without it) or `at` its path inside the
-                archive. The first question about an archive reads its list once, in the background: 202 with the
-                entries read so far until it is ready (ask again). `after` is the previous page's `next`; `limit` at
-                most {MaxPageSize} (default {PageSize}). An archive not read yet starts its read,
-                {CatalogBuildLimits.PerMinute} a minute per caller at most (429 past it). 409 (`{NotExplorableType}`)
-                for a file that isn't an archive SFE explores (one file compressed alone, a compressed tar over
-                `Files:Archives:MaxCompressedTarMegabytes`, a name its bytes deny); 422 (`{UnreadableType}`) when it
-                can't be read now. `complete` false: the list stopped (`stopped` says why).
-                """
-            );
+            .WithDescription(ExploreArchiveDescription);
         explore
             .MapGet("/search", Search)
             .RequireRight(Rights.ViewFiles)
@@ -75,16 +132,7 @@ public static class ExploreEndpoints
             .WithSummary(
                 "Folders and files of an archive, or of one of its folders, whose name holds a text (any case)."
             )
-            .WithDescription(
-                $"""
-                `q` (at least {MinSearchLength} characters) is looked for in the names of the whole archive, the catalog
-                looked through for {SearchBudgetMilliseconds} ms at most per request: a page may hold fewer than `limit`
-                (default {SearchPageSize}, at most {MaxPageSize}) and still have a `next` (ask again with `after`). Each
-                item has `where`, the path of its folder. With `folder` (a folder's id), only what is right inside that
-                folder, in its order (folders first, by name), without `where`. 202 while the list is read, as for
-                `GET explore`.
-                """
-            );
+            .WithDescription(SearchArchiveDescription);
         explore
             .MapGet("/entry/{archive}/{id:long}/{name}", GetEntry)
             .RequireRight(Rights.Download)
@@ -93,19 +141,7 @@ public static class ExploreEndpoints
             .FolderScoped("files.view and files.download at the archive")
             .WithName("GetArchiveEntry")
             .WithSummary("One file inside an archive, decompressed as it is read: for the viewer, or downloaded.")
-            .WithDescription(
-                $"""
-                `archive` is the archive's path, UTF-8 in base64url; `id` the entry's id in its listing; `name` its name
-                (the browser's file name). Sandboxed as the library's files are, inline only for what the browser shows
-                safely (pictures, audio, video, plain text), downloaded otherwise or with `download=true`. Larger than
-                `Files:Archives:MaxPreviewMegabytes` only with `download=true` (413 `{TooLargeType}` otherwise). An
-                entry claiming more than `Files:Archives:MaxCompressionRatio` times its packed size is refused (422);
-                one that would unpack more than `Files:Archives:MaxSkippedMegabytes` of the files before it (a solid 7z
-                or rar, a compressed tar) too (413 `{TooLargeType}`: extract it). Its data is held to the size the
-                archive declares: more or less is a broken archive, and the download is cut off. `unlock` (from
-                `unlock`) opens an encrypted entry, or any of an archive whose list is encrypted.
-                """
-            );
+            .WithDescription(GetArchiveEntryDescription);
         explore
             .MapGet("/entry/{archive}/at/{**at}", GetEntryAt)
             .RequireRight(Rights.Download)
@@ -116,13 +152,7 @@ public static class ExploreEndpoints
             .WithSummary(
                 "One file inside an archive by its path in the archive, as `entry/{archive}/{id}/{name}` serves it."
             )
-            .WithDescription(
-                """
-                `at` is the file's path inside the archive (folders separated by `/`; as written, else in any case): the
-                address the links and pictures of a document of the archive lead to. The same rights, checks and answers
-                as by id.
-                """
-            );
+            .WithDescription(GetArchiveEntryAtDescription);
         explore
             .MapGet("/text", GetText)
             .RequireRight(Rights.Download)
@@ -132,15 +162,7 @@ public static class ExploreEndpoints
             .WithSummary(
                 "A text file inside an archive, decoded as `GET api/files/text` decodes a library file; read only."
             )
-            .WithDescription(
-                $"""
-                `id` is the entry's id in the archive's listing (or `at` its path in the archive); `encoding` reads it
-                in that encoding rather than the one it seems to have. Up to {TextEndpoints.MaxBytes / (1024 * 1024)} MB
-                (413 `{TooLargeType}`: download it); 415 `{TextEndpoints.NotTextType}` when it isn't text. `access`
-                allows nothing: an entry is never saved over. The same checks as `GET explore/entry` (password,
-                compression ratio, files before it in a solid block).
-                """
-            );
+            .WithDescription(GetArchiveEntryTextDescription);
         api.MapPost("/files/jobs/extract", Extract)
             .RequireRight(Rights.ExtractFiles)
             .RequireRateLimiting(RequestLimits.Unlock)
@@ -153,20 +175,7 @@ public static class ExploreEndpoints
             .WithSummary(
                 "Extracts an archive (zip, 7z, rar, tar, gz…), all of it or the entries chosen, in the background."
             )
-            .WithDescription(
-                $"""
-                Starts an extraction job and answers its first state (202), followed as moves and copies are
-                (`GET api/files/jobs/:id`, `answer`, `cancel`). `newFolder` (default): into a new folder named after the
-                archive (after its one top folder when it has one), never mixed with what is there; else straight into
-                `target`, where name clashes are asked as `conflicts` says. `folders` and `files` (at most
-                {MaxExtractChosen}, ids of the archive's listing: its list must have been read, else 409
-                `{ReadingType}`) choose what is extracted, each from its own name. Names leading out of the folder,
-                links, names the system refuses, and files claiming more than `Files:Archives:MaxCompressionRatio` times
-                their packed size are left out and listed in the result. A protected archive needs `unlock` (or
-                `password`): a wrong one fails the job before anything stays. Cancelled or failed, nothing half written
-                stays. At most {RequestLimits.UnlocksPerMinute} a minute per caller.
-                """
-            );
+            .WithDescription(ExtractArchiveDescription);
         explore
             .MapPost("/unlock", Unlock)
             .RequireRight(Rights.ViewFiles)
@@ -174,16 +183,7 @@ public static class ExploreEndpoints
             .FolderScoped("files.view at the archive")
             .WithName("UnlockArchive")
             .WithSummary("Tries a password on an archive; answers an unlock for the requests that need it.")
-            .WithDescription(
-                $"""
-                Checked on the archive itself: its encrypted list (7z, rar), else its smallest encrypted file read
-                through (its checks and authentication). 422 (`{WrongPasswordType}`) for a wrong one, 409
-                (`{NotProtectedType}`) for an archive that has nothing encrypted, 202 while its list is still being
-                read. At most {RequestLimits.UnlocksPerMinute} a minute per caller (429). The password stays in the
-                server's memory only, behind the unlock: never logged, never answered; the unlock serves its caller
-                only, for this archive as it is, until 15 minutes unused or a sign-out.
-                """
-            );
+            .WithDescription(UnlockArchiveDescription);
         return api;
     }
 

@@ -14,6 +14,16 @@ namespace Sfe.Api.Endpoints;
 /// </summary>
 public static class PropertyEndpoints
 {
+    private static readonly string CountFolderDescription = $"""
+        Answers the job, followed with `GET jobs/<id>`. Links are not followed; at most
+        {PropertyJobs.MaxCountedEntries:N0} entries (`capped`). One count per caller at a time: a new one stops
+        the previous.
+        """;
+
+    private const string ComputeChecksumDescription =
+        "Answers the job, followed with `GET jobs/<id>`. One checksum per caller at a time: "
+        + "a new one stops the previous.";
+
     public static RouteGroupBuilder MapPropertyEndpoints(this RouteGroupBuilder api)
     {
         var properties = api.MapGroup("/files/properties").WithTags("Files");
@@ -37,23 +47,14 @@ public static class PropertyEndpoints
             .FolderScoped("files.browse at the folder and at each folder counted (the others are left out)")
             .WithName("CountFolder")
             .WithSummary("Counts a folder's files, folders and bytes on the disk, in the background.")
-            .WithDescription(
-                $"""
-                Answers the job, followed with `GET jobs/<id>`. Links are not followed; at most
-                {PropertyJobs.MaxCountedEntries:N0} entries (`capped`). One count per caller at a time: a new one stops
-                the previous.
-                """
-            );
+            .WithDescription(CountFolderDescription);
         properties
             .MapPost("/checksum", Checksum)
             .RequireRight(Rights.Download)
             .FolderScoped("files.download at the file")
             .WithName("ComputeChecksum")
             .WithSummary("Reads a file whole for its checksum (`sha256`, `sha1` or `md5`), in the background.")
-            .WithDescription(
-                "Answers the job, followed with `GET jobs/<id>`. One checksum per caller at a time: "
-                    + "a new one stops the previous."
-            );
+            .WithDescription(ComputeChecksumDescription);
         properties
             .MapGet("/jobs/{id:regex(^[0-9a-f]{{32}}$)}", GetJob)
             .RequireRight(Rights.Browse)

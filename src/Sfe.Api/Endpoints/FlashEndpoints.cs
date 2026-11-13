@@ -15,6 +15,18 @@ namespace Sfe.Api.Endpoints;
 /// </summary>
 public static class FlashEndpoints
 {
+    private static readonly string CreateFlashLinkDescription = $$"""
+        The link (`api/files/flash/{token}/{name}`, relative to the app) works for
+        {{FlashLinks.Lifetime.TotalHours:0}} hours, and stops earlier when the account changes its password, is
+        disabled, or loses the right to view the files. 404 when the library doesn't play Flash movies
+        (`Player:Flash`) or the file isn't a `.swf`.
+        """;
+
+    private const string GetFlashFileDescription = """
+        `entry` is relative to the movie's folder; its subfolders are open, nothing above it. Answered to any
+        origin (the player's frame has none) without credentials, sandboxed as the library's files are.
+        """;
+
     public static RouteGroupBuilder MapFlashEndpoints(this RouteGroupBuilder api)
     {
         api.MapPost("/files/flash-links", CreateLink)
@@ -26,14 +38,7 @@ public static class FlashEndpoints
                 "A link that plays a Flash movie (`.swf`) in the viewer, opening the files of its folder to it, "
                     + "read only."
             )
-            .WithDescription(
-                $$"""
-                The link (`api/files/flash/{token}/{name}`, relative to the app) works for
-                {{FlashLinks.Lifetime.TotalHours:0}} hours, and stops earlier when the account changes its password, is
-                disabled, or loses the right to view the files. 404 when the library doesn't play Flash movies
-                (`Player:Flash`) or the file isn't a `.swf`.
-                """
-            );
+            .WithDescription(CreateFlashLinkDescription);
 
         api.MapGet("/files/flash/{token}/{**entry}", GetEntry)
             .AllowAnonymous()
@@ -46,12 +51,7 @@ public static class FlashEndpoints
                 "A file of a Flash movie's folder (the movie, its levels, music, data), for Ruffle: "
                     + "the token stands for the sign-in."
             )
-            .WithDescription(
-                """
-                `entry` is relative to the movie's folder; its subfolders are open, nothing above it. Answered to any
-                origin (the player's frame has none) without credentials, sandboxed as the library's files are.
-                """
-            );
+            .WithDescription(GetFlashFileDescription);
         return api;
     }
 

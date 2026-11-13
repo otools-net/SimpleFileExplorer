@@ -16,6 +16,20 @@ namespace Sfe.Api.Endpoints;
 /// </summary>
 public static class ArchiveEndpoints
 {
+    private static readonly string CreateArchiveDescription = $"""
+        At most {Archives.MaxItems:N0} items. Each must be seen, openable and downloadable; a folder brings
+        everything in it. The link works once, for the caller, within {ArchiveLinks.Lifetime.TotalMinutes:N0}
+        minutes. 429 when the caller already downloads {ArchiveLinks.MaxPerCaller} zips; 400 when the space's
+        `Files:MaxArchiveMegabytes` is smaller than what the index knows of them.
+        """;
+
+    private static readonly string DownloadArchiveDescription = $"""
+        Written while it is sent (no size known in advance). Links are not followed; folders the caller doesn't
+        see are left out; links, unreadable files and folders the caller may not download are listed in
+        “{Archives.LeftOutEntry}” inside the zip. A zip passing `Files:MaxArchiveMegabytes` (the index was
+        behind) is cut off: the download fails.
+        """;
+
     public static RouteGroupBuilder MapArchiveEndpoints(this RouteGroupBuilder api)
     {
         var archive = api.MapGroup("/files/archive").WithTags("Files");
@@ -26,14 +40,7 @@ public static class ArchiveEndpoints
             .FolderScoped("files.view and files.download at each item")
             .WithName("CreateArchive")
             .WithSummary("Names the files and folders of a zip; answers the link that downloads it.")
-            .WithDescription(
-                $"""
-                At most {Archives.MaxItems:N0} items. Each must be seen, openable and downloadable; a folder brings
-                everything in it. The link works once, for the caller, within {ArchiveLinks.Lifetime.TotalMinutes:N0}
-                minutes. 429 when the caller already downloads {ArchiveLinks.MaxPerCaller} zips; 400 when the space's
-                `Files:MaxArchiveMegabytes` is smaller than what the index knows of them.
-                """
-            );
+            .WithDescription(CreateArchiveDescription);
         archive
             .MapGet("/{token:regex(^[0-9a-f]{{48}}$)}", Download)
             .RequireRight(Rights.Download)
@@ -42,14 +49,7 @@ public static class ArchiveEndpoints
             )
             .WithName("DownloadArchive")
             .WithSummary("Downloads a zip named by CreateArchive (once).")
-            .WithDescription(
-                $"""
-                Written while it is sent (no size known in advance). Links are not followed; folders the caller doesn't
-                see are left out; links, unreadable files and folders the caller may not download are listed in
-                “{Archives.LeftOutEntry}” inside the zip. A zip passing `Files:MaxArchiveMegabytes` (the index was
-                behind) is cut off: the download fails.
-                """
-            );
+            .WithDescription(DownloadArchiveDescription);
         return api;
     }
 

@@ -11,6 +11,27 @@ public static class TagEndpoints
     private const int DefaultTagLimit = 100;
     private const int MaxTagLimit = 1000;
 
+    private const string GetScopeTagsDescription =
+        "Without `q`: the indexed files of the folder `path`, and of its sub-folders with `recursive`. "
+        + "With `q`: what that search finds in `path`.";
+
+    private const string ChangeScopeTagsDescription =
+        "A folder is indexed first (with its sub-folders when `recursive`), so that its files not indexed yet "
+        + "are tagged too; "
+        + "that is refused (409) while a scan runs. A search changes the files it finds. "
+        + "The files are changed by batches: "
+        + "a request that is cancelled keeps the batches already written.";
+
+    private const string GetFolderDefaultTagsDescription =
+        "Every file entering the folder or one of its sub-folders (scanned, created, uploaded, "
+        + "copied or moved there) gets them once.";
+
+    private const string ChangeFolderDefaultTagsDescription =
+        "With `addToFiles` / `removeFromFiles`, the files already in the folder tree get the added tags or "
+        + "lose the removed ones, "
+        + "as `POST api/file-tags/scope` with `recursive` does, before the folder's default tags change "
+        + "(refused with 409 while a scan runs: nothing changes).";
+
     public static RouteGroupBuilder MapTagEndpoints(this RouteGroupBuilder api)
     {
         var tags = api.MapGroup("/tags").WithTags("Tags");
@@ -92,10 +113,7 @@ public static class TagEndpoints
                 "Tags of the files of a folder (or a folder tree), or of the matches of a search, "
                     + "with the number of files having each."
             )
-            .WithDescription(
-                "Without `q`: the indexed files of the folder `path`, and of its sub-folders with `recursive`. "
-                    + "With `q`: what that search finds in `path`."
-            );
+            .WithDescription(GetScopeTagsDescription);
 
         files
             .MapPost("/scope", ChangeScopeTags)
@@ -106,13 +124,7 @@ public static class TagEndpoints
             .WithSummary(
                 "Adds and removes tags on every file of a folder (or a folder tree), or on every match of a search."
             )
-            .WithDescription(
-                "A folder is indexed first (with its sub-folders when `recursive`), so that its files not indexed yet "
-                    + "are tagged too; "
-                    + "that is refused (409) while a scan runs. A search changes the files it finds. "
-                    + "The files are changed by batches: "
-                    + "a request that is cancelled keeps the batches already written."
-            );
+            .WithDescription(ChangeScopeTagsDescription);
 
         var defaults = api.MapGroup("/folder-default-tags").WithTags("Tags");
 
@@ -122,10 +134,7 @@ public static class TagEndpoints
             .FolderScoped("404 for a folder the subject doesn't see")
             .WithName("GetFolderDefaultTags")
             .WithSummary("The default tags of a folder: its own, and those it gets from its parents.")
-            .WithDescription(
-                "Every file entering the folder or one of its sub-folders (scanned, created, uploaded, "
-                    + "copied or moved there) gets them once."
-            );
+            .WithDescription(GetFolderDefaultTagsDescription);
 
         defaults
             .MapPut("/", ChangeFolderDefaultTags)
@@ -138,12 +147,7 @@ public static class TagEndpoints
                 "Adds and removes default tags of a folder, and optionally on the files already in it and its "
                     + "sub-folders."
             )
-            .WithDescription(
-                "With `addToFiles` / `removeFromFiles`, the files already in the folder tree get the added tags or "
-                    + "lose the removed ones, "
-                    + "as `POST api/file-tags/scope` with `recursive` does, before the folder's default tags change "
-                    + "(refused with 409 while a scan runs: nothing changes)."
-            );
+            .WithDescription(ChangeFolderDefaultTagsDescription);
 
         files
             .MapPost("/viewed", Viewed)

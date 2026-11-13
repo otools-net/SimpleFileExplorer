@@ -8,6 +8,14 @@ namespace Sfe.Api.Endpoints;
 
 public static class SystemEndpoints
 {
+    private const string DownloadBackupDescription = """
+        The databases of the accounts and of every library's index (SQLite: copied while the app keeps working;
+        SQL Server: `BACKUP DATABASE … COPY_ONLY`, see `Sfe:Backup:SqlServerFolder`), `settings.json`, the
+        `appsettings*.json` of the content root, a `manifest.json` saying where each came from and a
+        `README.txt`. Thumbnail and trickplay caches are not included. It holds password hashes and connection
+        strings.
+        """;
+
     public static RouteGroupBuilder MapSystemEndpoints(this RouteGroupBuilder api)
     {
         var system = api.MapGroup("/system").WithTags("System");
@@ -36,15 +44,7 @@ public static class SystemEndpoints
             .RequireRight(Rights.Backup)
             .WithName("DownloadBackup")
             .WithSummary("Downloads a backup (zip) of the databases and the configuration files.")
-            .WithDescription(
-                """
-                The databases of the accounts and of every library's index (SQLite: copied while the app keeps working;
-                SQL Server: `BACKUP DATABASE … COPY_ONLY`, see `Sfe:Backup:SqlServerFolder`), `settings.json`, the
-                `appsettings*.json` of the content root, a `manifest.json` saying where each came from and a
-                `README.txt`. Thumbnail and trickplay caches are not included. It holds password hashes and connection
-                strings.
-                """
-            );
+            .WithDescription(DownloadBackupDescription);
 
         return api;
     }

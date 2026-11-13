@@ -10,6 +10,26 @@ namespace Sfe.Api.Endpoints;
 
 public static class TaskEndpoints
 {
+    private const string GetTasksDescription = """
+        Tasks: `scan`, `trickplay`, `similarVideos`, `thumbnails`. `automaticNextRun` is when a task runs by
+        itself next (trickplay's periodic check), whatever the schedules. Weekly schedules follow the clock of
+        the server's `timeZone`.
+        """;
+
+    private const string StartTaskDescription =
+        "A scan covers `path` (relative to the library root; empty: the whole library). "
+        + "409 when it already runs, or is turned off; a trickplay pass asked for while one runs follows "
+        + "it (202).";
+
+    private const string CancelTaskDescription = """
+        A scan keeps what it indexed so far. Trickplay stops its pass and the player's queue (the periodic
+        passes go on). Thumbnails drops the renders running and waiting. 409 when it wasn't running.
+        """;
+
+    private static readonly string GetTaskRunsDescription =
+        $"Optionally of one `task`. Pages of `limit` runs (default {TaskHistory.DefaultPageSize}, "
+        + $"at most {TaskHistory.MaxPageSize}); pass `next` as `before` for the following page.";
+
     public static RouteGroupBuilder MapTaskEndpoints(this RouteGroupBuilder api)
     {
         var tasks = api.MapGroup("/tasks").WithTags("Tasks");
@@ -19,13 +39,7 @@ public static class TaskEndpoints
             .RequireRight(Rights.ViewTasks)
             .WithName("GetTasks")
             .WithSummary("The background tasks with their state and last run, the schedules with their next run.")
-            .WithDescription(
-                """
-                Tasks: `scan`, `trickplay`, `similarVideos`, `thumbnails`. `automaticNextRun` is when a task runs by
-                itself next (trickplay's periodic check), whatever the schedules. Weekly schedules follow the clock of
-                the server's `timeZone`.
-                """
-            );
+            .WithDescription(GetTasksDescription);
 
         tasks
             .MapPost("/{task}/start", Start)
@@ -33,23 +47,14 @@ public static class TaskEndpoints
             .FolderScoped("a task on a folder (a scan) needs index.scan there")
             .WithName("StartTask")
             .WithSummary("Starts a task now (thumbnails can't be started: listings ask for them).")
-            .WithDescription(
-                "A scan covers `path` (relative to the library root; empty: the whole library). "
-                    + "409 when it already runs, or is turned off; a trickplay pass asked for while one runs follows "
-                    + "it (202)."
-            );
+            .WithDescription(StartTaskDescription);
 
         tasks
             .MapPost("/{task}/cancel", Cancel)
             .RequireRight(Rights.RunTasks)
             .WithName("CancelTask")
             .WithSummary("Stops a running task.")
-            .WithDescription(
-                """
-                A scan keeps what it indexed so far. Trickplay stops its pass and the player's queue (the periodic
-                passes go on). Thumbnails drops the renders running and waiting. 409 when it wasn't running.
-                """
-            );
+            .WithDescription(CancelTaskDescription);
 
         tasks
             .MapPost("/schedules", CreateSchedule)
@@ -83,10 +88,7 @@ public static class TaskEndpoints
             .RequireRight(Rights.ViewTasks)
             .WithName("GetTaskRuns")
             .WithSummary("Runs of the background tasks, newest first, without their logs.")
-            .WithDescription(
-                $"Optionally of one `task`. Pages of `limit` runs (default {TaskHistory.DefaultPageSize}, "
-                    + $"at most {TaskHistory.MaxPageSize}); pass `next` as `before` for the following page."
-            );
+            .WithDescription(GetTaskRunsDescription);
 
         tasks
             .MapGet("/runs/{id:long}", Run)

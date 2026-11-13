@@ -15,6 +15,14 @@ namespace Sfe.Api.Endpoints;
 /// </summary>
 public static class EpubEndpoints
 {
+    private static readonly string GetEpubEntryDescription = $"""
+        `book` is the book's path, UTF-8 in base64url, so that the links inside the book (`../images/cover.jpg`)
+        resolve under it. `entry` is the file's name in the book's zip (any case when it isn't found as
+        written); 404 for one that isn't there, a folder, or one larger than
+        {EpubEntries.MaxEntryBytes / (1024 * 1024)} MB. Read from the zip as asked, never unpacked; sandboxed as
+        the library's files are.
+        """;
+
     public static RouteGroupBuilder MapEpubEndpoints(this RouteGroupBuilder api)
     {
         api.MapGet("/files/epub/{book}/{**entry}", GetEntry)
@@ -24,15 +32,7 @@ public static class EpubEndpoints
             .WithName("GetEpubEntry")
             .WithTags("Files")
             .WithSummary("A file inside an EPUB book (a chapter, a style, a picture, a font), for the reader.")
-            .WithDescription(
-                $"""
-                `book` is the book's path, UTF-8 in base64url, so that the links inside the book (`../images/cover.jpg`)
-                resolve under it. `entry` is the file's name in the book's zip (any case when it isn't found as
-                written); 404 for one that isn't there, a folder, or one larger than
-                {EpubEntries.MaxEntryBytes / (1024 * 1024)} MB. Read from the zip as asked, never unpacked; sandboxed as
-                the library's files are.
-                """
-            );
+            .WithDescription(GetEpubEntryDescription);
         return api;
     }
 

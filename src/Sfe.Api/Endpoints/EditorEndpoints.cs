@@ -11,6 +11,26 @@ namespace Sfe.Api.Endpoints;
 
 public static class EditorEndpoints
 {
+    private static readonly string SaveEditedImageDescription = $"""
+        The body is the edited picture itself, as the web client's editor encoded it: JPEG, PNG or WebP (at most
+        {EditedImages.MaxBytes / 1024 / 1024} MB; the format is read from its bytes, not from `Content-Type`).
+        `path` is the original. The new file goes to `Editor:OutputFolder` under the original's own folders
+        (`Photos/2024/beach.jpg` → `Edited/Photos/2024/beach.jpg`), or next to the original as
+        `beach (edited).jpg` when the setting is empty or the original is already in that folder. An existing
+        name gets ` (2)`, ` (3)`... The file is indexed at once. Answers 201 with its path and size in pixels.
+        """;
+
+    private static readonly string SaveEditedImageOverDescription = $"""
+        The body is the edited picture, in the original's own format (JPEG, PNG or WebP; 400 otherwise: save a
+        copy instead). Needs `If-Match` with the version the editor started from (`*`: whatever is there now):
+        428 (`{TextEndpoints.VersionRequiredType}`) without it, 412 (`{TextEndpoints.ChangedType}`) when the
+        picture changed meanwhile. The previous version goes to the trash at the first save of an editing
+        `session` (not in a space that always deletes for good); the picture keeps its tags. 409 for a link
+        (`{TextEndpoints.IsLinkType}`), a read-only file (`{TextEndpoints.ReadOnlyType}`) or a scan running
+        (`{FileEndpoints.ScanRunningType}`). Answers the picture's size in pixels, its new version (also the
+        ETag) and time.
+        """;
+
     public static RouteGroupBuilder MapEditorEndpoints(this RouteGroupBuilder api)
     {
         api.MapPost("/editor/images", SaveImage)
@@ -22,16 +42,7 @@ public static class EditorEndpoints
             .WithName("SaveEditedImage")
             .WithTags("Editor")
             .WithSummary("Saves an edited picture as a new file of the library; the original is never changed.")
-            .WithDescription(
-                $"""
-                The body is the edited picture itself, as the web client's editor encoded it: JPEG, PNG or WebP (at most
-                {EditedImages.MaxBytes / 1024 / 1024} MB; the format is read from its bytes, not from `Content-Type`).
-                `path` is the original. The new file goes to `Editor:OutputFolder` under the original's own folders
-                (`Photos/2024/beach.jpg` → `Edited/Photos/2024/beach.jpg`), or next to the original as
-                `beach (edited).jpg` when the setting is empty or the original is already in that folder. An existing
-                name gets ` (2)`, ` (3)`... The file is indexed at once. Answers 201 with its path and size in pixels.
-                """
-            );
+            .WithDescription(SaveEditedImageDescription);
         api.MapGet("/editor/images/access", Access)
             .RequireRight(Rights.EditImages)
             .FolderScoped("files.view at the picture; overwrite says whether saving over it is allowed")
@@ -49,18 +60,7 @@ public static class EditorEndpoints
             .WithName("SaveEditedImageOver")
             .WithTags("Editor")
             .WithSummary("Saves an edited picture over the original.")
-            .WithDescription(
-                $"""
-                The body is the edited picture, in the original's own format (JPEG, PNG or WebP; 400 otherwise: save a
-                copy instead). Needs `If-Match` with the version the editor started from (`*`: whatever is there now):
-                428 (`{TextEndpoints.VersionRequiredType}`) without it, 412 (`{TextEndpoints.ChangedType}`) when the
-                picture changed meanwhile. The previous version goes to the trash at the first save of an editing
-                `session` (not in a space that always deletes for good); the picture keeps its tags. 409 for a link
-                (`{TextEndpoints.IsLinkType}`), a read-only file (`{TextEndpoints.ReadOnlyType}`) or a scan running
-                (`{FileEndpoints.ScanRunningType}`). Answers the picture's size in pixels, its new version (also the
-                ETag) and time.
-                """
-            );
+            .WithDescription(SaveEditedImageOverDescription);
 
         return api;
     }

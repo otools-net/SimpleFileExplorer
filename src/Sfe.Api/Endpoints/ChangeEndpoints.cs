@@ -50,6 +50,16 @@ public static class ChangeEndpoints
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
+    private static readonly string FolderChangesDescription = $"""
+        Open with `EventSource`; `origin` is the `{TabHeader}` header of the request that changed it (a tab
+        skips its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or
+        nothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete or
+        files.deletePermanently) when something came into or left the trash: ask its count again. A `ping` event
+        after {KeepAlive.TotalSeconds:N0} s without anything keeps it open; it ends after
+        {Lifetime.TotalMinutes:N0} minutes and the browser opens it again. {MaxStreamsPerCaller} at once per
+        caller (429).
+        """;
+
     public static RouteGroupBuilder MapChangeEndpoints(this RouteGroupBuilder api)
     {
         api.MapGet("/files/changes", StreamAsync)
@@ -61,17 +71,7 @@ public static class ChangeEndpoints
                 "Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; "
                     + "`keepAlive` with `{ state }`; `trash`; `ping`."
             )
-            .WithDescription(
-                $"""
-                Open with `EventSource`; `origin` is the `{TabHeader}` header of the request that changed it (a tab
-                skips its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or
-                nothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete or
-                files.deletePermanently) when something came into or left the trash: ask its count again. A `ping` event
-                after {KeepAlive.TotalSeconds:N0} s without anything keeps it open; it ends after
-                {Lifetime.TotalMinutes:N0} minutes and the browser opens it again. {MaxStreamsPerCaller} at once per
-                caller (429).
-                """
-            );
+            .WithDescription(FolderChangesDescription);
         return api;
     }
 

@@ -12,6 +12,16 @@ namespace Sfe.Api.Endpoints;
 
 public static class StreamingEndpoints
 {
+    private const string ProbeVideoStreamDescription =
+        "404 when streaming is off (`Streaming:Mode`), ffmpeg is missing, or `path` is not a video of the "
+        + "library.";
+
+    private const string PlayVideoStreamDescription = """
+        For browsers that can't play the file itself. The response has no length and no ranges: to seek, ask
+        again with another `t` (its times start at 0 there). `id` names the player: a new request with the same
+        `id` stops its earlier stream. 503 while the server converts `Streaming:MaxStreams` videos already.
+        """;
+
     public static RouteGroupBuilder MapStreamingEndpoints(this RouteGroupBuilder api)
     {
         var streaming = api.MapGroup("/streaming").WithTags("Streaming");
@@ -23,10 +33,7 @@ public static class StreamingEndpoints
             .FolderScoped("files.stream at the video")
             .WithName("ProbeVideoStream")
             .WithSummary("Whether a video can be played converted by the server, and its length.")
-            .WithDescription(
-                "404 when streaming is off (`Streaming:Mode`), ffmpeg is missing, or `path` is not a video of the "
-                    + "library."
-            );
+            .WithDescription(ProbeVideoStreamDescription);
 
         streaming
             .MapGet("/play", Play)
@@ -37,13 +44,7 @@ public static class StreamingEndpoints
             .WithSummary(
                 "A video converted by ffmpeg while it plays (H.264 and AAC in fragmented MP4), from `t` seconds."
             )
-            .WithDescription(
-                """
-                For browsers that can't play the file itself. The response has no length and no ranges: to seek, ask
-                again with another `t` (its times start at 0 there). `id` names the player: a new request with the same
-                `id` stops its earlier stream. 503 while the server converts `Streaming:MaxStreams` videos already.
-                """
-            );
+            .WithDescription(PlayVideoStreamDescription);
 
         streaming
             .MapGet("/sessions", Sessions)

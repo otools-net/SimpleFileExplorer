@@ -12,6 +12,25 @@ namespace Sfe.Api.Endpoints;
 
 public static class ScanEndpoints
 {
+    private const string StartScanDescription = """
+        Folders excluded from scans (`Scan:ExcludedFolders`) are skipped and what the index has of them stays
+        as it is; a folder excluded itself, or inside an excluded one, is refused (400).
+        """;
+
+    private const string RemoveFolderFromIndexDescription = """
+        Tagged files are kept as missing files with their tags (unless relinking is off): scanning the folder
+        again gives the tags back. With `exclude=true` the folder is also added to `Scan:ExcludedFolders`, so
+        that scans of its parents skip it (not for the library root). 409 while a scan runs.
+        """;
+
+    private const string SetFolderExclusionsDescription = """
+        Changes the space's `Scan:ExcludedFolders`, `Trickplay:ExcludedFolders` and
+        `Thumbnails:ExcludedFolders`. A folder no longer on the disk can only be taken off them. What is already
+        indexed or made stays: scans keep the folder's index rows as they are. A folder excluded through a
+        listed parent can only be let in again by taking the parent off the list (400). Answers what the folder
+        is kept out of afterwards.
+        """;
+
     public static RouteGroupBuilder MapScanEndpoints(this RouteGroupBuilder api)
     {
         var scan = api.MapGroup("/scan").WithTags("Index");
@@ -28,12 +47,7 @@ public static class ScanEndpoints
             .FolderScoped("index.scan at the folder")
             .WithName("StartScan")
             .WithSummary("Starts indexing a folder recursively in the background.")
-            .WithDescription(
-                """
-                Folders excluded from scans (`Scan:ExcludedFolders`) are skipped and what the index has of them stays
-                as it is; a folder excluded itself, or inside an excluded one, is refused (400).
-                """
-            );
+            .WithDescription(StartScanDescription);
 
         scan.MapDelete("/", (ScanCoordinator coordinator) =>
                 coordinator.Cancel()
@@ -63,13 +77,7 @@ public static class ScanEndpoints
             .FolderScoped("index.remove at the folder and everywhere below it")
             .WithName("RemoveFolderFromIndex")
             .WithSummary("Removes a folder and its sub-folders from the index; the files stay on the disk.")
-            .WithDescription(
-                """
-                Tagged files are kept as missing files with their tags (unless relinking is off): scanning the folder
-                again gives the tags back. With `exclude=true` the folder is also added to `Scan:ExcludedFolders`, so
-                that scans of its parents skip it (not for the library root). 409 while a scan runs.
-                """
-            );
+            .WithDescription(RemoveFolderFromIndexDescription);
 
         index
             .MapGet("/exclusions", ListExclusions)
@@ -86,15 +94,7 @@ public static class ScanEndpoints
             .WithSummary(
                 "Keeps a folder (with its sub-folders) out of scans, trickplay or thumbnails, or lets them in again."
             )
-            .WithDescription(
-                """
-                Changes the space's `Scan:ExcludedFolders`, `Trickplay:ExcludedFolders` and
-                `Thumbnails:ExcludedFolders`. A folder no longer on the disk can only be taken off them. What is already
-                indexed or made stays: scans keep the folder's index rows as they are. A folder excluded through a
-                listed parent can only be let in again by taking the parent off the list (400). Answers what the folder
-                is kept out of afterwards.
-                """
-            );
+            .WithDescription(SetFolderExclusionsDescription);
 
         return api;
     }

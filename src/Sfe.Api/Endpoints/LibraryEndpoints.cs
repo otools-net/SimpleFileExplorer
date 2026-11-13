@@ -22,6 +22,45 @@ public static class LibraryEndpoints
     /// <summary>Images (thumbnails and pictures) are not cached by the browser.</summary>
     private const string NoStore = "no-store";
 
+    private const string GetFolderSiblingsDescription = """
+        Pass the `sort` and `desc` the parent is listed with (as for `/browse`): the siblings follow that order.
+        The library root has no siblings.
+        """;
+
+    private static readonly string GetFolderCoversDescription = $"""
+        Takes up to {LibraryBrowser.MaxCoverPaths} folders and returns, for each one that exists, its first
+        `Browse:FolderPictures` images and videos in name order (videos only when thumbnails are available).
+        Only a folder's own files count; a folder without any, or a setting of 0, gets an empty list.
+        """;
+
+    private const string SearchDescription = """
+        `,` separates alternatives (OR), a space separates required terms (AND), `-term` excludes,
+        `s:<10mb` / `s:>=1gb` / `s:700mb` filter by size, `e:mp4` by extension, `w:>=1920` / `h:<720` /
+        `r:1920x1080` by resolution, `d:>10m` by duration, `type:image` / `type:video` / `type:audio` /
+        `type:other` by kind of file, a leading `*` matches the whole path instead of the file name, `t:name`
+        (or `tag:"two words"`) finds files with a tag or any tag inheriting from it, and `special:untagged`
+        files without tags. A `-` before any term (`-e:mp4`, `-s:>1gb`, `-w:1920`, `-t:name`) finds the files
+        that term doesn't. Files with a hidden tag (Archived) are left out unless the search names that tag.
+
+        `sort` is `path` (default, grouped by folder), `name`, `modified`, `size`, `type`, `duration` or
+        `resolution` (width × height); `desc` reverses it. The last two list the files whose value is known
+        first, then the others by path, in both directions.
+        Pages follow each other by passing the previous page's `next` as `after`, with the same sort.
+        The first page also gives `total`, the number of matches counted up to 10,000 (`totalCapped` when there
+        are more); the next pages leave it null.
+        """;
+
+    private const string GetImageAnimationDescription = """
+        Read from the file's structure, without decoding it. The listings ask before playing the original of an
+        image they show through its thumbnail, on hover.
+        """;
+
+    private const string CreateFileLinkDescription = """
+        The link (`api/files/shared/{token}/{name}`, relative to the app) works for
+        `Player:LinkLifetimeMinutes`. It stops working earlier when the account that asked for it changes its
+        password, is disabled, or loses the right to view files or use external players.
+        """;
+
     public static RouteGroupBuilder MapLibraryEndpoints(this RouteGroupBuilder api)
     {
         api.MapGet("/browse", Browse)
@@ -39,12 +78,7 @@ public static class LibraryEndpoints
             .WithName("GetFolderSiblings")
             .WithTags("Library")
             .WithSummary("The folders before and after a folder in its parent.")
-            .WithDescription(
-                """
-                Pass the `sort` and `desc` the parent is listed with (as for `/browse`): the siblings follow that order.
-                The library root has no siblings.
-                """
-            );
+            .WithDescription(GetFolderSiblingsDescription);
 
         api.MapPost("/browse/covers", Covers)
             .RequireRateLimiting(RequestLimits.Media)
@@ -53,13 +87,7 @@ public static class LibraryEndpoints
             .WithName("GetFolderCovers")
             .WithTags("Library")
             .WithSummary("The first pictures of folders, shown on their cards.")
-            .WithDescription(
-                $"""
-                Takes up to {LibraryBrowser.MaxCoverPaths} folders and returns, for each one that exists, its first
-                `Browse:FolderPictures` images and videos in name order (videos only when thumbnails are available).
-                Only a folder's own files count; a folder without any, or a setting of 0, gets an empty list.
-                """
-            );
+            .WithDescription(GetFolderCoversDescription);
 
         api.MapGet("/search", Search)
             .RequireRateLimiting(RequestLimits.Search)
@@ -68,24 +96,7 @@ public static class LibraryEndpoints
             .WithName("Search")
             .WithTags("Library")
             .WithSummary("Searches the file index.")
-            .WithDescription(
-                """
-                `,` separates alternatives (OR), a space separates required terms (AND), `-term` excludes,
-                `s:<10mb` / `s:>=1gb` / `s:700mb` filter by size, `e:mp4` by extension, `w:>=1920` / `h:<720` /
-                `r:1920x1080` by resolution, `d:>10m` by duration, `type:image` / `type:video` / `type:audio` /
-                `type:other` by kind of file, a leading `*` matches the whole path instead of the file name, `t:name`
-                (or `tag:"two words"`) finds files with a tag or any tag inheriting from it, and `special:untagged`
-                files without tags. A `-` before any term (`-e:mp4`, `-s:>1gb`, `-w:1920`, `-t:name`) finds the files
-                that term doesn't. Files with a hidden tag (Archived) are left out unless the search names that tag.
-
-                `sort` is `path` (default, grouped by folder), `name`, `modified`, `size`, `type`, `duration` or
-                `resolution` (width × height); `desc` reverses it. The last two list the files whose value is known
-                first, then the others by path, in both directions.
-                Pages follow each other by passing the previous page's `next` as `after`, with the same sort.
-                The first page also gives `total`, the number of matches counted up to 10,000 (`totalCapped` when there
-                are more); the next pages leave it null.
-                """
-            );
+            .WithDescription(SearchDescription);
 
         api.MapGet("/files/raw/{**path}", Raw)
             .RequireRight(Rights.ViewFiles)
@@ -103,12 +114,7 @@ public static class LibraryEndpoints
             .WithName("GetImageAnimation")
             .WithTags("Library")
             .WithSummary("Whether a picture is animated (GIF, APNG, WebP or AVIF with more than one frame).")
-            .WithDescription(
-                """
-                Read from the file's structure, without decoding it. The listings ask before playing the original of an
-                image they show through its thumbnail, on hover.
-                """
-            );
+            .WithDescription(GetImageAnimationDescription);
 
         api.MapPost("/files/links", CreateLink)
             .RequireRight(Rights.ExternalPlayer)
@@ -116,13 +122,7 @@ public static class LibraryEndpoints
             .WithName("CreateFileLink")
             .WithTags("Library")
             .WithSummary("A link to a file that works without signing in, for a while: for external players.")
-            .WithDescription(
-                """
-                The link (`api/files/shared/{token}/{name}`, relative to the app) works for
-                `Player:LinkLifetimeMinutes`. It stops working earlier when the account that asked for it changes its
-                password, is disabled, or loses the right to view files or use external players.
-                """
-            );
+            .WithDescription(CreateFileLinkDescription);
 
         api.MapGet("/files/shared/{token}/{**name}", Shared)
             .AllowAnonymous()

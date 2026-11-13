@@ -20,6 +20,25 @@ public static class InstallationEndpoints
 {
     public const int MaxFolders = 2000;
 
+    private const string CheckInstallationCodeDescription = """
+        The token goes in the `X-SFE-Installation` header; it lasts an hour, and ends when the setup code
+        changes. A new install set up from the server's own computer needs no code (see `CompleteSetup`). Once
+        the server has an administrator, every installation route also needs a signed-in server administrator
+        (401 without a session, 403 for other accounts).
+        """;
+
+    private const string SaveInstallationDescription = """
+        Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. A new folder or ffmpeg
+        starts the libraries again at once; a new address applies after a restart (`restartRequired`). Values
+        set by the server's environment variables or command line cannot be changed here. The mode (`Sfe:Mode`)
+        goes from Local to External here, never back once the server has its administrator; Local is only chosen
+        from a browser on the server's own computer.
+        """;
+
+    private const string ListServerFoldersDescription =
+        "Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. Without `path`: "
+        + "the drives and usual places.";
+
     public static RouteGroupBuilder MapInstallationEndpoints(this RouteGroupBuilder api)
     {
         var installation = api.MapGroup("/installation").WithTags("Installation");
@@ -33,14 +52,7 @@ public static class InstallationEndpoints
                 "Checks the setup code and answers the installation settings with a token for the other installation "
                     + "routes."
             )
-            .WithDescription(
-                """
-                The token goes in the `X-SFE-Installation` header; it lasts an hour, and ends when the setup code
-                changes. A new install set up from the server's own computer needs no code (see `CompleteSetup`). Once
-                the server has an administrator, every installation route also needs a signed-in server administrator
-                (401 without a session, 403 for other accounts).
-                """
-            );
+            .WithDescription(CheckInstallationCodeDescription);
 
         installation
             .MapGet("/", Get)
@@ -60,15 +72,7 @@ public static class InstallationEndpoints
                 "Saves the library folder, listening address, ffmpeg or the server's mode into the installation file "
                     + "(data/installation.json)."
             )
-            .WithDescription(
-                """
-                Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. A new folder or ffmpeg
-                starts the libraries again at once; a new address applies after a restart (`restartRequired`). Values
-                set by the server's environment variables or command line cannot be changed here. The mode (`Sfe:Mode`)
-                goes from Local to External here, never back once the server has its administrator; Local is only chosen
-                from a browser on the server's own computer.
-                """
-            );
+            .WithDescription(SaveInstallationDescription);
 
         installation
             .MapGet("/folders", Folders)
@@ -76,10 +80,7 @@ public static class InstallationEndpoints
             .AllowAnonymous()
             .WithName("ListServerFolders")
             .WithSummary("The folders of the server's disks, to pick the library folder or ffmpeg's folder.")
-            .WithDescription(
-                "Needs the token of `CheckInstallationCode` in the `X-SFE-Installation` header. Without `path`: "
-                    + "the drives and usual places."
-            );
+            .WithDescription(ListServerFoldersDescription);
 
         return api;
     }

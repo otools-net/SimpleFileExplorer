@@ -12,6 +12,15 @@ namespace Sfe.Api.Endpoints;
 
 public static class SetupEndpoints
 {
+    private const string CompleteSetupDescription = """
+        Needs the setup code of the server's environment (`Sfe:Setup:Code`, at least 12 characters): without it
+        the server cannot be set up from the web. Refused once an administrator exists, unless
+        `Sfe:Setup:Recover` is on. A new install (no account yet) set up from the server's own computer, in the
+        browser SFE opened or with the link its console shows (its token in the header `X-SFE-Setup-Link`),
+        needs no code (`codeRequired` false in `GetSetup`, unless `Sfe:Setup:LocalWithoutCode` is off).
+        `fastSignIn` turns on `Sfe:FastSignIn` for the browser SFE opens when it starts.
+        """;
+
     public static RouteGroupBuilder MapSetupEndpoints(this RouteGroupBuilder api)
     {
         var setup = api.MapGroup("/setup").WithTags("Session");
@@ -31,16 +40,7 @@ public static class SetupEndpoints
             .RequireRateLimiting(SessionEndpoints.SignInRateLimit)
             .WithName("CompleteSetup")
             .WithSummary("Creates the first administrator (or, with Sfe:Setup:Recover, restores one) and signs it in.")
-            .WithDescription(
-                """
-                Needs the setup code of the server's environment (`Sfe:Setup:Code`, at least 12 characters): without it
-                the server cannot be set up from the web. Refused once an administrator exists, unless
-                `Sfe:Setup:Recover` is on. A new install (no account yet) set up from the server's own computer, in the
-                browser SFE opened or with the link its console shows (its token in the header `X-SFE-Setup-Link`),
-                needs no code (`codeRequired` false in `GetSetup`, unless `Sfe:Setup:LocalWithoutCode` is off).
-                `fastSignIn` turns on `Sfe:FastSignIn` for the browser SFE opens when it starts.
-                """
-            );
+            .WithDescription(CompleteSetupDescription);
 
         return api;
     }

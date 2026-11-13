@@ -9,6 +9,25 @@ namespace Sfe.Api.Endpoints;
 
 public static class FileTrackingEndpoints
 {
+    private const string FindDuplicatesDescription =
+        "Only files of `path` and below are compared. Pass the `next` value of a page as `after` to get the "
+        + "next one; the first page also carries totals.";
+
+    private const string RemoveDuplicateDescription =
+        "The two files are compared byte for byte first, and paths leading to the same file (folder links) "
+        + "are refused. 409 when turned off (`FileTracking:Duplicates:AllowRemove`) "
+        + "or when the file cannot be deleted.";
+
+    private const string FindSimilarVideosDescription =
+        "Only groups with a video in `path` or below are listed. Each video's `match` is its share of matching "
+        + "frames with the first video of the group. Pass the `next` value of a page as `after` to get the "
+        + "next one; the first page also carries totals. Carries the comparison's status: "
+        + "start one with `POST /api/similar-videos`.";
+
+    private const string ListMissingFilesDescription =
+        "Scans relink them on their own when exactly one likely new place is indexed; "
+        + "the others wait here until relinked by hand, forgotten, or kept longer than the retention.";
+
     public static RouteGroupBuilder MapFileTrackingEndpoints(this RouteGroupBuilder api)
     {
         api.MapGet("/duplicates", Duplicates)
@@ -18,10 +37,7 @@ public static class FileTrackingEndpoints
             .WithName("FindDuplicates")
             .WithTags("File tracking")
             .WithSummary("Groups of indexed files with the same size and fingerprint, biggest first.")
-            .WithDescription(
-                "Only files of `path` and below are compared. Pass the `next` value of a page as `after` to get the "
-                    + "next one; the first page also carries totals."
-            );
+            .WithDescription(FindDuplicatesDescription);
 
         api.MapPost("/duplicates/remove", RemoveDuplicate)
             .RequireRight(Rights.RemoveDuplicates)
@@ -34,11 +50,7 @@ public static class FileTrackingEndpoints
             .WithName("RemoveDuplicate")
             .WithTags("File tracking")
             .WithSummary("Deletes a copy from the disk after adding its tags to an identical copy that is kept.")
-            .WithDescription(
-                "The two files are compared byte for byte first, and paths leading to the same file (folder links) "
-                    + "are refused. 409 when turned off (`FileTracking:Duplicates:AllowRemove`) "
-                    + "or when the file cannot be deleted."
-            );
+            .WithDescription(RemoveDuplicateDescription);
 
         api.MapGet("/similar-videos", SimilarVideos)
             .RequireRight(Rights.SimilarVideos)
@@ -50,12 +62,7 @@ public static class FileTrackingEndpoints
                 "Groups of videos with the same pictures but other bytes (other resolution, bitrate, codec, trimmed), "
                     + "from the last comparison."
             )
-            .WithDescription(
-                "Only groups with a video in `path` or below are listed. Each video's `match` is its share of matching "
-                    + "frames with the first video of the group. Pass the `next` value of a page as `after` to get the "
-                    + "next one; the first page also carries totals. Carries the comparison's status: "
-                    + "start one with `POST /api/similar-videos`."
-            );
+            .WithDescription(FindSimilarVideosDescription);
 
         api.MapPost("/similar-videos", (SimilarVideoFinder finder) =>
             {
@@ -87,10 +94,7 @@ public static class FileTrackingEndpoints
             .FolderScoped("only missing files that were, and candidates that are, where the subject sees")
             .WithName("ListMissingFiles")
             .WithSummary("Tagged files a scan no longer found, with the indexed files that may be them.")
-            .WithDescription(
-                "Scans relink them on their own when exactly one likely new place is indexed; "
-                    + "the others wait here until relinked by hand, forgotten, or kept longer than the retention."
-            );
+            .WithDescription(ListMissingFilesDescription);
 
         missing
             .MapPost("/relink", (RelinkService service, CancellationToken cancellationToken) =>

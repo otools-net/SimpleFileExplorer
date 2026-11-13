@@ -125,6 +125,11 @@ public static class FileEndpoints
         tells the ratio achieved.
         """;
 
+    private const string CheckMoveDescription =
+        "Each group, and each account with rules, that would see or change more of a moved folder than now: "
+        + "the client asks for a confirmation (and offers to keep the current access) "
+        + "before starting the move.";
+
     /// <summary>Moves, copies and compressions in the background, and the caller's jobs.</summary>
     private static void MapJobs(RouteGroupBuilder jobs)
     {
@@ -133,11 +138,7 @@ public static class FileEndpoints
             .FolderScoped("only the folders the caller may move, seen by their rules")
             .WithName("CheckMove")
             .WithSummary("Who would gain access to folders if they moved there.")
-            .WithDescription(
-                "Each group, and each account with rules, that would see or change more of a moved folder than now: "
-                    + "the client asks for a confirmation (and offers to keep the current access) "
-                    + "before starting the move."
-            );
+            .WithDescription(CheckMoveDescription);
         jobs.MapPost("", StartJob)
             .RequireRight(Rights.MoveFiles, Rights.CopyFiles)
             .FolderScoped(

@@ -9,6 +9,13 @@ namespace Sfe.Api.Endpoints;
 
 public static class TenantEndpoints
 {
+    private const string CreateTenantDescription = """
+        The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),
+        else next to the first space's (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database
+        `{database}_{slug}` on the same server, which the server's account must be allowed to create). Its
+        caches go under `{CacheDirectory}/tenants/{slug}`.
+        """;
+
     public static RouteGroupBuilder MapTenantEndpoints(this RouteGroupBuilder api)
     {
         var tenants = api.MapGroup("/tenants").WithTags("Spaces").RequireRight(Rights.ManageTenants);
@@ -34,14 +41,7 @@ public static class TenantEndpoints
             .WithSummary(
                 "Creates a space on a folder inside the allowed roots, with its own index, tags, settings and groups."
             )
-            .WithDescription(
-                """
-                The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),
-                else next to the first space's (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database
-                `{database}_{slug}` on the same server, which the server's account must be allowed to create). Its
-                caches go under `{CacheDirectory}/tenants/{slug}`.
-                """
-            );
+            .WithDescription(CreateTenantDescription);
 
         tenants
             .MapPut("/{id:int}", Update)

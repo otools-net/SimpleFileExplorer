@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.DependencyInjection;
 using Sfe.Api.Security;
 using Sfe.Tests.Infrastructure;
@@ -52,6 +52,19 @@ public sealed class RouteExportTests
         Assert.IsGreaterThan(50, routes.Count);
     }
 
+    /// <summary>
+    /// Not the compiler's own bookkeeping on the handler (where it puts <c>NullableContextAttribute</c> depends on the
+    /// rest of the class), nor generated types.
+    /// </summary>
+    private static bool IsMeaningful(string typeName) =>
+        !typeName.Contains('<')
+        && typeName
+            is not "NullableContextAttribute"
+                and not "NullableAttribute"
+                and not "CompilerGeneratedAttribute"
+                and not "DebuggerStepThroughAttribute"
+                and not "AsyncStateMachineAttribute";
+
     private static string Describe(RouteEndpoint endpoint)
     {
         var metadata = endpoint.Metadata;
@@ -69,7 +82,7 @@ public sealed class RouteExportTests
         foreach (var limit in metadata.GetOrderedMetadata<EnableRateLimitingAttribute>())
             text.Append("\n  rate limit: ").Append(limit.PolicyName);
         text.Append("\n  metadata: ")
-            .Append(string.Join(", ", metadata.Select(m => m.GetType().Name).Where(n => !n.Contains('<'))));
+            .Append(string.Join(", ", metadata.Select(m => m.GetType().Name).Where(IsMeaningful)));
         return text.ToString();
     }
 }
