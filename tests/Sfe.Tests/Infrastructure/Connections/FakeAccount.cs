@@ -11,6 +11,8 @@ public sealed class FakeAccount(FakeProvider provider)
     private readonly Lock _gate = new();
     private readonly Dictionary<string, FakeEntry> _entries = new(RemotePaths.ComparerOf(provider.Capabilities));
     private readonly List<string> _changed = [];
+    private readonly Dictionary<string, (RemoteErrorKind Kind, int Times)> _failures = new(StringComparer.Ordinal);
+    private long? _wrongOffset;
     private long _ids;
 
     /// <summary>
@@ -66,11 +68,40 @@ public sealed class FakeAccount(FakeProvider provider)
             work();
     }
 
+    /// <summary>
+    /// The next <paramref name="times"/> calls named <paramref name="call"/> (as in <see cref="Calls"/>, e.g.
+    /// <c>upload-append</c>) fail with <paramref name="kind"/> before doing anything.
+    /// </summary>
+    public void FailNext(string call, RemoteErrorKind kind, int times = 1) =>
+        Locked(() => _failures[call] = (kind, times));
+
+    /// <summary>The next append is answered <see cref="RemoteErrorKind.WrongOffset"/> holding
+    /// <paramref name="offset"/>, its part not taken.</summary>
+    public void WrongOffsetNext(long offset) => Locked(() => _wrongOffset = offset);
+
     internal void Called(string call)
     {
         Calls.Add(call);
         if (Failing is { } kind)
             throw new RemoteStorageException(kind, $"The fake provider fails: {kind}.", RetryAfter);
+
+        var name = call.Split(' ')[0];
+        if (_failures.TryGetValue(name, out var next))
+        {
+            if (next.Times <= 1)
+                _failures.Remove(name);
+            else
+                _failures[name] = (next.Kind, next.Times - 1);
+            throw new RemoteStorageException(next.Kind, $"The fake provider fails once: {next.Kind}.", RetryAfter);
+        }
+        if (name == "upload-append" && _wrongOffset is { } offset)
+        {
+            _wrongOffset = null;
+            throw new RemoteStorageException(RemoteErrorKind.WrongOffset, $"The upload is at {offset}.")
+            {
+                Offset = offset,
+            };
+        }
     }
 
     internal FakeEntry? Find(string path) => _entries.GetValueOrDefault(path);

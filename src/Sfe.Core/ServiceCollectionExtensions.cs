@@ -123,6 +123,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<JobBoard>();
         services.AddSingleton<LibraryClashes>();
         services.AddSingleton<FileJobs>();
+        services.AddSingleton<Transfers.LibraryTransfers>();
         services.AddSingleton<Uploads>();
         services.AddSingleton<Archives>();
         // Shared by every library (the application's instance, handed to each one), like FfmpegLimits.
@@ -225,6 +226,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ConnectionSignInFlow>();
         services.AddSingleton<RemoteListings>();
         services.AddSingleton<ConnectionGates>();
+        services.AddSingleton<Transfers.TransferCalls>();
         services.AddSingleton<RemoteUploads>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();

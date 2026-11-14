@@ -21,6 +21,7 @@ public sealed class ConnectionGates(TimeProvider clock)
 
     private readonly ConcurrentDictionary<int, SemaphoreSlim> _calls = new();
     private readonly ConcurrentDictionary<int, DateTimeOffset> _waits = new();
+    private readonly ConcurrentDictionary<int, SemaphoreSlim> _writes = new();
 
     /// <summary>What is left of the provider's wait for this connection; null when calls may go.</summary>
     public TimeSpan? WaitLeft(int connectionId)
@@ -47,6 +48,17 @@ public sealed class ConnectionGates(TimeProvider clock)
     {
         var gate = _calls.GetOrAdd(connectionId, _ => new SemaphoreSlim(MaxCalls, MaxCalls));
         return await gate.WaitAsync(MaxWait, cancellationToken) ? new Turn(gate) : null;
+    }
+
+    /// <summary>
+    /// The connection's one write turn (a commit, a new folder, a delete), held until disposed: providers refuse
+    /// writes at once to one account (Dropbox's <c>too_many_write_operations</c>). Taken before a call's turn.
+    /// </summary>
+    public async Task<IDisposable> EnterWriteAsync(int connectionId, CancellationToken cancellationToken)
+    {
+        var gate = _writes.GetOrAdd(connectionId, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken);
+        return new Turn(gate);
     }
 
     private sealed class Turn(SemaphoreSlim gate) : IDisposable
