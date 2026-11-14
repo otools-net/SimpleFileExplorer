@@ -40,6 +40,7 @@ public sealed class EditableSettings
     public FileSettings Files { get; set; } = new();
     public KeepAliveSettings KeepAlive { get; set; } = new();
     public ConnectionSettings Connections { get; set; } = new();
+    public SecuritySettings Security { get; set; } = new();
 
     public static EditableSettings From(SfeOptions options) =>
         new()
@@ -172,6 +173,7 @@ public sealed class EditableSettings
                 Method = options.KeepAlive.Method,
             },
             Connections = ConnectionSettings.From(options.Connections),
+            Security = SecuritySettings.From(options.Security),
         };
 
     public void ApplyTo(SfeOptions options)
@@ -265,5 +267,6 @@ public sealed class EditableSettings
         options.KeepAlive.Folders = [.. KeepAlive.Folders];
         options.KeepAlive.Method = KeepAlive.Method;
         Connections.ApplyTo(options.Connections);
+        Security.ApplyTo(options.Security);
     }
 }

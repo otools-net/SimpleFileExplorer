@@ -7,6 +7,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Personal access tokens, first step (nothing makes them yet)**: the server settings
+  `Sfe:Security:AccessTokens:Enabled`, `MaxLifetimeDays` and `MaxPerAccount` (defaults: on, 365 days, 20 per account;
+  `Sfe:Locked` fixes them; [configuration](docs/configuration.md)). The database gets an empty table for the tokens;
+  making and using them comes with a later version.
 - **Connections to other storage, first step (nothing to connect to yet)**: the rights `connections.use`,
   `connections.own`, `connections.library` (given to the Administrators group of every space, never to guests) and
   `connections.server`, and the server settings `Sfe:Connections:Enabled`, `Providers` and `Levels`

@@ -1078,7 +1078,7 @@ public sealed class SettingsService(
             "keepAlive.folders",
             $"“{notKept}” is not a folder of the library: enter paths relative to the library, like NAS/Photos."
         );
-        foreach (var (key, message) in s.Connections.Errors())
+        foreach (var (key, message) in s.Connections.Errors().Concat(s.Security.Errors()))
             Check(false, key, message);
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
         Check(

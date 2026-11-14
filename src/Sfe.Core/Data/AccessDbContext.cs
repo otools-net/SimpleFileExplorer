@@ -35,6 +35,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public DbSet<ConnectionTenant> ConnectionTenants => Set<ConnectionTenant>();
     public DbSet<ConnectionGroup> ConnectionGroups => Set<ConnectionGroup>();
     public DbSet<ConnectionFolderRule> ConnectionFolderRules => Set<ConnectionFolderRule>();
+    public DbSet<AccessToken> AccessTokens => Set<AccessToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -192,6 +193,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
         });
 
         ConfigureConnections(modelBuilder);
+        ConfigureAccessTokens(modelBuilder);
 
         modelBuilder.Entity<LogEntry>(entity =>
         {
@@ -204,6 +206,30 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.HasIndex(e => new { e.TenantId, e.Id });
         });
     }
+
+    /// <summary>
+    /// Personal access tokens: found by their lookup part, removed by the database with their account or the library
+    /// they are limited to (two roots, no two paths to the table). Who revoked one is not a foreign key: a second path
+    /// from the accounts.
+    /// </summary>
+    private static void ConfigureAccessTokens(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<AccessToken>(entity =>
+        {
+            entity.ToTable("AccessTokens");
+            entity.Property(t => t.Name).HasMaxLength(AccessToken.MaxNameLength).IsRequired();
+            entity.Property(t => t.Lookup).HasMaxLength(AccessToken.LookupLength).IsUnicode(false).IsRequired();
+            entity.Property(t => t.Hash).HasMaxLength(AccessToken.HashLength).IsRequired();
+            entity.Property(t => t.Prefix).HasMaxLength(AccessToken.MaxPrefixLength).IsUnicode(false).IsRequired();
+            entity.Property(t => t.Rights).IsUnicode(false);
+            entity.Property(t => t.Kind).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
+            entity.Property(t => t.ClientId).HasMaxLength(AccessToken.MaxClientIdLength);
+            entity.Property(t => t.LastUsedFrom).HasMaxLength(AccessToken.MaxAddressLength).IsUnicode(false);
+            entity.HasIndex(t => t.Lookup).IsUnique();
+            entity.HasIndex(t => t.UserId);
+            entity.HasIndex(t => t.TenantId);
+            entity.HasOne<UserAccount>().WithMany().HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Tenant>().WithMany().HasForeignKey(t => t.TenantId).OnDelete(DeleteBehavior.Cascade);
+        });
 
     /// <summary>
     /// Connections and who uses them. One cascade path only to each table (SQL Server refuses two): the database

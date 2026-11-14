@@ -212,6 +212,7 @@ public static class ServiceCollectionExtensions
         ));
         services.AddSingleton<QuickLinkService>();
         services.AddSingleton<FolderRuleService>();
+        services.AddSingleton<AccessTokens>();
         // Connections to other storage: the kinds registered (IConnectionProvider) and the door their calls leave by.
         services.TryAddSingleton(_ => new OutboundPolicy());
         services.AddSingleton<ConnectionProviders>();

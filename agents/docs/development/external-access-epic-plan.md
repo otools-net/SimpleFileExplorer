@@ -37,7 +37,7 @@ in each plan's `## Progress` checklist; this board is the summary.
 | # | Plan | State | Done | Next |
 |---|---|---|---|---|
 | 1 | api-v1 | **done** 2026-11-14; plan deleted, what stays true in [api-versioning](api-versioning.md) and [api-routes](api-routes.md), user page `docs/reference/api.md` | phases 0 to 5 (rules; `ApiRoutes`; base `/api/v1`, `LegacyApiPaths`, `LegacyPathLog`, `LegacyPathTests`; client `API_BASE`, tests `V1`, e2e and tools; OpenAPI baseline, `OpenApiBaselineTests`, `x-sfe-rights`, `ProblemTypes`; user docs) | |
-| 2 | api-tokens | not started (**next of the epic**: first unfinished plan, its need, plan 1, is met; plan 3 needs nothing but comes after it) | | phase 1 of [api-tokens-plan](api-tokens-plan.md) (model and service) |
+| 2 | api-tokens | **in progress** (next of the epic) | phase 1 (table `AccessTokens`, `AccessTokens` service, `security.accessTokens.*` settings) | phase 2 of [api-tokens-plan](api-tokens-plan.md) (authentication) |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
 | 5 | connections | **done** 2026-11-14 (started before plans 1 to 4 at the owner's request; routes mapped through `ApiRoutes`, so they follow the base); plan deleted, what stays true in [connections](../features/connections.md) and its sibling notes | phases 0 to 6 (providers, `OutboundPolicy`, tables, rights, settings; Dropbox sign-in and management; browse, read, zips, gates; file management, uploads, properties; transfers with the library, retry, history; folder rules, enforcement, following moves); phase 7: notes split, security vectors in [security](security.md#connections) | the facade item (`sfe.Connections`) moved to plan 4's phase 5; a person runs `agents/tools/dropbox-check` before a release |
@@ -45,6 +45,8 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
 
+- 2026-11-14 (eighth session): api-tokens phase 1: table `AccessTokens` (migration applied on LocalDB), service
+  `AccessTokens`, settings `security.accessTokens.*` (no settings-page field yet: phase 4). Next: api-tokens phase 2.
 - 2026-11-14 (seventh session, continued): api-v1 phase 5: `docs/reference/api.md` (base address, compatibility,
   old addresses until 2.0, problem types, sign-in today), facts moved into `api-versioning.md` and `api-routes.md`,
   plan 1 deleted. Next: api-tokens (plan 2).

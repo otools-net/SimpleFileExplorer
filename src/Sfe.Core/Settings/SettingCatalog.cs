@@ -31,6 +31,10 @@ public static class SettingCatalog
         "connections.providers",
         "connections.levels",
         "connections.dropbox.appKey",
+        // Programs calling the API as an account: whoever runs the server decides.
+        "security.accessTokens.enabled",
+        "security.accessTokens.maxLifetimeDays",
+        "security.accessTokens.maxPerAccount",
     ];
 
     private static readonly HashSet<string> UserKeys =
@@ -104,6 +108,7 @@ public static class SettingCatalog
         ("openBrowser", Rights.ServerSettings),
         ("fastSignIn", Rights.ServerSettings),
         ("connections.", Rights.ServerSettings),
+        ("security.", Rights.ServerSettings),
     ];
 
     public static IReadOnlyList<SettingDefinition> All { get; } =

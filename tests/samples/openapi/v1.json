@@ -8943,6 +8943,30 @@
           }
         }
       },
+      "AccessTokenSettings": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxLifetimeDays": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxPerAccount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "AppearanceSettings": {
         "type": "object",
         "properties": {
@@ -10934,6 +10958,9 @@
           },
           "connections": {
             "$ref": "#/components/schemas/ConnectionSettings"
+          },
+          "security": {
+            "$ref": "#/components/schemas/SecuritySettings"
           }
         }
       },
@@ -14828,6 +14855,14 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "SecuritySettings": {
+        "type": "object",
+        "properties": {
+          "accessTokens": {
+            "$ref": "#/components/schemas/AccessTokenSettings"
           }
         }
       },

@@ -69,4 +69,7 @@ public sealed class SecurityOptions
     /// local accounts only. A directory such as LDAP added later is listed here.
     /// </summary>
     public List<string> Directories { get; set; } = [];
+
+    /// <summary>Personal access tokens: whether they work, how long they last, how many an account holds.</summary>
+    public AccessTokenOptions AccessTokens { get; set; } = new();
 }

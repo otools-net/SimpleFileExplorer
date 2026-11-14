@@ -36,12 +36,33 @@ revoke tokens, and the attack vectors below are tested.
 
 ### Phase 1: model and service
 
-- [ ] `AccessToken` entity (user, name, hash, shown prefix, tenant, rights, kind, client id, created, expires,
+- [x] `AccessToken` entity (user, name, hash, shown prefix, tenant, rights, kind, client id, created, expires,
   last used at and from, revoked at and by); SQL Server migration in `AccessMigrations` and the SQLite path
-- [ ] `AccessTokens` service: create (returns the secret once), list, revoke, revoke all, find by presented token
+- [x] `AccessTokens` service: create (returns the secret once), list, revoke, revoke all, find by presented token
   (cached until `AccessChanges.Version` moves), last use written at most every 5 minutes per token
-- [ ] Settings `Security:AccessTokens:Enabled`, `MaxLifetimeDays`, `MaxPerAccount`
+- [x] Settings `Security:AccessTokens:Enabled`, `MaxLifetimeDays`, `MaxPerAccount`
   ([settings-new-key](../features/settings-new-key.md)); server level, lockable
+
+As built (2026-11-14):
+
+- Table `AccessTokens` (migration `20261114172624_AccessTokens`, applied on LocalDB; SQLite from the model):
+  `Lookup` varchar(16) unique (the row is found by it), `Hash` varbinary(32), `Prefix` (shown), `Rights` (ids
+  separated by spaces, null = all of the account's), `Kind` (`Personal`), `ClientId`, `LastUsed`/`LastUsedFrom`,
+  `Revoked`/`RevokedById` (no foreign key: a second path from `Users`). Cascades from `Users` and from `Tenants` (a
+  token limited to a deleted library goes with it, never becomes unlimited). `AccessTokenDataTests`.
+- Token `sfe_<16 hex lookup>_<43 base64url>` (`AccessTokenSecret`): 32 random bytes, SHA-256 stored, compared with
+  `FixedTimeEquals` (an unknown lookup is compared with a zero hash: same work). Not the row id (it would tell how
+  many tokens exist). Revoking keeps the row (`Revoked`): lists show it.
+- `AccessTokens` (`Core/Access/`): `CreateAsync(userId, AccessTokenDraft)` (name, expiry within `MaxLifetimeDays`,
+  default the longest; a library the account reaches; rights known and held there, or in any library it reaches;
+  `MaxPerAccount` counts tokens neither revoked nor expired), `ListAsync(userId)`, `ListAllAsync(tenantIds?)`
+  (accounts belonging to those libraries; null all), `RevokeAsync(id, ownerId?, revokedById)`, `RevokeAllAsync`,
+  `FindAsync(presented, address)`. Settings read through `SettingLayers.ServerLevel()` (the root container's
+  `SecurityOptions` is the configuration's alone). Revoking moves `AccessChanges` (rows cached before are read
+  again); unknown lookups are never cached. `AccessTokenServiceTests`, `AccessTokenSettingsTests`.
+- Not yet: the account's state (disabled) and its current rights are checked at use by phase 2; the settings have no
+  field on the settings page yet (phase 4, with the admin page: `settings-schema.ts` and `admin-sections.ts` are at
+  their readability baseline). Revoked and expired rows are never purged (a later item if lists grow).
 
 ### Phase 2: authentication
 
@@ -67,6 +88,8 @@ revoke tokens, and the attack vectors below are tested.
   once with Copy, revoke; phone layout as a sheet ([frontend](frontend.md))
 - [ ] Administration › People › Access tokens: every token with its account, last use, revoke
   ([admin-page](../features/admin-page.md), admin search entries)
+- [ ] The `security.accessTokens.*` settings on the settings page (`settings-schema.ts`, a tab with its sub-page and
+  `SETTINGS_RIGHTS` entry, `server.settings`)
 
 ### Phase 5: docs and release
 
