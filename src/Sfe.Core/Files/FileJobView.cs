@@ -15,5 +15,7 @@ public sealed record FileJobView(
     IReadOnlyList<FileJobItem> Results,
     DateTimeOffset Started,
     DateTimeOffset? Finished,
-    int? OwnerId
+    int? OwnerId,
+    int? FromConnection = null,
+    int? ToConnection = null
 );
