@@ -12,9 +12,10 @@ import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { copyText, CopyPathService } from '../core/copy-path.service';
 import { formatDate, formatDuration, formatResolution, formatSize, joinParts, plural } from '../core/format';
+import { PlaceProperties } from '../core/connection.models';
 import { ItemProperties, LibraryItem } from '../core/models';
 import { ChecksumAlgorithm, FolderTotals, PropertyJob } from './file.models';
-import { parentPath } from '../core/paths';
+import { folderOf, itemKind, placeProperties, providerName } from './place-properties';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { registerDialog } from '../library/dialogs.service';
@@ -33,7 +34,7 @@ const ALGORITHMS: [ChecksumAlgorithm, string][] = [
 /**
  * Properties of a file or folder (Alt+Enter, or its menu): what the disk says (size, dates, attributes), what the index
  * knows (resolution, duration, tags; a folder's totals), and on demand a folder counted on the disk or a file's
- * checksum, which run on the server and stop when the sheet closes.
+ * checksum, which run on the server and stop when the sheet closes. On a connection (`?c=`), what its provider tells.
  */
 @Component({
     selector: 'sfe-properties-dialog',
@@ -51,6 +52,8 @@ export class PropertiesDialog {
     protected readonly algorithms = ALGORITHMS;
     protected readonly item = signal<LibraryItem | null>(null);
     protected readonly properties = signal<ItemProperties | null>(null);
+    /** The answer on a connection (`config.place()`), instead of `properties`. */
+    protected readonly remote = signal<PlaceProperties | null>(null);
     protected readonly totals = signal<FolderTotals | null>(null);
     protected readonly error = signal<string | null>(null);
     protected readonly count = signal<PropertyJob | null>(null);
@@ -63,21 +66,22 @@ export class PropertiesDialog {
 
     protected readonly kind = computed(() => {
         const p = this.properties();
-        if (!p) return '';
-        if (p.details.isFolder) return 'Folder';
-        const extension = p.item.extension ? `${p.item.extension.replace(/^\./, '').toUpperCase()} ` : '';
-        const kinds: Record<string, string> = { image: 'image', video: 'video', audio: 'audio', document: 'document' };
-        return `${extension}${kinds[p.item.kind] ?? 'file'}`;
+        return !p ? '' : p.details.isFolder ? 'Folder' : itemKind(p.item);
     });
     protected readonly folder = computed(() => {
-        const path = this.properties()?.details.path ?? '';
         const root = this.config.config()?.rootName ?? 'the library';
-        return !path
-            ? '(the library itself)'
-            : parentPath(path)
-              ? `${root} / ${parentPath(path).split('/').join(' / ')}`
-              : root;
+        return folderOf(this.properties()?.details.path ?? '', root, '(the library itself)');
     });
+    protected readonly remoteKind = computed(() => {
+        const item = this.remote()?.item;
+        return item ? itemKind(item) : '';
+    });
+    protected readonly remoteFolder = computed(() => {
+        const name = this.config.place()?.name || 'the connection';
+        return folderOf(this.remote()?.item.path ?? '', name, '(the connection itself)');
+    });
+    protected readonly provider = computed(() => providerName(this.config.config(), this.remote()?.kind ?? ''));
+    protected readonly onPlace = computed(() => this.config.place() !== null);
     protected readonly attributes = computed(() => {
         const details = this.properties()?.details;
         return details
@@ -145,12 +149,19 @@ export class PropertiesDialog {
         const generation = ++this.generation;
         this.item.set(item);
         this.properties.set(null);
+        this.remote.set(null);
         this.totals.set(null);
         this.error.set(null);
         this.count.set(null);
         this.checksum.set(null);
         this.sheet().open();
         try {
+            const place = this.config.place();
+            if (place) {
+                const remote = await placeProperties(this.api, place, item.path);
+                if (generation === this.generation) this.remote.set(remote);
+                return;
+            }
             const properties = await this.api.properties(item.path);
             if (generation !== this.generation) return;
             this.properties.set(properties);
@@ -185,10 +196,10 @@ export class PropertiesDialog {
         if (job && !job.done) void this.api.cancelPropertyJob(job.id).catch(() => {});
     }
 
-    protected async copy(text: string): Promise<void> {
+    protected async copy(text: string, what = 'Checksum'): Promise<void> {
         try {
             await copyText(text);
-            this.toasts.show('Checksum copied.');
+            this.toasts.show(`${what} copied.`);
         } catch {
             this.toasts.error('The browser refused to copy.');
         }

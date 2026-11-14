@@ -128,6 +128,13 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   copy and refuses a paste or drop in another place (phase 5 copies between them). The folder picker (Move to / Copy
   to) lists the library only: hidden on a connection.
 
+## Properties
+
+- `GET api/connections/{id}/files/properties?path=`: the item, the provider's kind, its content hash and the hash's
+  name (`ProviderCapabilities.ContentHash`), whether it has content; the provider account only for the caller's own
+  account-level connection (not for a library's or the server's, even to administrators).
+- Client: `place-properties.ts`; the dialog hides what reads the library (counts, totals, checksums, tags, full path).
+
 ## Uploads into a connection (`ConnectionUploadEndpoints`)
 
 - `connections/{id}/files/uploads…`: the library's routes (check, start, list, get, PUT chunk, finish, cancel) and

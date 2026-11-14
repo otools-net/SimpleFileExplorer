@@ -180,3 +180,18 @@ export interface PlaceTransferItem {
 export interface PlaceTransferResults {
     items: PlaceTransferItem[];
 }
+
+/** `GET api/connections/{id}/files/properties?path=`: what the provider tells about one of a connection's items. */
+export interface PlaceProperties {
+    /** Its path is relative to the connection's root; no modified date for a Dropbox folder. */
+    item: LibraryItem;
+    /** The provider's kind (`config.connections.kinds[].kind`). */
+    kind: string;
+    /** Whose storage it is at the provider, when known. */
+    account: string | null;
+    /** The provider's own hash of the content, and its name (e.g. "Dropbox content hash"). */
+    contentHash: string | null;
+    hashName: string | null;
+    /** False for an online document: nothing to download. */
+    downloadable: boolean;
+}

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Connections;
@@ -20,6 +21,12 @@ public static class ConnectionFileEndpoints
         order (`sorted` false) and `hasMore` tells that the next pages read on. A connection whose sign-in the
         provider no longer accepts answers 409 `connection-needs-reconnecting`; the provider asking to wait, 429
         `connection-rate-limited` with `Retry-After`; the provider unreachable, 502 `connection-unavailable`.
+        """;
+
+    private const string PropertiesDescription = """
+        The item as a listing shows it (`item`; the root folder named after the connection), the provider's kind,
+        the content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file has
+        content to download. `account` (the provider's account) is given only on the caller's own connection.
         """;
 
     public static RouteGroupBuilder MapConnectionFileEndpoints(this RouteGroupBuilder api)
@@ -52,6 +59,15 @@ public static class ConnectionFileEndpoints
             .FolderScoped("files.view; 404 for a connection the subject may not use")
             .WithName("GetConnectionThumbnail")
             .WithSummary("JPEG preview of a picture or video of a connection, made by its provider.");
+
+        connections
+            .MapGet("/files/properties", Properties)
+            .RequireRateLimiting(RequestLimits.Connections)
+            .RequireRight(Rights.UseConnections)
+            .FolderScoped("library.browse; 404 for a connection the subject may not use")
+            .WithName("GetConnectionItemProperties")
+            .WithSummary("The properties of a file or folder of a connection (`path` empty: its root folder).")
+            .WithDescription(PropertiesDescription);
 
         return api;
     }
@@ -140,5 +156,52 @@ public static class ConnectionFileEndpoints
             files.Context.Response.Headers.CacheControl = "no-store";
             return TypedResults.Stream(thumbnail.Stream, thumbnail.ContentType ?? "image/jpeg");
         });
+    }
+
+    private static async Task<IResult> Properties(
+        int id,
+        [AsParameters] ConnectionFileServices files,
+        MediaClassifier classifier,
+        [FromQuery(Name = "path")] string? path = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (RemotePaths.Normalize(path) is not { } normalized)
+            return TypedResults.NotFound();
+        var (open, answer) = await files.OpenAsync(id, Rights.Browse, cancellationToken);
+        if (open is null)
+            return answer!;
+        var account = await OwnAccountAsync(files, open.Connection, cancellationToken);
+
+        return await files.RunAsync(open, async storage =>
+        {
+            if (await storage.GetAsync(normalized, cancellationToken) is not { } item)
+                return TypedResults.NotFound();
+            if (normalized.Length == 0)
+                item = item with { Name = open.Connection.Name };
+            return TypedResults.Ok(
+                new ConnectionItemProperties(
+                    ConnectionListings.ToItem(item, classifier),
+                    open.Connection.Kind,
+                    account,
+                    item.Hash,
+                    open.Capabilities.ContentHash,
+                    item.Downloadable
+                )
+            );
+        });
+    }
+
+    /// <summary>The provider's account of an account-level connection the caller owns; null for any other.</summary>
+    private static async Task<string?> OwnAccountAsync(
+        ConnectionFileServices files,
+        UsableConnection connection,
+        CancellationToken cancellationToken
+    )
+    {
+        if (connection.Level != ConnectionLevel.Account || (await files.Current.GetAsync()).User is not { } user)
+            return null;
+        var info = await files.Connections.FindAsync(connection.Id, cancellationToken);
+        return info is { Level: ConnectionLevel.Account } && info.OwnerId == user.Id ? info.Account : null;
     }
 }

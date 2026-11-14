@@ -195,7 +195,7 @@ export class FolderMenu {
                 title: 'Copy where this folder is on the server',
                 run: () => void this.copyPaths.copy(path),
             });
-        if (this.config.can(Rights.browse) && !this.config.place() && this.dialogs.properties())
+        if (this.config.can(Rights.browse) && this.dialogs.properties())
             entries.push({
                 id: 'properties',
                 label: 'Properties',
@@ -359,7 +359,7 @@ export class FolderMenu {
             href,
             newTab: true,
         });
-        if (this.config.can(Rights.browse) && !this.config.place() && this.dialogs.properties())
+        if (this.config.can(Rights.browse) && this.dialogs.properties())
             entries.push({
                 id: 'properties',
                 label: 'Properties',

@@ -297,7 +297,11 @@ in `FolderRules`:
   client goes on from there); the space's `MaxFileSizeMegabytes` checked at start; client: `files.upload` back with
   write access and `UploadsInParts`, each upload batch keeps the place it started in (`uploadsRoute`); unfinished
   uploads into a connection are not offered again after a reload
-- [ ] Batch rename, properties (what the provider knows), selection bar, context menus, F2 / Shift+N
+- [x] Batch rename, properties (what the provider knows), selection bar, context menus, F2 / Shift+N. As built: the
+  selection bar, menus, F2 / Shift+N and batch rename follow the rights `atPlace` gives back (item 1); Properties:
+  `GET connections/{id}/files/properties?path=` (`ConnectionItemProperties`: the item, kind, the provider's content
+  hash and its name, downloadable; the provider account only on the caller's own account-level connection), the
+  dialog asks it on a connection (`place-properties.ts`) and hides counts, totals, checksums, tags and full paths
 
 ### Phase 5: transfers with the library
 

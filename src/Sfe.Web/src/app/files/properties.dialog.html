@@ -1,12 +1,44 @@
 <sfe-sheet
     #sheet
     heading="Properties"
-    [subtitle]="properties()?.item?.name ?? item()?.name ?? null"
+    [subtitle]="properties()?.item?.name ?? remote()?.item?.name ?? item()?.name ?? null"
     variant="properties-dialog"
     (closed)="closed()"
 >
     @if (error(); as error) {
         <p class="form-error">{{ error }}</p>
+    } @else if (remote(); as r) {
+        <dl class="properties">
+            <dt>Name</dt><dd class="properties-name">{{ r.item.name }}</dd>
+            <dt>Kind</dt><dd>{{ remoteKind() }}</dd>
+            <dt>Storage</dt><dd class="properties-provider">{{ provider() }}</dd>
+            @if (r.account) {
+                <dt>Account</dt><dd>{{ r.account }}</dd>
+            }
+            <dt>In</dt><dd>{{ remoteFolder() }}</dd>
+            <dt>Path</dt><dd>{{ r.item.path ? '/' + r.item.path : '/' }}</dd>
+            @if (r.item.kind !== 'directory') {
+                <dt>Size</dt><dd>{{ size(r.item.size) }}</dd>
+            }
+            @if (r.item.modified) {
+                <dt>Modified</dt><dd>{{ date(r.item.modified) }}</dd>
+            }
+            @if (!r.downloadable) {
+                <dt>Content</dt><dd>No content to download (an online document)</dd>
+            }
+        </dl>
+        @if (r.contentHash) {
+            <section class="properties-section" aria-label="Content hash">
+                <h3>{{ r.hashName ?? 'Content hash' }}</h3>
+                <p class="properties-checksum properties-hash"><code>{{ r.contentHash }}</code>
+                    <button
+                        type="button"
+                        class="button small ghost"
+                        title="Copy the content hash"
+                        (click)="copy(r.contentHash, r.hashName ?? 'Content hash')"
+                    >Copy</button></p>
+            </section>
+        }
     } @else if (properties(); as p) {
         <dl class="properties">
             <dt>Name</dt><dd class="properties-name">{{ p.item.name }}</dd>
@@ -116,7 +148,7 @@
         <p role="status">Loading…</p>
     }
     <span sheetFooter class="spacer"></span>
-    @if (copyPaths.enabled() && item()) {
+    @if (copyPaths.enabled() && item() && !onPlace()) {
         <button
             sheetFooter
             type="button"

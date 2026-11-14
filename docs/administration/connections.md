@@ -81,6 +81,8 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
 - **Download** saves a file; several, or a folder, come as one zip, written while it downloads (as in the library;
   what has no content, a Dropbox Paper document, is listed in `SFE - left out.txt` inside).
 - A folder of more than 20,000 items is listed in Dropbox's order, the sort off.
+- **Properties** (item menu) shows a file's or folder's size, date (Dropbox keeps none for folders), path and
+  Dropbox's content hash; on your own connection, the Dropbox account too.
 - Where the connection gives you **reads and changes**: **New folder**, **Rename** (F2) and batch rename, **Delete**
   (into Dropbox's deleted files, where Dropbox keeps them for a while: no Undo in SFE), and moving or copying inside
   the connection by cut and paste (Ctrl+X / Ctrl+C, Ctrl+V) or by dragging onto a folder. A connection made read only

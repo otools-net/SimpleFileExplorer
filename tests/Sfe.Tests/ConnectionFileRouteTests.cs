@@ -250,7 +250,66 @@ public sealed class ConnectionFileRouteTests
         Assert.AreEqual("first day", await reader.ReadToEndAsync(Cancel));
     }
 
+    [TestMethod]
+    public async Task AnItemsPropertiesComeFromTheProvider()
+    {
+        var date = new DateTime(2024, 5, 6, 7, 8, 9, DateTimeKind.Utc);
+        _account.WithFile("Photos/Trips/day1.txt", "first day", date);
+
+        var file = (
+            await _admin.GetFromJsonAsync<ConnectionItemProperties>(Properties("Trips/day1.txt"), Json, Cancel)
+        )!;
+        var folder = (await _admin.GetFromJsonAsync<ConnectionItemProperties>(Properties("Trips"), Json, Cancel))!;
+        var root = (await _admin.GetFromJsonAsync<ConnectionItemProperties>($"{Base}/files/properties", Json, Cancel))!;
+
+        Assert.AreEqual(("day1.txt", "Trips/day1.txt", 9L), (file.Item.Name, file.Item.Path, file.Item.Size));
+        Assert.AreEqual(new DateTimeOffset(date), file.Item.Modified);
+        Assert.AreEqual((FakeProvider.FakeKind, "acct@fake", "fake"), (file.Kind, file.Account, file.HashName));
+        Assert.IsFalse(string.IsNullOrEmpty(file.ContentHash));
+        Assert.IsTrue(file.Downloadable);
+        Assert.AreEqual((ItemKind.Directory, null), (folder.Item.Kind, folder.ContentHash));
+        Assert.AreEqual(("My files", "", ItemKind.Directory), (root.Item.Name, root.Item.Path, root.Item.Kind));
+    }
+
+    [TestMethod]
+    public async Task PropertiesStayInsideTheRootAndTheProviderAccountWithItsOwner()
+    {
+        var shared = await _factory
+            .Services.GetRequiredService<ConnectionService>()
+            .CreateAsync(
+                new(FakeProvider.FakeKind, "Shared", ConnectionLevel.Library, TenantId: await TenantAsync()),
+                new ConnectionGrant("acct", "acct@fake", "id:acct"),
+                null,
+                Cancel
+            );
+
+        foreach (var path in new[] { "..", "../Secret.txt", "Nowhere" })
+        {
+            using var answer = await _admin.GetAsync(Properties(path), Cancel);
+            Assert.AreEqual(HttpStatusCode.NotFound, answer.StatusCode, path);
+        }
+        using var bobs = await _bob.GetAsync(Properties("b.jpg"), Cancel);
+        using var unknown = await _admin.GetAsync("/api/connections/999/files/properties?path=b.jpg", Cancel);
+        var library = (
+            await _admin.GetFromJsonAsync<ConnectionItemProperties>(
+                $"/api/connections/{shared.Value!.Id}/files/properties?path=Secret.txt",
+                Json,
+                Cancel
+            )
+        )!;
+
+        Assert.AreEqual(HttpStatusCode.Forbidden, bobs.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, unknown.StatusCode);
+        // A library's connection never tells whose provider account it reads.
+        Assert.AreEqual(("Secret.txt", null), (library.Item.Name, library.Account));
+    }
+
     private string Base => $"/api/connections/{_id}";
+
+    private string Properties(string path) => $"{Base}/files/properties?path={Uri.EscapeDataString(path)}";
+
+    private async Task<int> TenantAsync() =>
+        (await _factory.Services.GetRequiredService<AccessService>().GetTenantsAsync(Cancel)).Single().Id;
 
     private string Browse(string query) => $"{Base}/browse?{query}";
 

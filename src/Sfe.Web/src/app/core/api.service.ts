@@ -267,9 +267,7 @@ export class Api {
     tagSidebar = () => this.get<TagSidebar>('api/tags/sidebar');
     clearTagHistory = () => this.delete<void>('api/tags/history');
 
-    /**
-     * The settings of a level: the server's (server administrators) or the space's; without one, the caller's default.
-     */
+    /** The settings of a level: the server's (server administrators) or the space's; else the caller's default. */
     settings = (level?: SettingLevel) => this.get<SettingsView>('api/settings', { level });
     saveSettings = (values: SettingsValues, level?: SettingLevel) =>
         this.put<SettingsView>(withLevel('api/settings', level), values);
@@ -470,9 +468,11 @@ export class Api {
     finishUpload = (id: string, conflicts: ConflictChoice, connection?: number | null) =>
         this.post<FileOperationResult | null>(`${uploadsRoute(connection)}/${id}/finish`, { conflicts });
     cancelUpload = (id: string, connection?: number | null) => this.delete<void>(`${uploadsRoute(connection)}/${id}`);
-    /** A change to a connection's files (`folders`, `rename`, `delete`, `transfer`): see `PlaceFiles`. */
+    /** Changes a connection's files (`folders`, `rename`, `delete`, `transfer`: see `PlaceFiles`), or reads (`get`). */
     connectionFiles = <T>(id: number, action: string, body: unknown) =>
         this.post<T>(`api/connections/${id}/files/${action}`, body);
+    connectionGet = <T>(id: number, action: string, query: Record<string, QueryValue>) =>
+        this.get<T>(`api/connections/${id}/files/${action}`, query);
     /** Names the items of a zip (of a connection's files with `connection`); the browser downloads it once. */
     createArchive = (paths: string[], connection?: number) =>
         this.post<ArchiveLink>(connection ? `api/connections/${connection}/archive` : 'api/files/archive', { paths });

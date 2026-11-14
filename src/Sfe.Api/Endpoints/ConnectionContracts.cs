@@ -86,6 +86,22 @@ public sealed record ConnectionListing(
     ProviderCapabilities Capabilities
 );
 
+/// <summary>The properties of one item of a connection (<c>GET api/connections/{id}/files/properties</c>).</summary>
+/// <param name="Item">As a listing shows it; the root folder is named after the connection.</param>
+/// <param name="Kind">The provider's kind (<c>dropbox</c>).</param>
+/// <param name="Account">The provider's account, only on the caller's own (account-level) connection.</param>
+/// <param name="ContentHash">The file's content hash as the provider gives it; null for a folder or none.</param>
+/// <param name="HashName">The kind of hash (<see cref="ProviderCapabilities.ContentHash"/>).</param>
+/// <param name="Downloadable">False for what has no content to read (an online document of the provider).</param>
+public sealed record ConnectionItemProperties(
+    LibraryItem Item,
+    string Kind,
+    string? Account,
+    string? ContentHash,
+    string? HashName,
+    bool Downloadable
+);
+
 /// <summary>A connection opened for one request (<see cref="ConnectionFileServices.OpenAsync"/>).</summary>
 internal sealed record OpenConnection(
     UsableConnection Connection,

@@ -146,7 +146,7 @@ export class ItemMenu {
 
     /** Properties of what is listed: whoever browses. */
     canSeeProperties(): boolean {
-        return this.config.can(Rights.browse) && !this.config.place(); // none for a connection's files yet
+        return this.config.can(Rights.browse);
     }
 
     /** Several items selected that may be renamed: the batch rename opens for them. False when fewer than two. */
