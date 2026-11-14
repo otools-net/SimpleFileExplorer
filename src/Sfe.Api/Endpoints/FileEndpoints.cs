@@ -18,9 +18,9 @@ namespace Sfe.Api.Endpoints;
 public static class FileEndpoints
 {
     /// <summary>The 409 problem types, which the client tells apart.</summary>
-    public const string ExistsType = "file-exists";
-    public const string ScanRunningType = "scan-running";
-    public const string FolderRulesType = "folder-rules";
+    public const string ExistsType = ProblemTypes.FileExists;
+    public const string ScanRunningType = ProblemTypes.ScanRunning;
+    public const string FolderRulesType = ProblemTypes.FolderRules;
 
     /// <summary>Paths one delete request may name.</summary>
     public const int MaxDeletePaths = 1000;

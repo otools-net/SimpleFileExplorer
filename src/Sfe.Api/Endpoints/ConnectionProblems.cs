@@ -11,22 +11,22 @@ namespace Sfe.Api.Endpoints;
 public static class ConnectionProblems
 {
     /// <summary>409: the provider no longer accepts the sign-in; the connection's manager signs in again.</summary>
-    public const string NeedsReconnectingType = "connection-needs-reconnecting";
+    public const string NeedsReconnectingType = ProblemTypes.ConnectionNeedsReconnecting;
 
     /// <summary>409: the connection is off, or its kind or level is no longer allowed.</summary>
-    public const string UnusableType = "connection-unusable";
+    public const string UnusableType = ProblemTypes.ConnectionUnusable;
 
     /// <summary>429 with <c>Retry-After</c>: the provider asks to wait.</summary>
-    public const string RateLimitedType = "connection-rate-limited";
+    public const string RateLimitedType = ProblemTypes.ConnectionRateLimited;
 
     /// <summary>502: the provider cannot be reached, or failed on its side; trying later may work.</summary>
-    public const string UnavailableType = "connection-unavailable";
+    public const string UnavailableType = ProblemTypes.ConnectionUnavailable;
 
     /// <summary>403: the provider does not let this account do it.</summary>
-    public const string RefusedType = "connection-refused";
+    public const string RefusedType = ProblemTypes.ConnectionRefused;
 
     /// <summary>409: the provider lacks the function.</summary>
-    public const string NotSupportedType = "connection-not-supported";
+    public const string NotSupportedType = ProblemTypes.ConnectionNotSupported;
 
     /// <summary>429 while the provider's wait lasts, or while the connection's calls are all taken.</summary>
     public static IResult Waiting(TimeSpan left, HttpContext context)

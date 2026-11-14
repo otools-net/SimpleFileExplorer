@@ -36,7 +36,7 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 | # | Plan | State | Done | Next |
 |---|---|---|---|---|
-| 1 | api-v1 | in progress (**next of the epic**) | phase 0 (rules: [api-versioning](api-versioning.md)); phase 1 (`ApiRoutes`); phase 2 (base `/api/v1`, `LegacyApiPaths` with `Deprecation`, `LegacyPathLog`, `LegacyPathTests`); phase 3 (client `API_BASE`, server tests `V1`, e2e and tools on v1) | phase 4: the v1 OpenAPI document as a baseline, a test refusing breaking changes, `ProblemTypes`; then phase 5 (user docs, close) |
+| 1 | api-v1 | in progress (**next of the epic**) | phase 0 (rules: [api-versioning](api-versioning.md)); phase 1 (`ApiRoutes`); phase 2 (base `/api/v1`, `LegacyApiPaths` with `Deprecation`, `LegacyPathLog`, `LegacyPathTests`); phase 3 (client `API_BASE`, server tests `V1`, e2e and tools on v1); phase 4 (OpenAPI baseline `tests/samples/openapi/v1.json`, `OpenApiBaselineTests` refusing breaks, rights in the document, `ProblemTypes`) | phase 5 (user docs `docs/reference/api.md`, close the plan) |
 | 2 | api-tokens | not started | | |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
@@ -45,6 +45,9 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
 
+- 2026-11-14 (seventh session): api-v1 phase 3 (client, tests and tools on v1); phase 4: the OpenAPI baseline and
+  the test refusing breaking changes (`x-sfe-rights`, `x-sfe-problem-types` added to the document), `ProblemTypes`.
+  Next: api-v1 phase 5.
 - 2026-11-14 (sixth session): api-v1 phase 2: routes under `/api/v1`, old paths rewritten by `LegacyApiPaths`
   (explicit `UseRouting` after it; `Deprecation` + `Link`; OAuth return address kept unversioned), one log line per
   caller and day, `LegacyPathTests`. Next: api-v1 phase 3.

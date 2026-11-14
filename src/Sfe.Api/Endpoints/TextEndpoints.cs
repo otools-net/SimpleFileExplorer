@@ -22,13 +22,13 @@ public static partial class TextEndpoints
     /// <summary>The largest file read or saved as text (larger ones are downloaded).</summary>
     public const long MaxBytes = 10 * 1024 * 1024;
 
-    public const string TooLargeType = "too-large";
-    public const string NotTextType = "not-text";
-    public const string ChangedType = "file-changed";
-    public const string VersionRequiredType = "version-required";
-    public const string NotEncodableType = "not-encodable";
-    public const string IsLinkType = "file-is-link";
-    public const string ReadOnlyType = "read-only";
+    public const string TooLargeType = ProblemTypes.TooLarge;
+    public const string NotTextType = ProblemTypes.NotText;
+    public const string ChangedType = ProblemTypes.FileChanged;
+    public const string VersionRequiredType = ProblemTypes.VersionRequired;
+    public const string NotEncodableType = ProblemTypes.NotEncodable;
+    public const string IsLinkType = ProblemTypes.FileIsLink;
+    public const string ReadOnlyType = ProblemTypes.ReadOnly;
 
     /// <summary>The usual and the largest part of a file read in parts (large files, logs followed).</summary>
     public const int PartBytes = 256 * 1024;

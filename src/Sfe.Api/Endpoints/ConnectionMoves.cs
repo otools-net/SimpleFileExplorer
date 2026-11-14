@@ -17,7 +17,7 @@ namespace Sfe.Api.Endpoints;
 internal sealed class ConnectionMoves
 {
     /// <summary>The problem type of a move letting more people see or change a folder (its <c>gains</c>).</summary>
-    public const string AccessGainsType = "access-gains";
+    public const string AccessGainsType = ProblemTypes.AccessGains;
 
     /// <summary>Numbered names tried for a move keeping both (<see cref="PlaceAsync"/>).</summary>
     private const int MaxNumbered = 20;

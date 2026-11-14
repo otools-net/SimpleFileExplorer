@@ -8,6 +8,7 @@ by hand.
 |---|---|---|---|
 | `library/` | The docs screenshots' sample library: photos, WebM clips, music, documents (text, Markdown, JSON, CSV, PDF, EPUB, Flash) | `agents/tools/docs-screenshots/make-media.mjs` (with `make-epub`, `make-pdf`, `make-swf`) | `docs-screenshots/run.mjs` (copied into its work folder, never used in place: seeding changes it) |
 | `media/` | Small media for the backend tests (test patterns, a tone, clips in several codecs) | ffmpeg, from `media.json` (each file's arguments) | `tests/Sfe.Tests` through `TestSamples.CopyTo` / `PathOf` |
+| `openapi/` | `v1.json`: the v1 OpenAPI document as last accepted, the baseline of the compatibility net | the server, by `OpenApiBaselineTests.WritesTheBaselineWhenAsked` (command in agents/docs/development/api-versioning.md), not by `update-samples.mjs` | `OpenApiBaselineTests` |
 | `archives/` | The backend tests' 7z archives, encrypted zips, and zips of the methods .NET doesn't write (Deflate64, BZip2, LZMA, PPMd, XZ); plain zips and tars are written by the tests | 7-Zip, by `agents/tools/samples/make-archives.mjs` | `ArchiveReaderTests`, `ArchiveCatalogTests` through `TestSamples.ArchiveOf` (read in place) |
 
 - `samples.lock.json` (written by the tool) records what each part was made from: the fingerprint of the library's

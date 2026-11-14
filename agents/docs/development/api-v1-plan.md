@@ -79,10 +79,20 @@ client and the ~940 test paths on routes that don't answer.
 
 ### Phase 4: compatibility net
 
-- [ ] The v1 document committed as the baseline (`tests/samples/openapi/v1.json`, updated by a documented command)
-- [ ] A test fails when the current document breaks the baseline (see "Version rules"); adding is allowed and only
+- [x] The v1 document committed as the baseline (`tests/samples/openapi/v1.json`, updated by a documented command)
+- [x] A test fails when the current document breaks the baseline (see "Version rules"); adding is allowed and only
   asks for the baseline to be updated in the same commit
-- [ ] Problem `type` words listed in one place (`ProblemTypes`), the same list in `api-versioning.md` and the user docs
+- [x] Problem `type` words listed in one place (`ProblemTypes`), the same list in `api-versioning.md` and the user docs
+  (the user docs in phase 5)
+
+As built (2026-11-14): `OpenApiBaselineTests` (break test, freshness test, and the writer:
+`SFE_OPENAPI_BASELINE=write dotnet test tests/Sfe.Tests --filter
+FullyQualifiedName~OpenApiBaselineTests.WritesTheBaselineWhenAsked`); the document read into facts
+(`Infrastructure/OpenApi/ApiContract`), compared by `ApiBreaks` (rules tested on small documents by
+`ApiBreaksTests`); texts and the version ignored, so only a change of the contract asks for a new baseline. The
+rights were not in the document: `ApiDocument` adds `x-sfe-rights` per operation and `x-sfe-problem-types` (an
+addition, so v1 stays compatible). `ProblemTypes` (30 words, `All`); the endpoint constants refer to it, no word
+changed; `ProblemTypesTests` (list, every `…Type` constant, every `type:` in `src/Sfe.Api`, the note's table).
 
 ### Phase 5: user docs and release
 

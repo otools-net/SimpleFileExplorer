@@ -17,11 +17,11 @@ namespace Sfe.Api.Endpoints;
 /// </summary>
 public static class ExploreEndpoints
 {
-    public const string NotExplorableType = "not-explorable";
-    public const string UnreadableType = "archive-unreadable";
-    public const string TooLargeType = "too-large";
-    public const string WrongPasswordType = "wrong-password";
-    public const string NotProtectedType = "not-protected";
+    public const string NotExplorableType = ProblemTypes.NotExplorable;
+    public const string UnreadableType = ProblemTypes.ArchiveUnreadable;
+    public const string TooLargeType = ProblemTypes.TooLarge;
+    public const string WrongPasswordType = ProblemTypes.WrongPassword;
+    public const string NotProtectedType = ProblemTypes.NotProtected;
     public const string UnlockHeader = "X-SFE-Archive-Unlock";
 
     /// <summary>
@@ -33,7 +33,7 @@ public static class ExploreEndpoints
     /// <summary>Folders deep at most for a listing to give its path (one lookup per level).</summary>
     public const int MaxPathDepth = 64;
     public const int MaxPageSize = 1000;
-    public const string ReadingType = "archive-reading";
+    public const string ReadingType = ProblemTypes.ArchiveReading;
 
     /// <summary>Folders and files of an archive chosen at most for one extraction.</summary>
     public const int MaxExtractChosen = 10_000;

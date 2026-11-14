@@ -86,16 +86,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<LegacyPathLog>();
 
-// The document carries the application version (its default is the document name, "v1").
-builder.Services.AddOpenApi(options =>
-    options.AddDocumentTransformer(
-        (document, _, _) =>
-        {
-            document.Info.Version = AppVersion.Version;
-            return Task.CompletedTask;
-        }
-    )
-);
+// The document carries the application version, each route's rights and the problem type words (ApiDocument).
+builder.Services.AddOpenApi(ApiDocument.Configure);
 
 var app = builder.Build();
 

@@ -10,6 +10,8 @@ Code: `tests/samples/` (`library/`, `media/`, `media.json`, `samples.lock.json`,
   `archives/` (made by `agents/tools/samples/make-archives.mjs` with 7-Zip; `--sevenzip <path>`, else found on the
   PATH or in `C:/Program Files/7-Zip`; `TestSamples.ArchiveOf`). ffmpeg is asked for only when what it makes is out
   of date.
+- `openapi/v1.json` is the baseline of the API's compatibility net, written by the test that reads it (its command
+  in [api-versioning](api-versioning.md#the-compatibility-net)), never by `update-samples.mjs`.
 - Files no tool here can make (RAR) come from another project's tests, unchanged, in `tests/samples/third-party/<project>/`
   with the licence, the pinned commit and a row per file in its README (`TestSamples.ThirdPartyOf`); the update tool
   never touches them. A test copies them

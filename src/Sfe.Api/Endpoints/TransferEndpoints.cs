@@ -14,10 +14,10 @@ namespace Sfe.Api.Endpoints;
 public static class TransferEndpoints
 {
     /// <summary>The problem type of a retry asked while the job still runs.</summary>
-    public const string JobRunningType = "job-running";
+    public const string JobRunningType = ProblemTypes.JobRunning;
 
     /// <summary>The problem type of a retry of a job with nothing left to start again.</summary>
-    public const string NothingToRetryType = "nothing-to-retry";
+    public const string NothingToRetryType = ProblemTypes.NothingToRetry;
 
     private static readonly string Description = $"""
         `kind` `move` or `copy`; `from`: a `connection` (null: the library) and its `paths` (at most

@@ -21,8 +21,8 @@ namespace Sfe.Api.Security;
 public sealed class RequestGuard(RequestDelegate next)
 {
     public const string Header = "X-SFE-Request";
-    public const string SetupRequiredType = "setup-required";
-    public const string MigrationRequiredType = "migration-required";
+    public const string SetupRequiredType = ProblemTypes.SetupRequired;
+    public const string MigrationRequiredType = ProblemTypes.MigrationRequired;
 
     public async Task InvokeAsync(
         HttpContext context,

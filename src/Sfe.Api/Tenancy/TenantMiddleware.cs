@@ -9,7 +9,7 @@ namespace Sfe.Api.Tenancy;
 public sealed class TenantMiddleware(RequestDelegate next)
 {
     public const string Header = "X-SFE-Tenant";
-    public const string TenantChangedType = "tenant-changed";
+    public const string TenantChangedType = ProblemTypes.TenantChanged;
 
     public async Task InvokeAsync(HttpContext context, TenantScope scope, CurrentAccess current)
     {

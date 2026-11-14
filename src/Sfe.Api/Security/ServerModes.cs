@@ -20,7 +20,7 @@ public static class ServerModes
     public const string Key = "Sfe:Mode";
 
     /// <summary>The problem type of a request refused because a Local server only answers its own computer.</summary>
-    public const string LocalOnlyType = "local-only";
+    public const string LocalOnlyType = ProblemTypes.LocalOnly;
 
     /// <summary>
     /// The mode configured; null when nothing sets it. An unknown word counts as External, the stricter one.

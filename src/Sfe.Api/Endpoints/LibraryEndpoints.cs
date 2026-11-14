@@ -159,7 +159,7 @@ public static class LibraryEndpoints
     /// <summary>
     /// The problem type of a browse whose library folder doesn't exist (moved drive, folder renamed, new install).
     /// </summary>
-    public const string LibraryRootMissingType = "library-root-missing";
+    public const string LibraryRootMissingType = ProblemTypes.LibraryRootMissing;
 
     private static async Task<Results<Ok<DirectoryListing>, NotFound, ProblemHttpResult>> Browse(
         TagService tags,

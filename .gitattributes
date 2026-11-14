@@ -11,3 +11,4 @@ tests/samples/library/** -text
 tests/samples/media/** -text
 tests/samples/archives/** -text
 tests/samples/third-party/** -text
+tests/samples/openapi/** -text

@@ -12,7 +12,7 @@ public static class SessionEndpoints
     public const string SignInRateLimit = "sign-in";
 
     /// <summary>The problem type of a sign-in refused because a Local server lets only administrators in.</summary>
-    public const string LocalAdministratorsOnlyType = "local-administrators-only";
+    public const string LocalAdministratorsOnlyType = ProblemTypes.LocalAdministratorsOnly;
     private const string LocalAdministratorsOnly =
         "SFE is in Local mode: only its administrators sign in. Ask one to set it to External to let others in.";
 
