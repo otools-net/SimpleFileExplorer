@@ -38,19 +38,59 @@ against the real server in process, and a server change that would break it fail
 
 ### Phase 0: spike (result written here before phase 1)
 
-- [ ] Generate from the real document with Kiota, NSwag and Refitter; choose by: reads the document as emitted
+- [x] Generate from the real document with Kiota, NSwag and Refitter; choose by: reads the document as emitted
   (OpenAPI 3.1 by .NET 10, or 3.0 if the server must emit that for the generator), both targets, streaming request
   and answer bodies (uploads, ranged downloads), dependencies pulled into the host app, no network at build
-- [ ] Decide whether the generator runs at build (`dotnet-tools.json`) or its output is committed (preferred: committed,
+  - As built (2026-11-14, Kiota 1.38.0, NSwag 14.8.0, Refitter 2.3.1, on the baseline as committed):
+    - **Kiota**: reads the 3.1 document as is (type arrays `["integer","string"]`, `["null",…]`, `oneOf` with
+      `null`); builds on `netstandard2.0` and `net8.0` with no error or warning. 486 files (a request builder per
+      path segment, a model per schema). Unknown properties go to `AdditionalData`, unknown enum words read as
+      `null`: the v1 rule (never throw on a newer server) holds. Three warnings: `files/explore`, `…/search`,
+      `…/unlock` answer different schemas on 200 and 202, Kiota keeps the 200 one. Runtime: Kiota's Abstractions,
+      Http.HttpClientLibrary and Serialization.Json (2.1.2) with JSON only registered (`--serializer`,
+      `--deserializer`); they bring Std.UriTemplate, Microsoft.IO.RecyclableMemoryStream and
+      DependencyInjection.Abstractions, plus System.Text.Json 8 and the usual BCL packages on `netstandard2.0`.
+    - **NSwag** (`openapi2csclient`, System.Text.Json): one 34,000-line file, no runtime dependency (System.Text.Json
+      and System.ComponentModel.Annotations on `netstandard2.0`). Does **not** read 3.1 as emitted: defaults of
+      `integer|string` numbers come out as strings (`int X = "0"`, 24 compile errors). Through a 3.0 down-conversion
+      (type arrays to one type plus `nullable`, `pattern` dropped on numbers, `oneOf` with `null` to `allOf` plus
+      `nullable`) it builds on both targets, but its enums carry only `[EnumMember]`, which System.Text.Json ignores
+      before .NET 9: every enum word would fail to read without a hand-written converter.
+    - **Refitter** (Refit interfaces, NSwag's models): the same 3.1 errors and enum problem as NSwag, plus the Refit
+      package (and its source generator) in the host app.
+    - Streaming: the v1 document describes no binary body (raw files, chunks and zips have no content type in it),
+      so no generator produces streaming methods for them: uploads, ranged downloads and zips are hand-written in the
+      facade on the same `HttpClient` (`ResponseHeadersRead`, `StreamContent`) whatever the choice.
+    - **Choice: Kiota.** The only one reading the document as the server emits it, with no conversion step and no
+      server change, and the only one tolerant of new enum words; the price is three small Microsoft packages
+      (instead of none for NSwag) and many generated files.
+- [x] Decide whether the generator runs at build (`dotnet-tools.json`) or its output is committed (preferred: committed,
   with a test that regenerating changes nothing)
+  - As built: committed. Kiota is a local tool (`dotnet-tools.json`, pinned 1.38.0) run only to regenerate, never at
+    build; `GenerationTests.RegeneratingTheClientChangesNothing` runs the script's `--check` (needs node, as the client
+    build does; the script runs `dotnet tool restore` first, so a fresh CI runner fetches Kiota once).
 
 ### Phase 1: project and generated layer
 
-- [ ] `src/Sfe.Client` in `Sfe.slnx`, package metadata, XML docs file, nullable, the analyzers of the solution
-- [ ] Generated client under `Generated/` (excluded from CSharpier and `measure.mjs`), the regeneration command in
+- [x] `src/Sfe.Client` in `Sfe.slnx`, package metadata, XML docs file, nullable, the analyzers of the solution
+  - As built: `netstandard2.0;net8.0`, `RootNamespace` `Otools.Net.Sfe.Client` (project, folder, assembly and
+    package id `Sfe.Client`), `ImplicitUsings` off (the generated files write their own usings), package id, authors, MIT expression,
+    `snupkg` symbols; version from `Directory.Build.props`. No analyzer package in the solution: the `.editorconfig`
+    rules and the SDK's default analyzers apply. Builds with no warning.
+- [x] Generated client under `Generated/` (excluded from CSharpier and `measure.mjs`), the regeneration command in
   [commands](../environment/commands.md) and a README in `agents/tools/` if it needs a script
-- [ ] `tests/Sfe.Client.Tests`: the in-process server of `tests/Sfe.Tests/Infrastructure` (its `HttpClient` given to
+  - As built: `agents/tools/client-generation/generate.mjs` (README there): Kiota into a temporary folder, its
+    `kiota-lock.json` dropped (a path relative to that folder), files written with LF, `--check` to compare.
+    `SfeRawClient` in `Otools.Net.Sfe.Client.Generated` (models in `.Models`). `measure.mjs` skips
+    `src/Sfe.Client/Generated/` and measures `tests/Sfe.Client.Tests` with the server tests.
+- [x] `tests/Sfe.Client.Tests`: the in-process server of `tests/Sfe.Tests/Infrastructure` (its `HttpClient` given to
   the library), a token made by the test
+  - As built: references `Sfe.Tests` (the helpers stay there, one copy; MSTest runs only this assembly's tests).
+    `Infrastructure/TokenServer` sets up the server (`Sfe:Mode=External` from `TestLibrary.Settings`), makes the
+    administrator's token (`TokenClients.CreateAsync`) and gives `TokenClients.Bearer`'s `HttpClient` to Kiota's
+    `HttpClientRequestAdapter` with `AnonymousAuthenticationProvider` (the header is already on the client); the
+    base URL loses its last `/` (Kiota's templates start with one). `GeneratedClientTests`: a folder listed, a tag
+    made with the token only.
 
 ### Phase 2: core of the facade
 

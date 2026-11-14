@@ -29,13 +29,16 @@ const LIMITS = {
 };
 
 const isSpec = file => file.endsWith('.spec.ts') || file.includes('/testing/');
-const isServerCode = file => /^src\/.*\.cs$/.test(file) && !/Migrations\//.test(file);
+// Left as their tools write them: EF Core migrations, the C# client library's Kiota code (client-generation).
+const isGenerated = file => /Migrations\//.test(file) || /^src\/Sfe\.Client\/Generated\//.test(file);
+const isServerCode = file => /^src\/.*\.cs$/.test(file) && !isGenerated(file);
+const isServerTest = file => /^tests\/Sfe(\.Client)?\.Tests\/.*\.cs$/.test(file);
 const isClientCode = file => /^src\/Sfe\.Web\/src\/.*\.ts$/.test(file);
 
 /** The areas measured. In tests, files may be longer and functions are not measured. */
 const AREAS = [
     { name: 'server', language: 'cs', tests: false, match: isServerCode },
-    { name: 'server tests', language: 'cs', tests: true, match: file => /^tests\/Sfe\.Tests\/.*\.cs$/.test(file) },
+    { name: 'server tests', language: 'cs', tests: true, match: isServerTest },
     { name: 'client', language: 'ts', tests: false, match: file => isClientCode(file) && !isSpec(file) },
     { name: 'client tests', language: 'ts', tests: true, match: file => isClientCode(file) && isSpec(file) },
     { name: 'e2e tests', language: 'ts', tests: true, match: file => /^tests\/e2e\/.*\.ts$/.test(file) },

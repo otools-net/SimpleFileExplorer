@@ -24,7 +24,8 @@ does and where they would change it. Everything below serves that.
 
 Limits, not targets: most code should be well under them. "Now" is what `measure.mjs` counted on 2026-11-12, after
 the formatters (phase 2 of the plan: CSharpier makes long calls longer in lines, so more functions passed 60);
-server = `src/**/*.cs` without migrations, client = `src/Sfe.Web/src/**/*.ts` without specs.
+server = `src/**/*.cs` without migrations and `src/Sfe.Client/Generated/`, client = `src/Sfe.Web/src/**/*.ts` without
+specs.
 
 | What | Limit | When over | Now over (server / client) |
 |---|---|---|---|

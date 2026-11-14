@@ -33,7 +33,7 @@ node agents/tools/readability/measure.mjs --json > <tmp>/readability.json
   its own line). Counts are close, not exact: a multi-line lambda assigned to a field and an expression-bodied
   member (`=> x switch { … }`) are not functions; "nested" counts the blocks open at once (statements, lambdas, local
   functions), not the braces of initializers. Run `dotnet csharpier format .` first if the layout is off.
-  Migrations (`Data/*Migrations/`) are left out.
+  Migrations (`Data/*Migrations/`) and the generated client (`src/Sfe.Client/Generated/`) are left out.
 - TypeScript is exact: nesting counts `if`/loops/`switch`/`try` inside one another, `else if` staying at its `if`'s
   level, inner functions measured on their own.
 - C# formatting and style are not this tool's job: CSharpier and `dotnet format style`
