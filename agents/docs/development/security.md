@@ -47,6 +47,8 @@ library by others). Keep these rules when changing it.
   `Sfe:Security:LinksOutsideLibrary` is `ReadOnly` (`LibraryLinks`). Reading routes keep `Protected`.
 - A folder compared with a configured one (allowed roots, link targets) is compared where it really is
   (`LibraryPaths.RealPath`), never by spelling.
+- A route that lets someone into an account or the server, or handles tokens, is marked `.SessionOnly()`: an access
+  token may not call it ([access-tokens.md](../features/access-tokens.md); `AccessTokenRouteTests` checks the list).
 - Security events (failed or refused sign-ins, lockouts, wrong codes, recoveries, changes of what runs) are logged
   with `LogSecurityWarning` ([logs.md](../features/logs.md)), with the name and address, never a secret.
 
@@ -134,6 +136,7 @@ input, LIKE escaped, no `innerHTML` in the client.
   the flash route and back; links of a disabled account, after a rule, with `Player:Flash` off. Checked 2026-10-25: the
   frame sends no cookie (`Origin: null`), `javascript:`/`_blank` do nothing (`FlashRouteTests`, spike in headless Edge).
 - **Connections:** see [Connections](#connections) below.
+- **Access tokens:** see [Access tokens](#access-tokens) below.
 - **CSRF/framing/rebinding:** cross-site POST without the header, framing the app, foreign `Host`.
 - **DoS:** floods of thumbnails/probes as a guest, `*` searches, big covers requests, parallel editor uploads, streams.
 - **Secrets at rest:** backup content, log store and log files, permissions of `data/`.
@@ -165,4 +168,33 @@ content served under the library's sandbox (`RemoteFileResult`).
 | Outbound: a host outside the provider's rule, http, a redirect; later providers: an address typed by a person pointing at loopback or the LAN, a redirect to one | `OutboundPolicyTests` |
 | The client naming a provider's host (fully local) | `ApiTests.WebClientHasNoExternalResources` |
 | Local mode: connections for the administrators on this computer, nothing new answering other computers | not automated (the routes sit behind `RequestGuard` like every other) |
-| An access token limited in rights or library using connections | not yet: comes with [api-tokens-plan.md](api-tokens-plan.md) |
+| An access token limited in rights or library using connections | by review only: `ConnectionJobAccess` checks each item with the token's rights (`ConnectionJobSubject.Token`); routes go through `CurrentAccess` like every other |
+
+## Access tokens
+
+Personal access tokens (`Authorization: Bearer`, [access-tokens.md](../features/access-tokens.md)). Tests:
+`AccessTokenAuthenticationTests` (Auth), `AccessTokenRouteTests` (Route), `AccessTokenServiceTests` (Service),
+`AccessTokenJobTests` (Job).
+
+| Vector | Tested by |
+|---|---|
+| A token of a disabled or deleted account | Auth `ATokenOfADisabledOrDeletedAccountStopsWorking` |
+| An expired or revoked token, a wrong secret, a malformed token: all the same 401, no `Set-Cookie` | Auth `WrongExpiredAndRevokedTokensAreRefusedAlike`, Service `WrongMalformedExpiredAndRevokedTokensFindNothing` |
+| A right the account lost since the token was made; a right beyond the token's list | Auth `ATokenHasItsOwnRightsAmongWhatItsAccountHoldsNow` |
+| A token limited to a library sent with another library's `X-SFE-Tenant`; an unknown library; an account removed from the token's library | Auth `ATokenStaysInItsSpaceAndTheSpacesItsAccountReaches` |
+| A token on a session-only route: making or listing tokens, revoke all, password, sign-in, installation, setup | Auth `RoutesForSessionsOnlyRefuseTokens`; Route `EveryRouteLettingSomeoneInOrHandlingTokensIsForSessionsOnly` (the list both ways) |
+| Guessing: wrong tokens from one address, from one IPv6 /64 (the address is then refused every token) | Auth `WrongTokensAreThrottledPerAddressAndTheSecretIsNeverLogged` |
+| A known lookup with a wrong secret: same answer as an unknown lookup | Auth `WrongExpiredAndRevokedTokensAreRefusedAlike` (same 401); same timing by review only (`FixedTimeEquals`, an unknown lookup compared with a zero hash) |
+| Local mode: a token from another computer, a non-administrator's token | Auth `ALocalServerTakesTokensOfItsAdministratorsOnItsOwnComputerOnly` |
+| A request with a cookie and a bearer (the bearer decides; a wrong bearer never falls back to the cookie) | Auth `WithACookieAndABearerTheBearerDecides` |
+| A bearer on `<img>`-style GET routes (raw, thumbnails) | by review only: browsers never send a bearer by themselves; GET routes take it like `config` (Auth `ABearerActsAsItsAccountWithoutCookieNorRequestHeader`) |
+| The token in the query (`?access_token=`) | Auth `ABearerActsAsItsAccountWithoutCookieNorRequestHeader` (refused) |
+| The secret in the log (wrong tokens, audit lines) | Auth `WrongTokensAreThrottled…`, `ChangesMadeWithATokenAreLoggedWithTheAccountAndTheToken` |
+| The secret in the database or backups (only its SHA-256 kept) | Service `TheSecretIsShownOnceAndOnlyItsHashIsKept`; backups by review only (they copy the database) |
+| The secret in problem answers | by review only (`ProblemLog` names the token by `BearerTokens.Describe`, never its secret) |
+| A space administrator revoking a server administrator's token, or another space's | Route `AdministratorsSeeAndRevokeTheTokensOfTheirSpacesOnly` |
+| A job started with a token: an item beyond the token's rights; the token revoked while it runs | Job `ATokenWithoutTheRightToDeleteReplacesNothing`, `RevokingTheTokenStopsTheItemsLeftButNotASessionsJob` |
+| Tokens switched off: none made, none accepted | Route `TokensTurnedOffAreNeitherMadeNorUsed` |
+| More tokens than allowed; a longer life; rights or a library the account doesn't hold | Service `AnAccountHoldsAtMostTheTokensAllowed`, `ATokenLivesNoLongerThanAllowed`, `ATokensRightsAndLibraryAreAmongTheAccounts` |
+| An access token limited in rights or library using connections | see [Connections](#connections) (by review only) |
+| External player and Flash links made with a token | known gap: they carry the account, not the token (see [access-tokens.md](../features/access-tokens.md#gotchas)) |

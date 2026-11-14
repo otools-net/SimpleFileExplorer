@@ -45,5 +45,8 @@ first characters, the library it works in, its rights, and when it was made, exp
   tokens. Changing your password does **not** end them (as on other services): revoke them if they may have leaked.
 - While the server has tokens switched off (**Spaces & accounts › Token settings**), no token can be made and those
   made are refused; they work again once tokens are switched back on.
+- A token can't sign in, change a password, make other tokens or open the setup and installation pages: those stay
+  with your session.
 
-Screenshots of these pages come with the release check.
+How a program sends its token, with examples in curl and PowerShell:
+[Calling with a token](../reference/api.md#calling-with-a-token).

@@ -10,7 +10,7 @@ client `src/Sfe.Web/src/app/core/api.service.ts`.
 - **Access tokens:** the default scheme is a policy scheme (`Sfe`) choosing `AccessTokenAuthentication` when the
   request sends `Authorization: Bearer`, else the cookie: a bearer request ignores cookies and needs no
   `X-SFE-Request`; the handler re-reads the account each request (no `OnValidatePrincipal`). Details:
-  [api-tokens-plan](../development/api-tokens-plan.md) (phase 2 "As built").
+  [access-tokens](../features/access-tokens.md#authentication).
 - **Cookie names per port** (`InstanceCookies`, `InstanceCookieManager`): browsers keep cookies per host, not per port,
   so two instances on `localhost:5000` and `:5001` shared `sfe.session`, each sign-in signing the other out (its keys
   can't read the other's). The port of the request's Host is added: `sfe.session-5000`, `sfe.guest-5000`; no port (80,

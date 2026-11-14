@@ -74,7 +74,8 @@ Which extensions count as pictures, videos, audio and text is a setting of each 
   copies, uploads, extractions and compressions running in the background.
 - **Server**: background tasks with history and logs, schedules, the server's log searched by text and severity,
   backups, a keep-alive for library folders on network shares, a startup page and version check after upgrades.
-- **API**: everything the web client does is a documented JSON API (OpenAPI).
+- **API**: everything the web client does is a documented JSON API (OpenAPI), which programs call with personal
+  access tokens ([API](docs/reference/api.md#calling-with-a-token)).
 
 ## Interface
 

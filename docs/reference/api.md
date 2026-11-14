@@ -13,10 +13,61 @@ Everything the web page does goes through a JSON API, which other programs can u
 
 ## Signing in
 
-- Today a program calls the API as a signed-in session: the `sfe.session` cookie, from
-  `POST /api/v1/session/login` (`userName`, `password`), kept and sent back with each request.
-- Every request other than `GET` needs the header `X-SFE-Request: 1`, or it is refused (400).
-- Access tokens for programs (no cookie, no password stored in a script) are planned for a later version.
+A program calls the API in one of two ways:
+
+- **With an access token** (recommended): see [Calling with a token](#calling-with-a-token) below.
+- **As a signed-in session**: the `sfe.session` cookie, from `POST /api/v1/session/login` (`userName`, `password`),
+  kept and sent back with each request. Every request other than `GET` then needs the header `X-SFE-Request: 1`, or
+  it is refused (400).
+
+## Calling with a token
+
+An access token is made on [My account › Access tokens](../administration/my-account.md#access-tokens) and shown
+once, as `sfe_` followed by two parts (`sfe_XXXX_...` below stands for yours). Keep it like a password.
+
+- **Header:** send `Authorization: Bearer sfe_XXXX_...` with every request. No cookie and no `X-SFE-Request` are
+  needed; a request with a token ignores any cookie. A token in the address (`?access_token=`) is never accepted.
+- **What it may do:** what its account may do now, or only the rights chosen when it was made. It never does more
+  than the account: a right the account loses, the token loses too.
+- **Library:** a token made for one library works only there. Otherwise it works in the library named by the header
+  `X-SFE-Tenant: <id>`, among those the account reaches, else in the account's first. `GET /api/v1/config` lists the
+  account's libraries (`tenants`: `id`, `slug`, `name`) and tells which one the request works in (`tenant`).
+- **Routes refused to tokens** (403, problem type `session-only`): signing in and out, the password, account
+  recovery, switching space, the setup, installation and update pages, and the tokens themselves
+  (`/api/v1/me/tokens`, `/api/v1/access/tokens`). A token never makes another token or changes a password.
+- **Jobs:** a move, copy, zip or extraction started with a token keeps the token's limits for each item, and stops
+  at the next item once the token is revoked or expires.
+- **Log:** every change made with a token (anything but `GET`) is written in the server's
+  [log](../administration/logs.md) with the account and the token's name.
+
+| Answer | When |
+|---|---|
+| 401 | the token is wrong, expired or revoked; its account is disabled or deleted; tokens are switched off; or too many wrong tokens came from this address (it is refused every token for a while). `WWW-Authenticate: Bearer error="invalid_token"` |
+| 403 | the token or its account lacks the route's right; the library named isn't the token's or the account's; the route is session-only (`session-only`); a Local server answered another computer (`local-only`) |
+| 429 | too many requests of one kind (thumbnails, searches…) from the account in a short time: wait and try again. A token shares its account's budget |
+
+Listing a folder (`path` relative to the library root; `offset` and `limit` page through it) and downloading a file
+(right `files.download`) with curl:
+
+```sh
+curl -H "Authorization: Bearer sfe_XXXX_..." \
+  "http://localhost:5080/api/v1/browse?path=Photos/2024&limit=100"
+curl -H "Authorization: Bearer sfe_XXXX_..." -H "X-SFE-Tenant: 2" \
+  -o beach.jpg "http://localhost:5080/api/v1/files/raw/Photos/2024/beach.jpg?download=true"
+```
+
+The same with PowerShell:
+
+```powershell
+$headers = @{ Authorization = "Bearer sfe_XXXX_..." }
+$listing = Invoke-RestMethod -Headers $headers "http://localhost:5080/api/v1/browse?path=Photos/2024&limit=100"
+$listing.items | Select-Object name, size
+Invoke-RestMethod -Headers ($headers + @{ "X-SFE-Tenant" = "2" }) -OutFile beach.jpg `
+  "http://localhost:5080/api/v1/files/raw/Photos/2024/beach.jpg?download=true"
+```
+
+A listing gives `items`, `total`, `offset` and `limit`: ask again with `offset` moved on until it reaches `total`.
+Swagger UI (`/api/docs`) takes a token too: **Authorize**, then paste it.
 
 ## Versions and compatibility
 

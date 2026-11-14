@@ -3,7 +3,8 @@
 Files: new `src/Sfe.Client/`, `tests/Sfe.Client.Tests/`, `samples/Sfe.Client.Sample/`; `Sfe.slnx`,
 `Directory.Build.props`, `build/build.ps1`, `build/build.sh`, `.csharpierignore`, `agents/tools/readability/`.
 Part 4 of the [epic](external-access-epic-plan.md); needs plan 1 (done:
-[api-versioning](api-versioning.md)) and [api-tokens-plan](api-tokens-plan.md) finished. Delete this plan once its last item is ticked.
+[api-versioning](api-versioning.md)) and api-tokens (done: [access-tokens](../features/access-tokens.md)) finished.
+Delete this plan once its last item is ticked.
 
 ## Goal
 

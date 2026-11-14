@@ -1,9 +1,9 @@
 # Plan (epic): versioned API, access tokens, C# client library, external connections
 
-Files: the plans below (plans 1, api-v1, and 5, connections, done and deleted); code named in each. This file is the **overview**:
-what was decided, in what order the plans run, what none of them does. Delete it with the last plan (see
-[AGENTS.md](../../../AGENTS.md), "Keeping these notes current"), moving the decisions that stay true into the feature
-notes.
+Files: the plans below (plans 1, api-v1, 2, api-tokens, and 5, connections, done and deleted); code named in each.
+This file is the **overview**: what was decided, in what order the plans run, what none of them does.
+Delete it with the last plan (see [AGENTS.md](../../../AGENTS.md), "Keeping these notes current"), moving the
+decisions that stay true into the feature notes.
 
 ## Why
 
@@ -20,7 +20,7 @@ Each plan is worked alone, with its own releases; a later one builds on the earl
 | # | Plan | Delivers | Needs |
 |---|---|---|---|
 | 1 | api-v1 (done 2026-11-14; notes: [api-versioning](api-versioning.md)) | every route under `/api/v1`, old paths as aliases, compatibility net | |
-| 2 | [api-tokens-plan](api-tokens-plan.md) | personal access tokens (`Authorization: Bearer`) | 1 |
+| 2 | api-tokens (done 2026-11-14; notes: [access-tokens](../features/access-tokens.md)) | personal access tokens (`Authorization: Bearer`) | 1 |
 | 3 | [namespace-rename-plan](namespace-rename-plan.md) | C# namespaces `Sfe.*` become `Otools.Net.Sfe.*` (refactoring) | |
 | 4 | [client-library-plan](client-library-plan.md) | `Otools.Net.Sfe.Client` package over the v1 API | 1, 2, 3 |
 | 5 | connections (done 2026-11-14; notes: [connections](../features/connections.md)) | providers, Dropbox, browse, file management, transfers, rules | |
@@ -37,7 +37,7 @@ in each plan's `## Progress` checklist; this board is the summary.
 | # | Plan | State | Done | Next |
 |---|---|---|---|---|
 | 1 | api-v1 | **done** 2026-11-14; plan deleted, what stays true in [api-versioning](api-versioning.md) and [api-routes](api-routes.md), user page `docs/reference/api.md` | phases 0 to 5 (rules; `ApiRoutes`; base `/api/v1`, `LegacyApiPaths`, `LegacyPathLog`, `LegacyPathTests`; client `API_BASE`, tests `V1`, e2e and tools; OpenAPI baseline, `OpenApiBaselineTests`, `x-sfe-rights`, `ProblemTypes`; user docs) | |
-| 2 | api-tokens | **in progress** (next of the epic) | phase 1 (table `AccessTokens`, `AccessTokens` service, `security.accessTokens.*` settings); phase 2 (`AccessTokenAuthentication` scheme + selecting policy scheme, `CurrentAccess` limits, `RequestGuard`, `.SessionOnly()`, throttle); phase 3 (rights `account.tokens`/`access.tokens`, `me/tokens` and `access/tokens` routes, bearer scheme in OpenAPI, `AccessTokenAudit`, `config.accessTokens`); jobs started with a token checked per item with its rights, stopped when it is revoked (`JobToken`); phase 4 (account and access pages, settings field) | phase 5 of [api-tokens-plan](api-tokens-plan.md) (docs, security vectors, `access-tokens.md`, plan deleted) |
+| 2 | api-tokens | **done** 2026-11-14; plan deleted, what stays true in [access-tokens](../features/access-tokens.md), user pages `docs/reference/api.md#calling-with-a-token`, `my-account.md`, `spaces-and-accounts.md` | phase 1 (table `AccessTokens`, `AccessTokens` service, `security.accessTokens.*` settings); phase 2 (`AccessTokenAuthentication` scheme + selecting policy scheme, `CurrentAccess` limits, `RequestGuard`, `.SessionOnly()`, throttle); phase 3 (rights `account.tokens`/`access.tokens`, `me/tokens` and `access/tokens` routes, bearer scheme in OpenAPI, `AccessTokenAudit`, `config.accessTokens`); jobs started with a token checked per item with its rights, stopped when it is revoked (`JobToken`); phase 4 (account and access pages, settings field); phase 5 (user docs, vectors in [security](security.md#access-tokens)) | screenshots of the token pages (`agents/tools/docs-screenshots`: needs new scenes in `shots.mjs`) |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
 | 5 | connections | **done** 2026-11-14 (started before plans 1 to 4 at the owner's request; routes mapped through `ApiRoutes`, so they follow the base); plan deleted, what stays true in [connections](../features/connections.md) and its sibling notes | phases 0 to 6 (providers, `OutboundPolicy`, tables, rights, settings; Dropbox sign-in and management; browse, read, zips, gates; file management, uploads, properties; transfers with the library, retry, history; folder rules, enforcement, following moves); phase 7: notes split, security vectors in [security](security.md#connections) | the facade item (`sfe.Connections`) moved to plan 4's phase 5; a person runs `agents/tools/dropbox-check` before a release |
@@ -45,6 +45,9 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
 
+- 2026-11-14 (tenth session): api-tokens phase 5: user docs (calling with a token, curl and PowerShell examples,
+  settings, pages), vectors in `security.md`, feature note `access-tokens.md`; plan deleted. Left: screenshots of the
+  token pages (no scene yet). Next: namespace-rename.
 - 2026-11-14 (ninth session): api-tokens phases 2 and 3 (authentication with a bearer, session-only routes,
   throttle, token routes and rights, OpenAPI bearer scheme, audit lines; `AccessTokenAuthenticationTests`,
   `AccessTokenRouteTests`, baseline written); jobs started with a token checked per item (`AccessTokenJobTests`);

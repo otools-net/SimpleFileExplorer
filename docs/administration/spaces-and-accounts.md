@@ -159,7 +159,8 @@ themselves are never shown again after they were made.
 | **Longest life (days)** (`security.accessTokens.maxLifetimeDays`) | A new token expires after at most this many days; 0 lets a token never expire. Default 365 |
 | **Tokens per account** (`security.accessTokens.maxPerAccount`) | Tokens an account may hold at once, neither revoked nor expired. Default 20 |
 
-Screenshots of these pages come with the release check.
+A space's administrators never see nor revoke a server administrator's token. Every change made with a token is in
+the server's [log](logs.md), with the account and the token's name.
 
 ## Directories (LDAP)
 

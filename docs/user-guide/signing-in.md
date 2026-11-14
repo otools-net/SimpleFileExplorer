@@ -37,7 +37,7 @@ The ⋮ button at the top right holds:
 - **Scan this folder** and **Remove from index…** ([Scanning](scanning.md));
 - your other spaces, if you have several: picking one switches to it (and reloads the page);
 - **Administration** ([the administration page](../administration/README.md)): settings, tags, duplicates, accounts,
-  tasks, and **My account** (your preferences and password);
+  tasks, and **My account** (your preferences, password and access tokens);
 - **Toggle fullscreen**, which shows the page full screen or leaves it;
 - **Sign out** (or **Sign in** for a visitor);
 - the version of SFE, at the bottom.

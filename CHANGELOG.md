@@ -7,9 +7,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
-- **Personal access tokens, for programs calling the API** (the pages to make and revoke them come with a later
-  version): a program sends `Authorization: Bearer sfe_…` and acts as the token's account, with its rights or only
-  some of them, in one space or those the account reaches (`X-SFE-Tenant`); no cookie and no `X-SFE-Request` needed.
+- **Docs: calling the API with an access token** ([API](docs/reference/api.md#calling-with-a-token)): the header,
+  the library header, the routes refused to tokens, the 401/403/429 answers, and curl and PowerShell examples.
+- **Personal access tokens, for programs calling the API** (made and revoked on My account › Access tokens;
+  administrators see and revoke them in Spaces & accounts): a program sends `Authorization: Bearer sfe_…` and
+  acts as the token's account, with its rights or only some of them, in one space or those the account reaches
+  (`X-SFE-Tenant`); no cookie and no `X-SFE-Request` needed.
   Routes `api/v1/me/tokens` (list, make, revoke, revoke all) and `api/v1/access/tokens` (administrators: see and
   revoke the tokens of their spaces' accounts), new rights `account.tokens` and `access.tokens` (given to the
   Administrators group of every space, never to guests). A token never signs in, changes a password, makes tokens
