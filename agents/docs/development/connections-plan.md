@@ -366,6 +366,40 @@ Design (fourth session, a Plan agent's study; defaults taken where the owner has
 - [ ] Management card reused on a connection's folders ([folder-access](../features/folder-access.md)); rules follow
   folders renamed or moved in the app ([file-operations](file-operations.md))
 
+Design (fourth session, a Plan agent's study; *default* = taken where the owner hasn't answered):
+
+- **Two gaps of the work so far, fixed by this phase's evaluator** (on `edge`, not released): `OpenAsync` checks
+  the library-wide right against the best `ConnectionGroup` level, so a right of one group adds to the level of
+  another (group A: `files.delete` at Read, group B: Write without it = deletes); `RemoteTransferEndpoint` doesn't
+  re-check the connection side per item. Fix: rights paired with the group that grants them, as library rules do.
+- **C0 refactoring:** `FolderPolicy.Compile(principals, comparer)` (case per provider), `FolderPrincipal.DefaultLevel`;
+  the move logic out of `FolderRuleService` into `FolderRuleMoves`.
+- **C1 data:** `ConnectionFolderRules` (Id, ConnectionId, TenantId, Path ≤ 1000, GroupId xor UserId, Level, ItemId
+  (provider id), Created, CreatedById); SQL Server migration in `AccessMigrations`, SQLite by
+  `AddMissingSqliteObjectsAsync`; tenant and user cascade, group and connection `ClientCascade` (removed by their
+  services); 250 rules per tenant and connection; none on account-level connections; `ConnectionRuleService`
+  (locks per connection; bumps `AccessChanges`); upgrade tests.
+- **C2 enforcement:** `ConnectionPolicies` (cached per subject, connection and `AccessChanges.Version`): principals =
+  the subject's groups with a `ConnectionGroup` row (the row's level as default, that group's rights), `ReadOnly`
+  caps at Read, server administrators unrestricted. `OpenConnection.Folders` (`At`, `Check`, `AllowsThroughout`);
+  hidden → 404 before any provider call, seen but refused → 403; single items also checked at the provider's own
+  path (stricter wins); a clash with a hidden name → 409 exists; server-side copy/move of a folder needs Read
+  throughout (else 403); `RemoteListings` filters the page (the snapshot stays shared) with offsets and counts
+  corrected; `DirectoryListing.Access` filled.
+- **C3 transfers and zips:** `IConnectionJobAccess` per item in `RemoteTransferEndpoint`; zips skip hidden items
+  without naming them.
+- **C4 following:** renames/moves in SFE move the rules (begin / provider / complete or abort); rules of deleted
+  folders kept (*default*); outside renames found by `ItemId` with a manual Follow (*default*; automatic with the
+  index plan).
+- **C5 management:** `api/connections/{id}/folder-rules` (GET/PUT, repoint), `folder-access?path=`, `folders?path=`
+  (right `connections.library`, the request's library); the card reused through a `FolderRulesSource` adapter;
+  new client calls in their own API file; docs with screenshots.
+- *Defaults:* the `ConnectionGroup` row stays the gate (rules never open a connection to a group without one); a
+  rule may raise a group above its row's level (nearest rule wins, `ReadOnly` still caps); a library no longer
+  offered a server connection loses its rules; a move's keep-access question covers the request's library, other
+  libraries' rules follow with a security warning.
+- Parallel agents after C0 and the contracts: data + following; enforcement + listings; transfers + zips; client.
+
 ### Phase 7: the C# library and close
 
 - [ ] `sfe.Connections` in the facade: list, and the `Files`, `Jobs`, uploads and downloads over a connection
