@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// Signing in to a provider to make a connection, or to sign an existing one in again (its sign-in refused or lost):

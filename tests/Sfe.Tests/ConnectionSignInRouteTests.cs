@@ -6,15 +6,15 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Data;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The sign-in routes (<c>api/connections/authorize</c>, its completion, the OAuth callback): rights by level, the

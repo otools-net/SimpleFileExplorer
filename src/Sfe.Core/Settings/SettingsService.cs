@@ -1,12 +1,12 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Access;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>
 /// Reads and changes the settings exposed to the web client (see <see cref="EditableSettings"/>), by level

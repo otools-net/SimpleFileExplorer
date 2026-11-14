@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>A right nobody gets in this library, whatever its groups grant (set by server administrators).</summary>
 public sealed class TenantDisabledRight

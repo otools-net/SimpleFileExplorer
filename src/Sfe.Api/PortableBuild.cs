@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// Portable builds (<c>-p:SfePortable=true</c>, made by <c>build/</c>) keep their settings, web files and data folder

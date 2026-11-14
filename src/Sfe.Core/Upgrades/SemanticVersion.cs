@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Sfe.Core.Upgrades;
+namespace Otools.Net.Sfe.Core.Upgrades;
 
 /// <summary>
 /// <c>major.minor.patch</c> with an optional pre-release (<c>1.3.0-beta.1</c>), as the builds name SFE's versions:

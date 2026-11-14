@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// A folder rule kept while its folder is out of the library (in the trash); its path relative to that folder.

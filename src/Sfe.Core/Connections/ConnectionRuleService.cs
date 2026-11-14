@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Logs;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// The folder rules of library- and server-level connections: each library sets its own, for its groups and

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Streaming;
+namespace Otools.Net.Sfe.Core.Streaming;
 
 /// <summary>
 /// Who watches a converted video: shown to the server's administrators (<see cref="VideoStreams.List"/>).

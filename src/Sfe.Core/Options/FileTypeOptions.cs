@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <remarks>
 /// The lists start empty and get their defaults from <see cref="ApplyDefaults"/> when not configured: the

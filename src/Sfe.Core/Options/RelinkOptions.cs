@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// A tagged file that a scan no longer finds is remembered as missing, with its tags, instead of being forgotten.

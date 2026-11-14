@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// Every right of the server. Every function of the API and every setting is covered by one of them (the Api's

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>A file or folder in the trash, as the trash page lists it.</summary>
 /// <param name="Path">Where it was, relative to the library root.</param>

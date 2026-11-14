@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 public sealed class TrashOptions
 {

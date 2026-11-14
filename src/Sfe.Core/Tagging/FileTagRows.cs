@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 /// <summary>Writes file-tag links by batches, skipping those that exist.</summary>
 internal static class FileTagRows

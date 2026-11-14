@@ -1,6 +1,6 @@
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>Who runs a job in a connection, where (<see cref="ConnectionJobAccess"/>).</summary>
 /// <param name="UserId">The account that started it; null for a visitor (never any connection).</param>

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 public sealed class RightHandler(CurrentAccess current) : AuthorizationHandler<RightRequirement>
 {

@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Data;
-using Sfe.Core.Logs;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// The accounts with a password in the database. Locks an account for a while after repeated failures, and stores

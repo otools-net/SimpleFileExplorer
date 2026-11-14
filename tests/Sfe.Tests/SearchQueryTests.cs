@@ -1,7 +1,7 @@
-using Sfe.Core.Library;
-using Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Search;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 [TestClass]
 public sealed class SearchQueryTests

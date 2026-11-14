@@ -1,4 +1,4 @@
-namespace Sfe.Tests.Infrastructure.OpenApi;
+namespace Otools.Net.Sfe.Tests.Infrastructure.OpenApi;
 
 /// <summary>What an <see cref="ApiFact"/> is about.</summary>
 public enum FactKind

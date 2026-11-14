@@ -4,18 +4,18 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Sfe.Api.Endpoints;
-using Sfe.Core.FileTracking;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
-using Sfe.Core.Tagging;
-using Sfe.Core.Tasks;
-using Sfe.Core.Trickplay;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.FileTracking;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Tasks;
+using Otools.Net.Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 [TestClass]
 public sealed class ApiTests
@@ -458,7 +458,7 @@ public sealed class ApiTests
         Assert.AreEqual(type, response.Content.Headers.ContentType?.MediaType);
         Assert.AreEqual("attachment", response.Content.Headers.ContentDisposition?.DispositionType);
         Assert.AreEqual(
-            Sfe.Api.Security.SecurityHeaders.FilePolicy,
+            Otools.Net.Sfe.Api.Security.SecurityHeaders.FilePolicy,
             string.Join(';', response.Headers.GetValues("Content-Security-Policy"))
         );
         Assert.AreEqual("nosniff", string.Join(',', response.Headers.GetValues("X-Content-Type-Options")));
@@ -469,7 +469,7 @@ public sealed class ApiTests
     {
         File.WriteAllText(_library.FullPath("evil.html"), "<script>alert(1)</script>");
         using var created = await _client.PostAsJsonAsync($"{V1}/files/links", new FileLinkRequest("evil.html"), Token);
-        var link = (await created.Content.ReadFromJsonAsync<Sfe.Api.Security.FileLink>(Json, Token))!;
+        var link = (await created.Content.ReadFromJsonAsync<Otools.Net.Sfe.Api.Security.FileLink>(Json, Token))!;
 
         using var visitor = ApiClients.Create(_factory);
         using var response = await visitor.GetAsync("/" + link.Url, Token);
@@ -477,7 +477,7 @@ public sealed class ApiTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual("attachment", response.Content.Headers.ContentDisposition?.DispositionType);
         Assert.AreEqual(
-            Sfe.Api.Security.SecurityHeaders.FilePolicy,
+            Otools.Net.Sfe.Api.Security.SecurityHeaders.FilePolicy,
             string.Join(';', response.Headers.GetValues("Content-Security-Policy"))
         );
     }
@@ -559,7 +559,7 @@ public sealed class ApiTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.IsNull(response.Content.Headers.ContentDisposition);
         Assert.AreEqual(
-            Sfe.Api.Security.SecurityHeaders.FilePolicy,
+            Otools.Net.Sfe.Api.Security.SecurityHeaders.FilePolicy,
             string.Join(';', response.Headers.GetValues("Content-Security-Policy"))
         );
     }
@@ -579,7 +579,7 @@ public sealed class ApiTests
             Assert.AreEqual("DENY", string.Join(',', response.Headers.GetValues("X-Frame-Options")), url);
             Assert.AreEqual("same-origin", string.Join(',', response.Headers.GetValues("Referrer-Policy")), url);
             Assert.AreEqual(
-                Sfe.Api.Security.SecurityHeaders.AppPolicy,
+                Otools.Net.Sfe.Api.Security.SecurityHeaders.AppPolicy,
                 string.Join(';', response.Headers.GetValues("Content-Security-Policy")),
                 url
             );

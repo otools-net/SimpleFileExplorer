@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Links for external players (VLC, Infuse...), which fetch the file themselves without the browser's cookie: the

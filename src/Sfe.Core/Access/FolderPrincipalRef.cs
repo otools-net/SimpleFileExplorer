@@ -1,6 +1,6 @@
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>Who a folder rule is for: a group of the library, or one account.</summary>
 public sealed record FolderPrincipalRef(int? GroupId, int? UserId)

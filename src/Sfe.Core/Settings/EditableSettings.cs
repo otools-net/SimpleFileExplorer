@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>
 /// The part of <see cref="SfeOptions"/> that can be changed from the web client, by level

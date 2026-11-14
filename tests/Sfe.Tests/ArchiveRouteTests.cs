@@ -5,16 +5,16 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Files;
-using Sfe.Core.Indexing;
-using Sfe.Core.Settings;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Zips through HTTP. Alice is in Users (who may download) with SpecialDir hidden from them; Carol may only browse.

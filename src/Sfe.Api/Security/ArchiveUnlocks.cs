@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Passwords of archives, held while they are explored (agents/docs/features/archive-viewer.md, "Passwords"): only in

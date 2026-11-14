@@ -1,4 +1,4 @@
-namespace Sfe.Core.Indexing;
+namespace Otools.Net.Sfe.Core.Indexing;
 
 /// <summary>What a scan reads of an image, video or audio file.</summary>
 /// <param name="Size">The picture of an image or video; null for audio, which has none (a cover is not its

@@ -2,7 +2,7 @@ using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Text;
 
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// A zip's central directory, read record after record (never <see cref="ZipArchive"/>: it keeps every entry as an

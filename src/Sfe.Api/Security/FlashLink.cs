@@ -1,4 +1,4 @@
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <param name="Url">
 /// Relative to the app (<c>api/files/flash/{token}/{name}</c>): the movie, whose relative addresses (<c>level2.swf</c>)

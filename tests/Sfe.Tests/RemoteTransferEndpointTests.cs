@@ -1,10 +1,10 @@
 using System.Text;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Transfers;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Transfers;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="RemoteTransferEndpoint"/>: a connection's side of a transfer over the fake provider (listing through

@@ -3,10 +3,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// Libraries (tenants), accounts and groups. Checks what keeps the server usable (a name per account, a last

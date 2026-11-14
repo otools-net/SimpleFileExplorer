@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Sfe.Core.Data.AccessMigrations
+namespace Otools.Net.Sfe.Core.Data.AccessMigrations
 {
     /// <inheritdoc />
     public partial class ServerProperties : Migration

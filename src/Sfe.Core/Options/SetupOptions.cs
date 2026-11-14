@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// The first administrator. Set in the environment only (configuration files, environment variables): whoever can

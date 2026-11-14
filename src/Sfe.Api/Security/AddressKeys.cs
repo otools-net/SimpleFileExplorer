@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The key a limit counts a network address under. An IPv4 address is one visitor; an IPv6 visitor owns at least a

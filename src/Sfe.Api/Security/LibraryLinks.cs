@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Whether a place reached through a link (symbolic link, junction) that leaves its library may be written to

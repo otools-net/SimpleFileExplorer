@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Logs;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// The connections of the server: listed for those who manage them, made from a sign-in's grant, changed, signed in

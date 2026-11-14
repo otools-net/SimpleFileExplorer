@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// How text files read in the viewer (the reading settings, "Aa"): the library's defaults, each account's own over

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 /// <summary>The default tags of a folder: its own, and those of its parents, which apply to it too.</summary>
 public sealed record FolderDefaults(

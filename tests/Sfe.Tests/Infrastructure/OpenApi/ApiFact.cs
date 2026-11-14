@@ -1,4 +1,4 @@
-namespace Sfe.Tests.Infrastructure.OpenApi;
+namespace Otools.Net.Sfe.Tests.Infrastructure.OpenApi;
 
 /// <summary>
 /// One promise of the API read from its OpenAPI document (<see cref="ApiContract"/>): a route, a parameter, a body, a

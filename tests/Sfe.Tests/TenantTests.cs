@@ -3,16 +3,16 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Tagging;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Several libraries (tenants) on one server: each its own root, index, tags and members.</summary>
 [TestClass]
@@ -418,7 +418,10 @@ public sealed class TenantTests
             TestContext.CancellationToken
         );
         var link = (
-            await created.Content.ReadFromJsonAsync<Sfe.Api.Security.FileLink>(Json, TestContext.CancellationToken)
+            await created.Content.ReadFromJsonAsync<Otools.Net.Sfe.Api.Security.FileLink>(
+                Json,
+                TestContext.CancellationToken
+            )
         )!;
         await SwitchAsync(admin, AccessService.DefaultTenantSlug);
         var player = ApiClients.Create(factory);

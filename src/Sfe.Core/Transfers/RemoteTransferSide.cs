@@ -1,6 +1,6 @@
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>A connection as one side of a transfer (<see cref="RemoteTransferEndpoint"/>).</summary>
 /// <param name="Storage">Opened for the job, which disposes it.</param>

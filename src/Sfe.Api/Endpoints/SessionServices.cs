@@ -1,7 +1,7 @@
-using Sfe.Api.Security;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the routes of the session take from the container and the request (bound with <c>[AsParameters]</c>; none of it

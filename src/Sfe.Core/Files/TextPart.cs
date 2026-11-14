@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>A part of a text file (<see cref="FileContent.ReadPartAsync"/>).</summary>
 /// <param name="Text">The part as text; null when the file is binary.</param>

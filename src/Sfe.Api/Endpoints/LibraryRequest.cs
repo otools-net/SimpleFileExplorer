@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Options;
-using Sfe.Api.Security;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the routes of the library's folders and files take from the container and the request (bound with

@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Data;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Tasks;
+namespace Otools.Net.Sfe.Core.Tasks;
 
 /// <summary>
 /// The schedules of the "Background tasks" dialog (table <c>TaskSchedules</c>), and the loop that starts their tasks

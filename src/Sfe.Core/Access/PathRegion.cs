@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <param name="Path">A folder where the right applies, with everything below it...</param>
 /// <param name="Except">...but these folders below it (and what is below them).</param>

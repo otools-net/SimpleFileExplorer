@@ -1,9 +1,9 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
 
-namespace Sfe.Core.Upgrades.Steps.V1_40_0;
+namespace Otools.Net.Sfe.Core.Upgrades.Steps.V1_40_0;
 
 /// <summary>
 /// 1.40.0: the thumbnails and trickplay move from one folder per source folder to two levels of 256 folders.

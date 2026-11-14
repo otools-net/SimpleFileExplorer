@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>How a setting shows on the settings page of a level.</summary>
 /// <param name="Scope">The most specific level that may set it (<see cref="SettingDefinition.Scope"/>).</param>

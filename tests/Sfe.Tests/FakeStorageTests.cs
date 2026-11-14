@@ -1,9 +1,9 @@
 using System.Text;
-using Sfe.Core.Connections;
-using Sfe.Core.Options;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// What every <see cref="IRemoteStorage"/> must do, checked on the fake the other suites rely on

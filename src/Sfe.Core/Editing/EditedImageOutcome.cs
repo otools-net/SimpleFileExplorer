@@ -1,7 +1,7 @@
-using Sfe.Core.Files;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Editing;
+namespace Otools.Net.Sfe.Core.Editing;
 
 public enum EditedImageOutcome
 {

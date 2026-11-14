@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Editing;
-using Sfe.Core.Files;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Editing;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 public static class EditorEndpoints
 {

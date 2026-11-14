@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// Decrypting zip entries (agents/docs/features/archive-reading.md): ZipCrypto (old archives) and WinZip AES (AE-1,

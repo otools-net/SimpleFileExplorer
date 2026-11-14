@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <param name="Next">The <c>before</c> of the next page; null on the last.</param>
 /// <param name="RetentionDays">Days things stay in the trash (<see cref="TrashOptions.RetentionDays"/>); 0 = until

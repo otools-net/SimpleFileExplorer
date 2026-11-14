@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
-using Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.Trickplay;
 
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <summary>
 /// Finds videos with the same pictures among <see cref="VideoFingerprint"/>s of the same interval.

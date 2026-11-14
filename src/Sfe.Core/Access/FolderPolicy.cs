@@ -1,6 +1,6 @@
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// Where a subject may use its rights in a library, compiled from the folder rules of its principals

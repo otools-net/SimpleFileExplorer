@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// The folder rules of a connection at each item of a transfer (<see cref="RemoteTransferEndpoint"/>), checked

@@ -1,7 +1,7 @@
-using Sfe.Core.Library;
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <param name="Path">Where the file was, relative to the library (absolute when outside it).</param>
 /// <param name="Candidates">Indexed files that may be it, same name first.</param>

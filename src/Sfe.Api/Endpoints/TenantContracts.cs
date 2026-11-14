@@ -1,4 +1,4 @@
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Root">Full path of the space's library folder on the server.</param>
 /// <param name="Members">Accounts with a group in the space.</param>

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// An archive that can't be read as asked: broken, split, protected by a password, past a limit, or using a method SFE

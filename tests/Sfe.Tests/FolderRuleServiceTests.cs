@@ -2,13 +2,13 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Core;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Paths;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Folder rules in the accounts database: set, moved with their folders, and applied to the rights.</summary>
 [TestClass]
@@ -490,8 +490,13 @@ public sealed class FolderFilterIndexTests
         _library = new TestLibrary();
         _services = await CoreServices.CreateAsync(_library);
         await _services
-            .Get<Sfe.Core.Indexing.DirectoryIndexer>()
-            .IndexAsync(_library.Root, true, new Sfe.Core.Indexing.ScanProgress(), TestContext.CancellationToken);
+            .Get<Otools.Net.Sfe.Core.Indexing.DirectoryIndexer>()
+            .IndexAsync(
+                _library.Root,
+                true,
+                new Otools.Net.Sfe.Core.Indexing.ScanProgress(),
+                TestContext.CancellationToken
+            );
     }
 
     [TestCleanup]

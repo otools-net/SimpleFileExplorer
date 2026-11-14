@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Trickplay;
+namespace Otools.Net.Sfe.Core.Trickplay;
 
 /// <param name="Checked">Videos looked at by the current (or last) pass over the folders.</param>
 /// <param name="Generated">Videos given trickplay by that pass and by the player's requests since it started.</param>

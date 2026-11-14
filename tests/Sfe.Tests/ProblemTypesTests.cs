@@ -1,9 +1,9 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Sfe.Api;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The problem <c>type</c> words are listed in one place, <see cref="ProblemTypes"/>: every word the server answers

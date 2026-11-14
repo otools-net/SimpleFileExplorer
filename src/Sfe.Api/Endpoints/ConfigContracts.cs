@@ -1,9 +1,9 @@
-using Sfe.Api.Security;
-using Sfe.Core.Connections;
-using Sfe.Core.Options;
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Trickplay">Videos may have trickplay (see <c>/api/trickplay/files/{path}</c>).</param>
 public sealed record ClientFeatures(bool Thumbnails, bool Trickplay);
@@ -56,7 +56,7 @@ public sealed record ConnectionsConfig(IReadOnlyList<string> Levels, IReadOnlyLi
 /// (<see cref="DataServerUrl"/>).</param>
 /// <param name="PageSize">Items the client loads at a time while browsing a folder.</param>
 /// <param name="SearchPageSize">Results the client loads at a time while searching.</param>
-/// <param name="TagColors">Palette for tag colors, see <see cref="Sfe.Core.Tagging.TagColors"/>.</param>
+/// <param name="TagColors">Palette for tag colors, see <see cref="Otools.Net.Sfe.Core.Tagging.TagColors"/>.</param>
 /// <param name="MaxFilesPerTagChange">Files one tag change may name: the client splits larger selections.</param>
 /// <param name="LargeImageSize">Images larger than this (bytes) are previewed through their thumbnail only.</param>
 /// <param name="SeekSeconds">Seconds the video player jumps back or forward.</param>
@@ -81,8 +81,8 @@ public sealed record ConnectionsConfig(IReadOnlyList<string> Levels, IReadOnlyLi
 /// <param name="Theme">Theme of the browsers that have not picked one themselves.</param>
 /// <param name="Version">Version of the server (<c>Directory.Build.props</c>), e.g. <c>1.2.0</c>.</param>
 /// <param name="Commit">Short hash of the commit it was built from, when known.</param>
-/// <param name="Rights">What the session may do in the library (<see cref="Sfe.Core.Access.Rights"/>): the client hides
-/// the rest.</param>
+/// <param name="Rights">What the session may do in the library (<see cref="Otools.Net.Sfe.Core.Access.Rights"/>): the
+/// client hides the rest.</param>
 /// <param name="User">The signed-in account; null for a visitor without one.</param>
 /// <param name="Tenant">The library being browsed.</param>
 /// <param name="Tenants">The libraries the account can switch to (empty for a visitor without one).</param>

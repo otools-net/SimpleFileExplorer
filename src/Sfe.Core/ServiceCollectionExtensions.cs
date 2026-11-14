@@ -4,30 +4,30 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Access;
-using Sfe.Core.Backup;
-using Sfe.Core.Connections;
-using Sfe.Core.Connections.Dropbox;
-using Sfe.Core.Data;
-using Sfe.Core.Editing;
-using Sfe.Core.Files;
-using Sfe.Core.FileTracking;
-using Sfe.Core.Indexing;
-using Sfe.Core.KeepAlive;
-using Sfe.Core.Library;
-using Sfe.Core.Logs;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Search;
-using Sfe.Core.Settings;
-using Sfe.Core.Streaming;
-using Sfe.Core.Tagging;
-using Sfe.Core.Tasks;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
-using Sfe.Core.Upgrades;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Backup;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections.Dropbox;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Editing;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.FileTracking;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.KeepAlive;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Streaming;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Tasks;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.Upgrades;
 
-namespace Sfe.Core;
+namespace Otools.Net.Sfe.Core;
 
 public static class ServiceCollectionExtensions
 {
@@ -148,9 +148,19 @@ public static class ServiceCollectionExtensions
         // the console and the other providers).
         services.AddSingleton<ILoggerProvider, TaskLogProvider>();
         services.Configure<LoggerFilterOptions>(options => options.AddFilter<TaskLogProvider>("Sfe", LogLevel.Debug));
+        AddLegacyLogCategories(services);
 
         return services;
     }
+
+    /// <summary>
+    /// The log levels set for the categories named <c>Sfe…</c> before the namespaces became <c>Otools.Net.Sfe.*</c>
+    /// still apply (<see cref="LegacyLogCategories"/>): in the server's container and in each library's.
+    /// </summary>
+    private static void AddLegacyLogCategories(IServiceCollection services) =>
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IPostConfigureOptions<LoggerFilterOptions>, LegacyLogCategories>()
+        );
 
     /// <summary>
     /// Accounts, groups, rights and libraries: one set for the whole server, in the database of
@@ -162,6 +172,7 @@ public static class ServiceCollectionExtensions
         string? contentRootPath = null
     )
     {
+        AddLegacyLogCategories(services);
         var section = configuration.GetSection(SfeOptions.SectionName);
         services.AddOptions<SetupOptions>().Bind(section.GetSection(nameof(SfeOptions.Setup)));
         // Without a configured setup code, the one the server made itself (written at start-up when needed).

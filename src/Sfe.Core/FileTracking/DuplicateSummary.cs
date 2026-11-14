@@ -1,4 +1,4 @@
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <param name="Groups">Groups of two or more identical files.</param>
 /// <param name="Files">Files in those groups.</param>

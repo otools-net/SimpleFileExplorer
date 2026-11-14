@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// How much of a provider account one server uses through a connection: at most <see cref="MaxCalls"/> calls at once

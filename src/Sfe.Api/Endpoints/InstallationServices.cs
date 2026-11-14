@@ -1,7 +1,7 @@
-using Sfe.Api.Maintenance;
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the route that checks the setup code takes from the container (bound with <c>[AsParameters]</c>; none of

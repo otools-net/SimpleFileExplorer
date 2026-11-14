@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Files;
-using Sfe.Core.Options;
-using Sfe.Core.Tagging;
-using Sfe.Core.Tasks;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Tasks;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// Moves and copies between the library and a connection, or between two connections

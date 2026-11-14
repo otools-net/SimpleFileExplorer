@@ -1,4 +1,4 @@
-namespace Sfe.Core.Trickplay;
+namespace Otools.Net.Sfe.Core.Trickplay;
 
 /// <summary>Where a video stands in the background job; videos with nothing to do have no state.</summary>
 public enum TrickplayFileState

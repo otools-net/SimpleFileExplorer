@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// Bytes read from a remote storage: the whole file, or the part served when a range was asked for and the provider

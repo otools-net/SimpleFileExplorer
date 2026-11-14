@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Search;
-using Sfe.Core.Tagging;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Search terms on their own, negated and combined: name, full path (<c>*</c>), exclusion, size, extension, tags (by

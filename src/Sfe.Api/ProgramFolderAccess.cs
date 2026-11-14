@@ -2,7 +2,7 @@ using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// Who may change the folder SFE is installed in (Windows). A service runs with the rights of its account (Local

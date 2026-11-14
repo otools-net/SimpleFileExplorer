@@ -1,6 +1,6 @@
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>A page of a connection's folder, as <see cref="RemoteListings"/> is asked for it.</summary>
 /// <param name="Path">Normalised (<see cref="RemotePaths.Normalize"/>), relative to the connection's root.</param>

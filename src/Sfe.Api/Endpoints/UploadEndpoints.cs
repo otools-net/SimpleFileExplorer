@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
-using Sfe.Core.Library;
-using Sfe.Core.Paths;
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// Resumable uploads (agents/docs/features/uploads.md): check the names, start, send chunks at the offset the server

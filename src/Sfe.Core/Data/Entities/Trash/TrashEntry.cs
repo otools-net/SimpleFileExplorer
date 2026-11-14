@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A file or folder deleted to the trash (agents/docs/features/trash.md): it is kept in the work folder

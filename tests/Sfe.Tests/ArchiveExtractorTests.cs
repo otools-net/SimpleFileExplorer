@@ -1,9 +1,9 @@
 using System.Formats.Tar;
 using System.IO.Compression;
-using Sfe.Core.Files.Compression;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Files.Compression;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Extracting archives (<see cref="ArchiveExtractor"/>, <see cref="ArchiveReader.ReadThrough"/>): every format, the

@@ -1,4 +1,4 @@
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// A clock whose waits end at once: a timer (what <c>Task.Delay(time, clock)</c> makes) moves the clock by its time,

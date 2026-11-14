@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The session cookie under <see cref="InstanceCookies.Name"/>. A session of before (the shared name) is still read

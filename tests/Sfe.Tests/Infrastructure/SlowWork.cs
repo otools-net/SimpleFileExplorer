@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Globalization;
-using Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Thumbnails;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// Waits on work whose speed is the machine's, not SFE's: ffmpeg making test media, background workers rendering

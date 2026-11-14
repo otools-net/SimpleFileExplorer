@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// What a link's token holds: signed and encrypted, it cannot be read, changed or widened to another file.

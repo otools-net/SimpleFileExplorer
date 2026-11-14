@@ -5,10 +5,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// Programs calling a test server with a personal access token: no cookie, no <c>X-SFE-Request</c>, only

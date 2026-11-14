@@ -1,3 +1,3 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 public sealed record DirectoryResult(DirectoryStatus Status, DirectoryUser? User = null, DateTime? LockedUntil = null);

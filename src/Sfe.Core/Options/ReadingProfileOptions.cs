@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>The reading settings of one kind of text (<see cref="ReadingOptions"/>).</summary>
 public sealed class ReadingProfileOptions

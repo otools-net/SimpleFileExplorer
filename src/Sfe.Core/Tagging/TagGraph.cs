@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 /// <summary>
 /// Every tag with its aliases and parent/child links, loaded in one go. A library holds a few thousand tags at

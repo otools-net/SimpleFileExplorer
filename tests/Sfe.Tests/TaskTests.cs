@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
-using Sfe.Core.Indexing;
-using Sfe.Core.Tasks;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Tasks;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Schedules, run history and the index maintenance of the "Background tasks" dialog.</summary>
 [TestClass]

@@ -1,6 +1,6 @@
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// A connection as those who manage it see it: never its credentials (<see cref="Data.Connection.Credentials"/>).

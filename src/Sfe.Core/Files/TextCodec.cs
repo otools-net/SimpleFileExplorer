@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Reads the bytes of a text file as the text editors of an OS do (agents/docs/features/text-viewer.md): a byte order

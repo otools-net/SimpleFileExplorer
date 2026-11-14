@@ -1,11 +1,11 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="ConnectionRuleService"/>: each library replaces its own folder rules in a connection it reaches;

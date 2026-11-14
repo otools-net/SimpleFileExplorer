@@ -1,4 +1,4 @@
-namespace Sfe.Api.Tenancy;
+namespace Otools.Net.Sfe.Api.Tenancy;
 
 /// <summary>
 /// The request's services, with the Core's own (<see cref="TenancyServiceCollectionExtensions.LibraryTypes"/>) taken

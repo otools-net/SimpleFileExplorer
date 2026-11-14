@@ -1,7 +1,7 @@
 using System.Net;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Where the server's calls to providers may go (<see cref="OutboundPolicy"/>): only the provider's hosts, only

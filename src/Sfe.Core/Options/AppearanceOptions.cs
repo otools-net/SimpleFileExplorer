@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>The web client's look.</summary>
 public sealed class AppearanceOptions

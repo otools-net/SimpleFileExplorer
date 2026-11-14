@@ -5,15 +5,15 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
-using Sfe.Api;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Maintenance;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Setting SFE up without editing a file: the setup code the server makes itself (<see cref="GeneratedSetupCode"/>) and
@@ -115,9 +115,11 @@ public sealed class InstallationTests
     [TestMethod]
     public void GeneratedCodesAreComparedWithoutDashesSpacesOrCase()
     {
-        var generated = new Sfe.Core.Options.SetupOptions { Code = "AB2C-DE3F-GH4J-KM5N" };
-        typeof(Sfe.Core.Options.SetupOptions).GetProperty(nameof(generated.CodeIsGenerated))!.SetValue(generated, true);
-        var configured = new Sfe.Core.Options.SetupOptions { Code = "Some-Configured-Code" };
+        var generated = new Otools.Net.Sfe.Core.Options.SetupOptions { Code = "AB2C-DE3F-GH4J-KM5N" };
+        typeof(Otools.Net.Sfe.Core.Options.SetupOptions)
+            .GetProperty(nameof(generated.CodeIsGenerated))!
+            .SetValue(generated, true);
+        var configured = new Otools.Net.Sfe.Core.Options.SetupOptions { Code = "Some-Configured-Code" };
 
         Assert.IsTrue(generated.Matches("ab2c de3f gh4j km5n"));
         Assert.IsTrue(generated.Matches("AB2CDE3FGH4JKM5N"));
@@ -470,8 +472,8 @@ public sealed class InstallationTests
         );
         var old = generated.Ensure();
         var notes = new List<string>();
-        var step = new Sfe.Core.Upgrades.Steps.V1_47_0.RenewSetupCode();
-        var context = new Sfe.Core.Upgrades.Steps.UpgradeContext(
+        var step = new Otools.Net.Sfe.Core.Upgrades.Steps.V1_47_0.RenewSetupCode();
+        var context = new Otools.Net.Sfe.Core.Upgrades.Steps.UpgradeContext(
             [],
             notes.Add,
             Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance,
@@ -486,8 +488,9 @@ public sealed class InstallationTests
         Assert.HasCount(1, notes, "Idempotent: nothing to renew the second time");
         Assert.AreNotEqual(old, renewed);
         Assert.IsTrue(
-            Sfe.Core.Upgrades.Steps.UpgradeSteps.Due(new(1, 46, 0), new(1, 47, 0))
-                .Any(s => s is Sfe.Core.Upgrades.Steps.V1_47_0.RenewSetupCode),
+            Otools
+                .Net.Sfe.Core.Upgrades.Steps.UpgradeSteps.Due(new(1, 46, 0), new(1, 47, 0))
+                .Any(s => s is Otools.Net.Sfe.Core.Upgrades.Steps.V1_47_0.RenewSetupCode),
             "Runs for installs of 1.46.0"
         );
     }

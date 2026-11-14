@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <param name="Folders">Folders right inside it.</param>
 /// <param name="Files">Entries right inside it (files, links…).</param>

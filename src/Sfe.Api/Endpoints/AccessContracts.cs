@@ -1,6 +1,6 @@
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="DisabledByServer">Rights the server switches off for everyone (<c>Sfe:Rights:Disabled</c>).</param>
 /// <param name="DisabledInTenant">Rights switched off in the space asked about by a server administrator.</param>

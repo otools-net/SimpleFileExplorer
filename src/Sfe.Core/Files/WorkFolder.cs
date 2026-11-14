@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Where file management keeps its own files (the trash, uploads not finished yet), per library

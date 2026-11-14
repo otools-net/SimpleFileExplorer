@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Trickplay;
+namespace Otools.Net.Sfe.Core.Trickplay;
 
 /// <summary>
 /// Videos waiting for their trickplay, in order: taken from the front, but also looked up and removed by path, so

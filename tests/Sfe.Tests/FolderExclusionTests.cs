@@ -1,15 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Data;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
-using Sfe.Core.Tagging;
-using Sfe.Core.Thumbnails;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Folders kept out of scans, trickplay and thumbnails (<see cref="FolderExclusions"/>).</summary>
 [TestClass]

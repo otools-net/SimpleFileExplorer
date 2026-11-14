@@ -1,6 +1,6 @@
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The tests' waits on slow work (<see cref="SlowWork"/>): too slow is inconclusive, never a failure.

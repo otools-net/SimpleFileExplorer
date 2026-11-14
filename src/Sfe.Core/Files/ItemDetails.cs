@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>What the disk says of a file or folder, beyond what a listing shows.</summary>
 /// <param name="Hidden">Hidden by the system: a name starting with a dot, or the hidden attribute (Windows).</param>

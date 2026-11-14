@@ -3,11 +3,11 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// A library-level connection with folder rules, for the attack matrix of the connections' routes: bob uses it

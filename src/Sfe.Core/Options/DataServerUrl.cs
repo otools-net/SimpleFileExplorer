@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// The <see cref="SfeOptions.DataServer"/> address: either a base the file's path is appended to

@@ -1,6 +1,6 @@
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What a refused request tried, for <see cref="FileEndpoints.Refused"/>: who, at which path (as the request

@@ -1,7 +1,7 @@
-using Sfe.Core.Connections;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// What became of the files and folders below one item of a transfer: the item's result is done when nothing was

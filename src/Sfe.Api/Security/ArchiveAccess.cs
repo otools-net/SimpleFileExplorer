@@ -1,9 +1,9 @@
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// What a person may put in a zip (a download, or a compression into the library): what they see and may download, by

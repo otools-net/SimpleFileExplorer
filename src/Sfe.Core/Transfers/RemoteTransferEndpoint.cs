@@ -1,10 +1,10 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// A connection's side of a transfer: <see cref="IRemoteStorage"/> through <see cref="TransferCalls"/> (waits

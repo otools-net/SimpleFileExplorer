@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// The video a subtitle file belongs to (agents/docs/features/subtitles-viewer.md): next to it, named as it is without

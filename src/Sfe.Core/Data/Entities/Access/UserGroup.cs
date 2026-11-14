@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>Users of a library with the same rights. Each library has the three <see cref="BuiltInGroup"/>s.</summary>
 public sealed class UserGroup

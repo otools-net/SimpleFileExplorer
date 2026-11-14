@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// The version of a file's content as it was read: changes when its bytes do. Not the modification time alone: FAT

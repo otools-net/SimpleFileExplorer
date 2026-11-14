@@ -1,4 +1,4 @@
-namespace Sfe.Core.Indexing;
+namespace Otools.Net.Sfe.Core.Indexing;
 
 public enum ScanState
 {

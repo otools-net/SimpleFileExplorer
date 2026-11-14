@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Options;
-using Sfe.Api.Security;
-using Sfe.Core.Files;
-using Sfe.Core.Files.Compression;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files.Compression;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What every route of the archive explorer takes from the container and the request (bound with

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Indexing;
+namespace Otools.Net.Sfe.Core.Indexing;
 
 /// <summary>What the index holds of a folder, before removing it from the index.</summary>
 /// <param name="Indexed">The folder itself is in the index.</param>

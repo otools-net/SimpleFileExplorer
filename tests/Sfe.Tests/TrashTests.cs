@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
-using Sfe.Core.Files;
-using Sfe.Core.Indexing;
-using Sfe.Core.Tagging;
-using Sfe.Core.Tasks;
-using Sfe.Core.Thumbnails;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Tasks;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Deleting to the trash, restoring, deleting for good and the purge, in Core (<see cref="Trash"/>).</summary>
 [TestClass]

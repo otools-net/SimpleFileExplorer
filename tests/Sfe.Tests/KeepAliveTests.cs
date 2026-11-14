@@ -1,12 +1,12 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Files;
-using Sfe.Core.KeepAlive;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.KeepAlive;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 [TestClass]
 public sealed class KeepAliveTests

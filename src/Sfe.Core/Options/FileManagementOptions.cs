@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Managing the library's files from the web client: new folders, renames (and, later, moves, the trash, uploads).

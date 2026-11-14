@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
-using Sfe.Api.Maintenance;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Checks made before the routes' own rights:

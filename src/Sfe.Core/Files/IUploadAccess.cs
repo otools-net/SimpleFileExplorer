@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>What the person may do, asked when an upload starts and again when it is finished.</summary>
 public interface IUploadAccess

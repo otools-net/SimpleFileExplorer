@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Duplicates are indexed files of the same size and fingerprint (<see cref="ScanOptions.ComputeHashes"/>): files

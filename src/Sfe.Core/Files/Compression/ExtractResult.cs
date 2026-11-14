@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>What an extraction wrote and left out.</summary>
 public sealed class ExtractResult

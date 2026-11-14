@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// The server's log (Administration › Server › Logs): what every part of SFE logs, at the levels of the <c>Logging</c>

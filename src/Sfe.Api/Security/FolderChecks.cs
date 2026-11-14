@@ -1,8 +1,8 @@
-using Sfe.Core.Access;
-using Sfe.Core.Library;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>Folder rules at the routes: what the subject of the request may do at a library path, or where.</summary>
 public static class FolderChecks

@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// Secrets of the providers' apps typed on the settings page (Dropbox's app secret), one file per kind in a folder

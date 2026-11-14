@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.DataProtection;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The credentials of connections protected with the server's Data Protection keys (the keys folder,

@@ -1,6 +1,6 @@
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// The provider's ids of the folders rules are set on, looked up when a library sets its rules in a connection (the
@@ -82,5 +82,5 @@ internal static class ConnectionRuleIds
     }
 
     private static bool Fits(string itemId) =>
-        itemId.Length is > 0 and <= Sfe.Core.Data.ConnectionFolderRule.MaxItemIdLength;
+        itemId.Length is > 0 and <= Otools.Net.Sfe.Core.Data.ConnectionFolderRule.MaxItemIdLength;
 }

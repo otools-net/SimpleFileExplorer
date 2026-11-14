@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
-using Sfe.Api.Endpoints;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Writing through a link (junction, symbolic link) that leaves the library, by <c>Sfe:Security:LinksOutsideLibrary</c>

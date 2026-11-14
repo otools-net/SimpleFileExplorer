@@ -1,6 +1,6 @@
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// An unfinished upload into a connection, kept by <see cref="RemoteUploads"/>: what <see cref="UploadInfo"/> shows,

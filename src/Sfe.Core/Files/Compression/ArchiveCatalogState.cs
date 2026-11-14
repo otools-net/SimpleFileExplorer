@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 public sealed record ArchiveCatalogState(
     ArchiveCatalogStatus Status,

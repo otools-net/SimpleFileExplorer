@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Reads and writes the content of the library's files for the viewers and editors of the web client

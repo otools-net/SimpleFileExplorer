@@ -1,17 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Tagging;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
 
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <summary>
 /// Gives the tags of missing files (tagged files a scan no longer found, see <see cref="MissingFileRecorder"/>) back

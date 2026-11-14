@@ -1,6 +1,6 @@
-using Sfe.Core.KeepAlive;
+using Otools.Net.Sfe.Core.KeepAlive;
 
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// Keeps the library's folder alive on its file server for the lifetime of the application (one per library).

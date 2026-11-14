@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Sfe.Api.Maintenance;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Library;
-using Sfe.Core.Logs;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// The installation page (setup wizard, Administration › System › Installation): the first library's folder, the

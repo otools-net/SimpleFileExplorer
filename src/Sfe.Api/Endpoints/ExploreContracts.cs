@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Kind"><c>folder</c>, <c>file</c>, <c>link</c> (never created when extracting) or <c>other</c>.</param>
 /// <param name="Packed">0 when the format doesn't tell it per entry (a solid 7z or rar).</param>

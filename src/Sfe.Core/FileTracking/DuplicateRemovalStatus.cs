@@ -1,4 +1,4 @@
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 public enum DuplicateRemovalStatus
 {

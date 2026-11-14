@@ -2,9 +2,9 @@ using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// The setup code the server makes itself when its configuration gives none (<see cref="SetupOptions.CodeFile"/>):

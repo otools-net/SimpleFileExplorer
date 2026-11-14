@@ -1,11 +1,11 @@
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Data;
-using Sfe.Core.Files;
-using Sfe.Core.Logs;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Logs;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// Renames and moves inside a connection with its folder rules following, for every library, in the library's order

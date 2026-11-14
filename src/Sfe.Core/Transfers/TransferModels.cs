@@ -1,4 +1,4 @@
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>A file or folder on one side of a transfer (the library, or a connection).</summary>
 /// <param name="Path">Relative to that side's root (the library's, or the connection's root folder).</param>

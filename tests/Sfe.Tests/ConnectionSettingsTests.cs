@@ -5,13 +5,13 @@ using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Data;
-using Sfe.Core.Settings;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Who runs the server decides about connections: the <c>connections.*</c> settings (server level, lockable), the

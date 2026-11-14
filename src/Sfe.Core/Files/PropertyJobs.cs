@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Folder counts and checksums, read in the background: each person (or visitor's address) has at most one of each

@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Paths;
-using Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Search;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Properties of a file or folder (agents/docs/features/properties.md): the disk's details at once, a folder's totals

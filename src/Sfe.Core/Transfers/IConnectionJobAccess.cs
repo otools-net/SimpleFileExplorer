@@ -1,6 +1,6 @@
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// What the person who started a transfer may do in a connection, read again as the job goes: folder rules, groups,

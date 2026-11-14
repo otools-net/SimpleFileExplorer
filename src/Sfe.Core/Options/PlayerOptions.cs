@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>The web client's video player.</summary>
 public sealed partial class PlayerOptions

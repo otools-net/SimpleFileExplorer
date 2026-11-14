@@ -1,9 +1,9 @@
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the routes of moves, copies and compressions take from the container and the request (bound with

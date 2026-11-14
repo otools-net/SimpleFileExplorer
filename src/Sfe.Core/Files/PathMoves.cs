@@ -1,17 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Paths;
-using Sfe.Core.Search;
-using Sfe.Core.Settings;
-using Sfe.Core.Tagging;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// The one place where what SFE keeps by path follows a file or folder renamed or moved on the disk

@@ -3,11 +3,11 @@ using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// Several files, or folders with everything in them, downloaded as one zip (agents/docs/features/archives.md): the

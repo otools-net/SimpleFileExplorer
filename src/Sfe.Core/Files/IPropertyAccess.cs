@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>The access of the person asking, while a folder is counted.</summary>
 public interface IPropertyAccess

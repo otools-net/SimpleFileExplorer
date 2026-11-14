@@ -1,7 +1,7 @@
-using Sfe.Core.Connections;
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>A page of a connection's folder in the library's listing shape, so the client lists both alike.</summary>
 internal static class ConnectionListings

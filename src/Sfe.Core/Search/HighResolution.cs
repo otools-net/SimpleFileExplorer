@@ -1,4 +1,4 @@
-namespace Sfe.Core.Search;
+namespace Otools.Net.Sfe.Core.Search;
 
 /// <summary>What makes an image or video high resolution (<c>r:hr</c>, <c>r:lr</c>, the HR/LR marks).</summary>
 /// <param name="ImageExtensions">Extensions classified as images (without dot).</param>

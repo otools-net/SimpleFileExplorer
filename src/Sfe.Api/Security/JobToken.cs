@@ -1,6 +1,6 @@
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The access token a job was started with (agents/docs/development/api-tokens-plan.md): the job checks each item

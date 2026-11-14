@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Security.Principal;
 
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// <c>Sfe.Api --install-service [--name SFE]</c> and <c>--uninstall-service</c>: registers this program as a Windows

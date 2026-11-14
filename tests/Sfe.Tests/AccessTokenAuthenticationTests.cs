@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Security;
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Logs;
-using Sfe.Tests.Infrastructure;
-using static Sfe.Tests.Infrastructure.TokenClients;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Logs;
+using Otools.Net.Sfe.Tests.Infrastructure;
+using static Otools.Net.Sfe.Tests.Infrastructure.TokenClients;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Calling the API with a personal access token (<c>Authorization: Bearer</c>), and the attack vectors of

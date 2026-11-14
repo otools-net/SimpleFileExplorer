@@ -1,8 +1,8 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <summary>
 /// Whether two paths are one file, and whether two files hold the same bytes. Before a duplicate is deleted: the

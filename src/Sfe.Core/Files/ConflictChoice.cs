@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>What to do when the target folder already holds an item of the same name.</summary>
 public enum ConflictChoice

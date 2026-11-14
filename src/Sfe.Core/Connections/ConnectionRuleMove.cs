@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// A folder move of a connection in progress for the rules (<see cref="ConnectionRuleService.BeginMoveAsync"/>): holds

@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the route that completes the setup takes from the container (bound with <c>[AsParameters]</c>; none of it

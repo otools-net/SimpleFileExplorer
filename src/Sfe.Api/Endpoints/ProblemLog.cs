@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// Every answer of the API that explains a refusal or a failure (a problem body: 400 and its field errors, 409, 413,

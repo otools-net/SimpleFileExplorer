@@ -7,15 +7,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Data;
-using Sfe.Core.Library;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// A connection's files through <c>api/connections/{id}/browse</c>, <c>files/raw</c> and <c>thumbnails</c>: the

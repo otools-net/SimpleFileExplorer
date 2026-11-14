@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>A file or a folder of a remote storage.</summary>
 /// <param name="Path">Relative to the connection's root folder, as the provider spells it (to show).</param>

@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>The Read/Write classification of the rights and the patterns naming them.</summary>
 [TestClass]

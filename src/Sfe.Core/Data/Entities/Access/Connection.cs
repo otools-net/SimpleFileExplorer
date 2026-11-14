@@ -1,6 +1,6 @@
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A storage outside the libraries that an account signed in to (Dropbox…), browsed beside a library as a location

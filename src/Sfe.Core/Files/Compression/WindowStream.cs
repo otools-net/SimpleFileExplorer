@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// A window of <paramref name="length"/> bytes of <paramref name="inner"/> from <paramref name="start"/>: an entry's

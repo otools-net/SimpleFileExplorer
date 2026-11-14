@@ -1,4 +1,4 @@
-namespace Sfe.Core.Thumbnails;
+namespace Otools.Net.Sfe.Core.Thumbnails;
 
 /// <summary>
 /// How many ffmpeg runs the whole server allows at once: thumbnails (<c>Thumbnails:MaxConcurrency</c>) and trickplay

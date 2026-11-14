@@ -1,10 +1,10 @@
-using Sfe.Core.FileTracking;
-using Sfe.Core.Indexing;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.FileTracking;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Similar videos from end to end (trickplay, fingerprint, index, comparison) with a real ffmpeg: set

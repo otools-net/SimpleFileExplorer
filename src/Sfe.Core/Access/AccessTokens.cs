@@ -2,11 +2,11 @@ using System.Collections.Concurrent;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// Personal access tokens: an account makes them for programs, which then act as the account with at most its rights

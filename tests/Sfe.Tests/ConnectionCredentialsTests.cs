@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.DataProtection;
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>The credentials of connections protected with the server's Data Protection keys.</summary>
 [TestClass]

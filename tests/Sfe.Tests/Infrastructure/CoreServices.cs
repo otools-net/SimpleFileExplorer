@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sfe.Core;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>Core services wired against a <see cref="TestLibrary"/> and its SQLite index.</summary>
 public sealed class CoreServices : IAsyncDisposable

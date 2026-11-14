@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// The end of the path to a folder: the root is always first, then the <c>Skipped</c> folders between, then

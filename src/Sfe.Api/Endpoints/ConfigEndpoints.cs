@@ -1,15 +1,15 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Editing;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Settings;
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Editing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 public static class ConfigEndpoints
 {

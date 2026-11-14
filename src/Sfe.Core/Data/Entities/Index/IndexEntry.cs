@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>Common columns of indexed directories and files.</summary>
 public abstract class IndexEntry

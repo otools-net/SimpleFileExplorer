@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
 #nullable disable
 
-namespace Sfe.Core.Data.Migrations
+namespace Otools.Net.Sfe.Core.Data.Migrations
 {
     [DbContext(typeof(SfeDbContext))]
     [Migration("20261022204629_AddFolderDefaultTags")]

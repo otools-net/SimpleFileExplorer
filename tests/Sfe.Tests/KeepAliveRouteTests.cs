@@ -5,14 +5,14 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary><c>api/keep-alive</c> and the <c>keepAlive.*</c> settings of a space.</summary>
 [TestClass]

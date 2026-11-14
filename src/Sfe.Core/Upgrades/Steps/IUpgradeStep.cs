@@ -1,4 +1,4 @@
-namespace Sfe.Core.Upgrades.Steps;
+namespace Otools.Net.Sfe.Core.Upgrades.Steps;
 
 /// <summary>
 /// A change an update makes outside the databases' schemas (EF migrations and <c>DatabaseInitializer</c> do those),

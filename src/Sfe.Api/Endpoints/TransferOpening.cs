@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
-using Sfe.Api.Security;
-using Sfe.Core.Connections;
-using Sfe.Core.Files;
-using Sfe.Core.Transfers;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Transfers;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// The two sides of a transfer the route starts: a connection checked for the session first (404, 403, 409 at once,

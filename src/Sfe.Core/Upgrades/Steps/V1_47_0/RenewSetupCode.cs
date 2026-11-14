@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Sfe.Core.Upgrades.Steps.V1_47_0;
+namespace Otools.Net.Sfe.Core.Upgrades.Steps.V1_47_0;
 
 /// <summary>
 /// 1.47.0: the setup code the server made itself is renewed. Earlier versions printed it through the logger, so it may

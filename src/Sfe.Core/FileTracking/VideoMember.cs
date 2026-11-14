@@ -1,4 +1,4 @@
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <summary>
 /// A video of a group and how much of it matches the group's reference (null for the reference itself).

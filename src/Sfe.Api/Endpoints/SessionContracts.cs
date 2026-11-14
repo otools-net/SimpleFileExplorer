@@ -1,6 +1,6 @@
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Local">A local account: its password can be changed here (a directory account's is changed in the
 /// directory).</param>

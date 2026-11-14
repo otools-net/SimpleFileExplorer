@@ -1,7 +1,7 @@
-using Sfe.Api.Security;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What a route on a connection's files uses (bound with <c>[AsParameters]</c>), and the one way it opens the
@@ -55,7 +55,7 @@ internal sealed record ConnectionFileServices(
         {
             return (
                 null,
-                opened.Status == Sfe.Core.Access.AccessStatus.NotFound
+                opened.Status == Otools.Net.Sfe.Core.Access.AccessStatus.NotFound
                     ? TypedResults.NotFound()
                     : ConnectionProblems.OfOpening(opened.Problem)
             );

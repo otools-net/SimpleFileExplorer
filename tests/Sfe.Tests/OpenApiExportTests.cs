@@ -1,6 +1,6 @@
-using Sfe.Tests.Infrastructure.OpenApi;
+using Otools.Net.Sfe.Tests.Infrastructure.OpenApi;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Writes the OpenAPI document to the file named by <c>SFE_OPENAPI_OUT</c>, so that a refactoring can show the API is

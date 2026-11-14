@@ -1,8 +1,8 @@
 using System.Globalization;
 using Microsoft.Data.Sqlite;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// An archive's list of entries, read once into a SQLite file so that every later question (a folder's page, its

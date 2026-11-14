@@ -1,4 +1,4 @@
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>How the server runs, so that the setup page shows how to give it a setup code there first.</summary>
 public enum HostingKind

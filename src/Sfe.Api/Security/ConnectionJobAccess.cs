@@ -1,9 +1,9 @@
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Transfers;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Transfers;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// What the person who started a transfer may do in one of its connections, read again as the job goes (as

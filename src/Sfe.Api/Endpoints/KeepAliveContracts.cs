@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Path">Relative to the library root; empty for the root itself.</param>
 /// <param name="IsRoot">The library folder itself; the others are the more folders of the settings.</param>

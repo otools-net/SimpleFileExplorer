@@ -1,7 +1,7 @@
 using System.Text;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Bytes read and written as text the way an OS text editor does (<see cref="TextCodec"/>), and versions of content.

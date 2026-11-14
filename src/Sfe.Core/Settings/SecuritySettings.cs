@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>
 /// The editable part of <see cref="SecurityOptions"/>: only the access tokens. The rest (sign-in limits, keys,

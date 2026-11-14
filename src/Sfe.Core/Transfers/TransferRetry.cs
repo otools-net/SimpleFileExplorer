@@ -1,6 +1,6 @@
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// What a transfer job that ended with failed items keeps for <see cref="TransferRetries.Kept"/> to start them again

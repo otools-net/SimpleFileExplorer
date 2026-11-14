@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 public static class PathFilterQueries
 {

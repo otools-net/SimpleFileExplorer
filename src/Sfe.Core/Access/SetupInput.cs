@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <param name="Code">The setup code of the environment.</param>
 /// <param name="LibraryName">New name of the first library; empty keeps it.</param>

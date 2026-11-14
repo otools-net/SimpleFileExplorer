@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>Creates or updates a library's index database.</summary>
 public sealed class DatabaseInitializer(IDbContextFactory<SfeDbContext> dbFactory, ILogger<DatabaseInitializer> logger)

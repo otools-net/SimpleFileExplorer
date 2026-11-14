@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>An item chosen for a zip of a connection's files.</summary>
 /// <param name="EntryName">Its name in the zip, unique among the chosen ones.</param>

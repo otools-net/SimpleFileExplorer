@@ -2,10 +2,10 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Access;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The installation page's proof that its visitor knows the setup code: the code is checked once (rate-limited, as

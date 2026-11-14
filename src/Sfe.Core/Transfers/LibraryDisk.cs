@@ -1,6 +1,6 @@
-using static Sfe.Core.Transfers.LibraryTransferErrors;
+using static Otools.Net.Sfe.Core.Transfers.LibraryTransferErrors;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>The disk calls of the library's side of a transfer, their failures as transfer errors.</summary>
 internal static class LibraryDisk

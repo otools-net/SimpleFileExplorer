@@ -1,6 +1,6 @@
-using Sfe.Tests.Infrastructure.OpenApi;
+using Otools.Net.Sfe.Tests.Infrastructure.OpenApi;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The v1 API keeps its promises: the OpenAPI document the server serves now is compared with the baseline

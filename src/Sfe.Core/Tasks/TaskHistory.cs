@@ -2,10 +2,10 @@ using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Tasks;
+namespace Otools.Net.Sfe.Core.Tasks;
 
 /// <summary>
 /// Records the runs of the background tasks in <c>TaskRuns</c>, with their logs, for the "Background tasks" dialog's

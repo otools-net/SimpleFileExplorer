@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Paths">Folders to describe, relative to the library root.</param>
 public sealed record FolderCoversRequest(IReadOnlyList<string>? Paths);

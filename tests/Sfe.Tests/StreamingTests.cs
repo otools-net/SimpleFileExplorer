@@ -5,13 +5,13 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
-using Sfe.Core.Streaming;
-using Sfe.Core.Thumbnails;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Streaming;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Videos converted by ffmpeg while they play (<see cref="VideoStreamer"/>). The tests running ffmpeg need it: set

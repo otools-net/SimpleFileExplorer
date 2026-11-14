@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>The background tasks (scans, trickplay, similar videos): their run history.</summary>
 public sealed class TaskOptions

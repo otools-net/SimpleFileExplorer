@@ -2,11 +2,11 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Files;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.KeepAlive;
+namespace Otools.Net.Sfe.Core.KeepAlive;
 
 /// <summary>
 /// Keeps the library's folder alive (<see cref="KeepAliveOptions"/>): every interval, one directory query on it and on

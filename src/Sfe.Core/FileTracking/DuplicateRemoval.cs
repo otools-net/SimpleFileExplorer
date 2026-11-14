@@ -1,6 +1,6 @@
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <param name="Field">Request field an <see cref="DuplicateRemovalStatus.Invalid"/> error is about.</param>
 /// <param name="Kept">Tags of the copy kept, now including those of the deleted one.</param>

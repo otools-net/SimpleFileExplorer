@@ -1,12 +1,12 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Security;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// Opens the app in the default browser once it listens, for a portable package started by hand (a double click on

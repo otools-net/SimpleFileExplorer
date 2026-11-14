@@ -1,6 +1,6 @@
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>A transfer job's run in the task history: who, what, from where to where, how it went.</summary>
 internal static class TransferSummary

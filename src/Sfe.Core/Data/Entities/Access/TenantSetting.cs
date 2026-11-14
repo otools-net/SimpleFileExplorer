@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A setting of one library, over the server's (<see cref="Settings.SettingCatalog"/>). One row per setting, so a

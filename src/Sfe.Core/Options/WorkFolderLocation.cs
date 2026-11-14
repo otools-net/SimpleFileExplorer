@@ -1,14 +1,14 @@
 using System.Text.Json.Serialization;
 
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>Where file management keeps its work files (the trash, uploads not finished yet).</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<WorkFolderLocation>))]
 public enum WorkFolderLocation
 {
     /// <summary>
-    /// A hidden folder at the library's root (<see cref="Sfe.Core.Files.WorkFolder.Name"/>): on the library's own
-    /// drive, so that moving a file there is a rename, however large the file.
+    /// A hidden folder at the library's root (<see cref="Otools.Net.Sfe.Core.Files.WorkFolder.Name"/>): on the
+    /// library's own drive, so that moving a file there is a rename, however large the file.
     /// </summary>
     Library,
 

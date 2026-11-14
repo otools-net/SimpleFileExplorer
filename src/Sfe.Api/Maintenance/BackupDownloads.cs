@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
-using Sfe.Core.Backup;
+using Otools.Net.Sfe.Core.Backup;
 
-namespace Sfe.Api.Maintenance;
+namespace Otools.Net.Sfe.Api.Maintenance;
 
 /// <summary>
 /// Backups made on the update page, kept until downloaded once (or for <see cref="Lifetime"/>): the page asks for one

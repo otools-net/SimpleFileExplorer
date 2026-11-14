@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// What stops SFE from starting, said in words rather than a stack trace: a configuration file that isn't valid JSON,

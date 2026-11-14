@@ -1,4 +1,4 @@
-namespace Sfe.Core.Tasks;
+namespace Otools.Net.Sfe.Core.Tasks;
 
 /// <summary>When a schedule comes due. Pure functions of the schedule, a moment and a time zone, for tests.</summary>
 public static class ScheduleCalculator

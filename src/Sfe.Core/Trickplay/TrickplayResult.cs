@@ -1,4 +1,4 @@
-namespace Sfe.Core.Trickplay;
+namespace Otools.Net.Sfe.Core.Trickplay;
 
 /// <summary>A video the job finished with.</summary>
 /// <param name="Error">Why there is no trickplay, when <paramref name="Succeeded"/> is false.</param>

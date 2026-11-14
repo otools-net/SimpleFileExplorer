@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>A move or copy as the operations panel shows it.</summary>
 public sealed record FileJobView(

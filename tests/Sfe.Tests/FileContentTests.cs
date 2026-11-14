@@ -1,13 +1,13 @@
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
-using Sfe.Core.Files;
-using Sfe.Core.Indexing;
-using Sfe.Core.Tagging;
-using Sfe.Core.Thumbnails;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Reading and saving the content of library files (<see cref="FileContent"/>): versions, saving in place, the previous
@@ -125,7 +125,7 @@ public sealed class FileContentTests
         await using (var db = await DbAsync())
             id = await db.Files.Where(f => f.FullName == file).Select(f => f.Id).SingleAsync(Token);
         var changed = new List<string>();
-        _services.Get<Sfe.Core.Library.LibraryBrowser>().FolderChanged += changed.Add;
+        _services.Get<Otools.Net.Sfe.Core.Library.LibraryBrowser>().FolderChanged += changed.Add;
 
         var saved = await SaveAsync("Media/notes.txt", "a much longer content than before", "*");
 

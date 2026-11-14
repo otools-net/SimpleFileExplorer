@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Sfe.Api.Security;
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
-using Sfe.Core.Library;
-using Sfe.Core.Logs;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// Folder rules of a space (agents/docs/features/folder-access.md): who may see or change each folder. For those who

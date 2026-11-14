@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// The test media kept in the repository (<c>tests/samples/media</c>, listed with how ffmpeg makes them in

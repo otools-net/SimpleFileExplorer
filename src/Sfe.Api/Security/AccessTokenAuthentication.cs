@@ -3,11 +3,11 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using Sfe.Api.Maintenance;
-using Sfe.Core.Access;
-using Sfe.Core.Logs;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Logs;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The personal access tokens' scheme (agents/docs/development/api-tokens-plan.md): a request sending

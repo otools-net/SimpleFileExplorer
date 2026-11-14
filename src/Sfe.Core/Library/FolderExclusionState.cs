@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Sfe.Core.Library;
+namespace Otools.Net.Sfe.Core.Library;
 
 /// <summary>
 /// For each kind, the listed folder (root-relative) a folder is excluded through: itself or the nearest of its

@@ -1,6 +1,6 @@
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <param name="Root">Full path of the root folder; null for the first library (it follows <c>Sfe:Root</c>).</param>
 /// <param name="DisabledRights">Rights nobody gets in this library (<see cref="TenantDisabledRight"/>).</param>

@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Sfe.Core;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
-using Sfe.Core.Streaming;
-using Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Streaming;
+using Otools.Net.Sfe.Core.Thumbnails;
 
-namespace Sfe.Api.Tenancy;
+namespace Otools.Net.Sfe.Api.Tenancy;
 
 public static class TenancyServiceCollectionExtensions
 {
@@ -29,7 +29,7 @@ public static class TenancyServiceCollectionExtensions
     {
         services.AddSingleton<FfmpegLimits>();
         services.AddSingleton<VideoStreams>();
-        services.AddSingleton<Sfe.Core.Files.Compression.ArchiveBuildGate>();
+        services.AddSingleton<Otools.Net.Sfe.Core.Files.Compression.ArchiveBuildGate>();
         services.AddSingleton<Security.ArchiveUnlocks>();
         // The update of an install to this version, which the libraries wait for, and its backups.
         services.AddSingleton<Maintenance.MigrationCoordinator>();

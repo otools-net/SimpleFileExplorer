@@ -1,6 +1,6 @@
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Archives' passwords held behind unlocks (<see cref="ArchiveUnlocks"/>): for their owner, their archive, a while.

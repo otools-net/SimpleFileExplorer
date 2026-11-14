@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace Sfe.Core.Tasks;
+namespace Otools.Net.Sfe.Core.Tasks;
 
 /// <summary>
 /// The log of one run, filled by <see cref="TaskLogProvider"/> with what the task's code logs. A trickplay pass over a

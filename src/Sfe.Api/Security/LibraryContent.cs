@@ -1,4 +1,4 @@
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Keeps a file of the library (anyone's content) from being run by a page of the app. The app's policy allows scripts

@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Text;
-using Sfe.Core.Files.Compression;
+using Otools.Net.Sfe.Core.Files.Compression;
 using SharpCompress.Readers;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// SFE's own zips (<see cref="ZipWriter"/>): read back by our reader, .NET's <c>ZipArchive</c>, SharpCompress and 7-Zip

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A tagged file a scan no longer found, kept with its tags until it turns up again (moved, renamed, its drive back)

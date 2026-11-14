@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// Refuses a request the <see cref="OutboundRule"/> does not allow before it leaves, and gives up on a provider

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>A stream that only reads, over another it owns.</summary>
 internal abstract class ReadOnlyStream(Stream inner) : Stream

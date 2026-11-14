@@ -1,12 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Indexing;
-using Sfe.Core.Paths;
-using Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Search;
 
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 /// <summary>
 /// Tags every file of a folder (optionally with its sub-folders), or every match of a search, at once. Unlike

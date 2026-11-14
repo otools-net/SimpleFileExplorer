@@ -1,9 +1,9 @@
-using Sfe.Api.Maintenance;
-using Sfe.Api.Security;
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the route that saves the installation settings takes from the container (bound with

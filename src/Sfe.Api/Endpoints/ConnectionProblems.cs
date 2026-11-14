@@ -1,7 +1,7 @@
 using Microsoft.Net.Http.Headers;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// The answers of a connection's file routes when the connection or its provider fails: a problem whose

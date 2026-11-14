@@ -1,6 +1,6 @@
-using static Sfe.Core.Transfers.LibraryTransferErrors;
+using static Otools.Net.Sfe.Core.Transfers.LibraryTransferErrors;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// A file of a transfer written into the library: into its partial file (<c>name.sfe-partial</c>) part after part,

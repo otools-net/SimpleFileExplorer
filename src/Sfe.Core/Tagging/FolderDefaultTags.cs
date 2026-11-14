@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Library;
-using Sfe.Core.Paths;
-using Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Search;
 
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 /// <summary>
 /// The default tags of folders (agents/docs/features/default-tags.md): every file entering a folder, or one of its

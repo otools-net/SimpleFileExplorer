@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// The Dropbox app this server signs in through (<c>Sfe:Connections:Dropbox</c>), registered by whoever runs it at

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// What the person who started a job may do, asked again for every item as it runs (rights and folder rules can change

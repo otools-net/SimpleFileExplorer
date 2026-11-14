@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <param name="Required">No server administrator yet: the setup page is the only one working.</param>
 /// <param name="Available">The setup page can be used: <paramref name="Required"/>, or

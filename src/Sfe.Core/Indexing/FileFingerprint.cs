@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Sfe.Core.Indexing;
+namespace Otools.Net.Sfe.Core.Indexing;
 
 /// <summary>
 /// Cheap content fingerprint used to spot duplicates and moved files: SHA1 of the first megabyte. Files are compared

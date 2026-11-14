@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Logs;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Entries">Newest first.</param>
 /// <param name="Next">Pass as <c>before</c> for the next (older) page; null on the last one.</param>

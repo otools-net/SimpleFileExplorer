@@ -1,11 +1,11 @@
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Files;
-using Sfe.Core.Paths;
-using Sfe.Core.Transfers;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Transfers;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>A move or copy between the library and a connection, or between two connections.</summary>
 /// <param name="Kind"><c>move</c> or <c>copy</c>.</param>

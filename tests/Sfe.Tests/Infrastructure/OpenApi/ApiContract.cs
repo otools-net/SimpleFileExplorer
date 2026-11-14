@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Sfe.Api;
+using Otools.Net.Sfe.Api;
 
-namespace Sfe.Tests.Infrastructure.OpenApi;
+namespace Otools.Net.Sfe.Tests.Infrastructure.OpenApi;
 
 /// <summary>
 /// The promises of an OpenAPI document, one <see cref="ApiFact"/> per key: <c>GET /api/v1/tags</c>, its

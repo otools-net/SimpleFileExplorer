@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Sfe.Core.Library;
+namespace Otools.Net.Sfe.Core.Library;
 
 /// <summary>
 /// Tells animated pictures (GIF, APNG, WebP, AVIF sequences) from still ones by their structure, without decoding:

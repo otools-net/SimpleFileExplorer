@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <param name="Value">In effect at the level asked for.</param>
 /// <param name="Source">The level it comes from.</param>

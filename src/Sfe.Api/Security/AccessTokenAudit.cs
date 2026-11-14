@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Writes into the server's log every request made with an access token that may change something (any method but

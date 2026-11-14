@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// How a principal's level at a folder changes when the folder moves. Null for an account without a rule above the

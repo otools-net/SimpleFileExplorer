@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>Builds the <c>right:a,b</c> policies on demand; other names go to the default provider.</summary>
 public sealed class RightPolicyProvider(IOptions<AuthorizationOptions> options) : IAuthorizationPolicyProvider

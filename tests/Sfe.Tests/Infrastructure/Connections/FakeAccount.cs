@@ -1,6 +1,6 @@
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// The storage of one account of <see cref="FakeProvider"/>: files and folders by full path (from the account's

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 /// <param name="Slug">Value stored in <see cref="Data.Tag.Color"/>.</param>
 /// <param name="Hex">Background color; the client picks a readable text color for it.</param>

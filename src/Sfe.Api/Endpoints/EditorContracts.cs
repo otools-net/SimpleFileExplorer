@@ -1,4 +1,4 @@
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Version">The picture's version (also the ETag): what saving over it will say it changes.</param>
 /// <param name="Overwrite">The caller may save over it: <c>files.edit</c> at its folder and the rule of move/copy's

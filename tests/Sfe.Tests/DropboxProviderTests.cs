@@ -1,11 +1,11 @@
 using System.Net;
 using System.Web;
-using Sfe.Core.Connections;
-using Sfe.Core.Connections.Dropbox;
-using Sfe.Core.Options;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections.Dropbox;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="DropboxProvider"/>'s sign-in and test against recorded answers (<see cref="RecordedDropbox"/>): what

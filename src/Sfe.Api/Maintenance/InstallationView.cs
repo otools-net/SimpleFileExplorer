@@ -1,6 +1,6 @@
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Api.Maintenance;
+namespace Otools.Net.Sfe.Api.Maintenance;
 
 /// <param name="Root">The first library's folder (<c>Sfe:Root</c>).</param>
 /// <param name="RootExists">That folder exists on the server.</param>

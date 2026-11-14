@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// What a subject may do at each path of one connection: its <see cref="ConnectionPolicies"/> policy with the rights

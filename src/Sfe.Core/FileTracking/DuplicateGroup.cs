@@ -1,6 +1,6 @@
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <param name="Fingerprint">The files' partial SHA1 (see <see cref="Indexing.FileFingerprint"/>).</param>
 /// <param name="Count">Files in the group; <paramref name="Files"/> lists at most

@@ -1,7 +1,7 @@
-using Sfe.Core.Data;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// Where accounts and passwords are checked. The local accounts are one (<see cref="LocalUserDirectory"/>); a

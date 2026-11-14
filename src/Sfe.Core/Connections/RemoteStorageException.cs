@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// The one error of <see cref="IRemoteStorage"/> and of a sign-in: a provider turns its own into it. The message is

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// The folder rules of a connection following a folder renamed or moved through SFE, for every library, in the

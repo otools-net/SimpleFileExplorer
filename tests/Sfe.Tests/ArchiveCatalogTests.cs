@@ -2,11 +2,11 @@ using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
 using Microsoft.Data.Sqlite;
-using Sfe.Core.Files.Compression;
-using Sfe.Core.Options;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Files.Compression;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// An archive's list read once into a catalog (<see cref="ArchiveCatalog"/>): pages, totals and paths answered from it

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// The rules naming a group, deleted before the group: the database doesn't cascade from a group to them (two

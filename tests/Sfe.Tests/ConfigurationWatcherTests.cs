@@ -1,6 +1,6 @@
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// A stopped server lets go of the folders its configuration files watched: on Linux each watcher is an inotify

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>When a tag was last used, for the sidebar's "last searched" and "last viewed" lists (UTC).</summary>
 public sealed class TagActivity

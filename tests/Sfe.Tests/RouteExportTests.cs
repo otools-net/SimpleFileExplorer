@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Security;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Writes every endpoint with what guards it to the file named by <c>SFE_ROUTES_OUT</c>: method and pattern, name,

@@ -8,15 +8,15 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Logs;
-using Sfe.Core.Settings;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The server's log (Administration › Server › Logs): what is kept, searched, shown to whom, written to files and
@@ -276,7 +276,7 @@ public sealed class LogTests
             (
                 await visitor.PostAsJsonAsync(
                     $"{V1}/migration",
-                    new Sfe.Api.Endpoints.MigrationInput("not-the-code"),
+                    new Otools.Net.Sfe.Api.Endpoints.MigrationInput("not-the-code"),
                     TestContext.CancellationToken
                 )
             ).Dispose();
@@ -411,7 +411,7 @@ public sealed class LogTests
             .Services.GetRequiredService<AuditLogService>()
             .FlushAsync(database: false, TestContext.CancellationToken);
         // Long enough for the worker to have flushed a few times.
-        await Task.Delay(Sfe.Api.AuditLogWorker.FlushInterval * 2, TestContext.CancellationToken);
+        await Task.Delay(Otools.Net.Sfe.Api.AuditLogWorker.FlushInterval * 2, TestContext.CancellationToken);
         var tableBefore = await TableExistsAsync("LogEntries");
 
         await ApiClients.MigrateAsync(updated, TestContext.CancellationToken);

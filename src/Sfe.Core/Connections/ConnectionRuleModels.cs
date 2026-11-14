@@ -1,6 +1,6 @@
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// A folder rule of a connection, for one library's group (<paramref name="GroupId"/>) or account

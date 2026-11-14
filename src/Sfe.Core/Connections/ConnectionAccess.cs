@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// Who may use which connection, and how far: the one place routes and jobs ask

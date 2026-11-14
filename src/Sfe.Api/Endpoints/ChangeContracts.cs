@@ -1,6 +1,6 @@
-using Sfe.Core.KeepAlive;
+using Otools.Net.Sfe.Core.KeepAlive;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Path">The folder changed (root-relative).</param>
 /// <param name="Origin">The tab whose request changed it (`X-SFE-Tab`), which needs no notice; null from a background

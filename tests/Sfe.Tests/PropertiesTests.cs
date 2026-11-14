@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
-using Sfe.Core.Files;
-using Sfe.Core.Indexing;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Properties of files and folders in Core (<see cref="Properties"/>, <see cref="PropertyJobs"/>).</summary>
 [TestClass]

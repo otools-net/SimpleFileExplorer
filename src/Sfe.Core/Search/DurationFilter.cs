@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Sfe.Core.Search;
+namespace Otools.Net.Sfe.Core.Search;
 
 /// <summary>The length of a video or audio file compared to a number of seconds (<c>d:</c>).</summary>
 /// <param name="Tolerance">Seconds either side of <paramref name="Seconds"/> for

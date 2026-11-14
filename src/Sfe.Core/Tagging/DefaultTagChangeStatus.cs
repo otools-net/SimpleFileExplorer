@@ -1,4 +1,4 @@
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 public enum DefaultTagChangeStatus
 {

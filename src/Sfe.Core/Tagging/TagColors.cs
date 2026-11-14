@@ -1,4 +1,4 @@
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 /// <summary>Tag palette: TagStudio's "standard" colors.</summary>
 public static class TagColors

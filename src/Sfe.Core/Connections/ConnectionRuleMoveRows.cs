@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// The rows a folder move of a connection changed when it began (<see cref="ConnectionRuleMove"/>).

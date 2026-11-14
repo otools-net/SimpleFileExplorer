@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Thumbnails;
+namespace Otools.Net.Sfe.Core.Thumbnails;
 
 /// <summary>The ffmpeg executable shared by thumbnails and trickplay: found once, run with a time limit.</summary>
 public sealed class Ffmpeg

@@ -1,7 +1,7 @@
 using System.Text;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.KeepAlive;
+namespace Otools.Net.Sfe.Core.KeepAlive;
 
 /// <summary>
 /// Whether a folder is on a network share, so that <see cref="KeepAliveMode.Auto"/> keeps only those alive. Links and

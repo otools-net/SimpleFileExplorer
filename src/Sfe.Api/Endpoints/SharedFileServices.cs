@@ -1,8 +1,8 @@
-using Sfe.Api.Security;
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What a shared file link (no session: the token says whose file) takes from the container and the request

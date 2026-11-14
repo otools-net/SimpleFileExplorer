@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Sfe.Core.Paths;
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// File index: indexed folders and files, tags, and tagged files no longer found. On SQL Server the tables live in the

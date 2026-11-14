@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using ConnectionInfo = Sfe.Core.Connections.ConnectionInfo;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using ConnectionInfo = Otools.Net.Sfe.Core.Connections.ConnectionInfo;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// The connections a session uses and those it manages (<see cref="ConnectionManagers"/>): listed, renamed, turned

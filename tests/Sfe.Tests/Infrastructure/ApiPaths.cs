@@ -1,6 +1,6 @@
-using Sfe.Api;
+using Otools.Net.Sfe.Api;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// The base of the routes the tests call, imported in every test file (<c>Sfe.Tests.csproj</c>):

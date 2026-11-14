@@ -1,4 +1,4 @@
-namespace Sfe.Core.Search;
+namespace Otools.Net.Sfe.Core.Search;
 
 public sealed record SizeFilter(SizeComparison Comparison, long Bytes, long Tolerance = 0)
 {

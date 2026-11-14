@@ -1,6 +1,6 @@
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <param name="Key">As the settings page names it, e.g. <c>player.seekSeconds</c> (also the key of its validation
 /// errors).</param>

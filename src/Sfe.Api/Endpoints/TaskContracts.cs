@@ -1,6 +1,6 @@
-using Sfe.Core.Tasks;
+using Otools.Net.Sfe.Core.Tasks;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Result">What happened: started, already running (a trickplay pass then follows the current one), or
 /// unavailable.</param>

@@ -1,7 +1,7 @@
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Core.Upgrades.Steps.V1_82_0;
+namespace Otools.Net.Sfe.Core.Upgrades.Steps.V1_82_0;
 
 /// <summary>
 /// 1.82.0: the work folder (the trash, unfinished uploads) is on the server by default, no longer in the library

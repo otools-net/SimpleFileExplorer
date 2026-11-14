@@ -1,6 +1,6 @@
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 public sealed record ArchiveRequest(IReadOnlyList<string?>? Paths);
 

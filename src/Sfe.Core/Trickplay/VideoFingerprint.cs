@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Numerics;
 
-namespace Sfe.Core.Trickplay;
+namespace Otools.Net.Sfe.Core.Trickplay;
 
 /// <summary>
 /// Perceptual fingerprint of a video: a 64-bit difference hash (dHash) of each trickplay frame. Copies of a video at

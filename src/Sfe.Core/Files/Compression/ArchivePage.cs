@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>A folder's page: its folders first, then its files, by name.</summary>
 public sealed record ArchivePage(

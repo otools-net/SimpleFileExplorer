@@ -1,4 +1,4 @@
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// A file being written on one side of a transfer, part after part: into a partial file of the library (renamed at

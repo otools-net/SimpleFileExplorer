@@ -1,10 +1,10 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="ConnectionService"/> and <see cref="ConnectionSharing"/>: connections made, changed, signed in again,

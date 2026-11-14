@@ -1,4 +1,4 @@
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Routes a personal access token may not call (agents/docs/development/api-tokens-plan.md): what lets someone into

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Sfe.Core.Upgrades;
+namespace Otools.Net.Sfe.Core.Upgrades;
 
 /// <summary>
 /// The versions of <c>CHANGELOG.md</c> (built into the application): <c>## x.y.z</c>, then <c>### Added</c>... and

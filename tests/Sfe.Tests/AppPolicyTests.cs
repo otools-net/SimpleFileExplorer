@@ -1,7 +1,7 @@
-using Sfe.Api.Security;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Where the app's pages may load pictures and media from (audit 2026-11, A11).</summary>
 [TestClass]

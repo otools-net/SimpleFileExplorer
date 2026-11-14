@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Connections to storage outside the library (<c>Sfe:Connections</c>): whoever runs the server decides whether

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>Whose a connection is, and so who can ever use it.</summary>
 public enum ConnectionLevel

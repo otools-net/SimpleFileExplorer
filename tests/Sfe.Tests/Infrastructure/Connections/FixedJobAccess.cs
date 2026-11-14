@@ -1,8 +1,8 @@
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Transfers;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Transfers;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// A person's access to a connection during a transfer, as a test sets it (<see cref="Folders"/>): everything by

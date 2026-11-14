@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
-using Sfe.Core.Transfers;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Transfers;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// Moves and copies between the library and a connection, or between two connections, as background jobs

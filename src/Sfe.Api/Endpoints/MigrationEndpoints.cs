@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Sfe.Api.Maintenance;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Logs;
-using Sfe.Core.Options;
-using Sfe.Core.Upgrades;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Upgrades;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 public static class MigrationEndpoints
 {

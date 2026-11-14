@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// The names file management gives files and folders (agents/docs/features/file-names.md): one name, never a path, and

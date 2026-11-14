@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Library;
+namespace Otools.Net.Sfe.Core.Library;
 
 /// <summary>What a folder of the library can be kept out of.</summary>
 public enum ExclusionKind

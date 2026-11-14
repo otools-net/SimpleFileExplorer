@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// Version of the running application, from <c>Directory.Build.props</c> (or a build's <c>-p:Version</c>). The SDK

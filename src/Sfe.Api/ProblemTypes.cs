@@ -1,4 +1,4 @@
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// Every <c>type</c> word of the API's problems (ProblemDetails): the word is the contract that clients test, the text

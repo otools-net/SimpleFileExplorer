@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Library;
+namespace Otools.Net.Sfe.Core.Library;
 
 public sealed class MediaClassifier(IOptionsMonitor<SfeOptions> options)
 {

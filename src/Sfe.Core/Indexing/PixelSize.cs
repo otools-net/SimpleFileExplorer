@@ -1,4 +1,4 @@
-namespace Sfe.Core.Indexing;
+namespace Otools.Net.Sfe.Core.Indexing;
 
 /// <summary>Width and height in pixels, as the picture is shown (rotated by its orientation metadata).</summary>
 public readonly record struct PixelSize(int Width, int Height)

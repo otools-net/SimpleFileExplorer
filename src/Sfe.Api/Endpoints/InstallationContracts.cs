@@ -1,6 +1,6 @@
-using Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Api.Maintenance;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 public sealed record InstallationCheck(string? Code);
 

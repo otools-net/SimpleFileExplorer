@@ -1,11 +1,12 @@
 using Microsoft.Extensions.Logging;
 
-namespace Sfe.Core.Tasks;
+namespace Otools.Net.Sfe.Core.Tasks;
 
 /// <summary>
-/// Copies the log entries of SFE's own code (categories <c>Sfe.*</c>, from Debug up) into the log of the run in
-/// progress on the same async flow: the run sets <see cref="Current"/>, and the tasks and threads it starts inherit
-/// it. Entries logged outside a run (requests, the trickplay queue of the player) are ignored.
+/// Copies the log entries of SFE's own code (categories <c>Otools.Net.Sfe.*</c>, and <c>Sfe.*</c> for the names
+/// given by hand, from Debug up) into the log of the run in progress on the same async flow: the run sets
+/// <see cref="Current"/>, and the tasks and threads it starts inherit it. Entries logged outside a run (requests,
+/// the trickplay queue of the player) are ignored.
 /// </summary>
 public sealed class TaskLogProvider : ILoggerProvider
 {
@@ -22,7 +23,8 @@ public sealed class TaskLogProvider : ILoggerProvider
     }
 
     public ILogger CreateLogger(string categoryName) =>
-        categoryName.StartsWith("Sfe.", StringComparison.Ordinal)
+        categoryName.StartsWith("Otools.Net.Sfe.", StringComparison.Ordinal)
+        || categoryName.StartsWith("Sfe.", StringComparison.Ordinal)
             ? RunLogger.Instance
             : Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 

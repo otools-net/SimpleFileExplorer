@@ -1,18 +1,18 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The server's mode, <c>Sfe:Mode</c>: written by the setup into the installation file, or set by appsettings, the
 /// environment (<c>Sfe__Mode</c>) or the command line, which then lock it. Read from the configuration as a word, not
-/// bound into <see cref="Sfe.Core.Options.SfeOptions"/>: the binder would throw on a misspelled value and stop the
-/// server.
+/// bound into <see cref="Otools.Net.Sfe.Core.Options.SfeOptions"/>: the binder would throw on a misspelled value and
+/// stop the server.
 /// </summary>
 /// <remarks>
 /// Local mode (once the setup is done; before it nobody but the setup gets in anyway): <see cref="RequestGuard"/>
 /// answers
 /// <see cref="LocalOnlyType"/> to visitors on other computers, <see cref="SfeSession.ValidateAsync"/> and the sign-in
-/// let only administrators (<see cref="Sfe.Core.Access.AccessService.IsAdministratorAsync"/>) in, and
+/// let only administrators (<see cref="Otools.Net.Sfe.Core.Access.AccessService.IsAdministratorAsync"/>) in, and
 /// <see cref="ApplyTo"/> turns anonymous guests off.
 /// </remarks>
 public static class ServerModes

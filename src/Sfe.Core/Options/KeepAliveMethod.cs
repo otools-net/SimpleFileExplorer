@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 [JsonConverter(typeof(JsonStringEnumConverter<KeepAliveMethod>))]
 public enum KeepAliveMethod

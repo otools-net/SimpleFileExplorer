@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Trickplay: frames of a video, taken at regular intervals and tiled on sheets, that the player shows over its seek

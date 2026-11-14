@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <param name="Source">What is moved or copied.</param>
 /// <param name="Existing">What is already there under that name.</param>

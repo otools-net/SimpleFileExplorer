@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace Sfe.Tests.Infrastructure.OpenApi;
+namespace Otools.Net.Sfe.Tests.Infrastructure.OpenApi;
 
 /// <summary>The v1 OpenAPI document as the server serves it now, and the baseline committed in tests/samples.</summary>
 public static class OpenApiDocuments

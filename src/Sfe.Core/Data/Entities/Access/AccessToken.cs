@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A personal access token: a program presenting it acts as <see cref="UserId"/>, with at most the account's rights

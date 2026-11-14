@@ -1,8 +1,8 @@
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Background trickplay generation with a real ffmpeg: set <c>SFE_TEST_FFMPEG</c> to its path, or put it on PATH.

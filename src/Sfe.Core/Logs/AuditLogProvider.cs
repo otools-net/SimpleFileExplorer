@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Logs;
+namespace Otools.Net.Sfe.Core.Logs;
 
 /// <summary>
 /// Collects what every logger of the server writes, at the levels of the <c>Logging</c> section (as the console), for

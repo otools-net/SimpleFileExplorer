@@ -1,10 +1,10 @@
 using System.Net;
 using Microsoft.Extensions.Options;
-using Sfe.Api.Maintenance;
-using Sfe.Core.Access;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Visitors on the server's own computer, for what only they may skip: the setup code of a new install, with the link

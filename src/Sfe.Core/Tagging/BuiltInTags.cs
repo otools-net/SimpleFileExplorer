@@ -1,4 +1,4 @@
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 /// <summary>
 /// Tags every library starts with, as in TagStudio: "Favorite" and "Archived" (hidden from search), both under the

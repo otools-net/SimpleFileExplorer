@@ -1,15 +1,15 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Net.Http.Headers;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
-using Sfe.Core.Library;
-using Sfe.Core.Paths;
-using Sfe.Core.Settings;
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// Text files for the viewer and editor of the web client (agents/docs/features/text-viewer.md,

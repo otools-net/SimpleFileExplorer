@@ -1,4 +1,4 @@
-namespace Sfe.Core.Library;
+namespace Otools.Net.Sfe.Core.Library;
 
 /// <summary>
 /// What a listing leaves out (folder rules): the entries named in <paramref name="Hidden"/>, or, when

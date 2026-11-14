@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// How a zip entry is encrypted (other formats: SharpCompress knows, <see cref="ArchiveEntry.Encrypted"/> says).

@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// The <c>Range</c> header of a read of a connection's file, as one <see cref="RemoteRange"/>. Only one range is

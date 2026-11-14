@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Maintenance;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// HTTP clients of a test server: they keep the sign-in cookie and send the header requests that change something need.

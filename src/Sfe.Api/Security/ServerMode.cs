@@ -1,4 +1,4 @@
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>How the server is used, chosen at the setup (<see cref="ServerModes"/>).</summary>
 public enum ServerMode

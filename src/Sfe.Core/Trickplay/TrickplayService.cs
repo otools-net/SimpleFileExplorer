@@ -4,13 +4,13 @@ using System.Security;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Tasks;
-using Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Tasks;
+using Otools.Net.Sfe.Core.Thumbnails;
 
-namespace Sfe.Core.Trickplay;
+namespace Otools.Net.Sfe.Core.Trickplay;
 
 /// <summary>
 /// Generates trickplay in the background for the videos of the configured folders, and serves it.

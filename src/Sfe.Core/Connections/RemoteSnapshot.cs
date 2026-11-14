@@ -1,6 +1,6 @@
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// One read of a connection's folder kept by <see cref="RemoteListings"/>, shared by everyone who lists it, and its

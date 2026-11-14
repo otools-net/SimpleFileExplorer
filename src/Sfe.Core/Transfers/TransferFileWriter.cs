@@ -1,7 +1,7 @@
-using Sfe.Core.Connections;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// One file of a transfer written at the target (<see cref="TransferStream"/>), then verified: its size always, its

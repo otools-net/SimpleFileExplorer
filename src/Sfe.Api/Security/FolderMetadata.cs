@@ -1,4 +1,4 @@
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// How a route takes folder rules into account (agents/docs/features/folder-access.md), read by the test checking

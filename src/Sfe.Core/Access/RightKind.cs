@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// What a right does: only looks (<see cref="Read"/>), or changes something through one of its routes.

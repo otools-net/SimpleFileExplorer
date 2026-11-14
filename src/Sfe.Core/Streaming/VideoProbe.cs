@@ -1,4 +1,4 @@
-namespace Sfe.Core.Streaming;
+namespace Otools.Net.Sfe.Core.Streaming;
 
 /// <summary>What ffmpeg tells about a video, to convert it.</summary>
 /// <param name="Duration">Seconds; null when the container doesn't say.</param>

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>What a catalog holds, and whether its list is whole.</summary>
 /// <param name="Complete">False when the read stopped (a limit, a broken archive): the view says why, from

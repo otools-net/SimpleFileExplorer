@@ -1,4 +1,4 @@
-namespace Sfe.Core.Indexing;
+namespace Otools.Net.Sfe.Core.Indexing;
 
 /// <param name="FilesIndexed">New or changed files written to the index.</param>
 /// <param name="Removed">Files and folders removed from the index because they no longer exist.</param>

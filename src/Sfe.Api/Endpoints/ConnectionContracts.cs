@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>How a kind of connection is set up on this server (Administration › Connections).</summary>
 /// <param name="Offered">Allowed by the settings and configured enough to sign in (Dropbox: an app key).</param>
@@ -49,14 +49,18 @@ public sealed record NamedItem(int Id, string Name);
 /// <summary>A connection the session manages, and what it may do with it.</summary>
 /// <param name="Manage">Rename, switch, sign in again (an account's own, or its level's right).</param>
 /// <param name="Remove">Remove (also the server's administrators for an account's connection).</param>
-public sealed record ManagedConnection(Sfe.Core.Connections.ConnectionInfo Connection, bool Manage, bool Remove);
+public sealed record ManagedConnection(
+    Otools.Net.Sfe.Core.Connections.ConnectionInfo Connection,
+    bool Manage,
+    bool Remove
+);
 
 /// <summary>The libraries a server-level connection is offered to.</summary>
 /// <param name="AllLibraries">Every library, those made later too.</param>
 public sealed record ConnectionLibrariesInput(bool AllLibraries, int[]? LibraryIds);
 
 /// <summary>The groups of the request's library using a connection, with their level (Read or Write).</summary>
-public sealed record ConnectionGroupsInput(Dictionary<int, Sfe.Core.Access.FolderLevel>? Groups);
+public sealed record ConnectionGroupsInput(Dictionary<int, Otools.Net.Sfe.Core.Access.FolderLevel>? Groups);
 
 /// <summary>A page of a connection's folder (<c>GET api/connections/{id}/browse</c>).</summary>
 public sealed record ConnectionBrowseQuery(
@@ -106,14 +110,14 @@ public sealed record ConnectionItemProperties(
 internal sealed record ConnectionBrowseServices(
     RemoteListings Listings,
     MediaClassifier Classifier,
-    Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions> Options
+    Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> Options
 );
 
 /// <summary>What the zips of a connection's files use (bound with <c>[AsParameters]</c>).</summary>
 internal sealed record ConnectionArchiveServices(
     ArchiveLinks Links,
-    Sfe.Core.Files.Archives Archives,
-    ILogger<Sfe.Core.Files.Archives> Logger
+    Otools.Net.Sfe.Core.Files.Archives Archives,
+    ILogger<Otools.Net.Sfe.Core.Files.Archives> Logger
 );
 
 /// <summary>What the routes changing a connection's files use besides the connection (bound with
@@ -123,7 +127,7 @@ internal sealed record ConnectionWriteServices(
     RemoteListings Listings,
     MediaClassifier Classifier,
     ConnectionRuleService Rules,
-    Sfe.Core.Access.AccessService Accounts,
+    Otools.Net.Sfe.Core.Access.AccessService Accounts,
     ILoggerFactory Loggers
 );
 
@@ -149,7 +153,7 @@ public sealed record ConnectionTransferResults(IReadOnlyList<ConnectionTransferI
 /// <param name="Item">The item where it is now, when <paramref name="Status"/> is Done.</param>
 public sealed record ConnectionTransferItem(
     string Path,
-    Sfe.Core.Files.FileOperationStatus Status,
+    Otools.Net.Sfe.Core.Files.FileOperationStatus Status,
     string? Message = null,
     LibraryItem? Item = null
 );
@@ -169,7 +173,7 @@ internal sealed record ConnectionUploadServices(
     RemoteUploads Uploads,
     RemoteListings Listings,
     MediaClassifier Classifier,
-    Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions> Options
+    Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> Options
 );
 
 /// <summary>An upload into a connection being changed by a request, its gate held.</summary>

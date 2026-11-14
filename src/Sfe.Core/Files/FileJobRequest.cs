@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <param name="Paths">Files and folders to move or copy (root-relative); the archive to extract.</param>
 /// <param name="Target">The folder they go into.</param>

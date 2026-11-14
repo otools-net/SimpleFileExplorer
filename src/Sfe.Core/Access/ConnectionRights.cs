@@ -1,6 +1,6 @@
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// The rights of connections to other storage, a part of <see cref="RightCatalog.All"/> kept in its own file.

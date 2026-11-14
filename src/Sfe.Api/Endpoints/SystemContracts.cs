@@ -1,4 +1,4 @@
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Configured">The executable as set in <c>Thumbnails:FfmpegPath</c> (a path, or a name looked up on
 /// PATH).</param>

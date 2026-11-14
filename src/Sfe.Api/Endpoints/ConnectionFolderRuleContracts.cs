@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>A folder rule of a connection, as the library's rules are listed (<see cref="FolderRuleView"/>).</summary>
 /// <param name="Path">Folder, relative to the connection's root folder (empty: the root).</param>

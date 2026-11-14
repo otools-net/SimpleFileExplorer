@@ -1,6 +1,6 @@
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Api.Maintenance;
+namespace Otools.Net.Sfe.Api.Maintenance;
 
 /// <param name="SetupDone">The server has its administrator: the mode no longer goes back from External to Local
 /// here.</param>

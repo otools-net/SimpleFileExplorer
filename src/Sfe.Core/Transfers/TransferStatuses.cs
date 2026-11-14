@@ -1,7 +1,7 @@
-using Sfe.Core.Connections;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>The status of a transfer's item from the error of either side.</summary>
 internal static class TransferStatuses

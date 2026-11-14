@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// Flash movies for the viewer of the web client (agents/docs/features/flash-viewer.md). Ruffle plays them in a frame

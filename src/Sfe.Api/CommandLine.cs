@@ -1,4 +1,4 @@
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// Switches of the program's own (not configuration keys), read before the builder sees the arguments.

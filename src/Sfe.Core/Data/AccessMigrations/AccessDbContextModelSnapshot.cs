@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
 #nullable disable
 
-namespace Sfe.Core.Data.AccessMigrations
+namespace Otools.Net.Sfe.Core.Data.AccessMigrations
 {
     [DbContext(typeof(AccessDbContext))]
     partial class AccessDbContextModelSnapshot : ModelSnapshot
@@ -23,7 +23,7 @@ namespace Sfe.Core.Data.AccessMigrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Sfe.Core.Data.AccessToken", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.AccessToken", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -105,7 +105,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("AccessTokens", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.Connection", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Connection", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -185,7 +185,7 @@ namespace Sfe.Core.Data.AccessMigrations
                         });
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.ConnectionFolderRule", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.ConnectionFolderRule", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -242,7 +242,7 @@ namespace Sfe.Core.Data.AccessMigrations
                         });
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.ConnectionGroup", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.ConnectionGroup", b =>
                 {
                     b.Property<int>("ConnectionId")
                         .HasColumnType("int");
@@ -263,7 +263,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("ConnectionGroups", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.ConnectionTenant", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.ConnectionTenant", b =>
                 {
                     b.Property<int>("ConnectionId")
                         .HasColumnType("int");
@@ -278,7 +278,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("ConnectionTenants", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.FolderRule", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.FolderRule", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -326,7 +326,7 @@ namespace Sfe.Core.Data.AccessMigrations
                         });
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.GroupMember", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.GroupMember", b =>
                 {
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
@@ -341,7 +341,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("GroupMembers", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.GroupRight", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.GroupRight", b =>
                 {
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
@@ -356,7 +356,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("GroupRights", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.LogEntry", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.LogEntry", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -395,7 +395,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("LogEntries", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.QuickLink", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.QuickLink", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -429,7 +429,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("QuickLinks", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.ServerProperty", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.ServerProperty", b =>
                 {
                     b.Property<string>("Key")
                         .HasMaxLength(64)
@@ -446,7 +446,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("ServerProperties", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.Tenant", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Tenant", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -494,7 +494,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("Tenants", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TenantDisabledRight", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TenantDisabledRight", b =>
                 {
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
@@ -509,7 +509,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("TenantDisabledRights", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TenantSetting", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TenantSetting", b =>
                 {
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
@@ -531,7 +531,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("TenantSettings", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.UserAccount", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.UserAccount", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -603,7 +603,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("Users", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.UserGroup", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.UserGroup", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -636,7 +636,7 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("Groups", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.UserSetting", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.UserSetting", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -655,53 +655,53 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.ToTable("UserSettings", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.AccessToken", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.AccessToken", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.Connection", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Connection", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.ConnectionFolderRule", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.ConnectionFolderRule", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Connection", "Connection")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Connection", "Connection")
                         .WithMany("Rules")
                         .HasForeignKey("ConnectionId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.UserGroup", "Group")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.ClientCascade);
 
-                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -711,15 +711,15 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.ConnectionGroup", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.ConnectionGroup", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Connection", "Connection")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Connection", "Connection")
                         .WithMany("Groups")
                         .HasForeignKey("ConnectionId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.UserGroup", "Group")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -730,15 +730,15 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.ConnectionTenant", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.ConnectionTenant", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Connection", "Connection")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Connection", "Connection")
                         .WithMany("Tenants")
                         .HasForeignKey("ConnectionId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -747,20 +747,20 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.Navigation("Connection");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.FolderRule", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.FolderRule", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.UserGroup", "Group")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.ClientCascade);
 
-                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -768,15 +768,15 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.GroupMember", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.GroupMember", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.UserGroup", "Group")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserGroup", "Group")
                         .WithMany("Members")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.UserAccount", "User")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserAccount", "User")
                         .WithMany("Groups")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -787,9 +787,9 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.GroupRight", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.GroupRight", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.UserGroup", "Group")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserGroup", "Group")
                         .WithMany("Rights")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -798,24 +798,24 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.QuickLink", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.QuickLink", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TenantDisabledRight", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TenantDisabledRight", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tenant", "Tenant")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", "Tenant")
                         .WithMany("DisabledRights")
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -824,18 +824,18 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.Navigation("Tenant");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TenantSetting", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TenantSetting", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.UserGroup", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.UserGroup", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tenant", "Tenant")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", "Tenant")
                         .WithMany("Groups")
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -844,16 +844,16 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.Navigation("Tenant");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.UserSetting", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.UserSetting", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.Connection", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Connection", b =>
                 {
                     b.Navigation("Groups");
 
@@ -862,19 +862,19 @@ namespace Sfe.Core.Data.AccessMigrations
                     b.Navigation("Tenants");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.Tenant", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Tenant", b =>
                 {
                     b.Navigation("DisabledRights");
 
                     b.Navigation("Groups");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.UserAccount", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.UserAccount", b =>
                 {
                     b.Navigation("Groups");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.UserGroup", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.UserGroup", b =>
                 {
                     b.Navigation("Members");
 

@@ -1,12 +1,12 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
-using Sfe.Core.Paths;
-using static Sfe.Core.Transfers.LibraryTransferErrors;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
+using static Otools.Net.Sfe.Core.Transfers.LibraryTransferErrors;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// The library's side of a transfer (agents/docs/features/transfers.md), with the checks of the

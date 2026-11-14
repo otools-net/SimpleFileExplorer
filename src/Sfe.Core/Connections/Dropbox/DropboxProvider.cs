@@ -1,7 +1,7 @@
 using Dropbox.Api;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Connections.Dropbox;
+namespace Otools.Net.Sfe.Core.Connections.Dropbox;
 
 /// <summary>
 /// Dropbox, through the app whoever runs the server registered (<see cref="DropboxOptions"/>): signs in with OAuth

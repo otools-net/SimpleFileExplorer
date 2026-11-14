@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>The committed test media and their list stay in step (tests/samples/README.md).</summary>
 [TestClass]

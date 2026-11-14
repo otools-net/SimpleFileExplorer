@@ -1,9 +1,9 @@
 using System.Runtime.CompilerServices;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Core.Library;
+namespace Otools.Net.Sfe.Core.Library;
 
 /// <summary>
 /// The folder lists of a library's settings that keep folders, with their sub-folders, out of scans, trickplay and

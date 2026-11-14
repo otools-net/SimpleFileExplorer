@@ -1,12 +1,12 @@
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
-using Sfe.Core.Upgrades;
-using Sfe.Core.Upgrades.Steps;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Upgrades;
+using Otools.Net.Sfe.Core.Upgrades.Steps;
 
-namespace Sfe.Api.Maintenance;
+namespace Otools.Net.Sfe.Api.Maintenance;
 
 /// <summary>
 /// The update of an install to the running version. At start-up the install's version (<see cref="InstalledVersion"/>)

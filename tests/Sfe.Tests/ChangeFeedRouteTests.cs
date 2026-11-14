@@ -5,14 +5,14 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.KeepAlive;
-using Sfe.Core.Settings;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.KeepAlive;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The change feed and new files through HTTP. Alice is in Users (who may browse, not create files) with SpecialDir

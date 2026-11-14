@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// The folder rules of each library: set and removed one by one, and moved with their folders when a folder is

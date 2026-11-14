@@ -1,6 +1,6 @@
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Tenancy;
+namespace Otools.Net.Sfe.Api.Tenancy;
 
 /// <summary>
 /// The services (index, paths, thumbnails...) of a library, for the requests that name their library themselves

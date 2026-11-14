@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>The editable <see cref="AccessTokenOptions"/>: server settings, for its administrators.</summary>
 public sealed class AccessTokenSettings

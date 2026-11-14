@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// An entry's data held to the size its archive declared: one byte more, or one less at the end, is a broken (or

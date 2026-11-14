@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>Settings as JSON, flattened to their keys (<c>browse.defaultPageSize</c>) and back.</summary>
 public static class SettingKeys

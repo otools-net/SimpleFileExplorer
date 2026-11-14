@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 using Dropbox.Api;
 using Dropbox.Api.Files;
 
-namespace Sfe.Core.Connections.Dropbox;
+namespace Otools.Net.Sfe.Core.Connections.Dropbox;
 
 /// <summary>
 /// The files of a Dropbox account seen from a connection's root folder, through the SDK (every call through

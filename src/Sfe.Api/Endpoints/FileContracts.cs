@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Path">The folder to create the new one in (root-relative; empty for the root).</param>
 /// <param name="Name">The new folder's name.</param>

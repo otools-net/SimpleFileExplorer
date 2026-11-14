@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// What a kind of storage can do by itself. SFE does the rest (or hides the function): the routes, the transfer jobs

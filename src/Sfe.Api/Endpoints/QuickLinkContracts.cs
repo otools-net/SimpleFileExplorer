@@ -1,6 +1,6 @@
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Path">Relative to the library root; empty for the root.</param>
 /// <param name="Name">The folder's or file's name (the library's name for the root).</param>

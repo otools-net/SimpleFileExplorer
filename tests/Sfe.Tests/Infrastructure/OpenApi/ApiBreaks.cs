@@ -1,4 +1,4 @@
-namespace Sfe.Tests.Infrastructure.OpenApi;
+namespace Otools.Net.Sfe.Tests.Infrastructure.OpenApi;
 
 /// <summary>
 /// What a new document breaks of its baseline, by the rules of agents/docs/development/api-versioning.md: a route,

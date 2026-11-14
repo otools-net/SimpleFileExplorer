@@ -1,4 +1,4 @@
-namespace Sfe.Core.Trickplay;
+namespace Otools.Net.Sfe.Core.Trickplay;
 
 /// <summary>Detailed progress of the background job, for the activity dialog.</summary>
 /// <param name="Queued">The first videos opened in the player and waiting (they go first); the total is in the

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Colors of the web client. Written as a name in the settings file too (it is serialized without the API's enum

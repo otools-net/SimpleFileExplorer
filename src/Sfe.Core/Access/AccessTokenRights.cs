@@ -1,6 +1,6 @@
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// The rights of personal access tokens (agents/docs/development/api-tokens-plan.md), a part of

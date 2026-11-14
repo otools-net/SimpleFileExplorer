@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A folder or file of a library that a user keeps at hand in the sidebar (Quick links). Kept by path, as the user

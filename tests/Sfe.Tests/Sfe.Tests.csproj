@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Otools.Net.Sfe.Tests</RootNamespace>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -13,7 +14,7 @@
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
-    <Using Include="Sfe.Tests.Infrastructure.ApiPaths" Static="true" />
+    <Using Include="Otools.Net.Sfe.Tests.Infrastructure.ApiPaths" Static="true" />
   </ItemGroup>
 
   <ItemGroup>

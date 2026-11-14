@@ -1,4 +1,4 @@
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <param name="Count">Videos in the group; <paramref name="Videos"/> lists at most
 /// <see cref="DuplicateFinder.MaxFilesPerGroup"/>.</param>

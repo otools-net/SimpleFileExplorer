@@ -1,6 +1,6 @@
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>The listing order of <see cref="LibraryBrowser"/> for a connection's items: folders first.</summary>
 public static class RemoteSort

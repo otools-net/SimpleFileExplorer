@@ -1,6 +1,6 @@
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Logs;
+namespace Otools.Net.Sfe.Core.Logs;
 
 /// <param name="TenantId">The library whose services logged it; null for the server's own.</param>
 public sealed record LogEntryView(

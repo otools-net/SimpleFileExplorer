@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>A tag of a file in the trash, given back by a restore.</summary>
 public sealed class TrashTag

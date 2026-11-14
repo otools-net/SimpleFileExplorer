@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.KeepAlive;
+namespace Otools.Net.Sfe.Core.KeepAlive;
 
 /// <summary>What keep alive knows of one folder.</summary>
 /// <param name="IsRoot">The library's folder itself (the others come from

@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>The levels as <see cref="ConnectionOptions.Levels"/> names them.</summary>
 public static class ConnectionLevels

@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
-using Sfe.Core.Files;
-using Sfe.Core.FileTracking;
-using Sfe.Core.Indexing;
-using Sfe.Core.Settings;
-using Sfe.Core.Tagging;
-using Sfe.Core.Thumbnails;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.FileTracking;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Duplicate files, and tags following files that are moved, renamed or whose drive goes missing.</summary>
 [TestClass]

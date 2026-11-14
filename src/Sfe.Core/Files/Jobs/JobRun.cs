@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// One move, copy, extraction or compression (<see cref="FileJobs"/>), or transfer with a connection

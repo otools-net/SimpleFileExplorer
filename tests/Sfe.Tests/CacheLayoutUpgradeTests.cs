@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
-using Sfe.Core.Upgrades;
-using Sfe.Core.Upgrades.Steps;
-using Sfe.Core.Upgrades.Steps.V1_40_0;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.Upgrades;
+using Otools.Net.Sfe.Core.Upgrades.Steps;
+using Otools.Net.Sfe.Core.Upgrades.Steps.V1_40_0;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The 1.40.0 step moving the thumbnail and trickplay caches from one folder per source folder to two levels of 256

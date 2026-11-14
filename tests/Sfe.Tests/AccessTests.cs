@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Setup, sign-in, rights, guests and the external players' links, through HTTP.</summary>
 [TestClass]
@@ -205,7 +205,7 @@ public sealed class AccessTests
                         // Request bodies are the app's records (HttpRequest and some services have a Path of their
                         // own).
                         || (
-                            p.ParameterType.Namespace?.StartsWith("Sfe.", StringComparison.Ordinal) == true
+                            p.ParameterType.Namespace?.StartsWith("Otools.Net.Sfe.", StringComparison.Ordinal) == true
                             && p.ParameterType.GetMethod("<Clone>$") is not null
                             && p.ParameterType.GetProperties()
                                 .Any(property =>

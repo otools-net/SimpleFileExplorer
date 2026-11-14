@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// One entry of the server's log (<see cref="Logs.AuditLogService"/>): what a logger wrote, when, and in which library.
@@ -17,7 +17,7 @@ public sealed class LogEntry
     /// </summary>
     public LogEntryLevel Level { get; set; }
 
-    /// <summary>The logger's name, e.g. <c>Sfe.Core.Indexing.ScanCoordinator</c>.</summary>
+    /// <summary>The logger's name, e.g. <c>Otools.Net.Sfe.Core.Indexing.ScanCoordinator</c>.</summary>
     public string Category { get; set; } = string.Empty;
 
     public string Message { get; set; } = string.Empty;

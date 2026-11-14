@@ -1,15 +1,15 @@
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Search;
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <summary>
 /// Groups of indexed files with the same size and fingerprint. The fingerprint (<see cref="Indexing.FileFingerprint"/>)

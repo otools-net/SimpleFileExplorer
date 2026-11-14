@@ -1,6 +1,6 @@
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Requests made with a personal access token (<c>Authorization: Bearer sfe_…</c>): how they are told apart, and the
@@ -26,8 +26,8 @@ public static class BearerTokens
     public static PresentedAccessToken? TokenOf(HttpContext context) => context.Features.Get<PresentedAccessToken>();
 
     /// <summary>
-    /// <paramref name="access"/> narrowed to the rights <paramref name="token"/> lists (none listed: unchanged): a token
-    /// never has a right its account lacks now, nor one it wasn't made with.
+    /// <paramref name="access"/> narrowed to the rights <paramref name="token"/> lists (none listed: unchanged): a
+    /// token never has a right its account lacks now, nor one it wasn't made with.
     /// </summary>
     public static EffectiveAccess Limited(EffectiveAccess access, PresentedAccessToken? token) =>
         token?.Rights is { } limits

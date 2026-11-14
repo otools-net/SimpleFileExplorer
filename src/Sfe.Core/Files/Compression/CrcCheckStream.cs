@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// Checks the CRC-32 of what is read at its end: a damaged entry, or a wrong ZipCrypto password (which passes its

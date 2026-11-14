@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using Sfe.Core.FileTracking;
-using Sfe.Core.Paths;
-using Sfe.Core.Tasks;
+using Otools.Net.Sfe.Core.FileTracking;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Tasks;
 
-namespace Sfe.Core.Indexing;
+namespace Otools.Net.Sfe.Core.Indexing;
 
 /// <summary>Runs at most one index scan at a time in the background and reports its progress.</summary>
 public sealed class ScanCoordinator(

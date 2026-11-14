@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Sfe.Core.Library;
+namespace Otools.Net.Sfe.Core.Library;
 
 /// <summary>
 /// Case-insensitive comparer that orders embedded numbers numerically ("Episode 2" before "Episode 10").

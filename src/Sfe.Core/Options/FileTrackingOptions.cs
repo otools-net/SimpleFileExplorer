@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>Duplicate files and files moved, renamed or deleted since they were indexed.</summary>
 public sealed class FileTrackingOptions

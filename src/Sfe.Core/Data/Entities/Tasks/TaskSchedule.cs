@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// When to start a background task (see <see cref="Tasks.TaskScheduleService"/>). Times are UTC; weekly schedules run

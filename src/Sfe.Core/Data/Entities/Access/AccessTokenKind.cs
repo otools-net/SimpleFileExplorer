@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// How an <see cref="AccessToken"/> was given: only personal tokens exist; the kind leaves room for others (OAuth).

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// A page of a search by name: the folders, then the files, whose name holds the text, in the archive's order, each

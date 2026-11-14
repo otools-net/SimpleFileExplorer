@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A run of a background task, with its log, kept <c>Tasks:LogRetentionDays</c> (see <see cref="Tasks.TaskHistory"/>).

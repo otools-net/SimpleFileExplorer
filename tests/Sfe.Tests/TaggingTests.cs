@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
-using Sfe.Core.Indexing;
-using Sfe.Core.Search;
-using Sfe.Core.Tagging;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Tag hierarchy, file tagging and tag search, after TagStudio's behavior (docs/tags.md, docs/search.md).
@@ -447,7 +447,7 @@ public sealed class TaggingTests
                 .Get<FileSearchService>()
                 .SearchAsync("photo", "", null, 10, cancellationToken: TestContext.CancellationToken)
         )!.Items.Single();
-        var listing = _services.Get<Sfe.Core.Library.LibraryBrowser>().List("Media", 0, 10)!;
+        var listing = _services.Get<Otools.Net.Sfe.Core.Library.LibraryBrowser>().List("Media", 0, 10)!;
         var listed = await Tags.AttachIndexDataAsync(listing.Items, TestContext.CancellationToken);
 
         Assert.AreEqual("Favorite", found.Tags!.Single().Name);
@@ -460,7 +460,7 @@ public sealed class TaggingTests
     {
         await ScanAsync("Media");
         _library.AddFile("Media/after the scan.jpg", 10);
-        var browser = _services.Get<Sfe.Core.Library.LibraryBrowser>();
+        var browser = _services.Get<Otools.Net.Sfe.Core.Library.LibraryBrowser>();
 
         var root = await Tags.AttachIndexDataAsync(browser.List("", 0, 100)!.Items, TestContext.CancellationToken);
         var media = await Tags.AttachIndexDataAsync(
@@ -483,7 +483,7 @@ public sealed class TaggingTests
         await ScanAsync("RepeatedDir");
         _library.AddFile("RepeatedDir/after the scan.txt", 10);
         _library.AddFile("RepeatedDir/New folder/file.txt", 10);
-        var browser = _services.Get<Sfe.Core.Library.LibraryBrowser>();
+        var browser = _services.Get<Otools.Net.Sfe.Core.Library.LibraryBrowser>();
 
         var root = await Tags.AttachIndexDataAsync(browser.List("", 0, 100)!.Items, TestContext.CancellationToken);
         var repeated = await Tags.AttachIndexDataAsync(

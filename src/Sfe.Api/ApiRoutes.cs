@@ -1,4 +1,4 @@
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// The API's addresses: the base every route group is mapped under, the groups the request pipeline tells apart, and

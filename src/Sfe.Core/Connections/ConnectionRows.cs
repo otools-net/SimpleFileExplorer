@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>Loading connections with who uses them, and what managers are shown of them.</summary>
 internal static class ConnectionRows

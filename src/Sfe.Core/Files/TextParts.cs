@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Where a part of a text file read from anywhere is cut, so that it holds whole lines and whole characters.

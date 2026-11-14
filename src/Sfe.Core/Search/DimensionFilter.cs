@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Sfe.Core.Search;
+namespace Otools.Net.Sfe.Core.Search;
 
 /// <summary>A side of an image or video compared to a number of pixels (<c>w:</c>, <c>h:</c>, <c>r:</c>).</summary>
 public sealed record DimensionFilter(Dimension Dimension, SizeComparison Comparison, int Pixels)

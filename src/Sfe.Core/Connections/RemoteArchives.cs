@@ -1,9 +1,9 @@
 using System.IO.Compression;
 using System.Text;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// Several files or folders of a connection as one zip, written while it is sent (the library's way,

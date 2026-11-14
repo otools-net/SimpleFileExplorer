@@ -1,6 +1,6 @@
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Core.Library;
+namespace Otools.Net.Sfe.Core.Library;
 
 public enum ItemKind
 {

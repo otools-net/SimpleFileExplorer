@@ -1,6 +1,6 @@
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Editing;
+namespace Otools.Net.Sfe.Core.Editing;
 
 /// <param name="Written">Saved over the original: what <see cref="FileContent.OverwriteAsync"/> answered.</param>
 public sealed record EditedImageResult(

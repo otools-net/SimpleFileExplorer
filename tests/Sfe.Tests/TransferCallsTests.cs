@@ -1,8 +1,8 @@
-using Sfe.Core.Connections;
-using Sfe.Core.Transfers;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Transfers;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="TransferCalls"/>: a provider down is tried again with a growing backoff, then given up; a provider

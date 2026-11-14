@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using Sfe.Api.Maintenance;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Tenancy;
+namespace Otools.Net.Sfe.Api.Tenancy;
 
 /// <summary>
 /// The services of every library (<see cref="TenantHost"/>), started with the application (so that their schedules

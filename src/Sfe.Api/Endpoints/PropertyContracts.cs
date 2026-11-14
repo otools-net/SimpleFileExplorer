@@ -1,7 +1,7 @@
-using Sfe.Core.Files;
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Item">As listings show it, with what the index knows (tags, resolution, duration).</param>
 /// <param name="CanChecksum">The caller may read the file whole for a checksum (right `files.download`).</param>

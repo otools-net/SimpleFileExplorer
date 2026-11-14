@@ -2,10 +2,10 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// Checks a name and password against the directories in their configured order (the local accounts when none is

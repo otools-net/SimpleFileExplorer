@@ -1,13 +1,13 @@
 using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Files;
-using Sfe.Core.Files.Compression;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files.Compression;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Zips made in the library as background jobs (<see cref="FileJobs"/>, <see cref="FileJobKind.Compress"/>). The walk

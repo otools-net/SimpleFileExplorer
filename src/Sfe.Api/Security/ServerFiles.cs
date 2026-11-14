@@ -1,10 +1,10 @@
 using Microsoft.Data.Sqlite;
-using Sfe.Core;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The server's own files, never served as files of a library: the keys signing the sessions (with them anyone forges

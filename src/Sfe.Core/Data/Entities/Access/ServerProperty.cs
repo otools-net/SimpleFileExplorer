@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A fact about the install as a whole, by key: <see cref="VersionKey"/> is the version of SFE that last set up or

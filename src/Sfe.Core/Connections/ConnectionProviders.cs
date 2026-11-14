@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>The kinds of storage this server knows, by <see cref="IConnectionProvider.Kind"/>.</summary>
 public sealed class ConnectionProviders(IEnumerable<IConnectionProvider> providers)

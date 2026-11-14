@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>Backups of the databases and configuration files (Administration › System, and the update page).</summary>
 public sealed class BackupOptions

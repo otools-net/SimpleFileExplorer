@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Paths;
+namespace Otools.Net.Sfe.Core.Paths;
 
 /// <summary>
 /// Converts between API paths (relative to the library root, '/' separated, no leading slash)

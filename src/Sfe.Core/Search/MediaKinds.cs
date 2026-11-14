@@ -1,4 +1,4 @@
-namespace Sfe.Core.Search;
+namespace Otools.Net.Sfe.Core.Search;
 
 /// <summary>The extensions (without dot) the listing classifies as each kind of media (<c>type:</c>).</summary>
 public sealed record MediaKinds(

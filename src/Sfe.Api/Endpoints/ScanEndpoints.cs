@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 public static class ScanEndpoints
 {
@@ -310,7 +310,7 @@ public static class ScanEndpoints
         ScanCoordinator coordinator,
         LibraryPaths paths,
         CurrentAccess current,
-        Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions> options,
+        Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> options,
         ScanRequest? request
     )
     {

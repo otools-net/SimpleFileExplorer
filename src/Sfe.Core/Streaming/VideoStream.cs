@@ -1,4 +1,4 @@
-namespace Sfe.Core.Streaming;
+namespace Otools.Net.Sfe.Core.Streaming;
 
 /// <summary>
 /// A video ready to be converted (<see cref="VideoStreamer.TryBegin"/>): run it with

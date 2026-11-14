@@ -1,4 +1,4 @@
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// A file (with its bytes) or a folder (<paramref name="Content"/> null) of a <see cref="FakeAccount"/>.

@@ -1,20 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Files.Compression;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Search;
-using Sfe.Core.Tagging;
-using Sfe.Core.Tasks;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files.Compression;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Tasks;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Moves and copies (agents/docs/features/move-and-copy.md): each request is a background job with progress, cancel,

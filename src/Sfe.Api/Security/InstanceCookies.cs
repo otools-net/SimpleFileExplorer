@@ -1,4 +1,4 @@
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Cookie names of their own for each port: browsers keep cookies per host, not per port, so two instances on one host

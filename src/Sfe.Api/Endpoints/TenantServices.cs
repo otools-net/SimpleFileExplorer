@@ -1,7 +1,7 @@
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the routes of spaces take from the container (bound with <c>[AsParameters]</c>; none of it is in the OpenAPI

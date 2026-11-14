@@ -1,15 +1,15 @@
 using Microsoft.Extensions.Options;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Settings;
-using Sfe.Core.Streaming;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Streaming;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the client's configuration is made of (bound with <c>[AsParameters]</c>; none of it is in the OpenAPI

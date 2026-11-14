@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>The archives SFE reads (agents/docs/features/archive-reading.md, "Formats").</summary>
 public enum ArchiveFormat

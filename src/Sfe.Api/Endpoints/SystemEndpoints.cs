@@ -1,10 +1,10 @@
-using Sfe.Api.Maintenance;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Paths;
-using Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Thumbnails;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 public static class SystemEndpoints
 {

@@ -4,10 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Sfe.Core.Access;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>
 /// The settings by level (<see cref="SettingLevel"/>): the configuration's, then the server settings page's

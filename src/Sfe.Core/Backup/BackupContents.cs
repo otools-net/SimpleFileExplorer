@@ -1,4 +1,4 @@
-namespace Sfe.Core.Backup;
+namespace Otools.Net.Sfe.Core.Backup;
 
 /// <param name="Version">
 /// The version the databases belong to, which a restore needs (before an update, the earlier one); null = an install

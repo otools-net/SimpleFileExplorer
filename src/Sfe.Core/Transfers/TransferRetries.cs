@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// The failed items of the ended transfer jobs (<see cref="TransferRetry"/>), in memory for

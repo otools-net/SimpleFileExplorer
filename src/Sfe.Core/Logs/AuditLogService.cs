@@ -2,11 +2,11 @@ using System.Globalization;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Data;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Core.Logs;
+namespace Otools.Net.Sfe.Core.Logs;
 
 /// <summary>
 /// The server's log: what <see cref="AuditLogProvider"/> collects, written in batches to the accounts' database
@@ -31,6 +31,12 @@ public sealed class AuditLogService(
     private const int PurgeBatchSize = 5000;
     private const string FilePrefix = "sfe-";
     private const string FileExtension = ".log";
+
+    /// <summary>
+    /// The category of the "entries left out" line: the name this class had before the namespaces became
+    /// <c>Otools.Net.Sfe.*</c>, kept for the log page's category filter and users' <c>Logging:LogLevel</c>.
+    /// </summary>
+    public const string DroppedCategory = "Sfe.Core.Logs.AuditLogService";
 
     private readonly SemaphoreSlim _gate = new(1, 1);
 
@@ -308,7 +314,7 @@ public sealed class AuditLogService(
         {
             Timestamp = DateTime.UtcNow,
             Level = LogEntryLevel.Warning,
-            Category = typeof(AuditLogService).FullName!,
+            Category = DroppedCategory,
             Message = $"{count} log entries were left out: more were logged than the log could keep up with.",
         };
 

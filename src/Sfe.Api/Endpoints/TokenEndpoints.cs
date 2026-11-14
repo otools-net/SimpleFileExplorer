@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// Personal access tokens (agents/docs/development/api-tokens-plan.md): an account's own (<c>me/tokens</c>) and those

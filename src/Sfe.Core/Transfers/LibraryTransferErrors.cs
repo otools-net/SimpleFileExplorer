@@ -1,7 +1,7 @@
-using Sfe.Core.Connections;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>The library side's failures, as the <see cref="RemoteStorageException"/> of both sides.</summary>
 internal static class LibraryTransferErrors

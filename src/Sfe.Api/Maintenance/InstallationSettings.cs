@@ -3,12 +3,12 @@ using System.Text.Json.Nodes;
 using Microsoft.Extensions.Configuration.CommandLine;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.Configuration.Json;
-using Sfe.Api.Security;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Thumbnails;
 
-namespace Sfe.Api.Maintenance;
+namespace Otools.Net.Sfe.Api.Maintenance;
 
 /// <summary>
 /// The few settings of the installation that a person setting SFE up needs, written from the web (with the setup code)

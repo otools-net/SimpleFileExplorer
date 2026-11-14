@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Library;
+namespace Otools.Net.Sfe.Core.Library;
 
 /// <summary>Lists folders straight from disk.</summary>
 public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifier, IOptionsMonitor<SfeOptions> options)

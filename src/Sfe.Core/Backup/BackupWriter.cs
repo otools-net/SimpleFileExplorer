@@ -5,9 +5,9 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Backup;
+namespace Otools.Net.Sfe.Core.Backup;
 
 /// <summary>
 /// A zip file with the databases (accounts, spaces and every library's index) and the configuration files, plus a

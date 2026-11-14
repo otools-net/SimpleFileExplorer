@@ -1,9 +1,9 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Core.Search;
+namespace Otools.Net.Sfe.Core.Search;
 
 /// <summary>Translates a <see cref="SearchQuery"/> into an EF Core predicate over <see cref="FileEntry"/>.</summary>
 public static class SearchPredicateBuilder

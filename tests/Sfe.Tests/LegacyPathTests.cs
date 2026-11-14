@@ -10,13 +10,13 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sfe.Api;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The unversioned paths (<c>/api/…</c>) are another name of v1 until SFE 2.0 (<see cref="LegacyApiPaths"/>): every

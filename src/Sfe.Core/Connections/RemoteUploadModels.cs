@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>Whose uploads are asked for: a person, in a library, into one connection.</summary>
 public sealed record RemoteUploadOwner(int ConnectionId, int TenantId, int UserId);

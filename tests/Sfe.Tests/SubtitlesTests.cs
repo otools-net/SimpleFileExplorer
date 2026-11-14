@@ -1,6 +1,6 @@
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>The video a subtitle file belongs to (<see cref="Subtitles"/>).</summary>
 [TestClass]

@@ -5,13 +5,13 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using Sfe.Core.Data;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Listing and managing connections (<c>api/connections</c>): what each session uses and manages, and the attack
@@ -157,7 +157,7 @@ public sealed class ConnectionRouteTests
         Assert.AreEqual(HttpStatusCode.BadRequest, empty.StatusCode);
         var after = (await changed.Content.ReadFromJsonAsync<ConnectionInfo>(Json, Cancel))!;
         Assert.AreEqual(("Renamed", true), (after.Name, after.ReadOnly));
-        Assert.AreEqual(Sfe.Core.Access.FolderLevel.Read, (await ListAsync(_admin)).Usable.Single().Access);
+        Assert.AreEqual(Otools.Net.Sfe.Core.Access.FolderLevel.Read, (await ListAsync(_admin)).Usable.Single().Access);
     }
 
     private async Task<ConnectionInfo> MakeAsync(ConnectionDraft draft)

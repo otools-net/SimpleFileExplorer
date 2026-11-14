@@ -2,11 +2,11 @@ using System.Buffers.Binary;
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Text;
-using Sfe.Core.Files.Compression;
-using Sfe.Core.Options;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Files.Compression;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Reading archives without unpacking them (<see cref="ArchiveReader"/>, <see cref="ArchiveFormats"/>,

@@ -1,7 +1,7 @@
 using Microsoft.Net.Http.Headers;
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// Tells the server log who still calls the unversioned paths (<see cref="LegacyApiPaths"/>), so that an

@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// The content hashes a transfer verifies a file with, by the name a side gives

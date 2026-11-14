@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>The child tag "is a" parent tag: tagging a file with the child implies the parent.</summary>
 public sealed class TagParent

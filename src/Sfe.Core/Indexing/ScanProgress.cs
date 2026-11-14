@@ -1,6 +1,6 @@
-using Sfe.Core.FileTracking;
+using Otools.Net.Sfe.Core.FileTracking;
 
-namespace Sfe.Core.Indexing;
+namespace Otools.Net.Sfe.Core.Indexing;
 
 /// <summary>Thread-safe counters updated while a scan runs.</summary>
 public sealed class ScanProgress

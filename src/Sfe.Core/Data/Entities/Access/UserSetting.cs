@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A preference of one user, over the defaults of the library (<see cref="Settings.SettingCatalog"/>).

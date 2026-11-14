@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <param name="Bytes">Counted (a count), or read so far (a checksum).</param>
 /// <param name="Total">The file's size, for a checksum's progress.</param>

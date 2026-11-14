@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// Writes an archive's entries (all, or those chosen) into a folder (agents/docs/features/archive-extraction.md): one

@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
 #nullable disable
 
-namespace Sfe.Core.Data.AccessMigrations
+namespace Otools.Net.Sfe.Core.Data.AccessMigrations
 {
     [DbContext(typeof(AccessDbContext))]
     [Migration("20261114103741_ConnectionFolderRules")]

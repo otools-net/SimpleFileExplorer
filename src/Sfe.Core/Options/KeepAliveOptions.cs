@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Keep alive: touches the library's folder every <see cref="IntervalSeconds"/>, so that a file server never sees the

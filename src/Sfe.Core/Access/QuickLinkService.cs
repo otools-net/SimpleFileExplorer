@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// The quick links of each user in each library: a short ordered list of folders and files kept in the sidebar.

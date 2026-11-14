@@ -1,4 +1,4 @@
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// The content hashes of one file computed while it streams through a transfer (<see cref="ContentHashes"/>): the

@@ -4,13 +4,13 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Files;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Text files through HTTP (<c>api/files/text</c>). Alice is in Users, with SpecialDir hidden from them and Media read
@@ -346,7 +346,7 @@ public sealed class TextRouteTests
             Assert.AreEqual(HttpStatusCode.OK, copy.StatusCode, await copy.Content.ReadAsStringAsync(Token));
             Assert.AreEqual(
                 "Docs/notes (copy).txt",
-                (await copy.Content.ReadFromJsonAsync<Sfe.Core.Library.LibraryItem>(Json, Token))!.Path
+                (await copy.Content.ReadFromJsonAsync<Otools.Net.Sfe.Core.Library.LibraryItem>(Json, Token))!.Path
             );
         }
         Assert.AreEqual("edited", File.ReadAllText(_library.FullPath("Docs/notes (copy).txt")));

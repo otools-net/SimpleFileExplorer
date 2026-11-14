@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// One principal's part in a subject's folder access: a group the subject is in, or the subject's own account.

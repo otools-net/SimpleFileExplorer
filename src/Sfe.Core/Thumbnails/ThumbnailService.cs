@@ -2,11 +2,11 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Thumbnails;
+namespace Otools.Net.Sfe.Core.Thumbnails;
 
 /// <summary>
 /// JPEG previews for videos and images, rendered with ffmpeg and cached on disk.

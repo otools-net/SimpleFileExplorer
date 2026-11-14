@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <param name="MaxDepth">Folders nested at most (<see cref="Options.ArchiveOptions.MaxDepth"/>).</param>
 /// <param name="MaxEntries">Entries read at most; past it the extraction stops and says so.</param>

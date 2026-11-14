@@ -1,8 +1,8 @@
 using System.Text.Json.Nodes;
-using Sfe.Api;
-using Sfe.Tests.Infrastructure.OpenApi;
+using Otools.Net.Sfe.Api;
+using Otools.Net.Sfe.Tests.Infrastructure.OpenApi;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The rules of <see cref="ApiBreaks"/> on small documents: adding passes, removing, renaming or asking more fails.

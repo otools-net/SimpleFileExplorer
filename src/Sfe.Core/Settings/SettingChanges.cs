@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>
 /// Some settings of a level to change, the others left as they are (<see cref="SettingsService.SaveChangesAsync"/>).

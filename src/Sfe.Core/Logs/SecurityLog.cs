@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Logs;
+namespace Otools.Net.Sfe.Core.Logs;
 
 /// <summary>
 /// Security events: what someone did against the server's protections (wrong passwords, lockouts, wrong setup codes,

@@ -2,10 +2,10 @@ using System.Buffers.Binary;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Library;
-using Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Thumbnails;
 
-namespace Sfe.Core.Indexing;
+namespace Otools.Net.Sfe.Core.Indexing;
 
 /// <summary>
 /// Reads the resolution of images and videos, and the duration of videos and audio files, for the index. Common image

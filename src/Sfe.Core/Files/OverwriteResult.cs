@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <param name="Version">The new version (Done), or the one on the disk now (Changed).</param>
 /// <param name="TrashId">The previous version's trash entry, when this save kept one.</param>

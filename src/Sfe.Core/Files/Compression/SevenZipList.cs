@@ -1,6 +1,6 @@
 using System.Buffers.Binary;
 
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// How large a 7z's list of entries (its header) is, read before SharpCompress opens it: SharpCompress holds that list

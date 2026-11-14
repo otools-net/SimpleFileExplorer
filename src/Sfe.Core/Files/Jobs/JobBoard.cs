@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// The library's file jobs (agents/docs/features/move-and-copy.md): their ids, the list the operations panel shows,

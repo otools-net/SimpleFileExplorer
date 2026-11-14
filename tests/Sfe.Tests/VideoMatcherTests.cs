@@ -1,7 +1,7 @@
-using Sfe.Core.FileTracking;
-using Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.FileTracking;
+using Otools.Net.Sfe.Core.Trickplay;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Video fingerprints and their matching, on made-up frame hashes (see <see cref="SimilarVideoTests"/> for real

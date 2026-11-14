@@ -1,8 +1,8 @@
-using Sfe.Core.Connections;
-using Sfe.Core.Library;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="RemoteListings"/> with what folder rules hide from one subject: the shared read stays whole, the pages

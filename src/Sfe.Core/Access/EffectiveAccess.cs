@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>What a subject may do in a library.</summary>
 /// <param name="IsGuest">A visitor without an account or a guest account: the guest limit applies.</param>

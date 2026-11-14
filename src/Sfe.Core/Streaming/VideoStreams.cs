@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Sfe.Core.Streaming;
+namespace Otools.Net.Sfe.Core.Streaming;
 
 /// <summary>
 /// The videos the server converts at the moment, for every library together: one instance for the whole server, as

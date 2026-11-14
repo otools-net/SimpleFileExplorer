@@ -2,11 +2,11 @@ using System.IO.Compression;
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Sfe.Api.Security;
-using Sfe.Core.Files;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>A file of the library is never a script or a style sheet of the app's pages (audit 2026-11, A3).</summary>
 [TestClass]
@@ -113,7 +113,7 @@ public sealed class LibraryContentTests
         File.WriteAllText(_library.FullPath("evil.js"), Script);
         using var created = await _client.PostAsJsonAsync(
             $"{V1}/files/links",
-            new Sfe.Api.Endpoints.FileLinkRequest("evil.js"),
+            new Otools.Net.Sfe.Api.Endpoints.FileLinkRequest("evil.js"),
             TestContext.CancellationToken
         );
         var link = (await created.Content.ReadFromJsonAsync<FileLink>(TestContext.CancellationToken))!;

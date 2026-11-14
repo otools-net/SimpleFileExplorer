@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Primitives;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The policy of the app's pages as the server is set now (<see cref="SecurityHeaders.AppPolicyFor"/>): pictures and

@@ -1,4 +1,4 @@
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// The unversioned paths (<c>/api/tags</c>) are another name of v1 until SFE 2.0

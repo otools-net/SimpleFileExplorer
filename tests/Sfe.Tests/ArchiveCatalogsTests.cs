@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Files.Compression;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Files.Compression;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// A library's archive catalogs (<see cref="ArchiveCatalogs"/>): built once however many ask, made again for a changed

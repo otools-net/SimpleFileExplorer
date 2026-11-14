@@ -1,7 +1,7 @@
-using Sfe.Api.Security;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// The access tokens an administrator sees and may revoke (bound with <c>[AsParameters]</c>; none of it is in the

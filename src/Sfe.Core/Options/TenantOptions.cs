@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>Libraries other than the first one (tenants).</summary>
 public sealed class TenantOptions

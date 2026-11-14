@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
 #nullable disable
 
-namespace Sfe.Core.Data.Migrations
+namespace Otools.Net.Sfe.Core.Data.Migrations
 {
     [DbContext(typeof(SfeDbContext))]
     partial class SfeDbContextModelSnapshot : ModelSnapshot
@@ -23,7 +23,7 @@ namespace Sfe.Core.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Sfe.Core.Data.DirectoryEntry", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.DirectoryEntry", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -68,7 +68,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("Directories", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.FileEntry", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.FileEntry", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -152,7 +152,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("Files", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.FileTag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.FileTag", b =>
                 {
                     b.Property<int>("FileId")
                         .HasColumnType("int");
@@ -167,7 +167,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("FileTags", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.FolderDefaultTag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.FolderDefaultTag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -196,7 +196,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("FolderDefaultTags", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.MissingFile", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.MissingFile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -245,7 +245,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("MissingFiles", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.MissingFileTag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.MissingFileTag", b =>
                 {
                     b.Property<int>("MissingFileId")
                         .HasColumnType("int");
@@ -260,7 +260,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("MissingFileTags", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.Tag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Tag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -325,7 +325,7 @@ namespace Sfe.Core.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TagActivity", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TagActivity", b =>
                 {
                     b.Property<int>("TagId")
                         .HasColumnType("int");
@@ -345,7 +345,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("TagActivity", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TagAlias", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TagAlias", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -402,7 +402,7 @@ namespace Sfe.Core.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TagParent", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TagParent", b =>
                 {
                     b.Property<int>("ParentId")
                         .HasColumnType("int");
@@ -429,7 +429,7 @@ namespace Sfe.Core.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TaskRun", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TaskRun", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -484,7 +484,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("TaskRuns", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TaskSchedule", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TaskSchedule", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -531,7 +531,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("TaskSchedules", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TrashEntry", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TrashEntry", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -597,7 +597,7 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("TrashEntries", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TrashTag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TrashTag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -624,9 +624,9 @@ namespace Sfe.Core.Data.Migrations
                     b.ToTable("TrashTags", "SFE");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.DirectoryEntry", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.DirectoryEntry", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.DirectoryEntry", "Parent")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.DirectoryEntry", "Parent")
                         .WithMany("Directories")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.NoAction);
@@ -634,9 +634,9 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.FileEntry", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.FileEntry", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.DirectoryEntry", "Directory")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.DirectoryEntry", "Directory")
                         .WithMany("Files")
                         .HasForeignKey("DirectoryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -645,15 +645,15 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("Directory");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.FileTag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.FileTag", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.FileEntry", "File")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.FileEntry", "File")
                         .WithMany("TagLinks")
                         .HasForeignKey("FileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.Tag", "Tag")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Tag")
                         .WithMany("FileLinks")
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -664,9 +664,9 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.FolderDefaultTag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.FolderDefaultTag", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tag", "Tag")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Tag")
                         .WithMany()
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -675,15 +675,15 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.MissingFileTag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.MissingFileTag", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.MissingFile", "MissingFile")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.MissingFile", "MissingFile")
                         .WithMany("TagLinks")
                         .HasForeignKey("MissingFileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.Tag", "Tag")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Tag")
                         .WithMany()
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -694,9 +694,9 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.Tag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Tag", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tag", "Disambiguation")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Disambiguation")
                         .WithMany()
                         .HasForeignKey("DisambiguationId")
                         .OnDelete(DeleteBehavior.NoAction);
@@ -704,20 +704,20 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("Disambiguation");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TagActivity", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TagActivity", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tag", "Tag")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Tag")
                         .WithOne("Activity")
-                        .HasForeignKey("Sfe.Core.Data.TagActivity", "TagId")
+                        .HasForeignKey("Otools.Net.Sfe.Core.Data.TagActivity", "TagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TagAlias", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TagAlias", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tag", "Tag")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Tag")
                         .WithMany("Aliases")
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -726,15 +726,15 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TagParent", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TagParent", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tag", "Child")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Child")
                         .WithMany("ParentLinks")
                         .HasForeignKey("ChildId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.Tag", "Parent")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Parent")
                         .WithMany("ChildLinks")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -745,15 +745,15 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TrashTag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TrashTag", b =>
                 {
-                    b.HasOne("Sfe.Core.Data.Tag", "Tag")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Tag")
                         .WithMany()
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sfe.Core.Data.TrashEntry", "Entry")
+                    b.HasOne("Otools.Net.Sfe.Core.Data.TrashEntry", "Entry")
                         .WithMany("Tags")
                         .HasForeignKey("TrashEntryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -764,24 +764,24 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.DirectoryEntry", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.DirectoryEntry", b =>
                 {
                     b.Navigation("Directories");
 
                     b.Navigation("Files");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.FileEntry", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.FileEntry", b =>
                 {
                     b.Navigation("TagLinks");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.MissingFile", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.MissingFile", b =>
                 {
                     b.Navigation("TagLinks");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.Tag", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Tag", b =>
                 {
                     b.Navigation("Activity");
 
@@ -794,7 +794,7 @@ namespace Sfe.Core.Data.Migrations
                     b.Navigation("ParentLinks");
                 });
 
-            modelBuilder.Entity("Sfe.Core.Data.TrashEntry", b =>
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.TrashEntry", b =>
                 {
                     b.Navigation("Tags");
                 });

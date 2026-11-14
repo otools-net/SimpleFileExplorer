@@ -1,8 +1,8 @@
 using System.Buffers.Binary;
-using Sfe.Core.Library;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Animated pictures told from still ones by their structure (the listings' hover on large animated images).

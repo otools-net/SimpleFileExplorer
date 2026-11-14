@@ -1,4 +1,4 @@
-namespace Sfe.Api.Maintenance;
+namespace Otools.Net.Sfe.Api.Maintenance;
 
 public enum MigrationStatus
 {

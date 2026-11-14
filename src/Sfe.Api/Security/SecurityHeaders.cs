@@ -1,6 +1,6 @@
 using Microsoft.Net.Http.Headers;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Headers every answer carries, so that a page of another site cannot frame the app (clickjacking), the browser never

@@ -79,6 +79,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Changed
 
+- Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
+  log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.
   The old `/api/…` paths still answer the same until SFE 2.0, with a `Deprecation` header and a `Link` to the new
   path; the server log names each caller of an old path once a day. Links handed out before (external players,

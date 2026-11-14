@@ -1,8 +1,8 @@
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// A connection opened for one request (<see cref="ConnectionFileServices.OpenAsync"/>), with where the session may

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// Libraries (tenants), accounts, groups, rights and the settings of libraries and users: one set for the whole

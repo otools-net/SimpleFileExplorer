@@ -1,7 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// The files inside an EPUB (a zip), served one by one so that the reader loads them from the app itself

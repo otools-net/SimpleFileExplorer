@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="ConnectionPolicies.Compile"/> and <see cref="ConnectionFolders"/>: each group's rights only at the

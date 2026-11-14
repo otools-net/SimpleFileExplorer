@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// A move or copy between the library and a connection, or between two connections, as

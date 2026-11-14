@@ -1,6 +1,6 @@
 using System.Threading.RateLimiting;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Reads of archives' lists started per caller (agents/docs/features/archive-viewer.md): each costs a read of the

@@ -1,9 +1,9 @@
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using Sfe.Api;
+using Otools.Net.Sfe.Api;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Who may change the folder a Windows service is installed from (audit 2026-11, A2). Windows only.</summary>
 [TestClass]

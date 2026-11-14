@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Options;
-using Sfe.Api.Security;
-using Sfe.Core.Indexing;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the routes of the index take from the container (bound with <c>[AsParameters]</c>; none of it is in the

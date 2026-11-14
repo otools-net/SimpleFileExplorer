@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Connections;
-using Sfe.Core.Files;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Transfers;
+namespace Otools.Net.Sfe.Core.Transfers;
 
 /// <summary>
 /// The walk of one transfer job (<see cref="TransferJobs"/>): each item asked, its folders depth first and page by

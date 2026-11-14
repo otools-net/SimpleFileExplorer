@@ -1,7 +1,7 @@
-using Sfe.Api.Maintenance;
-using Sfe.Core.Upgrades;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Core.Upgrades;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="DatabaseVersion">The version the install belongs to; null when unknown (installs before
 /// 1.37.0).</param>

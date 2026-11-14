@@ -1,7 +1,7 @@
 using System.IO.Compression;
-using Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Files;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>The files inside an EPUB, as the reader asks for them (<see cref="EpubEntries"/>).</summary>
 [TestClass]

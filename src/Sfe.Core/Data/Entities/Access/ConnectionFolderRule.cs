@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// What a group of a library, or one account, may do in a folder of a library- or server-level

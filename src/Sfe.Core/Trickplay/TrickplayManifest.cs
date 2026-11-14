@@ -1,4 +1,4 @@
-namespace Sfe.Core.Trickplay;
+namespace Otools.Net.Sfe.Core.Trickplay;
 
 /// <summary>
 /// Trickplay of a video: <see cref="Count"/> frames, one every <see cref="Interval"/> seconds, tiled on sheets.

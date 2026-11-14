@@ -1,8 +1,8 @@
 using Microsoft.Net.Http.Headers;
-using Sfe.Api.Security;
-using Sfe.Core.Connections;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Connections;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// A connection's file, streamed from the provider as it reads (nothing kept on the server's disk), under the

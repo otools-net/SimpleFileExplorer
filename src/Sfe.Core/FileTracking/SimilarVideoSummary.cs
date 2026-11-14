@@ -1,4 +1,4 @@
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <param name="Groups">Groups with a video in the folder asked for.</param>
 /// <param name="Videos">Indexed videos in the whole library when the comparison ran.</param>

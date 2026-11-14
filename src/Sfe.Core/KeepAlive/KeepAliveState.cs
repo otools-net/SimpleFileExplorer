@@ -1,6 +1,6 @@
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.KeepAlive;
+namespace Otools.Net.Sfe.Core.KeepAlive;
 
 /// <summary>How keep alive goes, as a whole: what the indicator of the top bar shows.</summary>
 public enum KeepAliveState

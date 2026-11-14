@@ -1,6 +1,6 @@
-using Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Security;
 
-namespace Sfe.Api.Tenancy;
+namespace Otools.Net.Sfe.Api.Tenancy;
 
 /// <summary>
 /// Finds the services of the request's library. A client that names the library it shows (<see cref="Header"/>) gets

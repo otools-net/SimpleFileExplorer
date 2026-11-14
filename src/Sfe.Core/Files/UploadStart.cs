@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <param name="Target">The folder it goes into (root-relative).</param>
 /// <param name="Name">

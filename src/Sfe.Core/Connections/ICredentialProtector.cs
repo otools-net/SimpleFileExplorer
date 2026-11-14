@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// Protects what connections store to sign in again (refresh tokens) with the server's own keys, so the database

@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Data;
-using Sfe.Core.Files;
-using Sfe.Core.Indexing;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Tagging;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Tagging;
 
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <summary>
 /// Removes one copy of a duplicate, after adding its tags to the copy kept: to the library's <see cref="Trash"/>, or

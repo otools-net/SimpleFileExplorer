@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Personal access tokens (<c>Sfe:Security:AccessTokens</c>): programs calling the API as an account

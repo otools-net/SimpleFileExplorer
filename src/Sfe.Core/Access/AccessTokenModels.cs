@@ -1,6 +1,6 @@
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>A new personal access token, as its account asks for it.</summary>
 /// <param name="Expires">When it stops working (UTC); null: the longest life allowed, or never when there is no

@@ -1,9 +1,9 @@
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Files;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// What the person who started a move or copy may do, read again at each item of the job (agents/docs/features/

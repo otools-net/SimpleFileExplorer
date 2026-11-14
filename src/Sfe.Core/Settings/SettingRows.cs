@@ -2,10 +2,10 @@ using System.Collections.Concurrent;
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>
 /// The settings of libraries and users, one row per setting (<see cref="TenantSetting"/>, <see cref="UserSetting"/>).

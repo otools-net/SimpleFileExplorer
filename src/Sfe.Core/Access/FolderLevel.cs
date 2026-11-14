@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// What a folder lets a subject do in it, ordered: <see cref="Write"/> includes <see cref="Read"/>. Read means the

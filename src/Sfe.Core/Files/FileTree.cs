@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Moving and deleting files and folders on the disk for file management (agents/docs/features/trash.md). A symbolic

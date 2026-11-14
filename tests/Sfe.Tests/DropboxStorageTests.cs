@@ -2,12 +2,12 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json.Nodes;
-using Sfe.Core.Connections;
-using Sfe.Core.Connections.Dropbox;
-using Sfe.Core.Options;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections.Dropbox;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="DropboxStorage"/> against recorded answers: the paths it sends (under the connection's root), pages,

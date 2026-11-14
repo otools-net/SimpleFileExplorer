@@ -24,8 +24,13 @@ except for what is listed under "Kept as they are", and existing installs upgrad
 ## Progress
 
 - [x] Phase 0: scope decided (namespaces only) and written here
-- [ ] Phase 1: `RootNamespace` and every `namespace`/`using` of `Sfe.Core` → `Otools.Net.Sfe.Core` (tests follow)
-- [ ] Phase 2: the same for `Sfe.Api` and `Sfe.Tests`
+- [x] Phase 1: `RootNamespace` and every `namespace`/`using` of `Sfe.Core` → `Otools.Net.Sfe.Core` (tests follow)
+- [x] Phase 2: the same for `Sfe.Api` and `Sfe.Tests`. As built (1 and 2 together): `agents/tools/namespace-rename/`
+  rewrote code, `cref`s and the EF snapshots' entity names (not older designer files); `AuditLogService.DroppedCategory`
+  keeps the old category; `TaskLogProvider` takes `Otools.Net.Sfe.*` and `Sfe.*`; other `ILogger<T>` categories now
+  start with `Otools.Net.`, and `LegacyLogCategories` copies each `Logging` level rule naming `Sfe…` to
+  `Otools.Net.Sfe…` (unless set), so users' old keys still apply; the log search matches text inside the category, so
+  old names still find new entries
 - [ ] Phase 3: `agents/docs/` and `AGENTS.md` type names, readability references rewritten
   (`references.mjs --only openapi,routes`: identical document), CHANGELOG line (internal: no version bump on its own)
 

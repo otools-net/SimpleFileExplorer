@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>Accounts, sign-in and guests.</summary>
 public sealed class SecurityOptions

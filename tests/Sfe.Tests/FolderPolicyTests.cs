@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// How folder rules decide what a subject may do where (<see cref="FolderPolicy"/>), without a database.

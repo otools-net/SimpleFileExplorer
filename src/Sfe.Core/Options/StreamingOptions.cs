@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Videos converted by ffmpeg while they play, for browsers that cannot play the file itself (AVI, WMV, HEVC...): H.264

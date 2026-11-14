@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// <paramref name="length"/> bytes of a file from <paramref name="start"/>, seekable: a stored zip entry served with

@@ -1,9 +1,9 @@
-using Sfe.Api.Security;
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the route of a Flash movie's files takes from the container (bound with <c>[AsParameters]</c>; none of it

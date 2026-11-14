@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Tests.Infrastructure;
-using static Sfe.Tests.Infrastructure.TokenClients;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Tests.Infrastructure;
+using static Otools.Net.Sfe.Tests.Infrastructure.TokenClients;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The access tokens' routes (<c>me/tokens</c>, <c>access/tokens</c>): what an account and its administrators do
@@ -229,15 +229,15 @@ public sealed class AccessTokenRouteTests
         var admin = await AdminAsync(Factory());
 
         var document = await GetAsync<JsonObject>(admin, "/openapi/v1.json", Token);
-        var scheme = document["components"]!["securitySchemes"]![Sfe.Api.ApiDocument.BearerScheme]!;
+        var scheme = document["components"]!["securitySchemes"]![Otools.Net.Sfe.Api.ApiDocument.BearerScheme]!;
         var signIn = document["paths"]![$"{V1}/session/login"]!["post"]!;
         var browse = document["paths"]![$"{V1}/browse"]!["get"]!;
 
         Assert.AreEqual("http", scheme["type"]!.GetValue<string>());
         Assert.AreEqual("bearer", scheme["scheme"]!.GetValue<string>());
-        Assert.IsNotNull(document["security"]![0]![Sfe.Api.ApiDocument.BearerScheme]);
-        Assert.IsTrue(signIn[Sfe.Api.ApiDocument.SessionOnlyExtension]!.GetValue<bool>());
-        Assert.IsNull(browse[Sfe.Api.ApiDocument.SessionOnlyExtension]);
+        Assert.IsNotNull(document["security"]![0]![Otools.Net.Sfe.Api.ApiDocument.BearerScheme]);
+        Assert.IsTrue(signIn[Otools.Net.Sfe.Api.ApiDocument.SessionOnlyExtension]!.GetValue<bool>());
+        Assert.IsNull(browse[Otools.Net.Sfe.Api.ApiDocument.SessionOnlyExtension]);
     }
 
     private static bool IsUnder(RouteEndpoint endpoint, string group)

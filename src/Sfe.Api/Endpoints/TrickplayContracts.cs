@@ -1,6 +1,6 @@
-using Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.Trickplay;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Paths">Videos to look up, relative to the library root.</param>
 public sealed record TrickplayStatesRequest(IReadOnlyList<string>? Paths);

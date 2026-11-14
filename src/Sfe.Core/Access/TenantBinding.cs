@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// The library a set of Core services works for (its settings, see <see cref="Settings.SettingLayers.ApplyTo"/>);

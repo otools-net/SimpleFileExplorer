@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>An item about to take its name in a folder of the library (<see cref="LibraryClashes"/>).</summary>
 internal sealed record ClashCheck

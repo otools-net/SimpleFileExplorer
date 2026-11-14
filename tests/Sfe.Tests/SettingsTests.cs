@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Options;
-using Sfe.Core.Indexing;
-using Sfe.Core.Library;
-using Sfe.Core.Options;
-using Sfe.Core.Search;
-using Sfe.Core.Settings;
-using Sfe.Core.Tagging;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Tagging;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Settings changed from the web client: validation, live application, persistence and reset.</summary>
 [TestClass]
@@ -153,7 +153,7 @@ public sealed class SettingsTests
         _services = await CoreServices.CreateAsync(_library);
 
         var options = _services
-            .Get<Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions>>()
+            .Get<Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions>>()
             .CurrentValue;
         Assert.AreEqual(_library.ThumbnailPath, options.Thumbnails.CacheDirectory);
         Assert.AreEqual(300, options.Thumbnails.Width);
@@ -172,7 +172,7 @@ public sealed class SettingsTests
         var fileTypes = Settings.Get().Values.FileTypes;
         CollectionAssert.AreEqual(new[] { "jpg" }, fileTypes.Images, "Configured: no default added.");
         CollectionAssert.AreEqual(
-            Sfe.Core.Options.FileTypeOptions.DefaultVideos,
+            Otools.Net.Sfe.Core.Options.FileTypeOptions.DefaultVideos,
             fileTypes.Videos,
             "Not configured: defaults."
         );

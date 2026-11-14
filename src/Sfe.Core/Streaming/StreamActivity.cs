@@ -1,4 +1,4 @@
-namespace Sfe.Core.Streaming;
+namespace Otools.Net.Sfe.Core.Streaming;
 
 /// <summary>A video being converted for a viewer.</summary>
 /// <param name="Path">The video, relative to its library's root.</param>

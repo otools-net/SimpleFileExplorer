@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Bounds on what reading an archive costs the server: an archive is a stranger's file, and its directory may claim

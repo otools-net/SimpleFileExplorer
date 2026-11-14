@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A library: its own root folder, index, tags, schedules, caches and settings, and its own groups of users. The first

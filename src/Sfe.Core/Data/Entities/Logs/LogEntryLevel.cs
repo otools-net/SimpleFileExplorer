@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// The level of a <see cref="LogEntry"/>: <see cref="Microsoft.Extensions.Logging.LogLevel"/>'s numbers (stored as they

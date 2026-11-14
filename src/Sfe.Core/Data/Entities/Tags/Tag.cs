@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A tag, modelled on TagStudio's: names need not be unique, a tag can go by a shorthand and aliases, and it

@@ -1,8 +1,8 @@
-using Sfe.Core.Access;
-using Sfe.Core.Indexing;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Name clashes of file jobs in a folder of the library (agents/docs/features/move-and-copy.md): names kept for SFE,

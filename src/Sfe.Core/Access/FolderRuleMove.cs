@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// A folder move in progress for the rules (<see cref="FolderRuleService.BeginMoveAsync"/>): holds the library's

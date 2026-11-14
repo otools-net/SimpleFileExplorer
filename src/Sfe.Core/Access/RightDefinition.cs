@@ -1,6 +1,6 @@
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <param name="GuestAllowed">
 /// Guests (visitors without an account and guest accounts) may get it. Off for everything that changes the library,

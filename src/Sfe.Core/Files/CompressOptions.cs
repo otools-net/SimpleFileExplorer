@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <param name="Level">Deflate level of the files (0: stored).</param>
 /// <param name="SkipCompressed">Files already compressed (pictures, videos, archives…) stored whatever the

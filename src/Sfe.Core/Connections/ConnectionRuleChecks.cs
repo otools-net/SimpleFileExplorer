@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>What keeps the folder rules of a connection meaningful (<see cref="ConnectionRuleService"/>).</summary>
 internal static class ConnectionRuleChecks

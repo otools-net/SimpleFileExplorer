@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Sfe.Core.Upgrades.Steps;
+namespace Otools.Net.Sfe.Core.Upgrades.Steps;
 
 /// <summary>What an <see cref="IUpgradeStep"/> works on.</summary>
 /// <param name="CacheDirectories">The thumbnail cache folder of every library (disabled ones included), full

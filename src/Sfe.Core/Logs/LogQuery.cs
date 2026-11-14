@@ -1,6 +1,6 @@
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Logs;
+namespace Otools.Net.Sfe.Core.Logs;
 
 /// <summary>A search of the log. Every filter is optional.</summary>
 /// <param name="Text">Found in the message, the logger's name or the exception (ignoring case).</param>

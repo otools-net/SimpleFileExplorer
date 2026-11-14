@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>The access of the person downloading, asked at each item and each folder of the zip.</summary>
 public interface IArchiveAccess

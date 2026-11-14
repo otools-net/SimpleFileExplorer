@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// When the web client plays a video through ffmpeg (<see cref="StreamingOptions"/>). Written as a name in the settings

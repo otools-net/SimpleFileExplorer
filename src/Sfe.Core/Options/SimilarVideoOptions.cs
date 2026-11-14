@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// Videos with the same pictures but other bytes (another resolution, bitrate or codec, trimmed), found from the

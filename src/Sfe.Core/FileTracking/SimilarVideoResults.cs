@@ -1,4 +1,4 @@
-namespace Sfe.Core.FileTracking;
+namespace Otools.Net.Sfe.Core.FileTracking;
 
 /// <param name="Summary">Totals of the last comparison; only on the first page, null before any comparison.</param>
 /// <param name="Next">Value of the <c>after</c> parameter that requests the next page; null on the last page.</param>

@@ -7,18 +7,18 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
-using Sfe.Api.Endpoints;
-using Sfe.Api.Maintenance;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Upgrades;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Upgrades;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The update of an install to the running version (<see cref="MigrationCoordinator"/>, the update page's routes) and
-/// backups (<see cref="Sfe.Core.Backup.BackupWriter"/>).
+/// backups (<see cref="Otools.Net.Sfe.Core.Backup.BackupWriter"/>).
 /// </summary>
 [TestClass]
 public sealed class MigrationTests
@@ -207,8 +207,8 @@ public sealed class MigrationTests
         var photo = _library.FullPath("Media/photo.jpg");
         var old = Path.Combine(
             _library.ThumbnailPath,
-            Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetDirectoryName(photo)!),
-            Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetFileName(photo)) + ".bin"
+            Otools.Net.Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetDirectoryName(photo)!),
+            Otools.Net.Sfe.Core.Thumbnails.ThumbnailService.Hash(Path.GetFileName(photo)) + ".bin"
         );
         Directory.CreateDirectory(Path.GetDirectoryName(old)!);
         await File.WriteAllBytesAsync(old, [0xFF, 0xD8, 0xFF, 0x01], TestContext.CancellationToken);

@@ -1,8 +1,8 @@
-using Sfe.Core.Indexing;
-using Sfe.Core.Thumbnails;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// What ffmpeg may open when given a file of the library (audit 2026-11, A4). The tests running ffmpeg need it: set

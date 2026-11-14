@@ -1,7 +1,7 @@
 using Microsoft.Data.Sqlite;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// Temporary folder tree with odd and Unicode names, plus a few media files,

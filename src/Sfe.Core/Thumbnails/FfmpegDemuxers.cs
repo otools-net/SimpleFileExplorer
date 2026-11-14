@@ -1,4 +1,4 @@
-namespace Sfe.Core.Thumbnails;
+namespace Otools.Net.Sfe.Core.Thumbnails;
 
 /// <summary>
 /// Which of ffmpeg's readers (demuxers) may open a file of the library. ffmpeg picks the reader from the content, not

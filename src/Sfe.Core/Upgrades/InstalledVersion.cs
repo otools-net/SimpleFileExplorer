@@ -2,9 +2,9 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Upgrades;
+namespace Otools.Net.Sfe.Core.Upgrades;
 
 /// <summary>
 /// The version of SFE the install's databases and settings belong to (<see cref="ServerProperty.VersionKey"/>, in the

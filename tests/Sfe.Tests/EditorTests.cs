@@ -7,16 +7,16 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Editing;
-using Sfe.Core.Library;
-using Sfe.Core.Search;
-using Sfe.Core.Settings;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Editing;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>The picture editor's saves (<see cref="EditedImages"/>), its route, right and settings.</summary>
 [TestClass]
@@ -196,7 +196,11 @@ public sealed class EditorTests
         var (_, errors) = await core.Get<SettingsService>()
             .SaveAsync(
                 EditableSettings.From(
-                    new Sfe.Core.Options.SfeOptions { Root = _library.Root, Editor = { OutputFolder = "../x" } }
+                    new Otools.Net.Sfe.Core.Options.SfeOptions
+                    {
+                        Root = _library.Root,
+                        Editor = { OutputFolder = "../x" },
+                    }
                 ),
                 TestContext.CancellationToken
             );
@@ -302,9 +306,10 @@ public sealed class EditorTests
         await using var core = await CoreServices.CreateAsync(_library);
         var file = _library.FullPath("Media/beach.jpg");
         await File.WriteAllBytesAsync(file, Jpeg(40, 30), TestContext.CancellationToken);
-        await core.Get<Sfe.Core.Indexing.DirectoryIndexer>().IndexFilesAsync([file], TestContext.CancellationToken);
+        await core.Get<Otools.Net.Sfe.Core.Indexing.DirectoryIndexer>()
+            .IndexFilesAsync([file], TestContext.CancellationToken);
         var editor = core.Get<EditedImages>();
-        var actor = new Sfe.Core.Files.FileActor(null, "test");
+        var actor = new Otools.Net.Sfe.Core.Files.FileActor(null, "test");
 
         var saved = await editor.SaveOverAsync(
             "Media/beach.jpg",
@@ -343,8 +348,8 @@ public sealed class EditorTests
         await File.WriteAllBytesAsync(file, Jpeg(40, 30), TestContext.CancellationToken);
         var trash = Path.Combine(
             _library.ThumbnailPath,
-            Sfe.Core.Files.WorkFolder.ServerFolderName,
-            Sfe.Core.Files.Trash.FolderName
+            Otools.Net.Sfe.Core.Files.WorkFolder.ServerFolderName,
+            Otools.Net.Sfe.Core.Files.Trash.FolderName
         );
         int TrashedFiles() =>
             Directory.Exists(trash) ? Directory.GetFiles(trash, "*", SearchOption.AllDirectories).Length : 0;

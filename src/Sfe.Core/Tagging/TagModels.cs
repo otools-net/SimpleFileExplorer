@@ -1,4 +1,4 @@
-namespace Sfe.Core.Tagging;
+namespace Otools.Net.Sfe.Core.Tagging;
 
 /// <summary>What a tag chip needs.</summary>
 /// <param name="DisplayName">Name followed by the disambiguation parent, e.g. "Freddy (FNAF)".</param>

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <param name="Text">The content, line endings as they are in the file.</param>
 /// <param name="Encoding">How the bytes were read: <see cref="TextCodec.Utf8"/>, <see cref="TextCodec.Utf8Bom"/>,

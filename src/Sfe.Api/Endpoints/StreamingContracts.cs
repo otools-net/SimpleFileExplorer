@@ -1,7 +1,7 @@
-using Sfe.Core.Options;
-using Sfe.Core.Streaming;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Streaming;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Duration">The video's length in seconds (the stream itself has none while it is made); null when
 /// unknown.</param>

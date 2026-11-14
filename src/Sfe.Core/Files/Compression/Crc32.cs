@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>CRC-32 (IEEE), as zip uses it: for ZipCrypto's keys and checking entries.</summary>
 internal static class Crc32

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Tasks;
+namespace Otools.Net.Sfe.Core.Tasks;
 
 /// <summary>The jobs that run in the background, shown together in the client's "Background tasks" dialog.</summary>
 public enum BackgroundTaskKind

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// Counts the changes to accounts, groups, rights and libraries. The caches that read them (rights, sessions, setup

@@ -1,4 +1,4 @@
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Path">Folder to index, relative to the library root; empty for the whole library.</param>
 public sealed record ScanRequest(string? Path);

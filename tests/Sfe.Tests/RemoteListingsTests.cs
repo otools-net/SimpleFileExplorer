@@ -1,8 +1,8 @@
-using Sfe.Core.Connections;
-using Sfe.Core.Library;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Library;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="RemoteListings"/>: a folder read once and sorted, the next pages taken from that read while it is

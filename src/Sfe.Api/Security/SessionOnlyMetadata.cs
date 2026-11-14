@@ -1,4 +1,4 @@
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// A route that a personal access token may not call (<see cref="SessionOnlyRoutes"/>); read by the request guard,

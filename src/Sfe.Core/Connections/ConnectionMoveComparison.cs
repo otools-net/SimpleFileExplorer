@@ -1,7 +1,7 @@
-using Sfe.Core.Access;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// What a folder moved inside a connection changes for one library's groups and accounts, compared as the library

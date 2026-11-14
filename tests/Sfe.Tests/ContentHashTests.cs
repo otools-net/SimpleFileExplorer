@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
-using Sfe.Core.Transfers;
+using Otools.Net.Sfe.Core.Transfers;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>Content hashes computed while a file streams (<see cref="ContentHashes"/>).</summary>
 [TestClass]

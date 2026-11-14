@@ -1,9 +1,9 @@
-using Sfe.Api.Security;
-using Sfe.Core.Files;
-using Sfe.Core.Paths;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the route that makes Flash links takes from the container (bound with <c>[AsParameters]</c>; none of it is

@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 public sealed record ArchivePlanResult(FileOperationStatus Status, ArchivePlan? Plan, string? Message)
 {

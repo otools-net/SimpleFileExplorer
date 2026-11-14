@@ -1,11 +1,11 @@
-using Sfe.Core.Files;
-using Sfe.Core.FileTracking;
-using Sfe.Core.Indexing;
-using Sfe.Core.Paths;
-using Sfe.Core.Thumbnails;
-using Sfe.Core.Trickplay;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.FileTracking;
+using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core.Trickplay;
 
-namespace Sfe.Core.Tasks;
+namespace Otools.Net.Sfe.Core.Tasks;
 
 /// <summary>
 /// One place to see, start and stop the background jobs, each of which keeps running its own way: index scans,

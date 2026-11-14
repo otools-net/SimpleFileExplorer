@@ -3,7 +3,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// SFE's own zip writer (agents/docs/features/compression.md): neither .NET's <c>ZipArchive</c> nor SharpCompress

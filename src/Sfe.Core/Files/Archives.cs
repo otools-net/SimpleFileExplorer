@@ -3,13 +3,13 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Sfe.Core.Data;
-using Sfe.Core.Files.Compression;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
-using Sfe.Core.Search;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files.Compression;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Search;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>
 /// Several files and folders downloaded as one zip (agents/docs/features/archives.md), written straight to the response

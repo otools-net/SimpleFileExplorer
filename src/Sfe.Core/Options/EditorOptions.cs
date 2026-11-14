@@ -1,4 +1,4 @@
-namespace Sfe.Core.Options;
+namespace Otools.Net.Sfe.Core.Options;
 
 /// <summary>
 /// The web client's picture editor (crop...). The browser applies the changes and sends the result, which the server

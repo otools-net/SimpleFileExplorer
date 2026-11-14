@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// Paths inside a connection: the rules of <see cref="Paths.LibraryPaths"/> for a tree that is not on the disk.

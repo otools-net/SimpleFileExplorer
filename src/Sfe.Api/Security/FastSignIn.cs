@@ -1,17 +1,17 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
-using Sfe.Core.Access;
-using Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Settings;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// The one-time link that signs the server's only administrator in, in the browser SFE opens when it starts
-/// (<see cref="Sfe.Core.Options.SfeOptions.FastSignIn"/>): for an app used on this computer alone. One link at a time,
-/// kept in memory only (as a hash), for <see cref="Lifetime"/>; it works once, from this computer only
-/// (<see cref="LocalVisitor.IsOnThisComputer"/>), and only while that account is still the only enabled administrator
-/// and the server is Local (<see cref="ServerModes"/>): an External server is used by others.
+/// (<see cref="Otools.Net.Sfe.Core.Options.SfeOptions.FastSignIn"/>): for an app used on this computer alone. One
+/// link at a time, kept in memory only (as a hash), for <see cref="Lifetime"/>; it works once, from this computer
+/// only (<see cref="LocalVisitor.IsOnThisComputer"/>), and only while that account is still the only enabled
+/// administrator and the server is Local (<see cref="ServerModes"/>): an External server is used by others.
 /// </summary>
 public sealed class FastSignIn(
     AccessService accounts,

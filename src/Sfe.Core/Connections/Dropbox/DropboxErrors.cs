@@ -1,6 +1,6 @@
 using Dropbox.Api;
 
-namespace Sfe.Core.Connections.Dropbox;
+namespace Otools.Net.Sfe.Core.Connections.Dropbox;
 
 /// <summary>
 /// What the Dropbox SDK throws, as one <see cref="RemoteStorageException"/> (the kinds seen in the spike,

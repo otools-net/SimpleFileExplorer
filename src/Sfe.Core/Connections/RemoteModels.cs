@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <param name="Cursor">Asks for the next page; null on the last one.</param>
 public sealed record RemotePage(IReadOnlyList<RemoteItem> Items, string? Cursor);

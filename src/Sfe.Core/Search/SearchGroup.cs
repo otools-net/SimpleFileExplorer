@@ -1,6 +1,6 @@
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Core.Search;
+namespace Otools.Net.Sfe.Core.Search;
 
 /// <param name="ExcludedFilters"> One group per negated size, extension, resolution, duration or type term (<c>-s:</c>,
 /// <c>-e:</c>, <c>-w:</c>, <c>-h:</c>,

@@ -1,6 +1,6 @@
-using Sfe.Core.Transfers;
+using Otools.Net.Sfe.Core.Transfers;
 
-namespace Sfe.Tests.Infrastructure;
+namespace Otools.Net.Sfe.Tests.Infrastructure;
 
 /// <summary>
 /// A transfer's source whose files never give a byte until the read is cancelled: a job is caught in the middle of a

@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Sfe.Tests.Infrastructure.OpenApi;
+namespace Otools.Net.Sfe.Tests.Infrastructure.OpenApi;
 
 /// <summary>
 /// Reads the schemas of an OpenAPI document: the types a value may have, written so that two documents compare

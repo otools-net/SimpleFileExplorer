@@ -1,7 +1,7 @@
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Readers;
 
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// Reads an archive's list of entries and one entry's data, never unpacking anything else

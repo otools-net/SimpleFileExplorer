@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files.Compression;
+namespace Otools.Net.Sfe.Core.Files.Compression;
 
 /// <summary>
 /// One entry as an archive's directory lists it, before its name is checked (<see cref="ArchiveEntryNames"/>).

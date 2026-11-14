@@ -1,8 +1,8 @@
 using System.Globalization;
-using Sfe.Api.Tenancy;
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Api.Tenancy;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Who makes the request and in which library, worked out once per request: a signed-in account works in the library

@@ -1,6 +1,6 @@
-using Sfe.Core.Library;
+using Otools.Net.Sfe.Core.Library;
 
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <param name="Item">The new or renamed file or folder.</param>
 /// <param name="Message">Why it was not done, for the person (never a server path).</param>

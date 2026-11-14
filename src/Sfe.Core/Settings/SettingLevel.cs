@@ -1,4 +1,4 @@
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>
 /// Where a setting's value comes from, from the most general to the most specific: the configuration (files,

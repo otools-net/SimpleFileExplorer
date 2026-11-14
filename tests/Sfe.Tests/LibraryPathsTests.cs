@@ -1,6 +1,6 @@
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 [TestClass]
 public sealed class LibraryPathsTests

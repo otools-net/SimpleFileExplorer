@@ -1,15 +1,15 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-using Sfe.Core;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Logs;
-using Sfe.Core.Options;
-using Sfe.Core.Settings;
-using Sfe.Core.Streaming;
-using Sfe.Core.Thumbnails;
+using Otools.Net.Sfe.Core;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Logs;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Settings;
+using Otools.Net.Sfe.Core.Streaming;
+using Otools.Net.Sfe.Core.Thumbnails;
 
-namespace Sfe.Api.Tenancy;
+namespace Otools.Net.Sfe.Api.Tenancy;
 
 /// <summary>
 /// The services of one library (<see cref="ServiceCollectionExtensions.AddSfeCore"/>): its root, index, caches and
@@ -54,7 +54,7 @@ public sealed class TenantHost : IAsyncDisposable
         services.AddSingleton(application.GetRequiredService<SettingLayers>());
         services.AddSingleton(application.GetRequiredService<FfmpegLimits>());
         services.AddSingleton(application.GetRequiredService<VideoStreams>());
-        services.AddSingleton(application.GetRequiredService<Sfe.Core.Files.Compression.ArchiveBuildGate>());
+        services.AddSingleton(application.GetRequiredService<Otools.Net.Sfe.Core.Files.Compression.ArchiveBuildGate>());
         // File management moves the folder rules and quick links of what it renames (the accounts' database).
         services.AddSingleton(application.GetRequiredService<FolderRuleService>());
         services.AddSingleton(application.GetRequiredService<QuickLinkService>());

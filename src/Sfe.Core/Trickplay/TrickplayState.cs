@@ -1,4 +1,4 @@
-namespace Sfe.Core.Trickplay;
+namespace Otools.Net.Sfe.Core.Trickplay;
 
 public enum TrickplayState
 {

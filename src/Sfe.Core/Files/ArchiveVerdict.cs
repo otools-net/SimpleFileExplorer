@@ -1,4 +1,4 @@
-namespace Sfe.Core.Files;
+namespace Otools.Net.Sfe.Core.Files;
 
 /// <summary>What the person may do with a folder or file put in a zip.</summary>
 public enum ArchiveVerdict

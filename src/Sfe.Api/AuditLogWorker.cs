@@ -1,7 +1,7 @@
-using Sfe.Api.Maintenance;
-using Sfe.Core.Logs;
+using Otools.Net.Sfe.Api.Maintenance;
+using Otools.Net.Sfe.Core.Logs;
 
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// Writes the server's log every <see cref="FlushInterval"/> (and once more when the server stops), and forgets its

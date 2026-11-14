@@ -1,4 +1,4 @@
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// Files and folders holding the server's secrets (setup code, recovery codes, the keys signing cookies), kept from

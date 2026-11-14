@@ -1,8 +1,8 @@
 using System.Buffers.Text;
 using System.Security.Cryptography;
-using Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Data;
 
-namespace Sfe.Core.Access;
+namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
 /// The form of a personal access token: <c>sfe_&lt;lookup&gt;_&lt;secret&gt;</c>, the lookup 16 random hex digits

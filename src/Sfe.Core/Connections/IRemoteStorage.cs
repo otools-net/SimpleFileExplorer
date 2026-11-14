@@ -1,4 +1,4 @@
-namespace Sfe.Core.Connections;
+namespace Otools.Net.Sfe.Core.Connections;
 
 /// <summary>
 /// The files of one signed-in account at a provider, seen from the connection's root folder. Paths are relative to

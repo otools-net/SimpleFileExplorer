@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>A library a server-level <see cref="Connection"/> is offered to (those not offered to all).</summary>
 public sealed class ConnectionTenant

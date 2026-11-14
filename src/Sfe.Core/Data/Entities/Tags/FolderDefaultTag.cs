@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// A tag every file entering a folder (or one of its sub-folders) gets: indexed by a scan, created, uploaded, copied or

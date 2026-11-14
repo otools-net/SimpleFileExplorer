@@ -4,13 +4,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Data;
-using Sfe.Core.Files;
-using Sfe.Tests.Infrastructure;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Tests.Infrastructure;
 
-namespace Sfe.Tests;
+namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Moves and copies through HTTP. Alice is in Users, which may move and copy, with SpecialDir hidden and Media
@@ -355,7 +355,7 @@ public sealed class FileJobRouteTests
         var names = Sfe
             .Core.Files.Compression.ArchiveReader.ReadEntries(
                 _library.FullPath("ChildDir/everything.zip"),
-                Sfe.Core.Files.Compression.ArchiveFormat.Zip
+                Otools.Net.Sfe.Core.Files.Compression.ArchiveFormat.Zip
             )
             .Select(e => e.Name)
             .ToList();

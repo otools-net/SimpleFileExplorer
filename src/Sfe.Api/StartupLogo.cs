@@ -1,4 +1,4 @@
-namespace Sfe.Api;
+namespace Otools.Net.Sfe.Api;
 
 /// <summary>
 /// SFE's name and version drawn in the console at start, for someone watching the window. Not with

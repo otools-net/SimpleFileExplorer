@@ -1,6 +1,6 @@
-using Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Access;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <param name="Name">The group's name, or the account's display or user name.</param>
 /// <param name="Exists">The folder is still there (false once it was moved, renamed or deleted outside SFE).</param>

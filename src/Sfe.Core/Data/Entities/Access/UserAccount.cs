@@ -1,4 +1,4 @@
-namespace Sfe.Core.Data;
+namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
 /// An account, for the whole server: the libraries it reaches follow from its groups (<see cref="GroupMember"/>).

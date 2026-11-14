@@ -4,7 +4,7 @@
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace Sfe.Core.Data.Migrations
+namespace Otools.Net.Sfe.Core.Data.Migrations
 {
     /// <inheritdoc />
     public partial class Tagging : Migration

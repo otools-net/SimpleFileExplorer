@@ -1,9 +1,9 @@
-using Sfe.Api.Security;
-using Sfe.Core.Access;
-using Sfe.Core.Connections;
-using ConnectionInfo = Sfe.Core.Connections.ConnectionInfo;
+using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
+using ConnectionInfo = Otools.Net.Sfe.Core.Connections.ConnectionInfo;
 
-namespace Sfe.Api.Endpoints;
+namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What the routes of a connection's folder rules use (bound with <c>[AsParameters]</c>; none of it is in the

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Sfe.Core.Data.Migrations
+namespace Otools.Net.Sfe.Core.Data.Migrations
 {
     /// <inheritdoc />
     public partial class AddTrashEntryKind : Migration

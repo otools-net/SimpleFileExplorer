@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
-using Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Options;
 
-namespace Sfe.Core.Settings;
+namespace Otools.Net.Sfe.Core.Settings;
 
 /// <summary>The values of every level for one library and one user, as stored.</summary>
 /// <param name="Environment">The configuration's values (and the code's defaults).</param>

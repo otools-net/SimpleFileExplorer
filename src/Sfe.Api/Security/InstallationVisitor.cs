@@ -1,4 +1,4 @@
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
 /// Whether the visitor may use the installation page (<see cref="InstallationAccess.CheckVisitorAsync"/>).

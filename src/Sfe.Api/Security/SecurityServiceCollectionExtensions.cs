@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Sfe.Api.Endpoints;
-using Sfe.Core.Access;
-using Sfe.Core.Options;
-using Sfe.Core.Paths;
+using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Options;
+using Otools.Net.Sfe.Core.Paths;
 
-namespace Sfe.Api.Security;
+namespace Otools.Net.Sfe.Api.Security;
 
 public static class SecurityServiceCollectionExtensions
 {
@@ -36,7 +36,7 @@ public static class SecurityServiceCollectionExtensions
         // whoever reads a key forges an administrator's cookie. One that exists is left alone (WarnIfKeysAreOpen).
         TryCreatePrivate(keys);
         services.AddDataProtection().SetApplicationName("SFE").PersistKeysToFileSystem(new DirectoryInfo(keys));
-        services.AddSingleton<Sfe.Core.Connections.ICredentialProtector, ConnectionCredentials>();
+        services.AddSingleton<Otools.Net.Sfe.Core.Connections.ICredentialProtector, ConnectionCredentials>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<CurrentAccess>();
