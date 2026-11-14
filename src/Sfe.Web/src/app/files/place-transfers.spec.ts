@@ -260,6 +260,43 @@ describe('the folder picker with places', () => {
     });
 });
 
+describe('a move within a connection that lets more people in', () => {
+    it('asks as the library does, then moves keeping the access when asked', async () => {
+        config.place.set(dropbox());
+        const fixture = TestBed.createComponent(TransferDialog);
+        fixture.detectChanges();
+        const element = fixture.nativeElement as HTMLElement;
+        const folder = item('Private/Plans', { kind: 'directory' });
+        const gains = [{ folder: folder.path, who: 'Visitors', isGroup: true, before: 'hidden', after: 'read' }];
+        api.connectionFiles
+            .mockResolvedValueOnce({ type: 'access-gains', detail: 'More people would see it.', gains })
+            .mockResolvedValueOnce({ items: [{ path: folder.path, status: 'done' }] });
+
+        transfers.keep('move', [folder]);
+        transfers.paste('Public');
+        await settle();
+        fixture.detectChanges();
+
+        expect(element.querySelector('dialog')!.open).toBe(true);
+        expect(element.textContent).toContain("The group Visitors (who don't see it now) would see “Plans”.");
+        expect(api.connectionFiles).toHaveBeenCalledTimes(1);
+        (element.querySelector('.transfer-gains + label input') as HTMLInputElement).click();
+        buttonNamed(element, 'Move')!.click();
+        await settle();
+
+        expect(api.connectionFiles).toHaveBeenLastCalledWith(7, 'transfer', {
+            kind: 'move',
+            paths: [folder.path],
+            target: 'Public',
+            conflict: 'fail',
+            keepAccess: true,
+        });
+        expect(api.startFileJob).not.toHaveBeenCalled();
+        expect(api.startTransfer).not.toHaveBeenCalled();
+        expect(element.querySelector('dialog')!.open).toBe(false);
+    });
+});
+
 describe('dropping items on a connection of the sidebar', () => {
     @Component({
         selector: 'sfe-host',

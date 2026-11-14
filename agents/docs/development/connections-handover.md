@@ -42,8 +42,8 @@ Checks run for the last commit: the new suites, `npm test` (1179 passed), the fu
    `PlaceTransfers`). Item 2 done (`ConnectionUploadEndpoints`, `RemoteUploads`, `uploadsRoute`). Item 3 done
    (`GetConnectionItemProperties`, `place-properties.ts`): phase 4 is done. Phase 5 items 1 and 2 done
    (`Core/Transfers/`, `TransferEndpoints`, place-aware clipboard and picker). Phase 5 done (retry route, task
-   history, size limit, verification). Phase 6: rules, enforcement and the card done;
-   next its last part (rules following renamed or moved folders), then phase 7. Phase 4 makes `atPlace` give the write rights back by the connection's
+   history, size limit, verification). Phase 6 done (rules, enforcement, card, following
+   moves). Next: phase 7. Phase 4 makes `atPlace` give the write rights back by the connection's
    `access` and capabilities, and calls `RemoteListings.Forget` after each change.
 
 Per commit, as the epic asks: tick the item in the plan with an "As built" sentence, update the status board and

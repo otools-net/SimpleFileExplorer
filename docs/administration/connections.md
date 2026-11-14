@@ -84,8 +84,15 @@ accounts may do in some folders of a space or server connection: **Manage** › 
   connection made **Read only** stays read only.
 - Each space sets its own rules in a server connection; a space no longer offered the connection loses them. An
   account's own connection has none.
-- A space has at most 250 rules per connection. The card has no **Who has access** report for a connection, and
-  folders renamed at Dropbox are not followed yet.
+- A space has at most 250 rules per connection. The card has no **Who has access** report for a connection.
+- Renaming or moving a folder of the connection here takes its rules along, for every space. When a move would let
+  more of your space's people see or change the folder (it goes under a folder they see more of), you are asked
+  first, as for a move in the library, and can **Keep the access they have now**; the other spaces' rules simply
+  follow. A folder moved out of the connection (into the library, or another connection) takes its rules away; a
+  deleted folder keeps them, shown as not found, to re-point if it comes back.
+- A rule remembers its folder's id at Dropbox: a folder renamed or moved at Dropbox itself keeps at least that rule's
+  restrictions where its listing shows it, and when opened (its subfolders follow the place it is in now). The card
+  still shows the rule at the old place: re-point it there.
 
 A screenshot of the card on a connection comes with the release check.
 

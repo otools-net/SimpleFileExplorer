@@ -26,15 +26,16 @@ public sealed class ConnectionPolicies(IDbContextFactory<AccessDbContext> dbFact
 
     private static readonly HashSet<string> AllRights = [.. RightCatalog.TenantRights.Select(r => r.Id)];
 
-    private readonly ConcurrentDictionary<PolicyKey, (long Version, FolderPolicy Policy)> _cache = new();
+    private readonly ConcurrentDictionary<PolicyKey, (long Version, ConnectionPolicy Policy)> _cache = new();
 
     private sealed record PolicyKey(ConnectionSubject Subject, int ConnectionId, StringComparison Comparison);
 
     /// <summary>
     /// Where <paramref name="subject"/> may use its rights in connection <paramref name="connectionId"/>, paths
-    /// compared by <paramref name="comparison"/> (the provider's rule for case).
+    /// compared by <paramref name="comparison"/> (the provider's rule for case); with the places of its rules by the
+    /// provider's id of their folder.
     /// </summary>
-    public async Task<FolderPolicy> GetAsync(
+    public async Task<ConnectionPolicy> GetAsync(
         ConnectionSubject subject,
         int connectionId,
         StringComparison comparison,
@@ -103,7 +104,7 @@ public sealed class ConnectionPolicies(IDbContextFactory<AccessDbContext> dbFact
             comparison
         );
 
-    private async Task<FolderPolicy> ComputeAsync(
+    private async Task<ConnectionPolicy> ComputeAsync(
         ConnectionSubject subject,
         int connectionId,
         StringComparison comparison,
@@ -122,16 +123,16 @@ public sealed class ConnectionPolicies(IDbContextFactory<AccessDbContext> dbFact
             })
             .FirstOrDefaultAsync(cancellationToken);
         if (connection is null || subject.UserId is not { } userId || subject.IsGuest)
-            return Nothing(comparison);
+            return ConnectionPolicy.Of(Nothing(comparison));
 
         var cap = connection.ReadOnly ? FolderLevel.Read : FolderLevel.Write;
         if (connection.Level == ConnectionLevel.Account)
-            return connection.OwnerId == userId ? Whole(cap, comparison) : Nothing(comparison);
+            return ConnectionPolicy.Of(connection.OwnerId == userId ? Whole(cap, comparison) : Nothing(comparison));
         if (subject.IsServerAdmin)
-            return Whole(cap, comparison);
+            return ConnectionPolicy.Of(Whole(cap, comparison));
 
         var input = await LoadAsync(db, (subject.TenantId, userId, connectionId), cancellationToken);
-        return Compile(input, cap, comparison);
+        return new ConnectionPolicy(Compile(input, cap, comparison), ConnectionPolicy.PlacesOf(input.Rules));
     }
 
     private static async Task<ConnectionPolicyInput> LoadAsync(
@@ -164,7 +165,7 @@ public sealed class ConnectionPolicies(IDbContextFactory<AccessDbContext> dbFact
                 && r.TenantId == who.TenantId
                 && ((r.GroupId != null && groupIds.Contains(r.GroupId.Value)) || r.UserId == who.UserId)
             )
-            .Select(r => new ConnectionPolicyRule(r.GroupId, r.Path, r.Level))
+            .Select(r => new ConnectionPolicyRule(r.GroupId, r.Path, r.Level, r.ItemId))
             .ToListAsync(cancellationToken);
 
         var groups = rows.GroupBy(r => r.GroupId)

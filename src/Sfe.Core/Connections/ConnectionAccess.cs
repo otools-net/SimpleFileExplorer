@@ -61,7 +61,7 @@ public sealed class ConnectionAccess(
     )
     {
         var policy = await policies.GetAsync(subject, connectionId, how.Comparison, cancellationToken);
-        return new ConnectionFolders(policy, how.Granted, how.Comparison);
+        return new ConnectionFolders(policy.Folders, how.Granted, how.Comparison, policy.RulePlaces);
     }
 
     /// <summary>The connections <paramref name="subject"/> may use in its library, by name.</summary>

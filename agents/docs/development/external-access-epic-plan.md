@@ -39,7 +39,7 @@ in each plan's `## Progress` checklist; this board is the summary.
 | 2 | api-tokens | not started | | |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
-| 5 | connections | in progress (started before plans 1 to 4 at the owner request; its routes are mapped through `ApiRoutes`, so they follow the base) | phase 0 (results in the plan: `Dropbox.Api` SDK, twin rule table, capabilities); phase 1 (interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider`; tables and migration `Connections`; rights, settings, `api/config`; `ConnectionService`, `ConnectionSharing`, `ConnectionAccess`, credentials protected, audit lines); phase 2 (`DropboxProvider` sign-in, app key setting, write-only app secret, provider routes; authorize, callback, complete; reauthorize; management routes; client pages, user docs); phase 3 (`DropboxStorage`, `RemoteListings`, browse / raw / thumbnail / zip routes, `ConnectionProblems`; the listing on `?c=`, `ConfigService.place`, sidebar section; `ConnectionGates`, policy `connections`) | phase 6 item 2's rest: rules follow folders renamed or moved in SFE (and outside, by provider id); then phase 7 (C# library, close); a person runs `agents/tools/dropbox-check` before a release (see [connections-handover](connections-handover.md)) |
+| 5 | connections | in progress (started before plans 1 to 4 at the owner request; its routes are mapped through `ApiRoutes`, so they follow the base) | phase 0 (results in the plan: `Dropbox.Api` SDK, twin rule table, capabilities); phase 1 (interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider`; tables and migration `Connections`; rights, settings, `api/config`; `ConnectionService`, `ConnectionSharing`, `ConnectionAccess`, credentials protected, audit lines); phase 2 (`DropboxProvider` sign-in, app key setting, write-only app secret, provider routes; authorize, callback, complete; reauthorize; management routes; client pages, user docs); phase 3 (`DropboxStorage`, `RemoteListings`, browse / raw / thumbnail / zip routes, `ConnectionProblems`; the listing on `?c=`, `ConfigService.place`, sidebar section; `ConnectionGates`, policy `connections`) | phase 7: `sfe.Connections` in the C# library (needs plan 4's facade: decide the order), feature notes, security vectors, close the plan; a person runs `agents/tools/dropbox-check` before a release (see [connections-handover](connections-handover.md)) |
 | 6 | connections-index | not started | | |
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
@@ -50,7 +50,8 @@ in each plan's `## Progress` checklist; this board is the summary.
   (`FileJobs` split), contracts, both transfer sides, `TransferJobs` and the transfer route, client across places;
   each built by subagents in parallel on one contract (one stop on the account's 5-hour limit, resumed); phase 5
   item 3 (retry, task history, size limit): phase 5 done; phase 6 C0 (FolderPolicy refactoring), C1 (rules
-  table, LocalDB checked), C2/C3 (enforcement, closing two access gaps), C5 (management routes and card).
+  table, LocalDB checked), C2/C3 (enforcement, closing two access gaps), C5 (management routes and card), C4 (rules follow moves):
+  phase 6 done.
 - 2026-11-13 (third session): connections phase 1 finished (services, access rules, Data Protection of credentials,
   feature note `connections.md`); phase 2 (owner: app secret on the page, write-only).
 - 2026-11-13 (second session): api-v1 phase 1 committed; connections started out of order at the owner request

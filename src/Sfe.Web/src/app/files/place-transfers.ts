@@ -3,9 +3,10 @@ import { ConfigService } from '../core/config.service';
 import { PlaceTransferItem } from '../core/connection.models';
 import { plural } from '../core/format';
 import { baseName, parentPath } from '../core/paths';
-import { PlaceConflict, PlaceFiles } from '../core/place-files';
+import { AccessQuestion, PlaceConflict, PlaceFiles } from '../core/place-files';
 import { ToastService } from '../core/toast.service';
 import { UsableConnections } from '../core/usable-connections';
+import { Dialogs } from '../library/dialogs.service';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
 import { FileJobKind, FileJobView, TransferRequest } from './file.models';
@@ -31,11 +32,23 @@ export function canRetryTransfer(job: FileJobView): boolean {
     );
 }
 
+/** A move or copy on `connection`; `keepAccess`: the answer to the keep-access question, once asked. */
+interface PlaceMove {
+    kind: 'move' | 'copy';
+    paths: string[];
+    target: string;
+    conflict: PlaceConflict;
+    connection: number;
+    keepAccess?: boolean;
+}
+
 /**
  * Moves and copies on a connection (agents/docs/features/connections.md): its provider does them at once, so there is
- * no job, no folder rules and no tags to ask about. Names taken in the target are asked about (keep both, replace) and
- * asked again. Between two places (a connection and the library, or two connections) a transfer job does them
- * (`between`), followed by `FileTransfers` as a library job; `FileTransfers` asks here first.
+ * no job and no tags to ask about. Names taken in the target are asked about (keep both, replace) and asked again; a
+ * move letting more people see or change a folder is asked about as in the library (the transfer dialog, then
+ * `answer`), its folder rules following it on the server. Between two places (a connection and the library, or two
+ * connections) a transfer job does them (`between`), followed by `FileTransfers` as a library job; `FileTransfers`
+ * asks here first.
  */
 @Injectable({ providedIn: 'root' })
 export class PlaceTransfers {
@@ -44,6 +57,9 @@ export class PlaceTransfers {
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
     private readonly connections = inject(UsableConnections);
+    private readonly dialogs = inject(Dialogs);
+    /** A move waiting for the answer to the keep-access question (the transfer dialog asks it). */
+    private asked: PlaceMove | null = null;
 
     /** The connection listed, null for the library. */
     here(): number | null {
@@ -82,8 +98,15 @@ export class PlaceTransfers {
     /** A paste or drop within the connection `connection` is done here: false in the library (a job does it there). */
     handles(kind: FileJobKind, paths: string[], target: string, connection = this.here()): boolean {
         if (connection === null) return false;
-        if (kind === 'move' || kind === 'copy') void this.run(kind, paths, target, 'fail', connection);
+        if (kind === 'move' || kind === 'copy') void this.run({ kind, paths, target, conflict: 'fail', connection });
         return true;
+    }
+
+    /** The keep-access question of a move answered: moved, keeping the access they have now or not. */
+    async answer(keepAccess: boolean): Promise<void> {
+        const asked = this.asked;
+        this.asked = null;
+        if (asked) await this.run({ ...asked, keepAccess });
     }
 
     /** "Dropbox › Trips"; the place's name alone for its root. */
@@ -92,18 +115,14 @@ export class PlaceTransfers {
         return folder ? `${place} › ${baseName(folder)}` : place;
     }
 
-    private async run(
-        kind: 'move' | 'copy',
-        paths: string[],
-        target: string,
-        conflict: PlaceConflict,
-        connection: number,
-    ): Promise<void> {
+    private async run(move: PlaceMove): Promise<void> {
+        const { kind, paths, target, conflict, connection, keepAccess } = move;
         let items: PlaceTransferItem[];
         try {
-            items = (await this.files.transfer(kind, paths, target, conflict, connection)).items;
+            items = (await this.files.transfer(kind, paths, target, conflict, { connection, keepAccess })).items;
         } catch (error) {
-            this.toasts.error(`Could not ${kind}: ${(error as Error).message}`);
+            if (error instanceof AccessQuestion) this.ask(move, error);
+            else this.toasts.error(`Could not ${kind}: ${(error as Error).message}`);
             return;
         }
         const verb = kind === 'move' ? 'moved' : 'copied';
@@ -126,6 +145,14 @@ export class PlaceTransfers {
             );
     }
 
+    /** Who would gain access, asked as the library's moves ask it; `answer` goes on. */
+    private ask(move: PlaceMove, question: AccessQuestion): void {
+        this.asked = move;
+        this.dialogs
+            .transfer()
+            ?.ask({ kind: 'move', paths: move.paths, target: move.target }, question.gains, move.connection);
+    }
+
     /** Names taken in the target: kept both (a new name) or replaced, as the person chooses, else left. */
     private askTaken(
         taken: { kind: 'move' | 'copy'; paths: string[]; target: string; connection: number },
@@ -139,12 +166,12 @@ export class PlaceTransfers {
                 {
                     label: 'Keep both',
                     title: 'Give them a new name there',
-                    run: () => void this.run(kind, paths, target, 'keepBoth', connection),
+                    run: () => void this.run({ kind, paths, target, conflict: 'keepBoth', connection }),
                 },
                 {
                     label: 'Replace',
                     title: 'Put them in place of those there',
-                    run: () => void this.run(kind, paths, target, 'replace', connection),
+                    run: () => void this.run({ kind, paths, target, conflict: 'replace', connection }),
                 },
             ],
         });

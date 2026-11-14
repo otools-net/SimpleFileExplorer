@@ -151,6 +151,46 @@ public sealed class ConnectionPoliciesTests
         );
     }
 
+    [TestMethod]
+    public void ARuleAppliesToItsFolderFoundByIdAtAnotherPathTheStricterWinning()
+    {
+        var input = new ConnectionPolicyInput(
+            [new(Writers, FolderLevel.Write, WriteRights)],
+            [
+                new(Writers, "Old/Plans", FolderLevel.Hidden, "id:plans"),
+                new(Writers, "Docs", FolderLevel.Read, "id:docs"),
+                new(Writers, "Shared", FolderLevel.Write),
+            ]
+        );
+        var comparison = StringComparison.Ordinal;
+        var granted = DeleteRights.Union(WriteRights).ToHashSet();
+        var folders = new ConnectionFolders(
+            ConnectionPolicies.Compile(input, FolderLevel.Write, comparison),
+            granted,
+            comparison,
+            ConnectionPolicy.PlacesOf(input.Rules)
+        );
+        RemoteItem[] items =
+        [
+            new("Plans", "Public/Plans", true, Id: "id:plans"),
+            new("Papers", "Shared/Papers", true, Id: "id:docs"),
+            new("Other", "Public/Other", true, Id: "id:other"),
+        ];
+        var listing = new RemoteListing(items, 0, 3, 3, true, false);
+
+        Assert.IsTrue(folders.Sees("Public/Plans"), "by its path alone");
+        Assert.IsFalse(folders.At("Public/Plans", "id:plans").IsVisible, "the rule set on it before it moved");
+        Assert.IsTrue(folders.At("Shared/Papers", null).Has(Rights.RenameFiles));
+        Assert.IsFalse(folders.At("Shared/Papers", "id:docs").Has(Rights.RenameFiles), "the stricter of both");
+        Assert.IsTrue(folders.At("Shared/Papers", "id:docs").Has(Rights.ViewFiles));
+        Assert.IsTrue(folders.At("Docs", "id:docs").Has(Rights.ViewFiles), "where the rule is");
+        var left = folders.WithoutHiddenByIds(listing);
+        CollectionAssert.AreEqual(new[] { "Papers", "Other" }, left.Items.Select(i => i.Name).ToArray());
+        Assert.AreEqual((2, 2), (left.Total, left.DirectoryCount));
+        var view = folders.ViewOf("Shared", folders.At("Shared"), left.Items)!;
+        CollectionAssert.DoesNotContain(view.Children!["Papers"].Rights.ToArray(), Rights.RenameFiles);
+    }
+
     private static ConnectionFolders FoldersOf(
         ConnectionPolicyInput input,
         FolderLevel cap = FolderLevel.Write,

@@ -1,3 +1,4 @@
+import type { AccessGain } from '../files/file.models';
 import type { FolderDefaults, TagSummary } from './tag.models';
 
 /*
@@ -48,8 +49,10 @@ export interface FolderExclusions {
  * (`folder-rules`).
  */
 export interface FileConflict {
-    type: 'file-exists' | 'scan-running' | 'folder-rules' | string;
+    type: 'file-exists' | 'scan-running' | 'folder-rules' | 'access-gains' | string;
     detail?: string | null;
+    /** `access-gains` (a move in a connection): who would see or change more, as `api/files/jobs/check` says. */
+    gains?: AccessGain[];
 }
 
 /** The answer of a file operation: the new or renamed item, or why it was not done. */

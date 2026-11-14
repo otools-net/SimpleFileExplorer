@@ -117,8 +117,15 @@ internal sealed record ConnectionArchiveServices(
 );
 
 /// <summary>What the routes changing a connection's files use besides the connection (bound with
-/// <c>[AsParameters]</c>).</summary>
-internal sealed record ConnectionWriteServices(RemoteListings Listings, MediaClassifier Classifier);
+/// <c>[AsParameters]</c>); <paramref name="Rules"/>, <paramref name="Accounts"/> and <paramref name="Loggers"/> for
+/// the folder rules following a move (<see cref="ConnectionMoves"/>).</summary>
+internal sealed record ConnectionWriteServices(
+    RemoteListings Listings,
+    MediaClassifier Classifier,
+    ConnectionRuleService Rules,
+    Sfe.Core.Access.AccessService Accounts,
+    ILoggerFactory Loggers
+);
 
 /// <summary>Files and folders of a connection moved or copied into one of its folders.</summary>
 /// <param name="Kind"><c>move</c> or <c>copy</c>.</param>
@@ -126,11 +133,14 @@ internal sealed record ConnectionWriteServices(RemoteListings Listings, MediaCla
 /// <param name="Target">The folder they go into.</param>
 /// <param name="Conflict"><c>fail</c> (default), <c>keepBoth</c> (the provider's numbering) or <c>replace</c> (a
 /// file only, never a folder).</param>
+/// <param name="KeepAccess">For a move that would let more of the library's people see or change a folder (409
+/// <c>access-gains</c> when not given): true pins the access they have now, false moves it as asked.</param>
 public sealed record ConnectionTransferRequest(
     string? Kind,
     IReadOnlyList<string>? Paths,
     string? Target,
-    string? Conflict = null
+    string? Conflict = null,
+    bool? KeepAccess = null
 );
 
 /// <summary>What became of each item of a <see cref="ConnectionTransferRequest"/>, in its order.</summary>
@@ -150,7 +160,8 @@ internal sealed record ConnectionTransferStep(
     string Target,
     RemoteConflict Conflict,
     bool Move,
-    MediaClassifier Classifier
+    MediaClassifier Classifier,
+    ConnectionMoves Moves
 );
 
 /// <summary>What the uploads into a connection use besides the connection (bound with <c>[AsParameters]</c>).</summary>

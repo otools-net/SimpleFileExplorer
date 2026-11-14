@@ -98,11 +98,13 @@ public static class ConnectionFileEndpoints
         var filter = open.Folders.ListingFilterOf(path, here);
         return await files.RunAsync(open, async storage =>
         {
-            var listing = await browse.Listings.ListAsync(storage, asked, filter, cancellationToken);
-            if (!IsSeenWhereListed(open, path, listing))
+            var read = await browse.Listings.ListAsync(storage, asked, filter, cancellationToken);
+            if (!IsSeenWhereListed(open, path, read))
                 return TypedResults.NotFound();
+            // Items renamed or moved outside SFE: the rules set on them elsewhere, by their ids.
+            var listing = open.Folders.WithoutHiddenByIds(read);
             var page = ConnectionListings.Of(open, path, listing, limit, browse.Classifier);
-            var view = open.Folders.ViewOf(path, here);
+            var view = open.Folders.ViewOf(path, here, listing.Items);
             return TypedResults.Ok(page with { Listing = page.Listing with { Access = view } });
         });
     }

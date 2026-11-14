@@ -33,7 +33,8 @@ internal sealed record TransferServices(
     LibraryTransfers Library,
     TransferCalls Calls,
     RemoteListings Listings,
-    AccessChanges Changes
+    AccessChanges Changes,
+    ConnectionRuleService Rules
 );
 
 /// <summary>

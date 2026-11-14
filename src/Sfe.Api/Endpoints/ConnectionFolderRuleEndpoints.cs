@@ -27,7 +27,9 @@ public static class ConnectionFolderRuleEndpoints
     private static readonly string SetRulesDescription = $"""
         The body lists every rule of the request's library in the connection: those left out are removed. A group
         uses the connection only with its level given in `PUT …/groups`; a rule may then hide a folder or change its
-        level there. At most {ConnectionRuleService.MaxRules} rules; none on an account's connection.
+        level there. At most {ConnectionRuleService.MaxRules} rules; none on an account's connection. A rule without
+        `itemId` gets its folder's id from the provider when it can (at most {ConnectionRuleIds.MaxLookups} looked
+        up per change): it then also applies where the folder is renamed or moved outside the app.
         """;
 
     public static RouteGroupBuilder MapConnectionFolderRuleEndpoints(this RouteGroupBuilder api)
@@ -76,6 +78,7 @@ public static class ConnectionFolderRuleEndpoints
     private static async Task<Results<Ok<IReadOnlyList<ConnectionFolderRuleView>>, ValidationProblem, NotFound>> Set(
         int id,
         [AsParameters] ConnectionFolderRuleServices services,
+        ConnectionGates gates,
         ConnectionFolderRulesInput input,
         CancellationToken cancellationToken
     )
@@ -83,13 +86,11 @@ public static class ConnectionFolderRuleEndpoints
         if (await services.ReachedAsync(id, cancellationToken) is not { State: var state })
             return TypedResults.NotFound();
 
-        var result = await services.Rules.SetAsync(
-            id,
-            state.TenantId,
-            input.Rules ?? [],
-            state.User?.Id,
-            cancellationToken
-        );
+        // Too many rules are refused by the service, without a call to the provider.
+        var rules = input.Rules ?? [];
+        if (rules.Count <= ConnectionRuleService.MaxRules)
+            rules = await ConnectionRuleIds.FillAsync(id, rules, (services.Connections, gates), cancellationToken);
+        var result = await services.Rules.SetAsync(id, state.TenantId, rules, state.User?.Id, cancellationToken);
         return result.Status switch
         {
             AccessStatus.Ok => TypedResults.Ok(

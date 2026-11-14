@@ -42,6 +42,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   rules…): the library's folder-access card on the connection's folders: hide a folder from a group, or make it read
   only or writable, per space. Hidden folders are absent everywhere (listings, counts, zips, transfers); a right of a
   group counts only where that group's level allows it.
+- **Folder rules follow a connection's folders**: renaming or moving a folder inside a connection takes its rules
+  along, for every space; a move that would let more of your space's people see or change a folder asks first, as in
+  the library, and can keep the access they have now. A folder moved out of the connection takes its rules away; a
+  deleted one keeps them (shown as not found, to re-point). A rule remembers its folder's Dropbox id, so a folder
+  renamed at Dropbox keeps at least the rule's restrictions in listings and when opened.
 - **API: a connection's files**: `GET api/v1/connections/{id}/browse` (a folder in the listing's shape, with what
   the provider can do), `files/raw/{path}` (one HTTP range when the provider reads parts), `thumbnails/{path}` and
   `POST …/archive` (a zip, then its one-time link), `POST …/files/folders`, `rename`, `delete` and `transfer` (move

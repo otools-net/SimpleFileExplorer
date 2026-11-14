@@ -21,23 +21,15 @@ internal sealed record OpenConnection(
     public FolderAccess At(string path) => Folders.At(path);
 
     /// <summary>Whether the session may use <paramref name="right"/> at <paramref name="path"/> (normalised).</summary>
-    public PathVerdict Check(string path, string right)
-    {
-        var access = Folders.At(path);
-        if (access.Has(right))
-            return PathVerdict.Allowed;
-        return access.Has(Rights.Browse) ? PathVerdict.Forbidden : PathVerdict.NotFound;
-    }
+    public PathVerdict Check(string path, string right) => VerdictOf(Folders.At(path), right);
 
     /// <summary>
     /// <see cref="Check(string, string)"/> at the path asked and where the provider says the item is (another case,
-    /// a name it folds): the stricter answer wins.
+    /// a name it folds), with the rules set on the item at another path (<see cref="ConnectionFolders.At(string,
+    /// string?)"/>): the stricter answer wins.
     /// </summary>
-    public PathVerdict Check(string asked, RemoteItem item, string right)
-    {
-        var verdict = Check(asked, right);
-        return item.Path == asked ? verdict : Stricter(verdict, Check(item.Path, right));
-    }
+    public PathVerdict Check(string asked, RemoteItem item, string right) =>
+        Stricter(Check(asked, right), VerdictOf(Folders.At(item.Path, item.Id), right));
 
     /// <summary>
     /// The session may use <paramref name="right"/> at <paramref name="path"/>, its folder and everything below it
@@ -58,6 +50,13 @@ internal sealed record OpenConnection(
             PathVerdict.Forbidden => TypedResults.Forbid(),
             _ => TypedResults.NotFound(),
         };
+
+    private static PathVerdict VerdictOf(FolderAccess access, string right)
+    {
+        if (access.Has(right))
+            return PathVerdict.Allowed;
+        return access.Has(Rights.Browse) ? PathVerdict.Forbidden : PathVerdict.NotFound;
+    }
 
     private static PathVerdict Stricter(PathVerdict one, PathVerdict other) => one > other ? one : other;
 }

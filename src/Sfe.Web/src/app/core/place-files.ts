@@ -3,9 +3,20 @@ import { Api } from './api.service';
 import { ConfigService } from './config.service';
 import { PlaceTransferResults } from './connection.models';
 import { DeleteResults, FileConflict, FileOperationResult } from './models';
+import type { AccessGain } from '../files/file.models';
 
 /** How a move or copy on a connection treats names taken in the target. */
 export type PlaceConflict = 'fail' | 'keepBoth' | 'replace';
+
+/**
+ * A move on a connection that would let more of the library's people see or change a folder (409 `access-gains`):
+ * nothing was moved; asked again with `keepAccess` once the person chose.
+ */
+export class AccessQuestion extends Error {
+    constructor(readonly gains: AccessGain[]) {
+        super('More people would see or change the folder there.');
+    }
+}
 
 /**
  * Changes to the files of the place listed (agents/docs/features/connections.md): the library's routes
@@ -40,22 +51,30 @@ export class PlaceFiles {
         return answered(await this.api.connectionFiles<DeleteResults>(place.id, 'delete', { paths, permanent }));
     }
 
-    /** Moves or copies `paths` into `target`, both on `connection` (the one listed; its provider does it, at once). */
+    /**
+     * Moves or copies `paths` into `target`, both on `connection` (the one listed when not given; its provider does
+     * it, at once). `keepAccess`: the answer to an `AccessQuestion` (thrown when a move needs one).
+     */
     async transfer(
         kind: 'move' | 'copy',
         paths: string[],
         target: string,
         conflict: PlaceConflict,
-        connection = this.config.place()?.id,
+        { connection = this.config.place()?.id, keepAccess }: { connection?: number; keepAccess?: boolean } = {},
     ): Promise<PlaceTransferResults> {
         if (connection === undefined) throw new Error('Only the files of a connection are moved this way.');
-        const body = { kind, paths, target, conflict };
+        const body = { kind, paths, target, conflict, ...(keepAccess === undefined ? {} : { keepAccess }) };
         return answered(await this.api.connectionFiles<PlaceTransferResults>(connection, 'transfer', body));
     }
 }
 
-/** A 409 resolves with its problem (`connection-needs-reconnecting`): an error here, as no item was done. */
+/**
+ * A 409 resolves with its problem (`connection-needs-reconnecting`): an error here, as no item was done; the question
+ * of a move letting more people in (`access-gains`) as an `AccessQuestion`.
+ */
 function answered<T extends { items: unknown[] }>(answer: T | FileConflict): T {
     if ('items' in answer && Array.isArray(answer.items)) return answer;
-    throw new Error((answer as FileConflict).detail ?? 'The connection could not do it.');
+    const conflict = answer as FileConflict;
+    if (conflict.type === 'access-gains') throw new AccessQuestion(conflict.gains ?? []);
+    throw new Error(conflict.detail ?? 'The connection could not do it.');
 }

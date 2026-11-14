@@ -64,6 +64,39 @@ Code: `ConnectionPolicies`, `ConnectionFolders`, `ConnectionAccess.FoldersAsync`
   `AccessChanges.Version` moved): hidden items not found nor listed, folders without `files.view` left out, a hidden
   name taken (also for free names), a move's source folder holding a hidden one stays.
 
+## Folder rules following moves
+
+Code: Core `ConnectionRuleService` (`CompareMoveAsync`, `BeginMoveAsync`, `RemoveFolderAsync`, `HasRulesAsync`),
+`ConnectionRuleMoves`, `ConnectionRuleMove`, `ConnectionMoveComparison`; Api `ConnectionMoves`, `ConnectionRuleIds`;
+client `PlaceTransfers.answer`, `TransferDialog.ask(…, connection)`, `PlaceFiles.transfer` (`AccessQuestion`).
+Tests: `ConnectionRuleFollowingRouteTests`, `ConnectionPoliciesTests` (id match), `place-transfers.spec.ts`.
+
+- `rename` and a `transfer` move go through `ConnectionMoves`: the library's order (begin = copies at the new paths
+  under the connection's lock, every library; provider; complete = originals go, or abort = copies go). Abort only
+  when the provider says nothing moved (not found, exists, invalid, refused, not supported, too large, wait); any
+  other failure leaves both sets (never less protection). A connection without any rule skips all of it
+  (`HasRulesAsync`, one query per request).
+- Rules of the request's library left where the folder goes: 409 `folder-rules` (item status `conflict`), as the
+  library; another library's left there (their folder is gone) are removed on complete. Case-only renames rewrite in
+  place. A keep-both move in a ruled connection finds the free name itself first (`PlaceAsync`, `name (2)`…, 20
+  tries), so the rules never begin at a taken name.
+- The keep-access question: compared as the library (`FolderLevelChange`), a group's default being its
+  `ConnectionGroup` row level, accounts without a say, `ReadOnly` capping; only items passing the route's checks, only
+  folders (a `GetAsync` for those with gains). Unanswered (`keepAccess` absent) → 409 `access-gains` with `gains`
+  (the `AccessGain` of `api/files/jobs/check`); `true` pins the request's library, `false` moves. A rename never asks
+  (same parent: nobody gains). Other libraries' rules follow with a `LogSecurityWarning` naming them.
+- Complete records the moved folder's id (`ItemId`) on the rules at its new path, and takes the provider's path (a
+  numbered name). `PUT …/folder-rules` looks up the ids of rules sent without one (`ConnectionRuleIds`, best effort,
+  50 per change, skipped while the connection waits).
+- Moved out by a transfer: `RemoteTransferEndpoint.DeleteSourceAsync` of a folder calls `RemoteTransferSide.
+  FolderGone` → `RemoveFolderAsync` (every library). A folder only deleted keeps its rules (*default*).
+- Renamed outside SFE: `ConnectionPolicy.RulePlaces` (the subject's rules by `ItemId`); `ConnectionFolders.At(path,
+  itemId)` adds the access at the rule's place (`FolderAccess.And`, stricter). Applied only where the item's id is at
+  hand: listing pages (`WithoutHiddenByIds`, counts lowered; `ViewOf(…, items)`), single items read
+  (`OpenConnection.Check(asked, item, right)`), the transfer job's listings and gets. Not below such a folder (its
+  children's ids aren't the rule's), not on write routes (no `GetAsync`). The management GET doesn't mark "moved to"
+  (no lookup by id in `IRemoteStorage`): re-point by hand.
+
 ## Credentials
 
 - Stored only protected (`ICredentialProtector`; the Api's `ConnectionCredentials`, Data Protection purpose

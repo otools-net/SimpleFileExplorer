@@ -82,7 +82,13 @@ internal sealed class TransferOpening
             return (null, ConnectionProblems.OfOpening(opened.Problem));
 
         var capabilities = _capabilities[id];
-        var side = new RemoteTransferSide(id, storage, capabilities, await JobAccessAsync(id, capabilities), _right);
+        var jobAccess = await JobAccessAsync(id, capabilities);
+        var rules = _transfers.Rules;
+        var comparison = RemotePaths.ComparisonOf(capabilities);
+        var side = new RemoteTransferSide(id, storage, capabilities, jobAccess, _right)
+        {
+            FolderGone = (folder, token) => rules.RemoveFolderAsync(id, folder, comparison, token),
+        };
         return (new RemoteTransferEndpoint(side, _transfers.Calls, _transfers.Listings), null);
     }
 

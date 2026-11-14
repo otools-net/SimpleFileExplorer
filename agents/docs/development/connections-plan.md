@@ -368,8 +368,10 @@ Design (fourth session, a Plan agent's study; defaults taken where the owner has
   404 before any provider call, refused = 403; listings filtered per subject over the shared snapshot; zips and
   transfers checked per item (`IConnectionJobAccess`); management routes `api/connections/{id}/folder-rules`,
   `folders`; the card reused through `FolderRulesSource`
-- [ ] Management card reused on a connection's folders ([folder-access](../features/folder-access.md)); rules follow
-  folders renamed or moved in the app ([file-operations](file-operations.md))
+- [x] Management card reused on a connection's folders ([folder-access](../features/folder-access.md)); rules follow
+  folders renamed or moved in the app ([file-operations](file-operations.md)). As built (C4):
+  [connections](../features/connections.md#folder-rules-following-moves); not built: the "moved to X" mark of the
+  management GET (no lookup by id in `IRemoteStorage`) and a manual Follow
 
 Design (fourth session, a Plan agent's study; *default* = taken where the owner hasn't answered):
 

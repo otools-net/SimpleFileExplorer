@@ -21,7 +21,8 @@ public static class ConnectionWriteEndpoints
 
     private static readonly string NameDescription = $"""
         400 with `errors.name` for a name no provider takes (or this one refuses), 404 when the folder is not
-        there, 409 `{FileEndpoints.ExistsType}` when something of that name is.
+        there, 409 `{FileEndpoints.ExistsType}` when something of that name is. A renamed folder's rules follow it
+        for every library; 409 `{FileEndpoints.FolderRulesType}` when the library's rules are set where it goes.
         """;
 
     private static readonly string DeleteDescription = $"""
@@ -33,7 +34,10 @@ public static class ConnectionWriteEndpoints
         `kind` `move` or `copy`, each of `paths` (at most {MaxItems}) into the folder `target`, done by the provider.
         `conflict`: `fail` (status `exists`), `keepBoth` (the provider's numbering) or `replace` (a file only; a
         folder is never replaced). An item moved where it is is `skipped`; a folder into itself `invalid`. 409
-        `{ConnectionProblems.NotSupportedType}` when the provider cannot move or copy on its side.
+        `{ConnectionProblems.NotSupportedType}` when the provider cannot move or copy on its side. A moved folder's
+        rules follow it for every library (`conflict` status when the library's are set where it goes); a move
+        letting more of the library's people see or change a folder answers 409 `{ConnectionMoves.AccessGainsType}`
+        with its `gains` (as `api/files/jobs/check`) unless `keepAccess` is given (true pins their current access).
         """;
 
     public static RouteGroupBuilder MapConnectionWriteEndpoints(this RouteGroupBuilder api)
@@ -137,9 +141,20 @@ public static class ConnectionWriteEndpoints
                     ? TypedResults.Ok(ConnectionListings.ToItem(same, writes.Classifier))
                     : TypedResults.NotFound();
             }
-            return await ChangeAsync(id, writes, () =>
-                storage.MoveAsync(path, to, RemoteConflict.Fail, cancellationToken)
-            );
+            // In its folder: nobody gains access (rules where it goes are refused), so nothing is asked.
+            var moves = await ConnectionMoves.CreateAsync(open, writes, files.Current, false, cancellationToken);
+            return await AnswerAsync(id, writes, async () =>
+            {
+                var (item, refused) = await moves.MoveAsync(
+                    path,
+                    to,
+                    () => storage.MoveAsync(path, to, RemoteConflict.Fail, cancellationToken),
+                    cancellationToken
+                );
+                return item is null
+                    ? ConnectionMoves.AnswerOf(refused!)
+                    : TypedResults.Ok(ConnectionListings.ToItem(item, writes.Classifier));
+            });
         });
     }
 
@@ -226,11 +241,21 @@ public static class ConnectionWriteEndpoints
         {
             if (target.Length > 0 && await storage.GetAsync(target, cancellationToken) is not { IsFolder: true })
                 return TypedResults.NotFound();
-            var step = new ConnectionTransferStep(open, target, conflict, move.Value, writes.Classifier);
+            var moves = await ConnectionMoves.CreateAsync(
+                open,
+                writes,
+                files.Current,
+                request.KeepAccess,
+                cancellationToken
+            );
+            var step = new ConnectionTransferStep(open, target, conflict, move.Value, writes.Classifier, moves);
+            var paths = (request.Paths ?? []).Distinct(StringComparer.Ordinal).Take(MaxItems).ToList();
+            if (move.Value && await moves.AskAsync(Movable(step, paths), cancellationToken) is { } ask)
+                return ask;
             var results = new List<ConnectionTransferItem>();
             try
             {
-                foreach (var asked in (request.Paths ?? []).Distinct(StringComparer.Ordinal).Take(MaxItems))
+                foreach (var asked in paths)
                     results.Add(await TransferOneAsync(step, asked, cancellationToken));
             }
             finally
@@ -250,28 +275,27 @@ public static class ConnectionWriteEndpoints
         if (RemotePaths.Normalize(asked) is not { Length: > 0 } path)
             return new(asked, FileOperationStatus.NotFound);
         var to = RemotePaths.Combine(step.Target, RemotePaths.NameOf(path));
-        var comparison = step.Open.Folders.Comparison;
-        if (ConnectionWriteChecks.SourceStatus(step.Open, path, step.Move) is { } refused)
-            return new(asked, refused);
-        if (step.Move && to.Equals(path, comparison))
-            return new(asked, FileOperationStatus.Skipped);
-        if (RemotePaths.IsInTree(step.Target, path, comparison))
-            return new(asked, FileOperationStatus.Invalid, "A folder cannot go into itself.");
-        if (
-            ConnectionWriteChecks.TargetStatus(step.Open, to, step.Move ? Rights.MoveFiles : Rights.CopyFiles) is
-            { } held
-        )
-        {
-            return new(asked, held);
-        }
+        if (ItemStatus(step, path, to) is { } stopped)
+            return stopped with { Path = asked };
 
         var storage = step.Open.Storage;
         try
         {
-            var item = step.Move
-                ? await storage.MoveAsync(path, to, step.Conflict, cancellationToken)
-                : await storage.CopyAsync(path, to, step.Conflict, cancellationToken);
-            return new(asked, FileOperationStatus.Done, Item: ConnectionListings.ToItem(item, step.Classifier));
+            if (!step.Move)
+            {
+                var copy = await storage.CopyAsync(path, to, step.Conflict, cancellationToken);
+                return new(asked, FileOperationStatus.Done, Item: ConnectionListings.ToItem(copy, step.Classifier));
+            }
+            var (place, conflict) = await step.Moves.PlaceAsync(path, to, step.Conflict, cancellationToken);
+            var (item, refused) = await step.Moves.MoveAsync(
+                path,
+                place,
+                () => storage.MoveAsync(path, place, conflict, cancellationToken),
+                cancellationToken
+            );
+            return item is null
+                ? new(asked, ConnectionMoves.StatusOf(refused!), refused!.Problem)
+                : new(asked, FileOperationStatus.Done, Item: ConnectionListings.ToItem(item, step.Classifier));
         }
         catch (RemoteStorageException error) when (StatusOf(error.Kind) is { } status)
         {
@@ -282,15 +306,17 @@ public static class ConnectionWriteEndpoints
     /// <summary>
     /// A change answered with the item it made; the provider's refusal of the name as the route's own 400.
     /// </summary>
-    private static async Task<IResult> ChangeAsync(
-        int id,
-        ConnectionWriteServices writes,
-        Func<Task<RemoteItem>> change
-    )
+    private static Task<IResult> ChangeAsync(int id, ConnectionWriteServices writes, Func<Task<RemoteItem>> change) =>
+        AnswerAsync(id, writes, async () =>
+            TypedResults.Ok(ConnectionListings.ToItem(await change(), writes.Classifier))
+        );
+
+    /// <inheritdoc cref="ChangeAsync"/>
+    private static async Task<IResult> AnswerAsync(int id, ConnectionWriteServices writes, Func<Task<IResult>> change)
     {
         try
         {
-            return TypedResults.Ok(ConnectionListings.ToItem(await change(), writes.Classifier));
+            return await change();
         }
         catch (RemoteStorageException error) when (error.Kind == RemoteErrorKind.InvalidName)
         {
@@ -301,6 +327,32 @@ public static class ConnectionWriteEndpoints
             writes.Listings.Forget(id);
         }
     }
+
+    /// <summary>
+    /// What stops one item of a move or copy before the provider is called (its place, the target, a move onto
+    /// itself or into itself); null when nothing does.
+    /// </summary>
+    private static ConnectionTransferItem? ItemStatus(ConnectionTransferStep step, string path, string to)
+    {
+        var comparison = step.Open.Folders.Comparison;
+        if (ConnectionWriteChecks.SourceStatus(step.Open, path, step.Move) is { } refused)
+            return new(path, refused);
+        if (step.Move && to.Equals(path, comparison))
+            return new(path, FileOperationStatus.Skipped);
+        if (RemotePaths.IsInTree(step.Target, path, comparison))
+            return new(path, FileOperationStatus.Invalid, "A folder cannot go into itself.");
+        var right = step.Move ? Rights.MoveFiles : Rights.CopyFiles;
+        return ConnectionWriteChecks.TargetStatus(step.Open, to, right) is { } held ? new(path, held) : null;
+    }
+
+    /// <summary>The items of a move that would be moved (checked as each one is), with where they go.</summary>
+    private static IEnumerable<(string From, string To)> Movable(ConnectionTransferStep step, List<string> paths) =>
+        paths
+            .Select(RemotePaths.Normalize)
+            .OfType<string>()
+            .Where(path => path.Length > 0)
+            .Select(path => (From: path, To: RemotePaths.Combine(step.Target, RemotePaths.NameOf(path))))
+            .Where(move => ItemStatus(step, move.From, move.To) is null);
 
     /// <summary>
     /// An item's status for what the provider refused about it; null for what stops the whole request (the

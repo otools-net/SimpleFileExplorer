@@ -25,6 +25,10 @@ public sealed class ConnectionRuleService(
     /// <summary>One lock per connection: two libraries' changes, or one library's two, wait for each other.</summary>
     private readonly ConcurrentDictionary<int, SemaphoreSlim> _locks = new();
 
+    private ConnectionRuleMoves? _moves;
+
+    private ConnectionRuleMoves Moves => _moves ??= new ConnectionRuleMoves(dbFactory, changes, Gate);
+
     /// <summary>The rules library <paramref name="tenantId"/> set in connection
     /// <paramref name="connectionId"/>.</summary>
     public async Task<IReadOnlyList<ConnectionRuleInfo>> GetAsync(
@@ -59,7 +63,7 @@ public sealed class ConnectionRuleService(
         if (ConnectionRuleChecks.InputError(rules, out var wanted) is { } error)
             return AccessResult<IReadOnlyList<ConnectionRuleInfo>>.Invalid(error.Key, error.Message);
 
-        var gate = _locks.GetOrAdd(connectionId, _ => new SemaphoreSlim(1, 1));
+        var gate = Gate(connectionId);
         await gate.WaitAsync(cancellationToken);
         try
         {
@@ -70,6 +74,65 @@ public sealed class ConnectionRuleService(
             gate.Release();
         }
     }
+
+    /// <summary>
+    /// Whether any library set a rule in the connection: without one, a move changes nobody's access.
+    /// </summary>
+    public async Task<bool> HasRulesAsync(int connectionId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        return await db.ConnectionFolderRules.AnyAsync(r => r.ConnectionId == connectionId, cancellationToken);
+    }
+
+    /// <summary>
+    /// How the level of each group of the asking library using the connection, and of each of its accounts with
+    /// rules, changes at a folder once moved (only those that change): anyone who <see cref="FolderLevelChange.Gains"/>
+    /// is asked about before the move, as in the library.
+    /// </summary>
+    public Task<IReadOnlyList<FolderLevelChange>> CompareMoveAsync(
+        ConnectionMovePlan plan,
+        CancellationToken cancellationToken = default
+    ) => Moves.CompareAsync(plan, cancellationToken);
+
+    /// <summary>
+    /// Begins a folder move inside a connection: the rules of every library at the folder and below it are copied to
+    /// the new paths (a case-only rename rewrites them in place), with pins keeping the asking library's current
+    /// access when <paramref name="keepAccess"/>. The result holds the connection's lock: move the folder, then
+    /// complete or abort it (<c>await using</c>). Conflict when the asking library's rules are set where the folder
+    /// goes; another library's left there are removed once it moved.
+    /// </summary>
+    public Task<AccessResult<ConnectionRuleMove>> BeginMoveAsync(
+        ConnectionMovePlan plan,
+        bool keepAccess,
+        int? changedById,
+        CancellationToken cancellationToken = default
+    ) => Moves.BeginAsync(plan, keepAccess, changedById, cancellationToken);
+
+    /// <summary>
+    /// A folder left the connection (moved out by a transfer, its source deleted): every library's rules at it and
+    /// below it go. A folder deleted through SFE keeps its rules (they show as not found and can be re-pointed).
+    /// </summary>
+    public async Task<int> RemoveFolderAsync(
+        int connectionId,
+        string folder,
+        StringComparison comparison,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var removed = await Moves.RemoveTreeAsync(connectionId, folder, comparison, cancellationToken);
+        if (removed > 0)
+        {
+            logger.LogInformation(
+                "Connection {ConnectionId}: {Count} folder rules removed with “{Folder}”, moved out of it",
+                connectionId,
+                removed,
+                folder
+            );
+        }
+        return removed;
+    }
+
+    private SemaphoreSlim Gate(int connectionId) => _locks.GetOrAdd(connectionId, _ => new SemaphoreSlim(1, 1));
 
     private async Task<AccessResult<IReadOnlyList<ConnectionRuleInfo>>> ReplaceAsync(
         RuleChange change,

@@ -22,6 +22,7 @@ public sealed class RemoteTransferEndpoint(RemoteTransferSide side, TransferCall
     private readonly IRemoteStorage _storage = side.Storage;
     private readonly ProviderCapabilities _capabilities = side.Capabilities;
     private readonly RemoteTransferChecks _checks = new(side.Access, side.Right);
+    private readonly Func<string, CancellationToken, Task>? _folderGone = side.FolderGone;
 
     public string? HashName => _capabilities.ContentHash;
 
@@ -34,7 +35,7 @@ public sealed class RemoteTransferEndpoint(RemoteTransferSide side, TransferCall
             return null;
         var item = await calls.RunAsync(_connectionId, token => _storage.GetAsync(path, token), cancellationToken);
         // Checked again where the provider says it is (another case of the name, a name it folds).
-        if (item is null || !(await _checks.FoldersAsync(cancellationToken)).Sees(item.Path))
+        if (item is null || !(await _checks.FoldersAsync(cancellationToken)).Sees(item))
             return null;
         return EntryOf(item);
     }
@@ -151,10 +152,13 @@ public sealed class RemoteTransferEndpoint(RemoteTransferSide side, TransferCall
         await DeleteAsync(existing.Path, cancellationToken);
     }
 
+    /// <summary>A moved item taken away; a folder's rules go with it (it left the connection).</summary>
     public async Task DeleteSourceAsync(TransferEntry entry, CancellationToken cancellationToken)
     {
         await _checks.ChangeableAsync(entry.Path, null, cancellationToken);
         await DeleteAsync(entry.Path, cancellationToken);
+        if (entry.IsFolder && _folderGone is { } gone)
+            await gone(entry.Path, cancellationToken);
     }
 
     public async Task<TransferSpace> FreeSpaceAsync(string folder, CancellationToken cancellationToken)
@@ -242,7 +246,7 @@ public sealed class RemoteTransferEndpoint(RemoteTransferSide side, TransferCall
 
     /// <summary>A file the person sees, a folder it may open.</summary>
     private static bool Listed(ConnectionFolders folders, RemoteItem item) =>
-        item.IsFolder ? folders.Allows(item.Path, Rights.ViewFiles) : folders.Sees(item.Path);
+        item.IsFolder ? folders.At(item.Path, item.Id).Has(Rights.ViewFiles) : folders.Sees(item);
 
     private static TransferEntry EntryOf(RemoteItem item) =>
         new(item.Name, item.Path, item.IsFolder, item.Size, item.Modified, item.Hash, item.Downloadable);

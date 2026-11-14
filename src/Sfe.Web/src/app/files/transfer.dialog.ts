@@ -11,6 +11,7 @@ import { SheetComponent } from '../shared/sheet.component';
 import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { FileTransfers } from './file-transfers';
+import { PlaceTransfers } from './place-transfers';
 import { UsableConnections } from '../core/usable-connections';
 import { folderBrowser, FolderBrowserComponent } from './folder-browser.component';
 
@@ -30,6 +31,7 @@ export class TransferDialog {
     private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
     private readonly transfers = inject(FileTransfers);
+    private readonly placeTransfers = inject(PlaceTransfers);
     private readonly connections = inject(UsableConnections);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
 
@@ -126,10 +128,14 @@ export class TransferDialog {
         this.sheet().open();
     }
 
-    /** A paste or a drop into a known folder: the tags of a copy, the access gained by a move. */
-    ask(request: FileJobRequest, gains: AccessGain[]): void {
+    /**
+     * A paste or a drop into a known folder: the tags of a copy, the access gained by a move; a move within
+     * `connection` (`PlaceTransfers`) is answered there.
+     */
+    ask(request: FileJobRequest, gains: AccessGain[], connection: number | null = null): void {
         this.reset(request.kind, request.paths, 'confirm');
-        this.browser.reset(request.target);
+        this.from.set(connection);
+        this.browser.reset(request.target, connection);
         this.gains.set(gains);
         this.sheet().open();
     }
@@ -167,6 +173,11 @@ export class TransferDialog {
 
     protected async confirm(): Promise<void> {
         const request: FileJobRequest = { kind: this.kind(), paths: this.paths(), target: this.target() };
+        if (this.step() === 'confirm' && this.from() !== null && this.gains().length) {
+            await whileBusy(this.busy, () => this.placeTransfers.answer(this.keepAccess()));
+            this.sheet().close();
+            return;
+        }
         if (this.from() !== null || this.browser.connection() !== null) {
             await this.elsewhere(request);
             return;
