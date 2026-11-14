@@ -223,6 +223,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ConnectionSignInFlow>();
         services.AddSingleton<RemoteListings>();
         services.AddSingleton<ConnectionGates>();
+        services.AddSingleton<RemoteUploads>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();
         services.AddSingleton<BackupWriter>();

@@ -93,15 +93,18 @@ describe('UploadQueue', () => {
         await queue.add([{ file: file('new.txt'), name: 'new.txt' }], 'Media');
         await settle();
 
-        expect(api.startUpload).toHaveBeenCalledWith({
-            target: 'Media',
-            name: 'new.txt',
-            size: 10,
-            modified: new Date(modified).toISOString(),
-        });
+        expect(api.startUpload).toHaveBeenCalledWith(
+            {
+                target: 'Media',
+                name: 'new.txt',
+                size: 10,
+                modified: new Date(modified).toISOString(),
+            },
+            null,
+        );
         expect(api.sendUploadChunk.mock.calls.map((call) => call[1])).toEqual([0, 4]);
         expect(await (api.sendUploadChunk.mock.calls[1][2] as Blob).text()).toBe('efghij');
-        expect(api.finishUpload).toHaveBeenCalledWith('a'.repeat(32), 'ask');
+        expect(api.finishUpload).toHaveBeenCalledWith('a'.repeat(32), 'ask', null);
         expect(store.items().map((i) => i.name)).toContain('new.txt');
         expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toBe('1 file uploaded to “Media”.');
         expect(queue.busy()).toBe(false);
@@ -242,7 +245,7 @@ describe('UploadsPanelComponent', () => {
         buttonNamed(element, 'Cancel')!.click();
         await settle();
         fixture.detectChanges();
-        expect(api.cancelUpload).toHaveBeenCalledWith('a'.repeat(32));
+        expect(api.cancelUpload).toHaveBeenCalledWith('a'.repeat(32), null);
         expect(element.textContent).toContain('0 files uploaded to “Media”');
     });
 });
@@ -305,8 +308,8 @@ describe('Dropping files from the computer', () => {
         page.remove();
 
         expect(add.mock.calls).toEqual([
-            [[{ file: dropped, name: 'a.txt' }], 'Media/Holidays'],
-            [[{ file: dropped, name: 'a.txt' }], 'Media'],
+            [[{ file: dropped, name: 'a.txt' }], 'Media/Holidays', null],
+            [[{ file: dropped, name: 'a.txt' }], 'Media', null],
         ]);
     });
 });

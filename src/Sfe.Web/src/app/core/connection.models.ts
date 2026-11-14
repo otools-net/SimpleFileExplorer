@@ -163,6 +163,8 @@ export interface ConnectionPlace {
     serverSideCopy: boolean;
     /** Its provider keeps deleted files for a while (`ownTrash`). */
     ownTrash: boolean;
+    /** Its provider takes files sent in parts (`uploadsInParts`): uploads, with write access. */
+    uploadsInParts: boolean;
 }
 
 /** What became of one path moved or copied on a connection (`POST api/connections/{id}/files/transfer`). */

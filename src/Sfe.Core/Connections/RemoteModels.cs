@@ -10,7 +10,13 @@ public sealed record RemoteRange(long From, long? To = null);
 
 /// <summary>Where a finished upload goes.</summary>
 /// <param name="Length">The size of the whole file: the sum of the parts sent.</param>
-public sealed record RemoteUploadTarget(string Path, long Length, RemoteConflict Conflict);
+/// <param name="Modified">The file's date on the uploader's computer, kept when the provider takes one.</param>
+public sealed record RemoteUploadTarget(
+    string Path,
+    long Length,
+    RemoteConflict Conflict,
+    DateTimeOffset? Modified = null
+);
 
 /// <summary>What to do when something of the same name is already at the destination.</summary>
 public enum RemoteConflict

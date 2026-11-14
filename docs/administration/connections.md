@@ -4,8 +4,8 @@
 at Dropbox once; then people with the rights connect their Dropbox, or one for a space or for the whole server.
 
 This version makes, signs in again and manages connections, browses their files
-([browsing a connection](#browsing-a-connection)) and changes them where you may. Uploading, and copying and moving
-to and from the library come with a later version.
+([browsing a connection](#browsing-a-connection)) and changes them where you may, uploads included. Copying and moving to and from the library come with a later
+version.
 
 ## Levels
 
@@ -85,5 +85,9 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
   (into Dropbox's deleted files, where Dropbox keeps them for a while: no Undo in SFE), and moving or copying inside
   the connection by cut and paste (Ctrl+X / Ctrl+C, Ctrl+V) or by dragging onto a folder. A connection made read only
   shows none of them.
+- **Upload** files or folders (the button, or dropping them from the desktop) on such a connection: each part goes
+  on to Dropbox as it arrives, nothing is kept on the server. As in the library, a name already taken asks keep both,
+  replace or skip, and the space's largest file size applies. An upload into a connection interrupted by closing the
+  page starts over.
 - When Dropbox no longer accepts the connection's sign-in, the listing says so and the connection shows **Sign in
   again** for whoever manages it. When Dropbox asks to wait (too many requests), wait a moment and try again.

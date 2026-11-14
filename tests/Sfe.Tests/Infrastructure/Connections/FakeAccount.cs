@@ -32,6 +32,11 @@ public sealed class FakeAccount(FakeProvider provider)
     /// <summary>The calls made, as <c>name path</c>: tests check what reached the provider.</summary>
     public List<string> Calls { get; } = [];
 
+    /// <summary>
+    /// Upload sessions not finished, by id: kept with the account, as a provider keeps them between requests.
+    /// </summary>
+    internal Dictionary<string, MemoryStream> Uploads { get; } = [];
+
     public FakeAccount WithFolder(string path)
     {
         Locked(() => PutFolder(path));

@@ -32,4 +32,11 @@ public enum RemoteErrorKind
 
     /// <summary>The provider lacks the function (<see cref="ProviderCapabilities"/>).</summary>
     NotSupported,
+
+    /// <summary>
+    /// A part of an upload sent at another offset than the provider has: <see cref="RemoteStorageException.Offset"/>
+    /// tells the provider's when it says (a part that arrived although its answer was lost), so the sender goes on
+    /// from there.
+    /// </summary>
+    WrongOffset,
 }

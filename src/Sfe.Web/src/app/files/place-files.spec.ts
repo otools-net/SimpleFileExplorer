@@ -49,6 +49,7 @@ function place(overrides: Partial<ConnectionPlace> = {}): ConnectionPlace {
         serverSideMove: true,
         serverSideCopy: true,
         ownTrash: true,
+        uploadsInParts: false,
         ...overrides,
     };
 }

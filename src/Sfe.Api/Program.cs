@@ -174,6 +174,7 @@ api.MapConnectionSignInEndpoints();
 api.MapConnectionEndpoints();
 api.MapConnectionFileEndpoints();
 api.MapConnectionWriteEndpoints();
+api.MapConnectionUploadEndpoints();
 api.MapConnectionArchiveEndpoints();
 api.MapFallback(() => TypedResults.NotFound()).AllowAnonymous();
 

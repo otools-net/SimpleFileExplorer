@@ -23,6 +23,7 @@ import { DRAG_ITEMS } from '../library/quick-links/quick-links.service';
 import { FileTransfers, finished, pastOf } from './file-transfers';
 import { UploadsPanelComponent } from './uploads-panel.component';
 import { droppedFiles, UploadQueue } from './uploads';
+import { uploadConnection } from './upload-places';
 
 /** Drop targets: listed folders and the folders of the location bar (`data-drop` holding their path). */
 const DROP_TARGET = '[data-drop]';
@@ -277,11 +278,13 @@ export class OperationsPanelComponent implements OnInit {
     protected onDrop(event: DragEvent): void {
         if (this.isUpload(event)) {
             const place = this.uploadPlace(event);
+            const connection = uploadConnection(this.config);
             this.endDrag();
             if (place && event.dataTransfer) {
                 event.preventDefault();
-                // The items are read at once: the browser empties them once the event is over.
-                void droppedFiles(event.dataTransfer).then((files) => this.uploads.add(files, place.path));
+                // The items are read at once: the browser empties them once the event is over. They go to the place
+                // listed now (the library's or a connection's), even if the listing changes meanwhile.
+                void droppedFiles(event.dataTransfer).then((files) => this.uploads.add(files, place.path, connection));
             }
             return;
         }

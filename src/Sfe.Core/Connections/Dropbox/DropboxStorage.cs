@@ -9,7 +9,8 @@ namespace Sfe.Core.Connections.Dropbox;
 /// The files of a Dropbox account seen from a connection's root folder, through the SDK (every call through
 /// <see cref="DropboxErrors.CallAsync{T}"/>). Paths are case-insensitive at Dropbox: <c>path_lower</c> compares,
 /// <c>path_display</c> shows. A ranged read asks a temporary link and reads it with a <c>Range</c> header (the SDK's
-/// download takes no range); the link never leaves the server. Uploads come later in phase 4 of the plan.
+/// download takes no range); the link never leaves the server. Uploads are Sequential sessions: parts of any size up
+/// to <see cref="DropboxProvider"/>'s <c>MaxUploadPart</c>, in order.
 /// </summary>
 public sealed class DropboxStorage : IRemoteStorage
 {
@@ -120,16 +121,49 @@ public sealed class DropboxStorage : IRemoteStorage
         return new RemoteSpace((long)usage.Used, total is { } t ? (long)t : null);
     }
 
-    public Task<string> BeginUploadAsync(CancellationToken cancellationToken) => throw NotYet();
+    public async Task<string> BeginUploadAsync(CancellationToken cancellationToken)
+    {
+        // Sequential: the parts come in order, of any size (a concurrent session wants multiples of 4 MiB).
+        var start = new UploadSessionStartArg(close: false, sessionType: UploadSessionType.Sequential.Instance);
+        var started = await DropboxErrors.CallAsync(() =>
+            _client.Files.UploadSessionStartAsync(start, new MemoryStream())
+        );
+        return started.SessionId;
+    }
 
-    public Task AppendUploadAsync(string upload, long offset, Stream part, CancellationToken cancellationToken) =>
-        throw NotYet();
+    public async Task AppendUploadAsync(string upload, long offset, Stream part, CancellationToken cancellationToken)
+    {
+        // The SDK sends the body once (no retries): a part of known length, buffered when it is a request's body.
+        var body = part.CanSeek ? part : await BufferAsync(part, cancellationToken);
+        try
+        {
+            await DropboxErrors.CallAsync(() => AppendPartAsync(upload, offset, body));
+        }
+        finally
+        {
+            if (body != part)
+                await body.DisposeAsync();
+        }
+    }
 
-    public Task<RemoteItem> FinishUploadAsync(
+    public async Task<RemoteItem> FinishUploadAsync(
         string upload,
         RemoteUploadTarget target,
         CancellationToken cancellationToken
-    ) => throw NotYet();
+    )
+    {
+        var commit = new CommitInfo(
+            DropboxPath(target.Path),
+            target.Conflict == RemoteConflict.Replace ? WriteMode.Overwrite.Instance : WriteMode.Add.Instance,
+            autorename: target.Conflict == RemoteConflict.KeepBoth,
+            clientModified: WholeSeconds(target.Modified)
+        );
+        var cursor = new UploadSessionCursor(upload, (ulong)target.Length);
+        var file = await DropboxErrors.CallAsync(() =>
+            _client.Files.UploadSessionFinishAsync(cursor, commit, body: new MemoryStream())
+        );
+        return ToItem(file);
+    }
 
     public async Task<RemoteItem> CreateFolderAsync(string path, CancellationToken cancellationToken)
     {
@@ -288,6 +322,41 @@ public sealed class DropboxStorage : IRemoteStorage
             _ => ThumbnailSize.W1024h768.Instance,
         };
 
-    private static RemoteStorageException NotYet() =>
-        new(RemoteErrorKind.NotSupported, "Uploading to Dropbox comes with a later version.");
+    /// <summary>
+    /// Sends a part; Dropbox's <c>incorrect_offset</c> as <see cref="RemoteErrorKind.WrongOffset"/> with the
+    /// offset it has (a part that arrived although its answer was lost).
+    /// </summary>
+    private async Task<bool> AppendPartAsync(string upload, long offset, Stream body)
+    {
+        try
+        {
+            await _client.Files.UploadSessionAppendV2Async(new UploadSessionCursor(upload, (ulong)offset), body: body);
+            return true;
+        }
+        catch (ApiException<UploadSessionAppendError> error) when (error.ErrorResponse.IsIncorrectOffset)
+        {
+            throw new RemoteStorageException(
+                RemoteErrorKind.WrongOffset,
+                "Dropbox has another part of this upload.",
+                inner: error
+            )
+            {
+                Offset = (long)error.ErrorResponse.AsIncorrectOffset.Value.CorrectOffset,
+            };
+        }
+    }
+
+    private static async Task<MemoryStream> BufferAsync(Stream part, CancellationToken cancellationToken)
+    {
+        var buffer = new MemoryStream();
+        await part.CopyToAsync(buffer, cancellationToken);
+        buffer.Position = 0;
+        return buffer;
+    }
+
+    /// <summary>A date as Dropbox takes it: UTC, no fraction of a second.</summary>
+    private static DateTime? WholeSeconds(DateTimeOffset? date) =>
+        date is { } value
+            ? new DateTime(value.UtcTicks - value.UtcTicks % TimeSpan.TicksPerSecond, DateTimeKind.Utc)
+            : null;
 }

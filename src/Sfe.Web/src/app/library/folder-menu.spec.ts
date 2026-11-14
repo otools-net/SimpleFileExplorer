@@ -151,7 +151,7 @@ describe('FolderMenu', () => {
         expect(picker!.webkitdirectory).toBe(true);
         picker!.dispatchEvent(new Event('change'));
 
-        expect(add).toHaveBeenCalledWith([], 'Media');
+        expect(add).toHaveBeenCalledWith([], 'Media', null);
     });
 
     it("is the page's menu: a right click on nothing with a menu of its own", async () => {

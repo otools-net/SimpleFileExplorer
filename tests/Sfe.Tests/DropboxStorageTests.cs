@@ -275,10 +275,77 @@ public sealed class DropboxStorageTests
     }
 
     [TestMethod]
-    public async Task UploadingIsNotThereYet()
+    public async Task AnUploadGoesThroughASequentialSessionUnderTheConnectionsRoot()
     {
-        var error = await Assert.ThrowsExactlyAsync<RemoteStorageException>(() => _storage.BeginUploadAsync(Token));
-        Assert.AreEqual(RemoteErrorKind.NotSupported, error.Kind);
+        _dropbox.Answers["/2/files/upload_session/start"] = (HttpStatusCode.OK, """{"session_id":"s1"}""");
+        _dropbox.Answers["/2/files/upload_session/append_v2"] = (HttpStatusCode.OK, "null");
+        _dropbox.Answers["/2/files/upload_session/finish"] = (HttpStatusCode.OK, File);
+        var modified = new DateTimeOffset(2026, 1, 1, 12, 0, 0, 500, TimeSpan.FromHours(2));
+
+        var session = await _storage.BeginUploadAsync(Token);
+        await _storage.AppendUploadAsync(session, 0, new MemoryStream(Encoding.ASCII.GetBytes("hello ")), Token);
+        await _storage.AppendUploadAsync(session, 6, new OneWayStream(Encoding.ASCII.GetBytes("world!")), Token);
+        var target = new RemoteUploadTarget("Sunrise.jpg", 12, RemoteConflict.KeepBoth, modified);
+        var item = await _storage.FinishUploadAsync(session, target, Token);
+
+        Assert.AreEqual("s1", session);
+        var start = Arg(_dropbox.Last("/2/files/upload_session/start").Request);
+        Assert.AreEqual("sequential", Tag(start["session_type"]!));
+        Assert.IsFalse(start["close"]!.GetValue<bool>());
+        var appends = _dropbox
+            .Requests.Where(r => r.Request.RequestUri!.AbsolutePath == "/2/files/upload_session/append_v2")
+            .ToList();
+        CollectionAssert.AreEqual(new[] { "hello ", "world!" }, appends.Select(a => a.Body).ToArray());
+        CollectionAssert.AreEqual(new[] { 0L, 6L }, appends.Select(a => OffsetOf(Arg(a.Request))).ToArray());
+        Assert.IsTrue(appends.All(a => Arg(a.Request)["cursor"]!["session_id"]!.GetValue<string>() == "s1"));
+        var finish = Arg(_dropbox.Last("/2/files/upload_session/finish").Request);
+        Assert.AreEqual(12, OffsetOf(finish));
+        var commit = finish["commit"]!;
+        Assert.AreEqual(("/Photos/Sunrise.jpg", "add"), (PathOf(commit), Tag(commit["mode"]!)));
+        Assert.IsTrue(commit["autorename"]!.GetValue<bool>());
+        Assert.AreEqual("2026-01-01T10:00:00Z", commit["client_modified"]!.GetValue<string>());
+        Assert.AreEqual("Sunrise.jpg", item.Path);
+    }
+
+    [TestMethod]
+    public async Task ReplacingOverwritesAndWrongOffsetsAreMapped()
+    {
+        _dropbox.Answers["/2/files/upload_session/finish"] = (HttpStatusCode.OK, File);
+        _dropbox.Answers["/2/files/upload_session/append_v2"] = (
+            HttpStatusCode.Conflict,
+            """{"error_summary":"incorrect_offset/..","error":{".tag":"incorrect_offset","correct_offset":12}}"""
+        );
+
+        await _storage.FinishUploadAsync("s1", new RemoteUploadTarget("a.jpg", 0, RemoteConflict.Replace), Token);
+        var commit = Arg(_dropbox.Last("/2/files/upload_session/finish").Request)["commit"]!;
+        var append = await Assert.ThrowsExactlyAsync<RemoteStorageException>(() =>
+            _storage.AppendUploadAsync("s1", 6, new MemoryStream([1, 2]), Token)
+        );
+        _dropbox.Answers["/2/files/upload_session/finish"] = (
+            HttpStatusCode.Conflict,
+            """
+            {"error_summary":"lookup_failed/incorrect_offset/..",
+             "error":{".tag":"lookup_failed","lookup_failed":{".tag":"incorrect_offset","correct_offset":6}}}
+            """
+        );
+        var finish = await Assert.ThrowsExactlyAsync<RemoteStorageException>(() =>
+            _storage.FinishUploadAsync("s1", new RemoteUploadTarget("a.jpg", 9, RemoteConflict.Fail), Token)
+        );
+        _dropbox.Answers["/2/files/upload_session/finish"] = (
+            HttpStatusCode.Conflict,
+            """
+            {"error_summary":"path/conflict/file/..",
+             "error":{".tag":"path","path":{".tag":"conflict","conflict":{".tag":"file"}}}}
+            """
+        );
+        var taken = await Assert.ThrowsExactlyAsync<RemoteStorageException>(() =>
+            _storage.FinishUploadAsync("s1", new RemoteUploadTarget("a.jpg", 9, RemoteConflict.Fail), Token)
+        );
+
+        Assert.AreEqual(("overwrite", false), (Tag(commit["mode"]!), commit["autorename"]!.GetValue<bool>()));
+        Assert.AreEqual((RemoteErrorKind.WrongOffset, (long?)12), (append.Kind, append.Offset));
+        Assert.AreEqual(RemoteErrorKind.WrongOffset, finish.Kind);
+        Assert.AreEqual(RemoteErrorKind.Exists, taken.Kind);
     }
 
     private const RemoteErrorKind Exists = RemoteErrorKind.Exists;
@@ -294,4 +361,20 @@ public sealed class DropboxStorageTests
     private static string To(JsonNode body) => body["to_path"]!.GetValue<string>();
 
     private static JsonNode Json(string body) => JsonNode.Parse(body)!;
+
+    /// <summary>The arguments of a content call: Dropbox takes them in a header, the body being the bytes.</summary>
+    private static JsonNode Arg(HttpRequestMessage request) =>
+        Json(request.Headers.GetValues("Dropbox-API-Arg").Single());
+
+    private static long OffsetOf(JsonNode arg) => arg["cursor"]!["offset"]!.GetValue<long>();
+
+    /// <summary>A union's tag, written as a string or as an object with <c>.tag</c>.</summary>
+    private static string Tag(JsonNode union) =>
+        union is JsonValue ? union.GetValue<string>() : union[".tag"]!.GetValue<string>();
+
+    /// <summary>A request's body as it comes: read once, no length.</summary>
+    private sealed class OneWayStream(byte[] bytes) : MemoryStream(bytes)
+    {
+        public override bool CanSeek => false;
+    }
 }

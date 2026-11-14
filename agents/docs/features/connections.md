@@ -128,6 +128,19 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   copy and refuses a paste or drop in another place (phase 5 copies between them). The folder picker (Move to / Copy
   to) lists the library only: hidden on a connection.
 
+## Uploads into a connection (`ConnectionUploadEndpoints`)
+
+- `connections/{id}/files/uploads…`: the library's routes (check, start, list, get, PUT chunk, finish, cancel) and
+  shapes. Each chunk goes to the provider's upload session as it comes (`AppendUploadAsync`); nothing is kept on the
+  server's disk. `RemoteUploads` keeps the records in memory (a restart loses them: the client starts over); the
+  provider's session id stays there.
+- A wrong offset: Dropbox says where it is (`incorrect_offset` → `WrongOffset` with the offset); the record follows
+  it and the route answers 409 with the upload, as the library does.
+- Finish with ask or skip looks the name up first, so a conflict doesn't use up the provider's session; replace
+  needs `files.delete`. The space's `Files:Uploads:MaxFileSizeMegabytes` holds; free space is the provider's (413).
+- Client: `UploadBatch.connection` is set when the batch starts (`uploadsRoute`), so navigating away keeps the
+  target; unfinished uploads into a connection are not resumed after a reload.
+
 ## The listing on a connection (`?c=`)
 
 - `LibraryRoute.c` (`?c=7&path=…`) lists a connection's folder through `connectionPage` (`library/connection-pages.ts`),

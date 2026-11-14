@@ -10,8 +10,6 @@ namespace Sfe.Tests.Infrastructure;
 /// </summary>
 public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabilities capabilities) : IRemoteStorage
 {
-    private readonly Dictionary<string, MemoryStream> _uploads = [];
-
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     public Task<RemotePage> ListAsync(string path, string? cursor, CancellationToken cancellationToken) =>
@@ -51,8 +49,8 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
 
     public Task<string> BeginUploadAsync(CancellationToken cancellationToken) => Call("upload-begin", "", () =>
         {
-            var id = $"upload-{_uploads.Count + 1}";
-            _uploads[id] = new MemoryStream();
+            var id = $"session-{Guid.NewGuid():N}";
+            account.Uploads[id] = new MemoryStream();
             return id;
         });
 
@@ -62,9 +60,14 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
         await part.CopyToAsync(bytes, cancellationToken);
         await Call("upload-append", upload, () =>
         {
-            var session = _uploads.GetValueOrDefault(upload) ?? throw NotFound(upload);
+            var session = account.Uploads.GetValueOrDefault(upload) ?? throw NotFound(upload);
             if (session.Length != offset)
-                throw new RemoteStorageException(RemoteErrorKind.Refused, $"The upload is at {session.Length}.");
+            {
+                throw new RemoteStorageException(RemoteErrorKind.WrongOffset, $"The upload is at {session.Length}.")
+                {
+                    Offset = session.Length,
+                };
+            }
             if (bytes.Length > capabilities.MaxUploadPart)
                 throw new RemoteStorageException(RemoteErrorKind.TooLarge, "The part is too large.");
 
@@ -79,15 +82,15 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
         CancellationToken cancellationToken
     ) => Call("upload-finish", target.Path, () =>
         {
-            var session = _uploads.GetValueOrDefault(upload) ?? throw NotFound(upload);
+            var session = account.Uploads.GetValueOrDefault(upload) ?? throw NotFound(upload);
             if (session.Length != target.Length)
                 throw new RemoteStorageException(RemoteErrorKind.Refused, $"The upload holds {session.Length} bytes.");
             if (account.Used + session.Length > account.TotalSpace)
                 throw new RemoteStorageException(RemoteErrorKind.TooLarge, "The storage is full.");
 
             var path = FreePath(Full(target.Path), target.Conflict, replacing: true);
-            _uploads.Remove(upload);
-            return ToItem(account.PutFile(path, session.ToArray()));
+            account.Uploads.Remove(upload);
+            return ToItem(account.PutFile(path, session.ToArray(), target.Modified?.UtcDateTime));
         });
 
     public Task<RemoteItem> CreateFolderAsync(string path, CancellationToken cancellationToken) =>

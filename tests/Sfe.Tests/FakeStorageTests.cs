@@ -133,7 +133,7 @@ public sealed class FakeStorageTests
             None
         );
 
-        Assert.AreEqual(RemoteErrorKind.Refused, misplaced.Kind);
+        Assert.AreEqual((RemoteErrorKind.WrongOffset, (long?)6), (misplaced.Kind, misplaced.Offset));
         Assert.AreEqual("New/hello.txt", item.Path);
         Assert.AreEqual(11, item.Size);
         Assert.AreEqual("hello world", account.TextOf("New/hello.txt"));

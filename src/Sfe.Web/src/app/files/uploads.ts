@@ -9,6 +9,7 @@ import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
+import { showsTarget, uploadConnection } from './upload-places';
 
 /** Bytes per chunk: well under the server's 16 MB and the usual proxy limits once raised from their defaults. */
 export const CHUNK_BYTES = 8 * 1024 * 1024;
@@ -54,6 +55,8 @@ export interface UploadItem {
 export interface UploadBatch {
     key: number;
     target: string;
+    /** The connection it goes to, kept while the person goes elsewhere; null: the library (see `uploadConnection`). */
+    connection: number | null;
     items: UploadItem[];
     /** The session may replace files there (they go to the trash). */
     canReplace: boolean;
@@ -110,7 +113,7 @@ export class UploadQueue {
         );
     }
 
-    /** Lists the uploads a reload interrupted, once per page. */
+    /** Lists the uploads into the library a reload interrupted, once per page (a connection's are not listed). */
     async resume(): Promise<void> {
         if (this.resumed || !this.config.can(Rights.uploadFiles)) return;
         this.resumed = true;
@@ -136,8 +139,8 @@ export class UploadQueue {
         if (batches.length) this.batches.update((list) => [...list, ...batches]);
     }
 
-    /** Uploads `files` into the folder `target`: names taken are asked about first. */
-    async add(files: PickedFile[], target: string): Promise<void> {
+    /** Uploads `files` into the folder `target` of `connection` (the library's: null): names taken are asked first. */
+    async add(files: PickedFile[], target: string, connection = uploadConnection(this.config)): Promise<void> {
         if (!files.length) return;
         const fresh: UploadItem[] = [];
         const max = (this.config.config()?.files?.maxUploadMegabytes ?? 0) * 1024 * 1024;
@@ -149,8 +152,8 @@ export class UploadQueue {
             files = files.filter((picked) => !tooLarge.includes(picked));
         }
         for (const picked of files) {
-            // The same file as an interrupted upload: it goes on there.
-            const interrupted = this.findInterrupted(target, picked);
+            // The same file as an interrupted upload (into the library): it goes on there.
+            const interrupted = connection === null ? this.findInterrupted(target, picked) : null;
             if (interrupted) {
                 interrupted.file = picked.file;
                 interrupted.state = 'queued';
@@ -160,14 +163,12 @@ export class UploadQueue {
             }
         }
         if (fresh.length) {
-            const batch = this.batch(target, fresh);
+            const batch = this.batch(target, fresh, connection);
             this.batches.update((list) => [batch, ...list]);
             try {
                 for (let i = 0; i < fresh.length; i += CHECK_BATCH) {
-                    const check = await this.api.checkUploads(
-                        target,
-                        fresh.slice(i, i + CHECK_BATCH).map((item) => item.name),
-                    );
+                    const names = fresh.slice(i, i + CHECK_BATCH).map((item) => item.name);
+                    const check = await this.api.checkUploads(target, names, connection);
                     batch.canReplace = check.canReplace;
                     const taken = new Set(check.existing);
                     for (const item of fresh.slice(i, i + CHECK_BATCH)) item.exists = taken.has(item.name);
@@ -232,7 +233,7 @@ export class UploadQueue {
         this.changed();
         if (item.id) {
             try {
-                await this.api.cancelUpload(item.id);
+                await this.api.cancelUpload(item.id, this.batches().find((b) => b.items.includes(item))?.connection);
             } catch {
                 // Gone already: nothing to remove.
             }
@@ -275,13 +276,9 @@ export class UploadQueue {
     private async upload(batch: UploadBatch, item: UploadItem): Promise<void> {
         try {
             if (!item.id) {
-                const started = await this.api.startUpload({
-                    target: batch.target,
-                    name: item.name,
-                    size: item.size,
-                    modified: item.modified ? new Date(item.modified).toISOString() : null,
-                });
-                item.id = started.id;
+                const modified = item.modified ? new Date(item.modified).toISOString() : null;
+                const start = { target: batch.target, name: item.name, size: item.size, modified };
+                item.id = (await this.api.startUpload(start, batch.connection)).id;
             }
             while (item.sent < item.size && item.state === 'uploading') {
                 const abort = new AbortController();
@@ -293,6 +290,7 @@ export class UploadQueue {
                         item.sent,
                         item.file!.slice(item.sent, item.sent + this.chunkBytes),
                         abort.signal,
+                        batch.connection,
                     );
                     item.sent = upload.received;
                     item.tries = 0;
@@ -326,7 +324,7 @@ export class UploadQueue {
     }
 
     private async finish(batch: UploadBatch, item: UploadItem): Promise<void> {
-        const result = await this.api.finishUpload(item.id!, item.choice);
+        const result = await this.api.finishUpload(item.id!, item.choice, batch.connection);
         if (result === null) {
             item.state = 'skipped';
         } else if (isFileConflict(result)) {
@@ -346,17 +344,16 @@ export class UploadQueue {
 
     /** The listing shows a file uploaded into the folder listed (the first folder of a folder upload). */
     private added(batch: UploadBatch, item: UploadItem, file: LibraryItem): void {
-        const route = this.store.route();
-        if (route.q || route.path !== batch.target) return;
-        if (!item.name.includes('/')) this.store.applyAdded(file);
+        if (showsTarget(this.store.route(), batch.target, batch.connection) && !item.name.includes('/'))
+            this.store.applyAdded(file);
     }
 
     /** A batch whose files are all done: the listing is loaded again for its new folders, a toast says it. */
     private ended(batch: UploadBatch): void {
         if (batch.items.some((item) => ['asking', 'queued', 'uploading', 'paused'].includes(item.state))) return;
         const done = batch.items.filter((item) => item.state === 'done');
-        const route = this.store.route();
-        if (done.some((item) => item.name.includes('/')) && !route.q && route.path === batch.target)
+        const shown = showsTarget(this.store.route(), batch.target, batch.connection);
+        if (done.some((item) => item.name.includes('/')) && shown)
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + 1 });
         if (done.length)
             this.toasts.show(
@@ -404,8 +401,8 @@ export class UploadQueue {
         };
     }
 
-    private batch(target: string, items: UploadItem[]): UploadBatch {
-        return { key: ++this.nextKey, target, items, canReplace: false, started: Date.now(), sentHere: 0 };
+    private batch(target: string, items: UploadItem[], connection: number | null = null): UploadBatch {
+        return { key: ++this.nextKey, target, connection, items, canReplace: false, started: Date.now(), sentHere: 0 };
     }
 
     /** The objects changed in place: a new list, for the panel. */

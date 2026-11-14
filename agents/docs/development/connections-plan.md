@@ -289,8 +289,14 @@ in `FolderRules`:
   back for write access, `move` / `copy` with `ServerSideMove` / `ServerSideCopy`; `PlaceFiles` (core/place-files.ts)
   picks the library's or the connection's routes for the dialogs; `PlaceTransfers` keeps cut / copy / drop inside
   one place (between a connection and the library: phase 5); the folder picker's Move to / Copy to hidden there
-- [ ] Uploads: the resumable upload routes with a connection target (chunks passed on to the provider's session, no
-  whole file on the server's disk)
+- [x] Uploads: the resumable upload routes with a connection target (chunks passed on to the provider's session, no
+  whole file on the server's disk). As built: `ConnectionUploadEndpoints` (`connections/{id}/files/uploads`, the
+  library's paths, bodies and answers); `RemoteUploads` (memory: 20 unfinished per person, swept after 24 h idle;
+  the provider's session id never answered); Dropbox Sequential sessions (`upload_session/start`, `append_v2`,
+  `finish`), `incorrect_offset` → `RemoteErrorKind.WrongOffset` with Dropbox's offset (409 with the upload, the
+  client goes on from there); the space's `MaxFileSizeMegabytes` checked at start; client: `files.upload` back with
+  write access and `UploadsInParts`, each upload batch keeps the place it started in (`uploadsRoute`); unfinished
+  uploads into a connection are not offered again after a reload
 - [ ] Batch rename, properties (what the provider knows), selection bar, context menus, F2 / Shift+N
 
 ### Phase 5: transfers with the library

@@ -144,3 +144,19 @@ internal sealed record ConnectionTransferStep(
     StringComparison Comparison,
     MediaClassifier Classifier
 );
+
+/// <summary>What the uploads into a connection use besides the connection (bound with <c>[AsParameters]</c>).</summary>
+internal sealed record ConnectionUploadServices(
+    RemoteUploads Uploads,
+    RemoteListings Listings,
+    MediaClassifier Classifier,
+    Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions> Options
+);
+
+/// <summary>An upload into a connection being changed by a request, its gate held.</summary>
+internal sealed record ConnectionUploadStep(
+    ConnectionFileServices Files,
+    OpenConnection Open,
+    ConnectionUploadServices Services,
+    RemoteUpload Upload
+);

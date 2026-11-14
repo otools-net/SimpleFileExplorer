@@ -73,6 +73,14 @@ export interface FileJobView {
     finished: string | null;
 }
 
+/** What starts an upload (`POST …/uploads`): the folder, the file's name (its path below it), size and date. */
+export interface UploadStart {
+    target: string;
+    name: string;
+    size: number;
+    modified: string | null;
+}
+
 /** An upload not finished yet, as the server has it (`received` bytes so far). */
 export interface UploadInfo {
     id: string;

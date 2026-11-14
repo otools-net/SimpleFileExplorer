@@ -71,6 +71,7 @@ public static class ConnectionProblems
             RemoteErrorKind.RateLimited => Problem(StatusCodes.Status429TooManyRequests, RateLimitedType),
             RemoteErrorKind.Refused => Problem(StatusCodes.Status403Forbidden, RefusedType),
             RemoteErrorKind.NotSupported => Problem(StatusCodes.Status409Conflict, NotSupportedType),
+            RemoteErrorKind.WrongOffset => Problem(StatusCodes.Status409Conflict, null),
             RemoteErrorKind.TooLarge => Problem(StatusCodes.Status413PayloadTooLarge, null),
             RemoteErrorKind.InvalidName => Problem(StatusCodes.Status400BadRequest, null),
             _ => Problem(StatusCodes.Status502BadGateway, UnavailableType),

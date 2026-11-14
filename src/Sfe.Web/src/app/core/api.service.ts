@@ -24,6 +24,7 @@ import {
     FileJobRequest,
     FileJobView,
     UploadInfo,
+    UploadStart,
     TrashPage,
 } from '../files/file.models';
 import { ArchiveAnswer, TextFile, TextPart, TextToSave } from '../formats/format.models';
@@ -80,6 +81,7 @@ import {
     FolderExclusions,
     FolderPicker,
 } from './models';
+import { uploadsRoute } from './connection-place';
 import { SettingLevel, SettingsValues, SettingsView } from './setting.models';
 import {
     FileTagChangeResult,
@@ -448,29 +450,26 @@ export class Api {
     answerFileJob = (id: number, choice: ConflictChoice, forAll: boolean) =>
         this.post<void>(`api/files/jobs/${id}/answer`, { choice, forAll });
     cancelFileJob = (id: number) => this.post<void>(`api/files/jobs/${id}/cancel`);
-    /** Which of `names` (paths below `target` for a folder upload) are taken in `target`. */
-    checkUploads = (target: string, names: string[]) =>
-        this.post<UploadCheck>('api/files/uploads/check', { target, names });
-    startUpload = (start: { target: string; name: string; size: number; modified: string | null }) =>
-        this.post<UploadInfo>('api/files/uploads', start);
-    /** The session's unfinished uploads; `all`: everyone's (right `settings.files`). */
-    uploads = (all = false) => this.get<UploadInfo[]>('api/files/uploads', { all: all || null });
-    /**
-     * Sends `chunk` at `offset`; resolves with the upload also when the server has another offset (409): go on from
-     * there.
-     */
-    sendUploadChunk = (id: string, offset: number, chunk: Blob, signal?: AbortSignal) =>
+    /** Which of `names` (paths below `target` for a folder upload) are taken; `connection`: in its files. */
+    checkUploads = (target: string, names: string[], connection?: number | null) =>
+        this.post<UploadCheck>(`${uploadsRoute(connection)}/check`, { target, names });
+    startUpload = (start: UploadStart, connection?: number | null) =>
+        this.post<UploadInfo>(uploadsRoute(connection), start);
+    /** The session's unfinished uploads into the library (not a connection's); `all`: everyone's (`settings.files`). */
+    uploads = (all = false) => this.get<UploadInfo[]>(uploadsRoute(), { all: all || null });
+    /** Sends `chunk` at `offset`; the upload also on a 409 (the server has another offset): go on from there. */
+    sendUploadChunk = (id: string, offset: number, chunk: Blob, signal?: AbortSignal, connection?: number | null) =>
         this.send(
-            this.http.put<UploadInfo>(`api/files/uploads/${id}`, chunk, {
+            this.http.put<UploadInfo>(`${uploadsRoute(connection)}/${id}`, chunk, {
                 params: params({ offset }),
                 headers: this.headers(true).set('Content-Type', 'application/octet-stream'),
             }),
             signal,
         );
     /** Puts a sent upload in its folder: the new file, the conflict (409: the name is taken), or null when skipped. */
-    finishUpload = (id: string, conflicts: ConflictChoice) =>
-        this.post<FileOperationResult | null>(`api/files/uploads/${id}/finish`, { conflicts });
-    cancelUpload = (id: string) => this.delete<void>(`api/files/uploads/${id}`);
+    finishUpload = (id: string, conflicts: ConflictChoice, connection?: number | null) =>
+        this.post<FileOperationResult | null>(`${uploadsRoute(connection)}/${id}/finish`, { conflicts });
+    cancelUpload = (id: string, connection?: number | null) => this.delete<void>(`${uploadsRoute(connection)}/${id}`);
     /** A change to a connection's files (`folders`, `rename`, `delete`, `transfer`): see `PlaceFiles`. */
     connectionFiles = <T>(id: number, action: string, body: unknown) =>
         this.post<T>(`api/connections/${id}/files/${action}`, body);

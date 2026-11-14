@@ -26,6 +26,7 @@ export async function connectionPage(
         serverSideMove: flag('serverSideMove'),
         serverSideCopy: flag('serverSideCopy'),
         ownTrash: flag('ownTrash'),
+        uploadsInParts: flag('uploadsInParts'),
     };
     const place = config.place();
     if (!place || (Object.keys(next) as (keyof ConnectionPlace)[]).some((key) => place[key] !== next[key]))
@@ -46,6 +47,7 @@ export function enterPlace(config: ConfigService, id: number | null): void {
             serverSideMove: false,
             serverSideCopy: false,
             ownTrash: false,
+            uploadsInParts: false,
         });
     }
 }

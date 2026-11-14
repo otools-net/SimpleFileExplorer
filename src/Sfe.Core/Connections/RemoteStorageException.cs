@@ -15,4 +15,8 @@ public sealed class RemoteStorageException(
 
     /// <summary>For <see cref="RemoteErrorKind.RateLimited"/>: how long the provider asks to wait.</summary>
     public TimeSpan? RetryAfter { get; } = retryAfter;
+
+    /// <summary>For <see cref="RemoteErrorKind.WrongOffset"/>: the bytes of the upload the provider has, when it
+    /// tells.</summary>
+    public long? Offset { get; init; }
 }

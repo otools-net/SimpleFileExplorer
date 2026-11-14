@@ -8,6 +8,7 @@ import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { FileTransfers, pasteTitle } from '../files/file-transfers';
 import { pickedFiles, UploadQueue } from '../files/uploads';
+import { uploadConnection } from '../files/upload-places';
 import { MenuEntry, MenuTarget } from '../menus/context-menu';
 import { Dialogs } from './dialogs.service';
 import { routeParams } from './library-route';
@@ -83,8 +84,10 @@ export class FolderMenu {
         input.type = 'file';
         input.multiple = true;
         input.webkitdirectory = folder;
-        const target = this.store.route().path;
-        input.addEventListener('change', () => void this.uploads.add(pickedFiles(input), target), { once: true });
+        const [target, connection] = [this.store.route().path, uploadConnection(this.config)];
+        input.addEventListener('change', () => void this.uploads.add(pickedFiles(input), target, connection), {
+            once: true,
+        });
         input.click();
     }
 
