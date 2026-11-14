@@ -2,7 +2,7 @@ using Sfe.Core.Files;
 
 namespace Sfe.Core.Transfers;
 
-/// <summary>The summary of a transfer job's run in the task history: who, what, from where to where, how it went.</summary>
+/// <summary>A transfer job's run in the task history: who, what, from where to where, how it went.</summary>
 internal static class TransferSummary
 {
     public static string Of(TransferStart start, FileJobView view, FileJobState state)
