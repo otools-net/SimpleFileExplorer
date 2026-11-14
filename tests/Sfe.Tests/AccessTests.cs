@@ -249,14 +249,14 @@ public sealed class AccessTests
     }
 
     [TestMethod]
-    [DataRow("/api/thumbnails/{**path}", RequestLimits.Media)]
-    [DataRow("/api/browse/covers", RequestLimits.Media)]
-    [DataRow("/api/streaming/probe", RequestLimits.Media)]
-    [DataRow("/api/streaming/play", RequestLimits.Media)]
-    [DataRow("/api/trickplay/states", RequestLimits.Media)]
-    [DataRow("/api/trickplay/files/{**path}", RequestLimits.Media)]
-    [DataRow("/api/search", RequestLimits.Search)]
-    [DataRow("/api/editor/images", RequestLimits.Upload)]
+    [DataRow("/api/v1/thumbnails/{**path}", RequestLimits.Media)]
+    [DataRow("/api/v1/browse/covers", RequestLimits.Media)]
+    [DataRow("/api/v1/streaming/probe", RequestLimits.Media)]
+    [DataRow("/api/v1/streaming/play", RequestLimits.Media)]
+    [DataRow("/api/v1/trickplay/states", RequestLimits.Media)]
+    [DataRow("/api/v1/trickplay/files/{**path}", RequestLimits.Media)]
+    [DataRow("/api/v1/search", RequestLimits.Search)]
+    [DataRow("/api/v1/editor/images", RequestLimits.Upload)]
     public void ExpensiveRoutesAreLimitedPerCaller(string route, string policy)
     {
         var factory = Factory();

@@ -1077,7 +1077,7 @@ public sealed class ApiTests
         );
         var tag = (await created.Content.ReadFromJsonAsync<TagDetails>(Json, TestContext.CancellationToken))!;
         Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
-        Assert.AreEqual($"/api/tags/{tag.Id}", created.Headers.Location!.OriginalString);
+        Assert.AreEqual($"/api/v1/tags/{tag.Id}", created.Headers.Location!.OriginalString);
 
         using var updated = await _client.PutAsJsonAsync(
             $"/api/tags/{tag.Id}",
@@ -1363,7 +1363,7 @@ public sealed class ApiTests
         }
 
         var openApi = await _client.GetStringAsync("/openapi/v1.json", TestContext.CancellationToken);
-        StringAssert.Contains(openApi, "/api/search");
+        StringAssert.Contains(openApi, "/api/v1/search");
     }
 
     [TestMethod]

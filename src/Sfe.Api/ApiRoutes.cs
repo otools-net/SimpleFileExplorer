@@ -8,7 +8,7 @@ namespace Sfe.Api;
 public static class ApiRoutes
 {
     /// <summary>The base of every route, relative to the app's address (links keep the virtual directory).</summary>
-    public const string LinkBase = "api";
+    public const string LinkBase = "api/v1";
 
     /// <summary>The base every route group is mapped under.</summary>
     public const string Base = "/" + LinkBase;
@@ -19,8 +19,20 @@ public static class ApiRoutes
     /// <summary>The OpenAPI documents.</summary>
     public const string OpenApi = "/openapi";
 
+    /// <summary>
+    /// Where a provider sends the browser back after an OAuth sign-in: registered at the provider by administrators
+    /// with this unversioned path, so it keeps it for good (answered by v1 through <see cref="LegacyApiPaths"/>,
+    /// without the deprecation).
+    /// </summary>
+    public const string OAuthCallback = "/api/connections/oauth/callback";
+
+    /// <summary>The unversioned base: another name of v1 until SFE 2.0 (<see cref="LegacyApiPaths"/>).</summary>
+    public const string LegacyBase = "/api";
+
     // Anything under /api, whatever its version, Swagger UI included.
-    private static readonly PathString Root = "/api";
+    private static readonly PathString Root = LegacyBase;
+    private static readonly PathString BasePath = Base;
+    private static readonly PathString OAuthCallbackPath = OAuthCallback;
     private static readonly PathString DocsPath = Docs;
     private static readonly PathString Migration = Base + "/migration";
 
@@ -38,6 +50,32 @@ public static class ApiRoutes
 
     /// <summary>A path under <c>/api</c> or an OpenAPI document.</summary>
     public static bool IsApiOrDocument(PathString path) => IsApi(path) || path.StartsWithSegments(OpenApi);
+
+    /// <summary>
+    /// An unversioned path of a v1 route (<c>/api/tags</c>): not <see cref="Base"/>, nor Swagger UI's pages, nor
+    /// another version's.
+    /// </summary>
+    public static bool IsLegacy(PathString path) =>
+        path.StartsWithSegments(Root, out var rest)
+        && rest.HasValue
+        && !path.StartsWithSegments(BasePath)
+        && !IsDocs(path)
+        && !IsVersionSegment(rest.Value!);
+
+    /// <summary>
+    /// The v1 path of an unversioned one (<see cref="IsLegacy"/>): <c>/api/tags</c> is <c>/api/v1/tags</c>.
+    /// </summary>
+    public static PathString ToVersioned(PathString legacy) => BasePath.Add(legacy.Value![LegacyBase.Length..]);
+
+    /// <summary>The OAuth return address (<see cref="OAuthCallback"/>): unversioned for good.</summary>
+    public static bool IsOAuthCallback(PathString path) => path.Equals(OAuthCallbackPath);
+
+    // "/v2/…": a later version's path, never an alias.
+    private static bool IsVersionSegment(string rest)
+    {
+        var segment = rest[1..].Split('/')[0];
+        return segment.Length > 1 && segment[0] == 'v' && segment[1..].All(char.IsAsciiDigit);
+    }
 
     /// <summary>Swagger UI's pages.</summary>
     public static bool IsDocs(PathString path) => path.StartsWithSegments(DocsPath);

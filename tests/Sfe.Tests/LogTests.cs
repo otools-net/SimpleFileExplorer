@@ -128,7 +128,7 @@ public sealed class LogTests
         var entry = (await SearchAsync(admin, "q=" + Uri.EscapeDataString("answered 400"))).Entries.Single();
         Assert.AreEqual(LogEntryLevel.Warning, entry.Level);
         Assert.AreEqual(ProblemLog.Category, entry.Category);
-        StringAssert.Contains(entry.Message, "POST /api/files/jobs/compress answered 400 to admin");
+        StringAssert.Contains(entry.Message, "POST /api/v1/files/jobs/compress answered 400 to admin");
         StringAssert.Contains(entry.Message, "level: A level is 0 (stored) to 9 (smallest).");
         Assert.IsEmpty((await SearchAsync(admin, "q=secret-zip-password")).Entries);
     }

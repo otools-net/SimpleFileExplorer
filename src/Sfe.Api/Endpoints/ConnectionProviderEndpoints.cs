@@ -56,10 +56,11 @@ public static class ConnectionProviderEndpoints
 
     /// <summary>
     /// The address of <see cref="CallbackPath"/> as the browser reaches this server (forwarded headers and virtual
-    /// directory applied): what the administrator registers at the provider, and what a sign-in sends.
+    /// directory applied): what the administrator registers at the provider, and what a sign-in sends. Unversioned
+    /// (<see cref="ApiRoutes.OAuthCallback"/>): the addresses registered before <c>/api/v1</c> keep working.
     /// </summary>
     public static string ReturnAddress(HttpRequest request) =>
-        $"{request.Scheme}://{request.Host}{request.PathBase}{ApiRoutes.Base}{CallbackPath}";
+        $"{request.Scheme}://{request.Host}{request.PathBase}{ApiRoutes.OAuthCallback}";
 
     private static Results<Ok<ProviderSetupView>, NotFound> Get(
         string kind,

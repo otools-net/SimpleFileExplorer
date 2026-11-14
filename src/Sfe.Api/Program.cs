@@ -84,6 +84,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase))
 );
 builder.Services.AddProblemDetails();
+builder.Services.AddSingleton<LegacyPathLog>();
 
 // The document carries the application version (its default is the document name, "v1").
 builder.Services.AddOpenApi(options =>
@@ -103,6 +104,11 @@ var app = builder.Build();
 app.Lifetime.ApplicationStopped.Register(() => watchedFiles.ForEach(watcher => watcher.Dispose()));
 app.Logger.LogInformation("SFE {Version} ({Commit})", AppVersion.Version, AppVersion.Commit ?? "unknown commit");
 app.WarnIfKeysAreOpen();
+
+// The unversioned paths answer as v1 (LegacyApiPaths): rewritten before routing picks the endpoint, here, where
+// WebApplication would have put it.
+app.UseMiddleware<LegacyApiPaths>();
+app.UseRouting();
 
 // The visitor's address and scheme behind a trusted reverse proxy, before anything reads them (sign-in limits, cookie).
 app.UseForwardedHeaders();
@@ -178,7 +184,9 @@ api.MapConnectionWriteEndpoints();
 api.MapConnectionUploadEndpoints();
 api.MapConnectionArchiveEndpoints();
 api.MapConnectionFolderRuleEndpoints();
-api.MapFallback(() => TypedResults.NotFound()).AllowAnonymous();
+
+// Any other path under /api, of any version: not the client's index.html.
+app.MapFallback(ApiRoutes.LegacyBase + "/{*path:nonfile}", () => TypedResults.NotFound()).AllowAnonymous();
 
 app.MapFallbackToFile("index.html");
 

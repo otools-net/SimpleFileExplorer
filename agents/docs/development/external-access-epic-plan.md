@@ -36,7 +36,7 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 | # | Plan | State | Done | Next |
 |---|---|---|---|---|
-| 1 | api-v1 | in progress (**next of the epic**) | phase 0 (rules: [api-versioning](api-versioning.md)); phase 1 (`ApiRoutes`, base still `/api`) | phase 2: `LegacyApiPaths` + `ApiRoutes.Base = "/api/v1"` in one commit |
+| 1 | api-v1 | in progress (**next of the epic**) | phase 0 (rules: [api-versioning](api-versioning.md)); phase 1 (`ApiRoutes`); phase 2 (base `/api/v1`, `LegacyApiPaths` with `Deprecation`, `LegacyPathLog`, `LegacyPathTests`) | phase 3: the client on one base constant, then server tests, e2e and tools on v1 |
 | 2 | api-tokens | not started | | |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
@@ -45,6 +45,9 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
 
+- 2026-11-14 (sixth session): api-v1 phase 2: routes under `/api/v1`, old paths rewritten by `LegacyApiPaths`
+  (explicit `UseRouting` after it; `Deprecation` + `Link`; OAuth return address kept unversioned), one log line per
+  caller and day, `LegacyPathTests`. Next: api-v1 phase 3.
 - 2026-11-14 (fifth session): connections phase 7 closed plan 5: feature notes split (`connections`,
   `connection-files`, `connection-providers`, `dropbox`, `transfers`, `connection-folder-rules`), open decisions
   (defaults taken) listed in `connections.md`, attack vectors in `security.md`, `sfe.Connections` moved to plan 4,

@@ -14,6 +14,9 @@ public sealed class WarningLog : ILoggerProvider
 
     public void AddTo(ILoggingBuilder builder) => builder.AddProvider(this);
 
+    /// <summary>What was logged, in order.</summary>
+    public IReadOnlyCollection<string> Entries => _entries;
+
     public override string ToString() =>
         _entries.IsEmpty ? "(nothing logged)" : string.Join(Environment.NewLine, _entries);
 

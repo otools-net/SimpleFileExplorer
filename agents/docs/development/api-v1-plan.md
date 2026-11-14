@@ -40,11 +40,23 @@ client and the ~940 test paths on routes that don't answer.
 
 ### Phase 2: old paths as aliases
 
-- [ ] `LegacyApiPaths` middleware (before `RequestGuard`): `/api/x` becomes `/api/v1/x`, with `Deprecation` and a
-  `Link` to the new path; `/api/v1` and `/api/docs` untouched
-- [ ] One log line per caller and day for an old path (not per request)
-- [ ] `LegacyPathTests`: every route of the endpoint data source answers at its old path with the same status as at
-  the new one (anonymous, and signed in)
+- [x] `LegacyApiPaths` middleware (before `RequestGuard`): `/api/x` becomes `/api/v1/x`, with `Deprecation` and a
+  `Link` to the new path; `/api/v1` and `/api/docs` untouched. As built (2026-11-14, with `ApiRoutes.Base =
+  "/api/v1"`): first in the pipeline, then an explicit `app.UseRouting()` where WebApplication put it implicitly (it
+  matched the endpoint before any middleware, so a rewrite after it changed nothing); `Deprecation: @1794614400` (RFC
+  9745, 2026-11-14) and `Link: <…/api/v1/x>; rel="successor-version"`, no `Sunset` (2.0 has no date); `/api/v2/…`
+  is never an alias; the OAuth return address `ApiRoutes.OAuthCallback` stays unversioned (registered at Dropbox)
+  and answers without the deprecation; the 404 fallback now covers all of `/api/…` (else `/api/v2/x` got
+  `index.html`).
+- [x] One log line per caller and day for an old path (not per request). As built: `LegacyPathLog`, a warning per
+  account (or address without one) and UTC day, written when the answer starts (the caller is known then), with the
+  first two segments of the path only (tokens of links stay out) and the user agent; at most 10,000 callers a day,
+  then one line saying so.
+- [x] `LegacyPathTests`: every route of the endpoint data source answers at its old path with the same status as at
+  the new one (anonymous, and signed in). As built: anonymous every method, signed in the GETs only (a route that
+  changes something answers its second call differently whatever its path); parameters filled from the route
+  pattern's constraints; a redirect followed (fast sign-in) excuses the missing header; also the unknown paths, the
+  OpenAPI document (v1 paths only), the OAuth return address, a player link with an old path and a range, the log.
 
 ### Phase 3: client, tests and tools on v1
 

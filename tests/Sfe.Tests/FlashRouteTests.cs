@@ -135,7 +135,7 @@ public sealed class FlashRouteTests
     {
         await StartAsync();
         var link = await LinkAsync(_alice, "Games/Run/game.swf");
-        StringAssert.StartsWith(link.Url, "api/files/flash/");
+        StringAssert.StartsWith(link.Url, "api/v1/files/flash/");
         StringAssert.EndsWith(link.Url, "/game.swf");
         var folder = "/" + link.Url[..(link.Url.LastIndexOf('/') + 1)];
 

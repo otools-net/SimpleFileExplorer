@@ -61,6 +61,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Changed
 
+- **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.
+  The old `/api/…` paths still answer the same until SFE 2.0, with a `Deprecation` header and a `Link` to the new
+  path; the server log names each caller of an old path once a day. Links handed out before (external players,
+  Flash, downloads) keep working, and so does the Dropbox return address registered before.
 - **A new install is set up without the setup code only through its setup link**: the address SFE opens in the
   browser at its first start, also shown in the console. Opening `http://localhost:5080` by hand asks for the code
   (other users of the computer, and visitors a tunnel brings in, are "on the computer" too).

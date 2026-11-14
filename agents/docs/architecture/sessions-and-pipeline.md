@@ -15,7 +15,9 @@ client `src/Sfe.Web/src/app/core/api.service.ts`.
   (one that doesn't decrypt is another instance's: left alone). A virtual directory already separates instances (the
   cookie's path). Browser storage (`localStorage`) is per origin, port included: not shared. Checked in Edge by
   `agents/tools/visual-check/two-instances.mjs`.
-- **Pipeline:** `UseForwardedHeaders` (loopback proxies, plus `Sfe:Security:TrustedProxies`) → HSTS when
+- **Pipeline:** `LegacyApiPaths` (old `/api/x` paths rewritten to `/api/v1/x`,
+  [api-versioning](../development/api-versioning.md)) → `UseRouting` (explicit, so that it sees the rewritten path)
+  → `UseForwardedHeaders` (loopback proxies, plus `Sfe:Security:TrustedProxies`) → HSTS when
   `RequireHttps` → `SecurityHeaders` (CSP, nosniff, `X-Frame-Options`, `Referrer-Policy` on every answer; a route's
   own CSP wins, e.g. library files' sandbox) → authentication → `RequestGuard` (503 `migration-required` while an update is due, except
   `api/migration`; 503 `setup-required` until an administrator exists, except `api/setup` and `api/session`; 400 for
