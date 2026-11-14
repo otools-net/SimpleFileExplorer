@@ -472,7 +472,7 @@ public static class FileEndpoints
         FileJobRequest request
     )
     {
-        var (jobs, accounts, rights, paths, serverFiles, work, current) = services;
+        var (jobs, _, _, _, _, _, current) = services;
         var state = await current.GetAsync();
         if (state.Tenant is not { } tenant)
             return TypedResults.Forbid();
@@ -498,7 +498,7 @@ public static class FileEndpoints
             );
         }
         // Every item is checked as the job reaches it, with the person's access then.
-        var access = new FileJobAccess(accounts, rights, paths, serverFiles, work, tenant, state.User?.Id);
+        var access = services.AccessFor(tenant, state);
         var view = jobs.Start(request, Actor(state), access);
         return TypedResults.Accepted(ApiRoutes.Link($"files/jobs/{view.Id}"), view);
     }
@@ -508,7 +508,7 @@ public static class FileEndpoints
         CompressRequest request
     )
     {
-        var (jobs, accounts, rights, paths, serverFiles, work, current) = services;
+        var (jobs, _, _, _, _, _, current) = services;
         var state = await current.GetAsync();
         if (state.Tenant is not { } tenant || !state.Has(Rights.CompressFiles))
             return TypedResults.Forbid();
@@ -540,7 +540,7 @@ public static class FileEndpoints
             );
         }
         // Every item is checked as the job reaches it, with the person's access then.
-        var access = new FileJobAccess(accounts, rights, paths, serverFiles, work, tenant, state.User?.Id);
+        var access = services.AccessFor(tenant, state);
         var view = jobs.Start(
             new FileJobRequest(
                 FileJobKind.Compress,

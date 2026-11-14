@@ -28,7 +28,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       },
       "post": {
         "tags": [
@@ -68,7 +72,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/installation/check": {
@@ -110,7 +118,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/installation": {
@@ -132,7 +144,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       },
       "put": {
         "tags": [
@@ -172,7 +188,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/installation/folders": {
@@ -213,7 +233,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/migration": {
@@ -244,7 +268,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       },
       "post": {
         "tags": [
@@ -284,7 +312,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/migration/backup": {
@@ -326,7 +358,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/migration/backup/{token}": {
@@ -350,7 +386,11 @@
           "404": {
             "description": "Not Found"
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/session": {
@@ -371,7 +411,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/session/login": {
@@ -403,7 +447,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/session/logout": {
@@ -424,7 +472,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/session/guest": {
@@ -455,7 +507,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/session/tenant": {
@@ -486,7 +542,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/session/start": {
@@ -510,7 +570,11 @@
           "200": {
             "description": "OK"
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/session/recovery": {
@@ -542,7 +606,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/session/recovery/complete": {
@@ -584,7 +652,11 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/session/password": {
@@ -629,11 +701,15 @@
             "description": "Not Found"
           }
         },
+        "security": [
+          { }
+        ],
         "x-sfe-rights": [
           [
             "account.password"
           ]
-        ]
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/access/rights": {
@@ -1183,6 +1259,228 @@
             "tenant.members"
           ]
         ]
+      }
+    },
+    "/api/v1/me/tokens": {
+      "get": {
+        "tags": [
+          "Access tokens"
+        ],
+        "summary": "The signed-in account's access tokens, revoked and expired ones too, newest first.",
+        "operationId": "GetOwnAccessTokens",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccessTokenInfo"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-rights": [
+          [
+            "account.tokens"
+          ]
+        ],
+        "x-sfe-session-only": true
+      },
+      "post": {
+        "tags": [
+          "Access tokens"
+        ],
+        "summary": "Makes an access token for programs calling the API as the signed-in account.",
+        "description": "The answer holds the whole token (`secret`) once: it is never shown again, only its first characters\n(`prefix`). `expires` (UTC) defaults to the longest life the server allows; `tenantId` limits the token to\none space the account reaches; `rights` limits it to some of the account's rights (none: all of them, as\nthey are at each use). 403 when tokens are turned off, 409 when the account holds as many as allowed.",
+        "operationId": "CreateOwnAccessToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccessTokenDraft"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedAccessToken"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-rights": [
+          [
+            "account.tokens"
+          ]
+        ],
+        "x-sfe-session-only": true
+      }
+    },
+    "/api/v1/me/tokens/{id}": {
+      "delete": {
+        "tags": [
+          "Access tokens"
+        ],
+        "summary": "Revokes one of the signed-in account's access tokens: it stops working at once.",
+        "operationId": "RevokeOwnAccessToken",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-rights": [
+          [
+            "account.tokens"
+          ]
+        ],
+        "x-sfe-session-only": true
+      }
+    },
+    "/api/v1/me/tokens/revoke-all": {
+      "post": {
+        "tags": [
+          "Access tokens"
+        ],
+        "summary": "Revokes every access token of the signed-in account; answers how many were in use.",
+        "operationId": "RevokeAllOwnAccessTokens",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokedTokens"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-rights": [
+          [
+            "account.tokens"
+          ]
+        ],
+        "x-sfe-session-only": true
+      }
+    },
+    "/api/v1/access/tokens": {
+      "get": {
+        "tags": [
+          "Access tokens"
+        ],
+        "summary": "The access tokens of the accounts one administers, revoked and expired ones too, newest first.",
+        "description": "Server administrators see every account's tokens; a space's administrators those of the accounts of the\nspaces where they hold `access.tokens`, but no server administrator's.",
+        "operationId": "GetAccessTokens",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccessTokenInfo"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-rights": [
+          [
+            "access.tokens"
+          ]
+        ],
+        "x-sfe-session-only": true
+      }
+    },
+    "/api/v1/access/tokens/{id}": {
+      "delete": {
+        "tags": [
+          "Access tokens"
+        ],
+        "summary": "Revokes the access token of an account one administers.",
+        "operationId": "RevokeAccessToken",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          { }
+        ],
+        "x-sfe-rights": [
+          [
+            "access.tokens"
+          ]
+        ],
+        "x-sfe-session-only": true
       }
     },
     "/api/v1/access/folder-rules": {
@@ -8943,6 +9241,174 @@
           }
         }
       },
+      "AccessTokenDraft": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "expires": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "rights": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AccessTokenInfo": {
+        "required": [
+          "id",
+          "userId",
+          "userName",
+          "name",
+          "prefix",
+          "tenantId",
+          "rights",
+          "kind",
+          "created",
+          "expires",
+          "lastUsed",
+          "lastUsedFrom",
+          "revoked",
+          "revokedById"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "userId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "tenantId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "rights": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AccessTokenKind"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "lastUsed": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "lastUsedFrom": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "revoked": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "revokedById": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "AccessTokenKind": {
+        "enum": [
+          "personal"
+        ]
+      },
+      "AccessTokensConfig": {
+        "required": [
+          "enabled",
+          "maxLifetimeDays"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxLifetimeDays": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "AccessTokenSettings": {
         "type": "object",
         "properties": {
@@ -9813,6 +10279,16 @@
                 "$ref": "#/components/schemas/ConnectionsConfig"
               }
             ]
+          },
+          "accessTokens": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AccessTokensConfig"
+              }
+            ]
           }
         }
       },
@@ -10478,6 +10954,21 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "CreatedAccessToken": {
+        "required": [
+          "token",
+          "secret"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "$ref": "#/components/schemas/AccessTokenInfo"
+          },
+          "secret": {
+            "type": "string"
           }
         }
       },
@@ -14221,6 +14712,22 @@
             "format": "int32"
           },
           "video": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "RevokedTokens": {
+        "required": [
+          "revoked"
+        ],
+        "type": "object",
+        "properties": {
+          "revoked": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -18129,8 +18636,22 @@
           "server"
         ]
       }
+    },
+    "securitySchemes": {
+      "accessToken": {
+        "type": "http",
+        "description": "A personal access token (My account › Access tokens), sent as `Authorization: Bearer sfe_…`. Without one,\nthe browser's session cookie is used. Routes marked `x-sfe-session-only` refuse tokens (403\n`session-only`).",
+        "scheme": "bearer",
+        "bearerFormat": "sfe_<lookup>_<secret>"
+      }
     }
   },
+  "security": [
+    {
+      "accessToken": [ ]
+    },
+    { }
+  ],
   "tags": [
     {
       "name": "Session"
@@ -18140,6 +18661,9 @@
     },
     {
       "name": "Access"
+    },
+    {
+      "name": "Access tokens"
     },
     {
       "name": "Spaces"
@@ -18219,6 +18743,7 @@
     "nothing-to-retry",
     "read-only",
     "scan-running",
+    "session-only",
     "setup-required",
     "tenant-changed",
     "too-large",

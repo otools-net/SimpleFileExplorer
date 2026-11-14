@@ -114,6 +114,7 @@ app.UseStatusCodePages();
 
 // Who asks, then what the setup, the CSRF header and the documentation pages require, then each route's rights.
 app.UseAuthentication();
+app.UseMiddleware<AccessTokenAudit>();
 app.UseMiddleware<RequestGuard>();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -142,6 +143,7 @@ api.MapInstallationEndpoints();
 api.MapMigrationEndpoints();
 api.MapSessionEndpoints();
 api.MapAccessEndpoints();
+api.MapTokenEndpoints();
 api.MapFolderRuleEndpoints();
 api.MapTenantEndpoints();
 api.MapConfigEndpoints();

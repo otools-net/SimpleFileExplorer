@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -46,7 +47,18 @@ public static class SecurityServiceCollectionExtensions
         services.AddSingleton<ServerFiles>();
 
         services
-            .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddAuthentication(AccessTokenAuthentication.SelectingScheme)
+            // A request with a bearer is the token's alone (its cookies are ignored); any other, the cookie's.
+            .AddPolicyScheme(AccessTokenAuthentication.SelectingScheme, "Session or access token", options =>
+                options.ForwardDefaultSelector = context =>
+                    BearerTokens.IsBearer(context.Request)
+                        ? AccessTokenAuthentication.SchemeName
+                        : CookieAuthenticationDefaults.AuthenticationScheme
+            )
+            .AddScheme<AuthenticationSchemeOptions, AccessTokenAuthentication>(
+                AccessTokenAuthentication.SchemeName,
+                null
+            )
             .AddCookie(options =>
             {
                 options.Cookie.Name = SfeSession.CookieName;

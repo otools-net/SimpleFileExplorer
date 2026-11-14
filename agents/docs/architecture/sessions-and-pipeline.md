@@ -7,6 +7,10 @@ client `src/Sfe.Web/src/app/core/api.service.ts`.
   send cookies and nothing else. `OnValidatePrincipal` rejects it when the stamp changed (password, disabled, kind,
   admin flag) through `AccessService.GetSessionUserAsync` (cached until `AccessChanges.Version` moves). Data Protection
   keys persist in `Sfe:Security:KeysDirectory`.
+- **Access tokens:** the default scheme is a policy scheme (`Sfe`) choosing `AccessTokenAuthentication` when the
+  request sends `Authorization: Bearer`, else the cookie: a bearer request ignores cookies and needs no
+  `X-SFE-Request`; the handler re-reads the account each request (no `OnValidatePrincipal`). Details:
+  [api-tokens-plan](../development/api-tokens-plan.md) (phase 2 "As built").
 - **Cookie names per port** (`InstanceCookies`, `InstanceCookieManager`): browsers keep cookies per host, not per port,
   so two instances on `localhost:5000` and `:5001` shared `sfe.session`, each sign-in signing the other out (its keys
   can't read the other's). The port of the request's Host is added: `sfe.session-5000`, `sfe.guest-5000`; no port (80,
@@ -19,9 +23,10 @@ client `src/Sfe.Web/src/app/core/api.service.ts`.
   [api-versioning](../development/api-versioning.md)) → `UseRouting` (explicit, so that it sees the rewritten path)
   → `UseForwardedHeaders` (loopback proxies, plus `Sfe:Security:TrustedProxies`) → HSTS when
   `RequireHttps` → `SecurityHeaders` (CSP, nosniff, `X-Frame-Options`, `Referrer-Policy` on every answer; a route's
-  own CSP wins, e.g. library files' sandbox) → authentication → `RequestGuard` (503 `migration-required` while an update is due, except
+  own CSP wins, e.g. library files' sandbox) → authentication → `AccessTokenAudit` (bearer changes logged) → `RequestGuard` (503 `migration-required` while an update is due, except
   `api/migration`; 503 `setup-required` until an administrator exists, except `api/setup` and `api/session`; 400 for
-  non-GET `/api` without `X-SFE-Request`; `/api/docs` needs `system.apiDocs`) → authorization (`RequireRight` policies
+  non-GET `/api` without `X-SFE-Request` unless a bearer; a bearer not accepted 401, on a `.SessionOnly()` route
+  403 `session-only`; `/api/docs` needs `system.apiDocs`) → authorization (`RequireRight` policies
   `right:a,b`, `RightHandler` reads `CurrentAccess`) → rate limiter (`sign-in` per address; `RequestLimits` `media`,
   `search`, `upload` per account or address, so unauthorized requests are refused before they count) → `TenantMiddleware`.
 - **Sign-in throttle:** `SignInThrottle` (memory) counts failures per name + address (`MaxFailedSignIns`); the

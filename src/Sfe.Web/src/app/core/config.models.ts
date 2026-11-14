@@ -1,6 +1,7 @@
 import type { FileConflict } from './models';
 import type { ServerMode, SessionAccount, SessionTenant } from './access.models';
 import type { TagColor } from './tag.models';
+import type { AccessTokensConfig } from './access-token.models';
 
 export type Theme = 'system' | 'light' | 'dark';
 
@@ -82,6 +83,8 @@ export interface ClientConfig {
      * (and from older servers).
      */
     connections?: ConnectionsConfig | null;
+    /** Personal access tokens work (Security:AccessTokens:Enabled); absent from older servers: off. */
+    accessTokens?: boolean | AccessTokensConfig | null;
 }
 
 export type ConnectionLevelName = 'account' | 'library' | 'server';

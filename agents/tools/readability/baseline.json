@@ -83,7 +83,7 @@
     "src/Sfe.Web/src/app/admin/admin-search.ts": {"deepFunctions":1},
     "src/Sfe.Web/src/app/admin/admin-sections.ts": {"fileLines":435},
     "src/Sfe.Web/src/app/admin/keep-alive-status.component.html": {"longLines":1},
-    "src/Sfe.Web/src/app/core/api.service.ts": {"fileLines":834},
+    "src/Sfe.Web/src/app/core/api.service.ts": {"fileLines":830},
     "src/Sfe.Web/src/app/editor/crop.ts": {"manyParameterFunctions":1},
     "src/Sfe.Web/src/app/editor/image-editor.dialog.html": {"longLines":1},
     "src/Sfe.Web/src/app/editor/image-editor.dialog.ts": {"fileLines":463},

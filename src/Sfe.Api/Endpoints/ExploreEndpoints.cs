@@ -511,8 +511,8 @@ public static class ExploreEndpoints
             entries = list;
         }
 
-        // Every right is checked again as the job runs, with the person's access then.
-        var access = new FileJobAccess(accounts, rights, paths, serverFiles, work, tenant, state.User?.Id);
+        var jobToken = current.JobToken();
+        var access = new FileJobAccess(accounts, rights, paths, serverFiles, work, tenant, state.User?.Id, jobToken);
         var view = jobs.Start(
             new FileJobRequest(
                 FileJobKind.Extract,

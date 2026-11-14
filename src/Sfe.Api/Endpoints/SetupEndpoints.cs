@@ -22,7 +22,7 @@ public static class SetupEndpoints
 
     public static RouteGroupBuilder MapSetupEndpoints(this RouteGroupBuilder api)
     {
-        var setup = api.MapGroup("/setup").WithTags("Session");
+        var setup = api.MapGroup("/setup").WithTags("Session").SessionOnly();
 
         setup
             .MapGet("/", GetSetup)

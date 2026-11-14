@@ -38,6 +38,12 @@ public sealed class AccessTokens(
     /// <summary>When the last use of each token was written.</summary>
     private readonly ConcurrentDictionary<int, DateTime> _usesWritten = new();
 
+    /// <summary>
+    /// Whether each token asked about by id was neither revoked (nor gone) when <see cref="AccessChanges.Version"/> was
+    /// the one read at, with its expiry.
+    /// </summary>
+    private readonly ConcurrentDictionary<int, (long Version, bool Kept, DateTime? Expires)> _states = new();
+
     private readonly SemaphoreSlim _creating = new(1, 1);
 
     /// <summary>The settings in effect: the configuration's, then the server settings page's.</summary>
@@ -161,6 +167,29 @@ public sealed class AccessTokens(
 
         await NoteUseAsync(row.Id, address, now, cancellationToken);
         return new(row.Id, row.UserId, row.Name, row.TenantId, RightsOf(row.Rights)?.ToHashSet(), row.Expires);
+    }
+
+    /// <summary>
+    /// Token <paramref name="tokenId"/> still works: tokens are on, and it is neither revoked, deleted nor expired. For
+    /// what a token started and checks again later (file jobs); read again only when <see cref="AccessChanges"/> moved.
+    /// </summary>
+    public async Task<bool> IsActiveAsync(int tokenId, CancellationToken cancellationToken = default)
+    {
+        if (!Options.Enabled)
+            return false;
+
+        var version = changes.Version;
+        if (!_states.TryGetValue(tokenId, out var state) || state.Version != version)
+        {
+            await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+            var row = await db
+                .AccessTokens.Where(t => t.Id == tokenId)
+                .Select(t => new { t.Revoked, t.Expires })
+                .SingleOrDefaultAsync(cancellationToken);
+            state = (version, row is { Revoked: null }, row?.Expires);
+            _states[tokenId] = state;
+        }
+        return state.Kept && (state.Expires is not { } expires || expires > clock.GetUtcNow().UtcDateTime);
     }
 
     private static AccessResult<CreatedAccessToken>? Validate(

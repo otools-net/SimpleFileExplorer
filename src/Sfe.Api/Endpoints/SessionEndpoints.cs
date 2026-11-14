@@ -38,7 +38,7 @@ public static class SessionEndpoints
 
     public static RouteGroupBuilder MapSessionEndpoints(this RouteGroupBuilder api)
     {
-        var session = api.MapGroup("/session").WithTags("Session");
+        var session = api.MapGroup("/session").WithTags("Session").SessionOnly();
 
         MapSignIn(session);
 

@@ -84,6 +84,9 @@ public static class ProblemTypes
     /// <summary>409: a scan of the library runs; try again once it ends.</summary>
     public const string ScanRunning = "scan-running";
 
+    /// <summary>403: a route for signed-in sessions only, called with an access token.</summary>
+    public const string SessionOnly = "session-only";
+
     /// <summary>503: the server has no administrator yet; it is set up from the app.</summary>
     public const string SetupRequired = "setup-required";
 
@@ -127,6 +130,7 @@ public static class ProblemTypes
         NothingToRetry,
         ReadOnly,
         ScanRunning,
+        SessionOnly,
         SetupRequired,
         TenantChanged,
         TooLarge,

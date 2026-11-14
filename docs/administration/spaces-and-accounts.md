@@ -143,6 +143,24 @@ removed.
 A space's administrators only change, in accounts other spaces share, their groups in their own space; an account that
 is only in their space is fully theirs.
 
+## Access tokens
+
+Every account's [access tokens](my-account.md#access-tokens) (right `access.tokens`: a space's administrators see
+those of their space's accounts, server administrators all of them): the account each belongs to, its name and first
+characters, its library and rights, its dates and the address it was last used from. Revoked and expired tokens stay
+listed, faded. **Revoke** ends a token at once; **Find a token** filters a long list by token or account name. Tokens
+themselves are never shown again after they were made.
+
+**Token settings** (server administrators; `Sfe:Locked` with `security.accessTokens.*` fixes them):
+
+| Setting | |
+|---|---|
+| **Allow access tokens** (`security.accessTokens.enabled`) | Off: no token can be made, and those made are refused (kept, they work again once it is back on). Default on |
+| **Longest life (days)** (`security.accessTokens.maxLifetimeDays`) | A new token expires after at most this many days; 0 lets a token never expire. Default 365 |
+| **Tokens per account** (`security.accessTokens.maxPerAccount`) | Tokens an account may hold at once, neither revoked nor expired. Default 20 |
+
+Screenshots of these pages come with the release check.
+
 ## Directories (LDAP)
 
 Accounts are checked by **directories** in the order of `Sfe:Security:Directories` (empty = the local accounts only).

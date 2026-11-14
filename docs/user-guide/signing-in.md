@@ -32,7 +32,8 @@ password. Details: [First start](../first-start.md#locked-out-or-lost-administra
 
 The ⋮ button at the top right holds:
 
-- who is signed in, and the space you are in: click your name to open **My account** (your preferences and password);
+- who is signed in, and the space you are in: click your name to open **My account** (your preferences, password
+  and [access tokens](../administration/my-account.md#access-tokens) for your programs);
 - **Scan this folder** and **Remove from index…** ([Scanning](scanning.md));
 - your other spaces, if you have several: picking one switches to it (and reloads the page);
 - **Administration** ([the administration page](../administration/README.md)): settings, tags, duplicates, accounts,

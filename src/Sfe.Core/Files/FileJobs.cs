@@ -136,14 +136,15 @@ public sealed class FileJobs(
             foreach (var path in request.Paths.Distinct(StringComparer.Ordinal))
             {
                 token.ThrowIfCancellationRequested();
-                job.Current = path;
                 FileJobItem result;
                 try
                 {
-                    result =
-                        request.Kind == FileJobKind.Extract
-                            ? await ExtractAsync(job, path, targetPath, targetFull, copiedFolders, token)
-                            : await ItemAsync(job, path, targetPath, targetFull, copiedFolders, token);
+                    result = await job.BeginAsync(path)
+                        ?? (
+                            request.Kind == FileJobKind.Extract
+                                ? await ExtractAsync(job, path, targetPath, targetFull, copiedFolders, token)
+                                : await ItemAsync(job, path, targetPath, targetFull, copiedFolders, token)
+                        );
                 }
                 catch (OperationCanceledException)
                 {
@@ -402,8 +403,7 @@ public sealed class FileJobs(
             throw;
         }
 
-        // The copies: indexed (a file now, a folder by a scan), with the previews and, when asked, the tags of the
-        // originals.
+        // The copies: indexed (a file now, a folder by a scan), with previews and, when asked, the originals' tags.
         try
         {
             await AfterCopyAsync(job, source, destination, isFolder, copiedFolders, destinationPath, token);

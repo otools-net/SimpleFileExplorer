@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Sfe.Api.Maintenance;
+using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Logs;
 using Sfe.Core.Options;
@@ -36,7 +37,7 @@ public static class MigrationEndpoints
 
     public static RouteGroupBuilder MapMigrationEndpoints(this RouteGroupBuilder api)
     {
-        var migration = api.MapGroup("/migration").WithTags("Session");
+        var migration = api.MapGroup("/migration").WithTags("Session").SessionOnly();
 
         migration
             .MapGet("/", GetMigration)

@@ -81,6 +81,7 @@ their status.
 | `nothing-to-retry` | 409 | nothing of the job is left to start again |
 | `read-only` | 409 | the file is read-only: it isn't saved over |
 | `scan-running` | 409 | a scan runs there: try again once it ends |
+| `session-only` | 403 | the route needs a signed-in session: an access token may not call it |
 | `setup-required` | 503 | the server has no administrator yet (open the app) |
 | `tenant-changed` | 409 | the session is in another space now: reload |
 | `too-large` | 413 | too large to be shown or saved as text, or read from an archive |

@@ -121,8 +121,8 @@ public sealed class TransferJobs(
         foreach (var path in job.Request.Paths.Distinct(StringComparer.Ordinal))
         {
             token.ThrowIfCancellationRequested();
-            job.Current = path;
-            var result = folder is null ? run.NoTarget(path) : await run.ItemAsync(path, folder, token);
+            var result = await job.BeginAsync(path)
+                ?? (folder is null ? run.NoTarget(path) : await run.ItemAsync(path, folder, token));
             job.Report(result);
             if (result.Status != FileOperationStatus.Done)
                 logger.LogWarning("{Path}: {Status}. {Problem}", path, result.Status, result.Message);

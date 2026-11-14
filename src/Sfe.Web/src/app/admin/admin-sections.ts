@@ -1,13 +1,13 @@
 /*
  * The sections of the administration page (`admin?section=&page=`), listed in its sidebar under their `group`, each
- * with its sub-pages listed under it (on phones, as chips above the page). A sub-page with `settings` shows that tab of
- * settings-schema.ts; the others show the section's tools (the tag list, duplicates, the background tasks...). Every
- * tab of settings-schema.ts belongs to exactly one sub-page. A sub-page shows to those with one of its `rights`
- * (/api/config); a section with none of its sub-pages left is not listed. My account comes first: everyone has it.
- * `/admin` without a section is the overview of the sections (on phones, their list).
+ * with its sub-pages under it (on phones, as chips). A sub-page with `settings` shows that tab of settings-schema.ts
+ * (each tab belongs to exactly one sub-page); the others show the section's tools. A sub-page shows to those with one
+ * of its `rights` (/api/config); a section with none of its sub-pages left is not listed. My account comes first:
+ * everyone has it. `/admin` without a section is the overview of the sections (on phones, their list).
  */
 
 import { Right, Rights, SETTINGS_RIGHTS } from '../core/rights';
+import { ALL_TOKENS_PAGE, MY_TOKENS_PAGE, TOKEN_SETTINGS_PAGE } from '../tokens/token-pages';
 
 export interface AdminSubpage {
     id: string;
@@ -66,6 +66,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
                 'Your own storage elsewhere (Dropbox), seen only by you.',
                 Rights.ownConnections,
             ),
+            MY_TOKENS_PAGE,
         ],
     },
     {
@@ -298,6 +299,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
                 Rights.manageUsers,
                 Rights.manageMembers,
             ),
+            ALL_TOKENS_PAGE,
+            TOKEN_SETTINGS_PAGE,
         ],
     },
     {
@@ -380,10 +383,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     },
 ];
 
-/**
- * Sub-pages that moved, from "section/page" to where they are now: addresses kept in bookmarks and history still open
- * them. Never remove an entry.
- */
+/** Sub-pages that moved, "section/page" to where they are now: old bookmarks still open them. Never remove one. */
 export const ADMIN_MOVED: Readonly<Record<string, { section: string; page: string }>> = {
     'system/streams': { section: 'playback', page: 'streams' },
     'playback/settings': { section: 'playback', page: 'player' },

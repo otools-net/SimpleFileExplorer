@@ -7,6 +7,7 @@ import { AdminPageComponent, leaveAdminPage } from '../app/admin/admin-page.comp
 import { routes } from '../app/app.routes';
 import { ConfigService } from '../app/core/config.service';
 import { InstallationView } from '../app/core/access.models';
+import { AccessTokenInfo } from '../app/core/access-token.models';
 import { ClientConfig } from '../app/core/config.models';
 import { LibraryItem } from '../app/core/models';
 import { SettingsValues } from '../app/core/setting.models';
@@ -345,4 +346,25 @@ export function fakeCanvases(): { drawn: unknown[][] } {
         callback(new Blob([`${this.width}x${this.height}`], { type }));
     });
     return { drawn };
+}
+
+/** An access token as the server lists it: every library, every right, never used. */
+export function accessToken(overrides: Partial<AccessTokenInfo> = {}): AccessTokenInfo {
+    return {
+        id: 1,
+        userId: 1,
+        userName: 'admin',
+        name: 'Backup script',
+        prefix: 'sfe_0123abcd',
+        tenantId: null,
+        rights: [],
+        kind: 'personal',
+        created: '2026-11-01T10:00:00Z',
+        expires: '2099-01-01T00:00:00Z',
+        lastUsed: null,
+        lastUsedFrom: null,
+        revoked: null,
+        revokedById: null,
+        ...overrides,
+    };
 }

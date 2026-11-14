@@ -7,6 +7,17 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Personal access tokens, for programs calling the API** (the pages to make and revoke them come with a later
+  version): a program sends `Authorization: Bearer sfe_…` and acts as the token's account, with its rights or only
+  some of them, in one space or those the account reaches (`X-SFE-Tenant`); no cookie and no `X-SFE-Request` needed.
+  Routes `api/v1/me/tokens` (list, make, revoke, revoke all) and `api/v1/access/tokens` (administrators: see and
+  revoke the tokens of their spaces' accounts), new rights `account.tokens` and `access.tokens` (given to the
+  Administrators group of every space, never to guests). A token never signs in, changes a password, makes tokens
+  or touches the setup, installation and update pages (403 `session-only`); wrong tokens block their address a
+  while, as wrong passwords do; a disabled or deleted account's tokens stop working. A move, copy, zip or extraction
+  started with a token keeps the token's limits for each item, and stops once the token is revoked. Changes made with a token are
+  in the server's log with the account and the token. The OpenAPI document declares the bearer scheme (Swagger UI's
+  Authorize), and `api/v1/config` tells whether tokens are on and their longest life (`accessTokens`).
 - **Personal access tokens, first step (nothing makes them yet)**: the server settings
   `Sfe:Security:AccessTokens:Enabled`, `MaxLifetimeDays` and `MaxPerAccount` (defaults: on, 365 days, 20 per account;
   `Sfe:Locked` fixes them; [configuration](docs/configuration.md)). The database gets an empty table for the tokens;

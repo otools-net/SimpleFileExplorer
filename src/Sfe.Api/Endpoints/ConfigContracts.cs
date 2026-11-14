@@ -97,6 +97,10 @@ public sealed record ConnectionsConfig(IReadOnlyList<string> Levels, IReadOnlyLi
 /// Connections to other storage; null when they are off (<c>Connections:Enabled</c>) or the session has none of the
 /// <c>connections.*</c> rights.
 /// </param>
+/// <param name="AccessTokens">
+/// Personal access tokens on this server; null when the session may neither have tokens nor manage them
+/// (<c>account.tokens</c>, <c>access.tokens</c>).
+/// </param>
 public sealed record ClientConfig(
     string RootName,
     string? DataServer,
@@ -134,7 +138,8 @@ public sealed record ClientConfig(
     ServerMode Mode = ServerMode.Local,
     bool Flash = false,
     ArchivesConfig? Archives = null,
-    ConnectionsConfig? Connections = null
+    ConnectionsConfig? Connections = null,
+    AccessTokensConfig? AccessTokens = null
 );
 
 /// <param name="MaxCompressedTarMegabytes">Compressed tars (<c>.tar.gz</c>…) larger than this aren't explored (listing

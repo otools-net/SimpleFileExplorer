@@ -128,7 +128,8 @@ public static class TransferEndpoints
             files.ServerFiles,
             files.Work,
             tenant,
-            state.User?.Id
+            state.User?.Id,
+            connections.Current.JobToken()
         );
         return await StartAsync(ask, sides, (FileEndpoints.Actor(state), access, move), transfers.Jobs);
     }

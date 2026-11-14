@@ -1,0 +1,139 @@
+<sfe-sheet #sheet [heading]="secret() ? 'Your new token' : 'New access token'" [wide]="true" (closed)="forget()">
+    @if (secret(); as secret) {
+        <div class="token-secret">
+            <p class="access-note token-once">
+                <strong>Copy the token now: you won't see it again.</strong>
+                SFE keeps only a fingerprint of it. If it is lost, revoke it and make another.
+            </p>
+            <div class="token-secret-row">
+                <input
+                    id="token-secret"
+                    class="token-secret-value"
+                    type="text"
+                    readonly
+                    spellcheck="false"
+                    aria-label="The new token"
+                    [value]="secret"
+                    (focus)="selectAll($event)"
+                >
+                <button
+                    type="button"
+                    class="button primary"
+                    title="Copy the token to the clipboard"
+                    (click)="copy()"
+                >Copy</button>
+            </div>
+            <p class="field-hint">
+                A program sends it in the header <code>Authorization: Bearer</code> followed by the token. It acts as
+                you, within what you chose; your password stays yours.
+            </p>
+        </div>
+    } @else {
+        <form class="access-form" novalidate (submit)="create($event)">
+            <div class="field">
+                <label class="field-label" for="token-name">Name</label>
+                <input
+                    id="token-name"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="e.g. Backup script"
+                    [value]="name()"
+                    (input)="name.set(valueOf($event))"
+                >
+                <span class="field-hint">What the token is for, to recognise it in the list.</span>
+                @if (errors()['name']; as error) {
+                    <span class="field-error">{{ error }}</span>
+                }
+            </div>
+            <div class="access-columns">
+                <div class="field">
+                    <label class="field-label" for="token-expiry">Expires after</label>
+                    <select id="token-expiry" (change)="chooseDays($event)">
+                        @for (choice of choices(); track choice.label) {
+                            <option
+                                [value]="choice.days ?? ''"
+                                [selected]="choice.days === days()"
+                            >{{ choice.label }}</option>
+                        }
+                    </select>
+                    @if (errors()['expires']; as error) {
+                        <span class="field-error">{{ error }}</span>
+                    }
+                </div>
+                <div class="field">
+                    <label class="field-label" for="token-library">Library</label>
+                    <select id="token-library" (change)="chooseTenant($event)">
+                        <option value="" [selected]="tenantId() === null">Every library of yours</option>
+                        @for (tenant of tenants(); track tenant.id) {
+                            <option
+                                [value]="tenant.id"
+                                [selected]="tenant.id === tenantId()"
+                            >{{ tenant.name }}</option>
+                        }
+                    </select>
+                    @if (errors()['tenantId']; as error) {
+                        <span class="field-error">{{ error }}</span>
+                    }
+                </div>
+            </div>
+            <label class="check">
+                <input type="checkbox" [checked]="everyRight()" (change)="everyRight.set(checkedOf($event))">
+                <span>Every right of yours<span class="field-hint">The token may do whatever your account may do,
+                now and later. Untick it to choose fewer.</span></span>
+            </label>
+            @if (!everyRight()) {
+                @for (area of areas(); track area.title) {
+                    <fieldset class="access-choices rights">
+                        <legend class="field-label">{{ area.title }}</legend>
+                        @for (right of area.rights; track right.id) {
+                            <label class="check" [title]="right.description">
+                                <input
+                                    type="checkbox"
+                                    [checked]="chosen().has(right.id)"
+                                    (change)="toggleRight(right.id, checkedOf($event))"
+                                >
+                                <span>{{ right.title }}</span>
+                            </label>
+                        }
+                    </fieldset>
+                }
+            }
+            @if (errors()['rights']; as error) {
+                <span class="field-error">{{ error }}</span>
+            }
+            @if (problem(); as problem) {
+                <p class="form-error">{{ problem }}</p>
+            }
+        </form>
+    }
+    @if (secret()) {
+        <button
+            sheetFooter
+            type="button"
+            class="button primary"
+            title="Close: the token is not shown again"
+            (click)="sheet.close()"
+        >Done</button>
+    } @else {
+        <button
+            sheetFooter
+            type="button"
+            class="button"
+            title="Close without making a token (Esc)"
+            (click)="sheet.close()"
+        >Cancel</button>
+    }
+    @if (!secret()) {
+        <span sheetFooter class="spacer"></span>
+    }
+    @if (!secret()) {
+        <button
+            sheetFooter
+            type="button"
+            class="button primary"
+            title="Make the token"
+            [disabled]="saving() || !name().trim()"
+            (click)="create()"
+        >Create</button>
+    }
+</sfe-sheet>

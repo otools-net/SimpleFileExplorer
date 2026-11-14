@@ -136,22 +136,24 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
 
 ## Open decisions (defaults taken)
 
-Taken while building, without the owner's answer; each can change:
+Taken while building, without the owner's answer; each can change (those marked confirmed were answered by the
+owner):
 
 - Transfers: `TransferJobs` per library, sharing the library's `JobBoard` ids, routes and operations panel.
 - Transfers: failed items kept 24 h in memory behind `POST api/files/jobs/{id}/retry` (as built: a new job, a broken
   file written again from its start, no resume point).
 - Transfers: `Files:Uploads:MaxFileSizeMegabytes` holds for files going into a connection.
 - Transfers: content hashes verified for copies too, not only moves.
-- Transfers: a library source of a move goes to SFE's trash (chosen for safety, against the study's "deleted for
-  good").
+- Transfers (confirmed 2026-11-14): a library source of a move goes to SFE's trash (chosen for safety, against the
+  study's "deleted for good").
 - Transfers: a library folder with folder rules may be moved out to a connection (the default said "with a warning";
   as built it goes to the trash like a delete, no warning of its own).
-- Transfers: connection to connection allowed, the bytes going through the server.
+- Transfers (confirmed 2026-11-14): connection to connection allowed, the bytes going through the server.
 - Transfers: an Information log line per item and one `BackgroundTaskKind.Transfer` run per job.
 - Client: the new requests stay `Api` methods.
 - Folder rules: the `ConnectionGroup` row stays the gate (a rule never opens a connection to a group without one).
-- Folder rules: a rule may raise a group above its row's level (nearest rule wins, `ReadOnly` still caps).
+- Folder rules (confirmed 2026-11-14): a rule may raise a group above its row's level (nearest rule wins, `ReadOnly`
+  still caps).
 - Folder rules: a library no longer offered a server connection loses its rules.
 - Folder rules: a move's keep-access question covers the request's library; other libraries' rules follow with a
   security warning.

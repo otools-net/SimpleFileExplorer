@@ -4,7 +4,8 @@ namespace Sfe.Api.Tenancy;
 
 /// <summary>
 /// Finds the services of the request's library. A client that names the library it shows (<see cref="Header"/>) gets
-/// 409 <c>tenant-changed</c> when the session is in another one by now (switched in another tab): it reloads.
+/// 409 <c>tenant-changed</c> when the session is in another one by now (switched in another tab): it reloads. A
+/// request with an access token picks its library with that header instead (<see cref="CurrentAccess"/>).
 /// </summary>
 public sealed class TenantMiddleware(RequestDelegate next)
 {
@@ -27,13 +28,7 @@ public sealed class TenantMiddleware(RequestDelegate next)
             && shownId != state.TenantId
         )
         {
-            await TypedResults
-                .Problem(
-                    "The session is in another space now: reload the page.",
-                    statusCode: StatusCodes.Status409Conflict,
-                    type: TenantChangedType
-                )
-                .ExecuteAsync(context);
+            await WrongTenant(context).ExecuteAsync(context);
             return;
         }
 
@@ -58,4 +53,20 @@ public sealed class TenantMiddleware(RequestDelegate next)
             context.RequestServices = original;
         }
     }
+
+    /// <summary>
+    /// A session switched to another space meanwhile (409: the page reloads); a request with an access token named a
+    /// space its token isn't for, or its account doesn't reach (403: nothing to reload).
+    /// </summary>
+    private static IResult WrongTenant(HttpContext context) =>
+        BearerTokens.IsBearer(context.Request)
+            ? TypedResults.Problem(
+                "The token or its account doesn't reach that space.",
+                statusCode: StatusCodes.Status403Forbidden
+            )
+            : TypedResults.Problem(
+                "The session is in another space now: reload the page.",
+                statusCode: StatusCodes.Status409Conflict,
+                type: TenantChangedType
+            );
 }

@@ -88,8 +88,7 @@ public static class RightCatalog
                 + "keeps the server's processor busy).",
             since: 2
         ),
-        // File management (agents/docs/development/file-management-plan.md): nobody gets these by upgrade or by
-        // default.
+        // File management: nobody gets these by upgrade or by default.
         Tenant(
             Rights.CreateFolders,
             false,
@@ -569,6 +568,7 @@ public static class RightCatalog
             "See the videos the server converts while they play, in every space, and who watches them."
         ),
         .. ConnectionRights.All,
+        .. AccessTokenRights.All,
         Server(
             Rights.Backup,
             R,

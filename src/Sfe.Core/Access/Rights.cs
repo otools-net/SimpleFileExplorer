@@ -55,6 +55,12 @@ public static class Rights
     public const string OwnPreferences = "account.preferences";
     public const string OwnPassword = "account.password";
     public const string QuickLinks = "account.quickLinks";
+
+    /// <summary>Make, see and revoke one's own personal access tokens.</summary>
+    public const string OwnTokens = "account.tokens";
+
+    /// <summary>See and revoke the access tokens of the accounts of the spaces one administers.</summary>
+    public const string ManageTokens = "access.tokens";
     public const string ApiDocs = "system.apiDocs";
     public const string ServerSettings = "server.settings";
     public const string ManageTenants = "server.tenants";

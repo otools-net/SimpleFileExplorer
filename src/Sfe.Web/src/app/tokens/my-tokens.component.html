@@ -1,0 +1,44 @@
+<p class="access-intro">
+    A token lets a program or a script call SFE's API as you, without your password: it sends the token with each
+    request. Give each program its own token, and revoke the one a program no longer needs.
+</p>
+@if (!enabled()) {
+    <p class="access-note token-off">
+        Access tokens are switched off on this server: no token can be made, and those below are refused until they
+        are switched on again.
+    </p>
+}
+<div class="access-actions">
+    @if (enabled()) {
+        <button
+            type="button"
+            class="button primary"
+            title="Make a token for a program or a script"
+            (click)="creator().open()"
+        >
+            <svg sfeIcon="plus"></svg>New token
+        </button>
+    }
+    @if (revocable().length > 0) {
+        <button
+            type="button"
+            class="button"
+            title="Revoke every token of yours: the programs using them are refused from now on"
+            (click)="revokeAll()"
+        >Revoke all</button>
+    }
+</div>
+@if (error(); as error) {
+    <p class="form-error">{{ error }}</p>
+} @else if (!loaded()) {
+    <div class="tag-loading"><span class="spinner"></span></div>
+} @else {
+    <ul class="access-list">
+        @for (token of tokens(); track token.id) {
+            <li sfeTokenRow [token]="token" (revoke)="revoke($event)"></li>
+        } @empty {
+            <li class="access-empty muted">No tokens yet.</li>
+        }
+    </ul>
+}
+<sfe-token-create (created)="load()" />

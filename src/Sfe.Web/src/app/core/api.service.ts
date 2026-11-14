@@ -61,6 +61,7 @@ import {
     TenantInput,
     UserInput,
 } from './access.models';
+import { AccessTokenDraft, AccessTokenInfo, CreatedAccessToken } from './access-token.models';
 import { ArchiveSearchAnswer, ArchiveUnlockAnswer } from './archive.models';
 import {
     TextVersion,
@@ -122,7 +123,6 @@ import {
 import { encodePath } from './paths';
 import { takeSetupLink } from './setup-link';
 
-/** A failed request: the message of the problem response, and its validation messages by field. */
 /**
  * The base of every address of the server's API: requests, file addresses, the change feed. Relative, so the app also
  * works under a virtual directory; versioned (agents/docs/development/api-versioning.md): the unversioned `api/` paths
@@ -145,6 +145,7 @@ export function editingSession(): string {
     return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+/** A failed request: the message of the problem response, and its validation messages by field. */
 export class ApiError extends Error {
     /** @param type The problem's `type` (`setup-required`, `tenant-changed`...), when it has one. */
     constructor(
@@ -210,10 +211,7 @@ export class Api {
     cancelScan = () => this.delete<ScanStatus>('scan');
     /** What the index holds of a folder (counts), before removing it. */
     indexedFolder = (path: string) => this.get<IndexedFolder>('index/folder', { path });
-    /**
-     * Removes a folder from the index (not from the disk); `exclude` also keeps future scans out of it. Resolves with
-     * the scan status (409) while a scan runs.
-     */
+    /** Removes a folder from the index (not the disk); `exclude` keeps scans out too. A scan running: its status. */
     removeFromIndex = (path: string, exclude: boolean) =>
         this.delete<RemovedFromIndex | ScanStatus>(`index/folder?${params({ path, exclude }).toString()}`);
 
@@ -265,10 +263,7 @@ export class Api {
     /** The default tags of a folder, its own and its parents'. */
     folderDefaultTags = (path: string, signal?: AbortSignal) =>
         this.get<FolderDefaults>('folder-default-tags', { path }, signal);
-    /**
-     * Changes a folder's default tags (and the files already there when asked). Resolves with the problem (409) while a
-     * scan runs.
-     */
+    /** Changes a folder's default tags (and its files' when asked); a scan running: its problem (409). */
     changeFolderDefaultTags = (change: FolderDefaultTagsChange) =>
         this.put<FolderDefaultTagsResult | { detail?: string }>('folder-default-tags', change);
     tagSidebar = () => this.get<TagSidebar>('tags/sidebar');
@@ -293,10 +288,7 @@ export class Api {
     resetPreferences = () => this.delete<SettingsView>('me/preferences');
     /** The signed-in user's quick links in the library, in order. */
     quickLinks = () => this.get<QuickLink[]>('me/quick-links');
-    /**
-     * Adds `paths` before the link at `position` (at the end without one); links already there move. Resolves with the
-     * whole list.
-     */
+    /** Adds `paths` before the link at `position` (else at the end), moving those there; answers the whole list. */
     addQuickLinks = (paths: string[], position: number | null = null) =>
         this.post<QuickLink[]>('me/quick-links', { paths, position });
     removeQuickLink = (path: string) => this.delete<QuickLink[]>(withQuery('me/quick-links', { path }));
@@ -598,10 +590,7 @@ export class Api {
             }),
         );
 
-    /*
-     * Accounts, groups and rights. `tenant` names another space than the session's (server administrators manage every
-     * space from wherever they are); left out, the session's space.
-     */
+    /* Accounts, groups and rights; `tenant`: another space than the session's (server administrators manage all). */
     rights = (tenant?: number | null) => this.get<RightsCatalog>('access/rights', { tenant });
     /** `all`: every account of the server (server administrators), else those of the space. */
     users = (all = false, tenant?: number | null) => this.get<UserInfo[]>('access/users', { all, tenant });
@@ -632,6 +621,13 @@ export class Api {
     spaceFolders = (path: string | null, tenant?: number | null) =>
         this.get<FolderPicker>('access/folders', { path, tenant });
     setGuestAccess = (guestAccess: boolean) => this.put<TenantAccess>('access/tenant/guest-access', { guestAccess });
+    /** Personal access tokens: the account's own (`me/tokens`), everyone's for administrators (`access/tokens`). */
+    myTokens = () => this.get<AccessTokenInfo[]>('me/tokens');
+    createToken = (draft: AccessTokenDraft) => this.post<CreatedAccessToken>('me/tokens', draft);
+    revokeToken = (id: number) => this.delete<void>(`me/tokens/${id}`);
+    revokeAllTokens = () => this.post<{ revoked: number }>('me/tokens/revoke-all');
+    allTokens = () => this.get<AccessTokenInfo[]>('access/tokens');
+    revokeAnyToken = (id: number) => this.delete<void>(`access/tokens/${id}`);
 
     /** Every space (server administrators). */
     tenants = () => this.get<TenantDetails[]>('tenants');

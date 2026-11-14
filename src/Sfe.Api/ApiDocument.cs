@@ -9,12 +9,24 @@ namespace Sfe.Api;
 /// What SFE adds to the OpenAPI document (<c>/openapi/v1.json</c>): the application version, the rights each route
 /// needs (<c>x-sfe-rights</c>) and the problem <c>type</c> words (<c>x-sfe-problem-types</c>). Both extensions are
 /// part of v1's contract: the committed baseline (tests/samples/openapi/v1.json) holds them, so a right needed where
-/// none was, or a word removed, fails <c>OpenApiBaselineTests</c>.
+/// none was, or a word removed, fails <c>OpenApiBaselineTests</c>. It also declares the access tokens' bearer scheme
+/// (<see cref="BearerScheme"/>), so that Swagger UI's "Authorize" sends one, except to the routes for sessions only
+/// (<c>x-sfe-session-only</c>, <see cref="SessionOnlyRoutes"/>).
 /// </summary>
 public static class ApiDocument
 {
     public const string RightsExtension = "x-sfe-rights";
     public const string ProblemTypesExtension = "x-sfe-problem-types";
+    public const string SessionOnlyExtension = "x-sfe-session-only";
+
+    /// <summary>The name of the access tokens' security scheme in the document.</summary>
+    public const string BearerScheme = "accessToken";
+
+    private const string BearerDescription = """
+        A personal access token (My account › Access tokens), sent as `Authorization: Bearer sfe_…`. Without one,
+        the browser's session cookie is used. Routes marked `x-sfe-session-only` refuse tokens (403
+        `session-only`).
+        """;
 
     public static void Configure(OpenApiOptions options)
     {
@@ -25,6 +37,7 @@ public static class ApiDocument
                 document.Info.Version = AppVersion.Version;
                 document.Extensions ??= new Dictionary<string, IOpenApiExtension>();
                 document.Extensions[ProblemTypesExtension] = new JsonNodeExtension(Strings(ProblemTypes.All));
+                AddBearerScheme(document);
                 return Task.CompletedTask;
             }
         );
@@ -32,6 +45,7 @@ public static class ApiDocument
             (operation, context, _) =>
             {
                 AddRights(operation, context.Description.ActionDescriptor.EndpointMetadata);
+                MarkSessionOnly(operation, context.Description.ActionDescriptor.EndpointMetadata);
                 return Task.CompletedTask;
             }
         );
@@ -48,6 +62,39 @@ public static class ApiDocument
             return;
         operation.Extensions ??= new Dictionary<string, IOpenApiExtension>();
         operation.Extensions[RightsExtension] = new JsonNodeExtension(new JsonArray(requirements));
+    }
+
+    /// <summary>
+    /// The bearer scheme, asked by every route: with a token, or (the empty requirement) with the session cookie.
+    /// </summary>
+    private static void AddBearerScheme(OpenApiDocument document)
+    {
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes[BearerScheme] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "sfe_<lookup>_<secret>",
+            Description = BearerDescription,
+        };
+        document.Security =
+        [
+            new OpenApiSecurityRequirement { [new OpenApiSecuritySchemeReference(BearerScheme, document)] = [] },
+            new OpenApiSecurityRequirement(),
+        ];
+    }
+
+    /// <summary>
+    /// A route for sessions only says so, and asks for no scheme: Swagger UI then calls it with the cookie alone.
+    /// </summary>
+    private static void MarkSessionOnly(OpenApiOperation operation, IList<object> metadata)
+    {
+        if (!metadata.OfType<SessionOnlyMetadata>().Any())
+            return;
+        operation.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+        operation.Extensions[SessionOnlyExtension] = new JsonNodeExtension(JsonValue.Create(true));
+        operation.Security = [new OpenApiSecurityRequirement()];
     }
 
     private static JsonArray Strings(IEnumerable<string> words) =>

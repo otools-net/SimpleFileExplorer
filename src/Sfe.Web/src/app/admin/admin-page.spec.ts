@@ -141,7 +141,7 @@ describe('AdminPageComponent', () => {
         expect(heading()).toBe('Preferences');
         expect(navItem('My account').classList).toContain('open');
         // Only the open section lists its sub-pages, the current one marked.
-        expect(subItems().map((a) => a.textContent!.trim())).toEqual(['Preferences', 'Password', 'Connections']);
+        expect(subItems().map((a) => a.textContent!.trim())).toEqual(ADMIN_SECTIONS[0].subpages.map((p) => p.title));
         expect(currentSubItem().textContent!.trim()).toBe('Preferences');
         expect(navItem('My account').getAttribute('aria-current')).toBeNull();
         expect(chips()).toHaveLength(0);

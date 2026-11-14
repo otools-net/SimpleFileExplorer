@@ -17,4 +17,11 @@ internal sealed record FileJobServices(
     ServerFiles ServerFiles,
     WorkFolder Work,
     CurrentAccess Current
-);
+)
+{
+    /// <summary>
+    /// What the person who starts a job may do, read again at each item (with the request's access token's limits).
+    /// </summary>
+    public FileJobAccess AccessFor(TenantInfo tenant, AccessState state) =>
+        new(Accounts, Rights, Paths, ServerFiles, Work, tenant, state.User?.Id, Current.JobToken());
+}

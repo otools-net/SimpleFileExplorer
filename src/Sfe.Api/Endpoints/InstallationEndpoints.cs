@@ -40,7 +40,7 @@ public static class InstallationEndpoints
 
     public static RouteGroupBuilder MapInstallationEndpoints(this RouteGroupBuilder api)
     {
-        var installation = api.MapGroup("/installation").WithTags("Installation");
+        var installation = api.MapGroup("/installation").WithTags("Installation").SessionOnly();
 
         installation
             .MapPost("/check", Check)

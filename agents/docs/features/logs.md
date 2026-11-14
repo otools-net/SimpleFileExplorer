@@ -19,6 +19,9 @@ Code: `src/Sfe.Core/Logs/` (`AuditLogProvider`, `AuditLogService`), entity `Data
   user, the detail and each field's errors. 400 warning, 5xx error, others (409/413/422) information; plain
   401/403/404 not. Routes need nothing: return `TypedResults.Problem`/`ValidationProblem` and it is logged. Test:
   `LogTests.WhatTheApiRefusesOrFailsWithIsLoggedWithWhoAskedButNoPassword`.
+- **Access tokens:** `AccessTokenAudit` logs every bearer request that may change something (not GET/HEAD/OPTIONS)
+  with its status, account and token ("… to admin through access token 5 “name”"); `ProblemLog` names the token the
+  same way (`BearerTokens.Describe`); refused tokens are security warnings naming `sfe_<lookup>` only.
 - `AuditLogProvider.Suppress()` (an `AsyncLocal`) keeps the log's own EF commands and failures out of it, else EF at
   Information would log every insert into the log forever. Use it around anything the log service does.
 - `AuditLogWorker` (root hosted service) flushes every 2 s and purges hourly; while `MigrationCoordinator.IsBlocking`

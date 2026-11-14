@@ -64,7 +64,7 @@ public static class ProblemLog
             http.Request.Method,
             http.Request.Path.Value,
             status,
-            who ?? "a visitor",
+            BearerTokens.Describe(http, who),
             Describe(problem)
         );
     }

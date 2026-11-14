@@ -6,6 +6,8 @@
  * set in the server's configuration files.
  */
 
+import { TOKEN_SETTINGS } from '../tokens/token-settings';
+
 export type GroupAction = 'clearHistory' | 'clearSearchHistory' | 'trickplayStatus' | 'browserTheme';
 
 interface FieldBase {
@@ -105,6 +107,7 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'keepAlive.intervalSeconds',
     'openBrowser',
     'fastSignIn',
+    'security.accessTokens.enabled',
 ]);
 
 // Players that a web page can open a file in through a link they register, for the "External player" choice:
@@ -1525,6 +1528,7 @@ export const TABS: SettingTab[] = [
             },
         ],
     },
+    TOKEN_SETTINGS,
 ];
 
 export function getValue(values: unknown, key: string): unknown {
@@ -1536,10 +1540,6 @@ export function getValue(values: unknown, key: string): unknown {
 export function setValue(values: Record<string, unknown>, key: string, value: unknown): void {
     const parts = key.split('.');
     const last = parts.pop()!;
-    (
-        parts.reduce<unknown>((target, part) => (target as Record<string, unknown>)[part], values) as Record<
-            string,
-            unknown
-        >
-    )[last] = value;
+    const parent = parts.reduce<unknown>((target, part) => (target as Record<string, unknown>)[part], values);
+    (parent as Record<string, unknown>)[last] = value;
 }

@@ -40,6 +40,7 @@ public static class ConfigEndpoints
             accounts,
             rights,
             configuration,
+            _,
             _
         ) = services;
         var state = await current.GetAsync();
@@ -131,7 +132,8 @@ public static class ConfigEndpoints
                 state.Has(Rights.ViewFiles)
                     ? new ArchivesConfig(Math.Max(0, server.Files.Archives.MaxCompressedTarMegabytes))
                     : null,
-                ConnectionsOf(state, server.Connections, services.Connections)
+                ConnectionsOf(state, server.Connections, services.Connections),
+                TokensOf(state, services.Tokens)
             )
         );
     }
@@ -157,6 +159,12 @@ public static class ConfigEndpoints
                         )),
                 ]
             )
+            : null;
+
+    /// <summary>Whether tokens work and their longest life, for a session that may have or manage them.</summary>
+    private static AccessTokensConfig? TokensOf(AccessState state, AccessTokens tokens) =>
+        state.Has(Rights.OwnTokens) || state.Has(Rights.ManageTokens)
+            ? new AccessTokensConfig(tokens.Options.Enabled, tokens.Options.MaxLifetimeDays)
             : null;
 
     private static readonly string[] ConnectionRightIds =

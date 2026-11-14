@@ -1082,26 +1082,25 @@ public sealed class ApiTests
     [TestMethod]
     public async Task EverySettingOfTheClientsSettingsDialogExists()
     {
-        // settings-schema.ts names the settings by their camelCase path in GET /api/settings `values`; a renamed or
-        // removed setting would show an empty field and be sent back under a key the server ignores.
-        var schema = Path.GetFullPath(
-            Path.Combine(
-                Path.GetDirectoryName(SourceFile())!,
-                "..",
-                "..",
-                "src",
-                "Sfe.Web",
-                "src",
-                "app",
-                "settings",
-                "settings-schema.ts"
-            )
+        // settings-schema.ts (and the settings of a feature kept beside it, as tokens/token-settings.ts) names the
+        // settings by their camelCase path in GET /api/settings `values`; a renamed or removed setting would show an
+        // empty field and be sent back under a key the server ignores.
+        var app = Path.GetFullPath(
+            Path.Combine(Path.GetDirectoryName(SourceFile())!, "..", "..", "src", "Sfe.Web", "src", "app")
         );
-        if (!File.Exists(schema))
-            Assert.Inconclusive($"Sources not found at {schema}.");
+        string[] schemaFiles =
+        [
+            Path.Combine(app, "settings", "settings-schema.ts"),
+            Path.Combine(app, "tokens", "token-settings.ts"),
+        ];
+        if (schemaFiles.FirstOrDefault(file => !File.Exists(file)) is { } absent)
+            Assert.Inconclusive($"Sources not found at {absent}.");
+        var schemaText = string.Concat(
+            await Task.WhenAll(schemaFiles.Select(file => File.ReadAllTextAsync(file, Token)))
+        );
         var fields = System
             .Text.RegularExpressions.Regex.Matches(
-                await File.ReadAllTextAsync(schema, Token),
+                schemaText,
                 // Prettier lays an entry out on one line or one property per line, a label in either quotes.
                 @"\{\s*key: '(?<key>[\w.]+)',\s*label: (?:'[^']*'|""[^""]*""),\s*"
                     + @"type: '(?<type>\w+)'(?<numeric>,\s*numeric: true)?"
@@ -1116,6 +1115,7 @@ public sealed class ApiTests
         var values = settings.RootElement.GetProperty("values");
 
         Assert.IsGreaterThan(30, fields.Count, "The schema's fields were not found: the pattern may need updating.");
+        Assert.Contains("security.accessTokens.maxLifetimeDays", fields.Select(f => f.Key).ToList());
         var missing = fields.Where(f => !TryGet(values, f.Key, out _)).Select(f => f.Key).ToList();
         Assert.IsEmpty(missing, "Settings unknown to the server: " + string.Join(", ", missing));
 

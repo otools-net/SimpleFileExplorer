@@ -26,5 +26,6 @@ internal sealed record ConfigServices(
     AccessService Accounts,
     RightsEvaluator Rights,
     IConfiguration Configuration,
-    ConnectionProviders Connections
+    ConnectionProviders Connections,
+    AccessTokens Tokens
 );

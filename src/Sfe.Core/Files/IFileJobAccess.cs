@@ -30,4 +30,10 @@ public interface IFileJobAccess
     /// at each); null when they have none any more.
     /// </summary>
     Task<IArchiveAccess?> ArchiveAccessAsync() => Task.FromResult<IArchiveAccess?>(null);
+
+    /// <summary>
+    /// Why the job may not go on with its next items (the access token that started it was revoked); null while it
+    /// may.
+    /// </summary>
+    Task<string?> StoppedAsync() => Task.FromResult<string?>(null);
 }

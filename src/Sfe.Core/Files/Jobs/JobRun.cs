@@ -50,6 +50,18 @@ internal sealed class JobRun(
     /// <summary>A transfer's connection it writes into; null for the library.</summary>
     public int? ToConnection { get; init; }
 
+    /// <summary>
+    /// Starts on item <paramref name="path"/> (<see cref="Current"/>): null, or the item refused unworked when the
+    /// job may not go on (<see cref="IFileJobAccess.StoppedAsync"/>: its access token was revoked).
+    /// </summary>
+    public async Task<FileJobItem?> BeginAsync(string path)
+    {
+        Current = path;
+        return await Access.StoppedAsync() is { } reason
+            ? new FileJobItem(path, null, FileOperationStatus.Forbidden, reason)
+            : null;
+    }
+
     public void Report(FileJobItem item)
     {
         lock (_gate)

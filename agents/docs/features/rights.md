@@ -28,5 +28,7 @@ Code: `src/Sfe.Core/Access/RightCatalog.cs` (+ `Rights` ids), `RightsEvaluator.c
   `ListingStore.can(right, item?)` for what depends on the folder, `config.can` for the rest.
 - A library membership is a group in it.
 - `CurrentAccess` picks the library: the cookie's if the account still reaches it, else its first; for visitors the
-  `sfe.guest` cookie's if open to guests, else the first library.
+  `sfe.guest` cookie's if open to guests, else the first library. With an access token: the token's library, or
+  `X-SFE-Tenant` among those the account reaches; rights = the account's ∩ the token's list
+  ([api-tokens-plan](../development/api-tokens-plan.md)).
 - Settings rights by prefix: [settings-new-key.md](settings-new-key.md). Space administrators: [accounts.md](accounts.md).

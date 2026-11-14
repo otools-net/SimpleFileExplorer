@@ -97,7 +97,13 @@ internal sealed class TransferOpening
     {
         var state = await _files.Current.GetAsync();
         var services = new ConnectionJobServices(_people.Accounts, _people.Rights, _files.Access, _transfers.Changes);
-        var who = new ConnectionJobSubject(state.Tenant!, state.User?.Id, id, RemotePaths.ComparisonOf(capabilities));
+        var who = new ConnectionJobSubject(
+            state.Tenant!,
+            state.User?.Id,
+            id,
+            RemotePaths.ComparisonOf(capabilities),
+            _files.Current.JobToken()
+        );
         return new ConnectionJobAccess(services, who);
     }
 }

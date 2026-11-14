@@ -18,7 +18,7 @@ from page to page: click the section to open its first page, the group to see it
 
 | Group | Section | Pages |
 |---|---|---|
-| Account | [My account](my-account.md) | Preferences, Password, [Connections](connections.md#adding-a-connection) |
+| Account | [My account](my-account.md) | Preferences, Password, [Connections](connections.md#adding-a-connection), [Access tokens](my-account.md#access-tokens) |
 | Viewing | [Interface](interface.md) | Appearance, Browsing, Search |
 | | [Playback](playback.md) | Player, Streaming, Video streams |
 | Library | [Scanning](scanning.md) | What to scan, File types, Indexing |
@@ -28,7 +28,7 @@ from page to page: click the section to open its first page, the group to see it
 | Media | [Thumbnails](thumbnails.md) | previews in listings and the viewer |
 | | [Trickplay](trickplay.md) | Activity, Settings |
 | | [Picture editor](picture-editor.md) | where edited pictures go |
-| Access | [Spaces & accounts](spaces-and-accounts.md) | Spaces, Accounts |
+| Access | [Spaces & accounts](spaces-and-accounts.md) | Spaces, Accounts, [Access tokens](spaces-and-accounts.md#access-tokens), Token settings |
 | Server | [Background tasks](background-tasks.md) | Tasks, Schedules, History, Settings |
 | | [Logs](logs.md) | Log, Settings |
 | | [System](system.md) | About, Installation, Start-up, Maintenance |

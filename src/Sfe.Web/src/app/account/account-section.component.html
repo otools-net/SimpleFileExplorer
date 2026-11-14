@@ -1,4 +1,7 @@
 @switch (tab()) {
+    @case ('tokens') {
+        <sfe-my-tokens />
+    }
     @case ('password') {
         @if (config.user()?.local === false) {
             <p class="muted">The password of this account is kept by its directory: change it there.</p>

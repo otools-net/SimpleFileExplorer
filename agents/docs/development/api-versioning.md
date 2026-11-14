@@ -103,6 +103,7 @@ list (`x-sfe-problem-types`), so the baseline refuses a word removed.
 | `nothing-to-retry` | 409 | a retry of a job with nothing left to start again |
 | `read-only` | 409 | the file is read-only: not saved over |
 | `scan-running` | 409 | a scan runs there: try again once it ends |
+| `session-only` | 403 | a route for signed-in sessions only (sign-in, password, setup, tokens…) called with an access token |
 | `setup-required` | 503 | the server has no administrator yet |
 | `tenant-changed` | 409 | the session is in another space now: reload |
 | `too-large` | 413 | too large to show or save as text, or to read from an archive |

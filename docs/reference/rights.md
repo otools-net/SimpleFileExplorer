@@ -47,6 +47,8 @@ Each right is of one of two kinds (column **Kind**):
 | `tenant.members` | the space's accounts, groups and visitors | Write | no | Administrators |
 | `account.preferences`, `account.password` | own preferences and password | Write | no | Administrators, Users |
 | `account.quickLinks` | own [quick links](../user-guide/browsing.md#quick-links) in the sidebar | Write | no | Administrators, Users |
+| `account.tokens` | own personal access tokens, for programs calling the [API](api.md) as the account | Write | no | Administrators |
+| `access.tokens` | the access tokens of the space's accounts: see and revoke them | Write | no | Administrators |
 | `system.apiDocs` | the API documentation (`/api/docs`) | Read | no | Administrators |
 | `connections.use` | see and open the connections to other storage one is allowed to use | Read | no | Administrators |
 | `connections.own` | connect storage of one's own, private to the account | Write | no | Administrators |

@@ -36,7 +36,11 @@ public sealed class ConnectionJobAccess(ConnectionJobServices services, Connecti
         if (user is null || user.Disabled)
             return null;
 
+        if (who.Token is { } token && !await token.IsActiveAsync(cancellationToken))
+            return null;
+
         var access = await services.Rights.GetAsync(new AccessSubject(who.Tenant.Id, userId), cancellationToken);
+        access = who.Token?.Limit(access) ?? access;
         if (!access.Has(Rights.UseConnections))
             return null;
         var subject = ConnectionEndpoints.SubjectOf(new AccessState(who.Tenant, user, access));
