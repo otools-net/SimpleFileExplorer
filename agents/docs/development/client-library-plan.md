@@ -76,7 +76,32 @@ against the real server in process, and a server change that would break it fail
 - [ ] `Search.QueryAsync` (query text as the app's language, sorts, cursor paging as `IAsyncEnumerable`, count)
 - [ ] `Tags` (list, tags of files, add and remove on files)
 
-### Phase 5: compatibility, sample, packaging
+### Phase 5: connections (moved here from the connections plan, closed 2026-11-14)
+
+The server side is built ([connections](../features/connections.md)); the facade comes on phases 2 and 3.
+
+- [ ] `sfe.Connections`: `ListAsync` (usable ones: `GET api/v1/connections`, its `usable` part: id, name, kind,
+  level, access, capabilities), and a connection as a **location** the file methods take
+  (`sfe.Connections[id].Files`, or a location argument on `sfe.Files`), mapping to:
+  - list / get: `GET connections/{id}/browse` (paged, `hasMore`, `sorted`), `files/properties?path=`;
+  - download / open read: `GET connections/{id}/files/raw/{path}` (ranges only when the capability says so);
+    several items as a zip: `POST connections/{id}/archive` then its one-time link;
+  - upload (resumable, conflict choice): `connections/{id}/files/uploads` (check, start, PUT chunk, finish, cancel;
+    a 409 wrong offset gives where to go on from);
+  - create folder, rename, delete, move / copy inside it: `POST connections/{id}/files/folders`, `rename`, `delete`,
+    `transfer` (a result per item; a 409 `access-gains` answered by a `keepAccess` choice);
+  - transfers between the library and a connection or two connections: `POST files/jobs/transfer` as an `SfeJob`
+    (the library's job routes follow, answer, cancel it), `POST files/jobs/{id}/retry`;
+  - folder rules (administration of a library): `GET`/`PUT connections/{id}/folder-rules`, `GET …/folders?path=`
+    (through `Raw` is enough unless the facade covers library folder rules too).
+- [ ] Errors: the `connection-*` problem types (`needs-reconnecting`, `rate-limited` with `Retry-After`,
+  `unavailable`, `refused`, `not-supported`, `unusable`) as `SfeApiException` subclasses or a kind; retries on
+  `connection-rate-limited` as on 429.
+- [ ] Capabilities checked before a call (`SfeNotSupportedException` when the provider can't: thumbnails, ranges,
+  server-side copy / move, uploads in parts); tests on the `FakeProvider` registered in the in-process server; the
+  baseline of the v1 document updated.
+
+### Phase 6: compatibility, sample, packaging
 
 - [ ] Public API snapshot test (`PublicApiAnalyzers`, or a text snapshot of the public surface)
 - [ ] `samples/Sfe.Client.Sample` (console: list, upload, download, move); run by a test as a smoke test
@@ -84,8 +109,6 @@ against the real server in process, and a server change that would break it fail
   ([portable-build](../environment/portable-build.md))
 - [ ] `docs/reference/client-library.md` (install from the file, token, examples, errors, versions); package README
 - [ ] New note `agents/docs/features/client-library.md`; this plan deleted
-
-(Connections in the facade: last phase of [connections-plan](connections-plan.md).)
 
 ## Rules for the facade
 

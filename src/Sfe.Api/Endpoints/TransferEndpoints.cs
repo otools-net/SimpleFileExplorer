@@ -8,7 +8,7 @@ namespace Sfe.Api.Endpoints;
 
 /// <summary>
 /// Moves and copies between the library and a connection, or between two connections, as background jobs
-/// (agents/docs/development/connections-plan.md, phase 5). They are the library's file jobs: followed, answered and
+/// (agents/docs/features/transfers.md). They are the library's file jobs: followed, answered and
 /// cancelled through <c>api/files/jobs</c>.
 /// </summary>
 public static class TransferEndpoints

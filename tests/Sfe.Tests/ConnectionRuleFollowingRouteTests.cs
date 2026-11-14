@@ -164,7 +164,7 @@ public sealed class ConnectionRuleFollowingRouteTests
         return viewers;
     }
 
-    /// <summary>A rule of another library at <paramref name="path"/> (written as a server connection's would be).</summary>
+    /// <summary>A rule of another library at <paramref name="path"/>, as a server connection's is written.</summary>
     private async Task<int> OtherLibraryRuleAsync(string path)
     {
         var accounts = _world.Get<AccessService>();

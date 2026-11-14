@@ -3,9 +3,11 @@
 **Connections** link SFE to storage outside its libraries: Dropbox, for now. Whoever runs the server registers an app
 at Dropbox once; then people with the rights connect their Dropbox, or one for a space or for the whole server.
 
-This version makes, signs in again and manages connections, browses their files
-([browsing a connection](#browsing-a-connection)) and changes them where you may, uploads included, and copies and moves files between it and the library
-([below](#between-the-library-and-a-connection)).
+Connections are made, signed in to again and managed here; their files are browsed and downloaded
+([browsing a connection](#browsing-a-connection)), changed and uploaded to where you may, copied and moved between a
+connection and the library ([below](#between-the-library-and-a-connection)), and a space narrows what its groups do
+in some folders with [folder rules](#folder-rules-of-a-connection). A connection's files are not indexed: no search,
+tags or folder pictures there yet.
 
 ## Levels
 
@@ -15,8 +17,9 @@ This version makes, signs in again and manages connections, browses their files
 | **This space** | the space's groups chosen for it | the space's administrators | `connections.library` |
 | **The server** | the spaces it is offered to, then their groups | the server's administrators | `connections.server` |
 
-The three rights go to the **Administrators** group of every space, never to guests
-([rights](../reference/rights.md)). A connection of one account stays private: the server's administrators see that it
+The three rights, and `connections.use` (to see and open the connections one is given), go to the **Administrators**
+group of every space, never to guests ([rights](../reference/rights.md)): give `connections.use` to the groups that
+should use a space's or the server's connections. A connection of one account stays private: the server's administrators see that it
 exists and can remove it, never open or change it.
 
 ## Setting up Dropbox (server administrators)
@@ -69,7 +72,7 @@ A sign-in lasts 10 minutes and works once, for the account that started it.
   changes; for a server connection, the **spaces it is offered to** (every space, or some), then each space's
   administrators choose their groups.
 - **Folder rules…** (space and server connections, for those who manage the space's connections): see below.
-- **Remove**: the connection goes with who used it; the files stay in the storage.
+- **Remove**: the connection goes with who used it and its folder rules; the files stay in the storage.
 
 ### Folder rules of a connection
 
@@ -110,9 +113,9 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
 - **Properties** (item menu) shows a file's or folder's size, date (Dropbox keeps none for folders), path and
   Dropbox's content hash; on your own connection, the Dropbox account too.
 - Where the connection gives you **reads and changes**: **New folder**, **Rename** (F2) and batch rename, **Delete**
-  (into Dropbox's deleted files, where Dropbox keeps them for a while: no Undo in SFE), and moving or copying inside
-  the connection by cut and paste (Ctrl+X / Ctrl+C, Ctrl+V) or by dragging onto a folder. A connection made read only
-  shows none of them.
+  (into Dropbox's deleted files, where Dropbox keeps them for a while, as the delete dialog says: no Undo in SFE),
+  and moving or copying inside the connection by cut and paste (Ctrl+X / Ctrl+C, Ctrl+V) or by dragging onto a
+  folder. A connection made read only shows none of them.
 - **Upload** files or folders (the button, or dropping them from the desktop) on such a connection: each part goes
   on to Dropbox as it arrives, nothing is kept on the server. As in the library, a name already taken asks keep both,
   replace or skip, and the space's largest file size applies. An upload into a connection interrupted by closing the

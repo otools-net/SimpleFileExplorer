@@ -133,6 +133,36 @@ input, LIKE escaped, no `innerHTML` in the client.
   site; a flash link's entry with `..`, encoded separators, a hidden subfolder, `.sfe`; an external player's token on
   the flash route and back; links of a disabled account, after a rule, with `Player:Flash` off. Checked 2026-10-25: the
   frame sends no cookie (`Origin: null`), `javascript:`/`_blank` do nothing (`FlashRouteTests`, spike in headless Edge).
+- **Connections:** see [Connections](#connections) below.
 - **CSRF/framing/rebinding:** cross-site POST without the header, framing the app, foreign `Host`.
 - **DoS:** floods of thumbnails/probes as a guest, `*` searches, big covers requests, parallel editor uploads, streams.
 - **Secrets at rest:** backup content, log store and log files, permissions of `data/`.
+
+## Connections
+
+External storage linked to an account, a library or the server ([connections.md](../features/connections.md)). Rules
+kept by the code: a connection one may not use answers 404 (never told apart from missing), never opened by an
+administrator for another account; credentials only protected (Data Protection, purpose `SFE.Connections`); every
+outbound call through `OutboundPolicy` ([connection-providers.md](../features/connection-providers.md)); folder rules
+checked before any provider call ([connection-folder-rules.md](../features/connection-folder-rules.md)); remote
+content served under the library's sandbox (`RemoteFileResult`).
+
+| Vector | Tested by |
+|---|---|
+| Another account's private connection by id (browse, raw, properties, write routes, uploads, transfers, retry): 404; only removed by the server's administrators, never opened | `ConnectionFileRouteTests.NothingOutsideTheRootNorAnotherAccountsConnectionIsReached`, `ConnectionWriteRouteTests`, `ConnectionUploadRouteTests.AnUploadIsItsOwnersOnly`, `TransferRouteTests`, `TransferRetryTests.AnotherAccountFindsNothingToRetry`, `ConnectionRouteTests.AnotherAccountsConnectionIsNotFound…`, `ConnectionAccessTests` |
+| A library-level connection from another library; a server-level one in a library it isn't offered to | `ConnectionAccessTests`, `ConnectionRouteTests.AServerConnectionIsOfferedThenGivenToTheLibrarysGroups` |
+| Connections turned off, a kind or level taken out of the settings | `ConnectionAccessTests.TheServerSettingsTurnConnectionsOff`, `ALevelTakenOutOfTheSettingsIsNotUsed` |
+| OAuth: another account's state, a state reused (spent by any attempt), late (10 minutes), forged; a code completed twice; the callback signed out or refused; an authorize at a level the account may not create; a right lost mid sign-in | `ConnectionSignInFlowTests`, `ConnectionSignInRouteTests` |
+| Signing in again by someone who may not manage it; another provider account told | `ConnectionSignInFlowTests.OnlyWhoMayManageItSignsAConnectionInAgain`, `SigningInAgainKeepsTheConnectionAndTellsAnotherAccount` |
+| Paths: `..`, encoded separators, names the provider folds (case, trailing dots), above the connection's root, too long | `RemotePathsTests`, `ConnectionFileRouteTests`, `ConnectionWriteRouteTests.TransfersRefuseFoldersIntoThemselvesPathsOutsideAndOtherWords`, `ConnectionUploadRouteTests.BadNamesAndTargetsLeavingTheRootAreRefused` |
+| A read-only connection or a Read group level on every writing route and on both sides of a transfer | `ConnectionWriteRouteTests.AConnectionOnlyReadIsNotChanged…`, `ConnectionUploadRouteTests.AConnectionOnlyRead…`, `TransferRouteTests.…OneOnlyReadIsNotWritten`, `ConnectionFolderAccessRouteTests.AReadOnlyConnectionCapsEveryRule` |
+| A hidden folder through listing (totals, later pages), raw, properties, write routes, uploads (also hidden meanwhile), zips (at both steps), transfers; a hidden name taken; a job after a rule changed | `ConnectionFolderAccessRouteTests`, `ConnectionFolderAccessJobTests`, `RemoteListingFilterTests`, `RemoteTransferEndpointTests` |
+| A user in two groups: a right of one group added to the level of another | `ConnectionFolderAccessRouteTests.ARightCountsOnlyAtTheLevelOfTheGroupGrantingIt`, `ConnectionPoliciesTests` |
+| A folder rule escaped by a move (more people let in, another library's rules, moved out, deleted, renamed outside SFE) | `ConnectionRuleFollowingRouteTests`, `ConnectionPoliciesTests` (id match) |
+| Secrets (refresh tokens, app secret, PKCE verifier) in answers, settings, logs, backups, URLs | `ConnectionProviderRouteTests.TheSecretIsWrittenButNeverReadBack`, `ConnectionCredentialsTests` (other keys read nothing); logs, backups and the job view: by review only |
+| Remote content: `.html` / `.svg` served from a connection (sandboxed, attachment); a script loaded by a page | `ConnectionFileRouteTests.AFileIsServedWholeOrInPartSandboxed` (`.html`; the rest shares `FilePolicy` with the library) |
+| Floods: listings and reads as one caller; a provider asking to wait; a transfer of millions of items (bounded memory: pages, depth first) | `ConnectionGatesTests`, `ConnectionFileRouteTests.WhileTheProviderAsksToWaitNobodyCallsIt`, `TransferCallsTests`; per-caller limit `RequestLimits.Connections` and the transfer's memory: by review only |
+| Outbound: a host outside the provider's rule, http, a redirect; later providers: an address typed by a person pointing at loopback or the LAN, a redirect to one | `OutboundPolicyTests` |
+| The client naming a provider's host (fully local) | `ApiTests.WebClientHasNoExternalResources` |
+| Local mode: connections for the administrators on this computer, nothing new answering other computers | not automated (the routes sit behind `RequestGuard` like every other) |
+| An access token limited in rights or library using connections | not yet: comes with [api-tokens-plan.md](api-tokens-plan.md) |

@@ -4,7 +4,7 @@ namespace Sfe.Core.Connections.Dropbox;
 
 /// <summary>
 /// What the Dropbox SDK throws, as one <see cref="RemoteStorageException"/> (the kinds seen in the spike,
-/// agents/docs/development/connections-plan.md, phase 0). The messages name no token, code or address.
+/// agents/docs/features/dropbox.md). The messages name no token, code or address.
 /// </summary>
 internal static class DropboxErrors
 {

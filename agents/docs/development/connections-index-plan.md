@@ -3,8 +3,8 @@
 Files: `src/Sfe.Core/Data/SfeDbContext.cs`, `Data/Migrations/`, `DatabaseInitializer`, new
 `Core/Connections/Indexing/`, `Core/Search/`, `Core/Tagging/`, `Core/Thumbnails/`, `Core/Streaming/`, `Core/Tasks/`;
 `Endpoints/Connection*Endpoints.cs`; client `app/library/` (search, viewer), `app/tags/`, `app/player/`,
-`app/formats/`. Part 6 of the [epic](external-access-epic-plan.md); needs [connections-plan](connections-plan.md)
-finished. Delete this plan once its last item is ticked.
+`app/formats/`. Part 6 of the [epic](external-access-epic-plan.md); builds on the connections as built
+([connections](../features/connections.md); plan 5, done 2026-11-14). Delete this plan once its last item is ticked.
 
 ## Decisions
 
@@ -119,5 +119,5 @@ finished. Delete this plan once its last item is ticked.
 - Trickplay, fingerprints, duplicates and similar videos across locations; missing-file tracking for connections.
 - Default tags of folders and folder covers in connections; the picture and text editors saving to a connection.
 - One merged, sorted search across locations.
-- More providers: WebDAV, SFTP/SCP, FTP, Google Drive (how to add one: `connection-providers.md` of
-  [connections-plan](connections-plan.md)).
+- More providers: WebDAV, SFTP/SCP, FTP, Google Drive (how to add one:
+  [connection-providers](../features/connection-providers.md)).

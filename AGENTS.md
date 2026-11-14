@@ -78,7 +78,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [paths](agents/docs/development/paths.md) | root-relative paths, case | `Core/Paths/LibraryPaths` |
 | [api-routes](agents/docs/development/api-routes.md) | minimal API conventions and gotchas | `Sfe.Api/Endpoints/` |
 | [api-versioning](agents/docs/development/api-versioning.md) | `/api/v1`, what is breaking, old paths as aliases, problem `type` words | `Program.cs`, `Sfe.Api/Endpoints/` |
-| [external-access-epic-plan](agents/docs/development/external-access-epic-plan.md) | epic: versioned API, access tokens, C# client, external connections; **status board** (done / next) across sessions | its six `*-plan.md` |
+| [external-access-epic-plan](agents/docs/development/external-access-epic-plan.md) | epic: versioned API, access tokens, C# client, external connections; **status board** (done / next) across sessions | its `*-plan.md` (plan 5 done) |
 | [code-style](agents/docs/development/code-style.md) | C# style | `.editorconfig` |
 | [readability](agents/docs/development/readability.md) | readable code: size limits (lines, functions, files, templates), names, comments, per-language rules, refactoring existing code without changing behaviour, checking tools | `.editorconfig`, `agents/tools/readability/` |
 | [readability-handover](agents/docs/development/readability-handover.md) | handover of the readability refactoring: where it stands, how to resume, checks per commit, patterns set, traps | `agents/tools/readability/` |
@@ -87,8 +87,6 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [api-tokens-plan](agents/docs/development/api-tokens-plan.md) | plan 2: personal access tokens (`Authorization: Bearer`), session-only routes, rights, pages | `Core/Access/`, `Sfe.Api/Security/`, `app/account/` |
 | [namespace-rename-plan](agents/docs/development/namespace-rename-plan.md) | plan 3: C# namespaces `Sfe.*` become `Otools.Net.Sfe.*` (namespaces only; projects, assemblies and the executable keep their names) | `src/`, `tests/` |
 | [client-library-plan](agents/docs/development/client-library-plan.md) | plan 4: `Sfe.Client` C# package (generated client + hand-written facade), tests, packaging | `src/Sfe.Client/` |
-| [connections-plan](agents/docs/development/connections-plan.md) | plan 5: external connections (provider interfaces, Dropbox, levels, browse, file management, transfers, folder rules) | `Core/Connections/`, `app/connections/` |
-| [connections-handover](agents/docs/development/connections-handover.md) | handover of the connections work: where it stands, what exists, decisions, the design of the next items, traps | `Core/Connections/`, `tests/Sfe.Tests/Infrastructure/Connections/` |
 | [connections-index-plan](agents/docs/development/connections-index-plan.md) | plan 6: index, search ("Everywhere"), tags and previews of connection files, content cache | `SfeDbContext`, `Core/Search/`, `Core/Tagging/` |
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
@@ -123,7 +121,12 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | Note | Covers | Code |
 |---|---|---|
 | [rights](agents/docs/features/rights.md) | adding a right, how rights are evaluated | `Core/Access/RightCatalog`, `RightsEvaluator`, `core/rights.ts` |
-| [connections](agents/docs/features/connections.md) | external storage: model, levels, who may use one (`ConnectionAccess`), protected credentials, audit lines, cascade gotcha | `Core/Connections/`, `ConnectionCredentials` |
+| [connections](agents/docs/features/connections.md) | external storage: model, levels, who may use one (`ConnectionAccess`), credentials, sign-in, management, the client's place (`?c=`), audit lines, **open decisions (defaults taken)**, gotchas | `Core/Connections/`, `ConnectionCredentials`, `app/connections/`, `connection-pages.ts` |
+| [connection-files](agents/docs/features/connection-files.md) | a connection's files: browse (snapshots), raw, zips, gates and waits, problem types, create / rename / delete / move inside, uploads, properties | `ConnectionFileEndpoints`, `ConnectionWriteEndpoints`, `ConnectionUploadEndpoints`, `RemoteListings` |
+| [connection-providers](agents/docs/features/connection-providers.md) | adding a provider: `IConnectionProvider` / `IRemoteStorage`, `FakeStorageTests` as the contract, capabilities, error kinds, `OutboundPolicy`, `RemotePaths` | `Core/Connections/`, `FakeProvider` |
+| [dropbox](agents/docs/features/dropbox.md) | Dropbox: the SDK, rule hosts, scopes, app key / secret, PKCE, error mapping, temporary links, upload sessions, content hash, manual check list | `Connections/Dropbox/`, `agents/tools/dropbox-check/` |
+| [transfers](agents/docs/features/transfers.md) | copy / move between the library and a connection (or two): route, jobs, streaming, verification, retry, task history, trash default | `Core/Transfers/`, `TransferEndpoints`, `place-transfers.ts` |
+| [connection-folder-rules](agents/docs/features/connection-folder-rules.md) | folder rules inside connections: twin table, `ConnectionPolicies`, enforcement before provider calls, management, rules following moves, provider ids | `ConnectionRuleService`, `ConnectionPolicies`, `ConnectionMoves`, `folder-rules-source.ts` |
 | [right-kinds](agents/docs/features/right-kinds.md) | Read/Write rights, `AtFolder`, `kind:write`/`folder:write`, read-only switches | `RightCatalog`, `access-parts.ts` |
 | [folder-access](agents/docs/features/folder-access.md) | per-folder permissions: model, policy, rules, enforcement, management card | `FolderPolicy`, `FolderRuleService`, `FolderChecks`, `folder-access.component.ts` |
 | [accounts](agents/docs/features/accounts.md) | sign-in directories, space administrators | `Core/Access/`, `app/access/`, `app/account/` |

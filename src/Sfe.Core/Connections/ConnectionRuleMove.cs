@@ -18,7 +18,7 @@ public sealed class ConnectionRuleMove : IAsyncDisposable
         _rows = rows;
     }
 
-    /// <summary>The libraries other than the request's whose rules follow the folder (or go, left stale there).</summary>
+    /// <summary>The libraries other than the request's whose rules follow the folder (or go stale).</summary>
     public IReadOnlyList<int> OtherLibraries => _rows.OtherLibraries;
 
     /// <summary>

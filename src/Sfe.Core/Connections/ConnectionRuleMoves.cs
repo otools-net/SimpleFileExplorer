@@ -187,7 +187,7 @@ internal sealed class ConnectionRuleMoves(
         return null;
     }
 
-    /// <summary>Rules on the moved folder that keep the level each of the asking library's principals had there.</summary>
+    /// <summary>Rules on the moved folder keeping the level each principal of the asking library had there.</summary>
     private static async Task<List<ConnectionFolderRule>> PinsAsync(
         AccessDbContext db,
         ConnectionMovePlan plan,

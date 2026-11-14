@@ -41,7 +41,26 @@ Dropbox.
 - [ ] Download one file; several and a folder as one zip; a Paper document in a zip is listed in `SFE - left out.txt`.
 - [ ] Connected apps at Dropbox: the app removed, the next listing says the connection must be signed in to again.
 
-## Files and transfers (phases 4 and 5)
+## Files
 
-Added with those phases: upload of a file over 150 MB (parts), rename and move at Dropbox, delete into Dropbox's own
-deleted files, copy to and from the library.
+- [ ] New folder, rename (also a case-only rename: `a.txt` to `A.txt`), move and copy inside the connection by cut and
+  paste: Dropbox's web page shows the same.
+- [ ] Delete: the item is in Dropbox's deleted files; the dialog said the provider keeps them.
+- [ ] Upload a file over 150 MB (several parts) and a folder; close the page mid-upload: nothing half-written stays
+  at Dropbox. Upload a name already there: keep both, replace, skip.
+- [ ] Properties of a file: size, date and Dropbox's content hash (compare with the hash Dropbox's API gives).
+
+## Transfers with the library
+
+- [ ] Copy a folder of photos and a video over 150 MB from the library to Dropbox and back; the task history shows one
+  run per transfer, both places named.
+- [ ] Move a file from the library to Dropbox: it lands in SFE's trash once Dropbox has it; move it back: it lands in
+  Dropbox's deleted files.
+- [ ] Cut the network mid-transfer: the item fails, **Retry** in the operations panel finishes it.
+
+## Folder rules
+
+- [ ] On a library-level connection, a rule hiding a folder from a group: a member of that group neither lists nor
+  opens it (address typed by hand: not found).
+- [ ] Rename the ruled folder in SFE: the rule follows. Rename it on Dropbox's web page: it stays hidden where the
+  listing shows it; re-point the rule on the card.

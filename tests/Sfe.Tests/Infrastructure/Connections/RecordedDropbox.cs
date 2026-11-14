@@ -4,7 +4,7 @@ using System.Text;
 namespace Sfe.Tests.Infrastructure;
 
 /// <summary>
-/// Dropbox's answers, recorded (shapes from the SDK's spike, agents/docs/development/connections-plan.md): the
+/// Dropbox's answers, recorded (shapes from the SDK's spike, agents/docs/features/dropbox.md): the
 /// transport given to <see cref="Sfe.Core.Connections.OutboundPolicy"/>, so no test calls Dropbox. Keeps every
 /// request with its body, and answers by path.
 /// </summary>

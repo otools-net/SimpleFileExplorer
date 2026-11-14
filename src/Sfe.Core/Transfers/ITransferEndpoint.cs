@@ -1,9 +1,9 @@
 namespace Sfe.Core.Transfers;
 
 /// <summary>
-/// One side of a transfer between the library and a connection (agents/docs/development/connections-plan.md, phase
-/// 5): what a transfer job reads and writes through, whatever the side. Paths are relative to the side's root and
-/// already normalised. Failures are <see cref="Sfe.Core.Connections.RemoteStorageException"/> on both sides (the
+/// One side of a transfer between the library and a connection (agents/docs/features/transfers.md): what a
+/// transfer job reads and writes through, whatever the side. Paths are relative to the side's root and already
+/// normalised. Failures are <see cref="Sfe.Core.Connections.RemoteStorageException"/> on both sides (the
 /// library's side turns its own into them), so the job handles one kind of error. Access is the side's to check.
 /// </summary>
 public interface ITransferEndpoint : IAsyncDisposable

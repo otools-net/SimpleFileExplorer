@@ -1,8 +1,9 @@
 # Plan (epic): versioned API, access tokens, C# client library, external connections
 
-Files: the six plans below; code named in each. This file is the **overview**: what was decided, in what order the
-plans run, what none of them does. Delete it with the last plan (see [AGENTS.md](../../../AGENTS.md), "Keeping these
-notes current"), moving the decisions that stay true into the feature notes.
+Files: the plans below (plan 5, connections, done and deleted); code named in each. This file is the **overview**:
+what was decided, in what order the plans run, what none of them does. Delete it with the last plan (see
+[AGENTS.md](../../../AGENTS.md), "Keeping these notes current"), moving the decisions that stay true into the feature
+notes.
 
 ## Why
 
@@ -22,7 +23,7 @@ Each plan is worked alone, with its own releases; a later one builds on the earl
 | 2 | [api-tokens-plan](api-tokens-plan.md) | personal access tokens (`Authorization: Bearer`) | 1 |
 | 3 | [namespace-rename-plan](namespace-rename-plan.md) | C# namespaces `Sfe.*` become `Otools.Net.Sfe.*` (refactoring) | |
 | 4 | [client-library-plan](client-library-plan.md) | `Otools.Net.Sfe.Client` package over the v1 API | 1, 2, 3 |
-| 5 | [connections-plan](connections-plan.md) | providers, Dropbox, browse, file management, transfers, rules | 1 (4 for its last phase) |
+| 5 | connections (done 2026-11-14; notes: [connections](../features/connections.md)) | providers, Dropbox, browse, file management, transfers, rules | |
 | 6 | [connections-index-plan](connections-index-plan.md) | index, search, tags and previews of connection files | 5 |
 
 **A session takes the first unticked item of the first unfinished plan**, reads that plan's phase section, and ticks
@@ -35,14 +36,19 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 | # | Plan | State | Done | Next |
 |---|---|---|---|---|
-| 1 | api-v1 | in progress | phase 0 (rules: [api-versioning](api-versioning.md)); phase 1 (`ApiRoutes`, base still `/api`) | phase 2: `LegacyApiPaths` + `ApiRoutes.Base = "/api/v1"` in one commit |
+| 1 | api-v1 | in progress (**next of the epic**) | phase 0 (rules: [api-versioning](api-versioning.md)); phase 1 (`ApiRoutes`, base still `/api`) | phase 2: `LegacyApiPaths` + `ApiRoutes.Base = "/api/v1"` in one commit |
 | 2 | api-tokens | not started | | |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
-| 5 | connections | in progress (started before plans 1 to 4 at the owner request; its routes are mapped through `ApiRoutes`, so they follow the base) | phase 0 (results in the plan: `Dropbox.Api` SDK, twin rule table, capabilities); phase 1 (interfaces, `RemotePaths`, `OutboundPolicy`, `FakeProvider`; tables and migration `Connections`; rights, settings, `api/config`; `ConnectionService`, `ConnectionSharing`, `ConnectionAccess`, credentials protected, audit lines); phase 2 (`DropboxProvider` sign-in, app key setting, write-only app secret, provider routes; authorize, callback, complete; reauthorize; management routes; client pages, user docs); phase 3 (`DropboxStorage`, `RemoteListings`, browse / raw / thumbnail / zip routes, `ConnectionProblems`; the listing on `?c=`, `ConfigService.place`, sidebar section; `ConnectionGates`, policy `connections`) | phase 7: `sfe.Connections` in the C# library (needs plan 4's facade: decide the order), feature notes, security vectors, close the plan; a person runs `agents/tools/dropbox-check` before a release (see [connections-handover](connections-handover.md)) |
+| 5 | connections | **done** 2026-11-14 (started before plans 1 to 4 at the owner's request; routes mapped through `ApiRoutes`, so they follow the base); plan deleted, what stays true in [connections](../features/connections.md) and its sibling notes | phases 0 to 6 (providers, `OutboundPolicy`, tables, rights, settings; Dropbox sign-in and management; browse, read, zips, gates; file management, uploads, properties; transfers with the library, retry, history; folder rules, enforcement, following moves); phase 7: notes split, security vectors in [security](security.md#connections) | the facade item (`sfe.Connections`) moved to plan 4's phase 5; a person runs `agents/tools/dropbox-check` before a release |
 | 6 | connections-index | not started | | |
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
+
+- 2026-11-14 (fifth session): connections phase 7 closed plan 5: feature notes split (`connections`,
+  `connection-files`, `connection-providers`, `dropbox`, `transfers`, `connection-folder-rules`), open decisions
+  (defaults taken) listed in `connections.md`, attack vectors in `security.md`, `sfe.Connections` moved to plan 4,
+  user docs checked; plan and handover deleted. Next: api-v1 phase 2.
 
 - 2026-11-14 (fourth session): connections phase 3 (`DropboxStorage`, browse, raw and zip routes; the listing on a
   connection; rate limits and the provider's waits); phase 4 item 1 (create, rename, move, copy, delete in a

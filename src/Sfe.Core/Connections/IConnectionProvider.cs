@@ -6,7 +6,7 @@ namespace Sfe.Core.Connections;
 /// One kind of storage outside the library (Dropbox, later WebDAV, SFTP…): what it is called, what it can do, how
 /// an account signs in to it, and how its files are reached once signed in. One instance per kind, listed in
 /// <see cref="ConnectionProviders"/>; adding a kind is writing one of these and its <see cref="IRemoteStorage"/>
-/// (agents/docs/development/connections-plan.md).
+/// (agents/docs/features/connection-providers.md).
 /// </summary>
 public interface IConnectionProvider
 {

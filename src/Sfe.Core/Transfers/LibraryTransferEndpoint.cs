@@ -9,7 +9,7 @@ using static Sfe.Core.Transfers.LibraryTransferErrors;
 namespace Sfe.Core.Transfers;
 
 /// <summary>
-/// The library's side of a transfer (agents/docs/development/connections-plan.md, phase 5), with the checks of the
+/// The library's side of a transfer (agents/docs/features/transfers.md), with the checks of the
 /// library's own moves and copies (agents/docs/features/move-and-copy.md): paths that leave the library or reach the
 /// work folder are not found, links are not followed in folders, the person's rights and folder rules are read again
 /// at every call. Files are written into a partial file renamed at commit, under a scan turn; what is replaced or

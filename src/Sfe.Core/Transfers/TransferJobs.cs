@@ -9,7 +9,7 @@ namespace Sfe.Core.Transfers;
 
 /// <summary>
 /// Moves and copies between the library and a connection, or between two connections
-/// (agents/docs/development/connections-plan.md, phase 5): background jobs of the library's <see cref="JobBoard"/>
+/// (agents/docs/features/transfers.md): background jobs of the library's <see cref="JobBoard"/>
 /// (the same ids, list, questions on name clashes and cancel as <see cref="FileJobs"/>' jobs), walked by
 /// <see cref="TransferRun"/>. Each job owns its two sides and disposes them when it ends, is one run of the task
 /// history, and leaves its failed items to be started again (<see cref="Retry"/>).

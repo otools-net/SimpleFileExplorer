@@ -10,7 +10,7 @@ using Sfe.Core.Paths;
 namespace Sfe.Core.Transfers;
 
 /// <summary>
-/// Opens the library's side of transfers (agents/docs/development/connections-plan.md, phase 5), one per job: the
+/// Opens the library's side of transfers (agents/docs/features/transfers.md), one per job: the
 /// library's services it works with, and the person's access, read again at every call.
 /// </summary>
 public sealed class LibraryTransfers(
