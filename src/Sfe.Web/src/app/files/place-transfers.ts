@@ -2,21 +2,30 @@ import { inject, Injectable } from '@angular/core';
 import { ConfigService } from '../core/config.service';
 import { PlaceTransferItem } from '../core/connection.models';
 import { plural } from '../core/format';
-import { baseName } from '../core/paths';
+import { baseName, parentPath } from '../core/paths';
 import { PlaceConflict, PlaceFiles } from '../core/place-files';
 import { ToastService } from '../core/toast.service';
+import { UsableConnections } from '../core/usable-connections';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
-import { FileJobKind } from './file.models';
+import { FileJobKind, FileJobView, TransferRequest } from './file.models';
 
-/** Said when items would go between a connection and the library (or another connection). */
-export const BETWEEN_PLACES = 'Copying between a connection and the library comes with a later version.';
+/** The places of a move or copy: a connection's id, null for the library. */
+export interface TransferPlaces {
+    from: number | null;
+    to: number | null;
+}
+
+/** The places of a job: those of a transfer between two, else the library's. */
+export function jobPlaces(job: FileJobView): TransferPlaces {
+    return { from: job.fromConnection ?? null, to: job.toConnection ?? null };
+}
 
 /**
- * Moves and copies on the connection listed (agents/docs/features/connections.md): its provider does them at once,
- * so there is no job, no folder rules and no tags to ask about. Names taken in the target are asked about (keep both,
- * replace) and asked again. Moves and copies between a connection and the library are refused for now; `FileTransfers`
- * asks here first.
+ * Moves and copies on a connection (agents/docs/features/connections.md): its provider does them at once, so there is
+ * no job, no folder rules and no tags to ask about. Names taken in the target are asked about (keep both, replace) and
+ * asked again. Between two places (a connection and the library, or two connections) a transfer job does them
+ * (`between`), followed by `FileTransfers` as a library job; `FileTransfers` asks here first.
  */
 @Injectable({ providedIn: 'root' })
 export class PlaceTransfers {
@@ -24,45 +33,65 @@ export class PlaceTransfers {
     private readonly files = inject(PlaceFiles);
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
-
-    /** Where the items cut or copied were: a connection's id, null for the library. */
-    private keptIn: number | null = null;
+    private readonly connections = inject(UsableConnections);
 
     /** The connection listed, null for the library. */
-    private here(): number | null {
+    here(): number | null {
         return this.config.place()?.id ?? null;
     }
 
-    /** Ctrl+X, Ctrl+C: the items kept are of the place listed. */
-    kept(): void {
-        this.keptIn = this.here();
+    /** The name of a place: the library's, or the connection's. */
+    nameOf(connection: number | null): string {
+        return connection === null ? this.config.libraryName() : this.connections.name(connection);
     }
 
-    /** A paste of items kept in another place: refused (said); false when it may go on. */
-    refusesPaste(): boolean {
-        if (this.keptIn === this.here()) return false;
-        this.toasts.error(BETWEEN_PLACES);
+    /** "from Dropbox › Trips to Library › Photos" for a job between two places; null for one in the library. */
+    journey(job: FileJobView): string | null {
+        const { from, to } = jobPlaces(job);
+        if (from === null && to === null) return null;
+        const source = job.results[0]?.path ?? job.current;
+        return `from ${this.folderIn(from, source ? parentPath(source) : '')} to ${this.folderIn(to, job.target)}`;
+    }
+
+    /** From the place listed into it. */
+    listed(): TransferPlaces {
+        return { from: this.here(), to: this.here() };
+    }
+
+    /** The transfer job doing a move or copy between two places; null within one (its own routes). */
+    between(kind: FileJobKind, paths: string[], target: string, places: TransferPlaces): TransferRequest | null {
+        if (places.from === places.to || (kind !== 'move' && kind !== 'copy')) return null;
+        return {
+            kind,
+            from: { connection: places.from, paths },
+            to: { connection: places.to, path: target },
+            conflicts: 'ask',
+        };
+    }
+
+    /** A paste or drop within the connection `connection` is done here: false in the library (a job does it there). */
+    handles(kind: FileJobKind, paths: string[], target: string, connection = this.here()): boolean {
+        if (connection === null) return false;
+        if (kind === 'move' || kind === 'copy') void this.run(kind, paths, target, 'fail', connection);
         return true;
     }
 
-    /** Move to…, Copy to… pick a folder of the library: refused (said) on a connection. */
-    refusesPick(): boolean {
-        if (this.here() === null) return false;
-        this.toasts.error(BETWEEN_PLACES);
-        return true;
+    /** "Dropbox › Trips"; the place's name alone for its root. */
+    private folderIn(connection: number | null, folder: string): string {
+        const place = this.nameOf(connection);
+        return folder ? `${place} › ${baseName(folder)}` : place;
     }
 
-    /** A paste or drop on the connection listed is done here: false in the library (a job does it there). */
-    handles(kind: FileJobKind, paths: string[], target: string): boolean {
-        if (this.here() === null) return false;
-        if (kind === 'move' || kind === 'copy') void this.run(kind, paths, target, 'fail');
-        return true;
-    }
-
-    private async run(kind: 'move' | 'copy', paths: string[], target: string, conflict: PlaceConflict): Promise<void> {
+    private async run(
+        kind: 'move' | 'copy',
+        paths: string[],
+        target: string,
+        conflict: PlaceConflict,
+        connection: number,
+    ): Promise<void> {
         let items: PlaceTransferItem[];
         try {
-            items = (await this.files.transfer(kind, paths, target, conflict)).items;
+            items = (await this.files.transfer(kind, paths, target, conflict, connection)).items;
         } catch (error) {
             this.toasts.error(`Could not ${kind}: ${(error as Error).message}`);
             return;
@@ -76,7 +105,7 @@ export class PlaceTransfers {
             this.toasts.show(`${plural(done.length, 'item')} ${verb} to “${where}”.`, { timeout: 8000 });
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + done.length });
         }
-        if (taken.length) this.askTaken(kind, taken, target, where);
+        if (taken.length) this.askTaken({ kind, paths: taken, target, connection }, where);
         if (failed.length)
             this.toasts.error(
                 failed.length === 1
@@ -88,7 +117,11 @@ export class PlaceTransfers {
     }
 
     /** Names taken in the target: kept both (a new name) or replaced, as the person chooses, else left. */
-    private askTaken(kind: 'move' | 'copy', paths: string[], target: string, where: string): void {
+    private askTaken(
+        taken: { kind: 'move' | 'copy'; paths: string[]; target: string; connection: number },
+        where: string,
+    ) {
+        const { kind, paths, target, connection } = taken;
         const what = paths.length === 1 ? `“${baseName(paths[0])}”` : plural(paths.length, 'name');
         this.toasts.show(`${what} already in “${where}”: not ${kind === 'move' ? 'moved' : 'copied'}.`, {
             timeout: 15000,
@@ -96,12 +129,12 @@ export class PlaceTransfers {
                 {
                     label: 'Keep both',
                     title: 'Give them a new name there',
-                    run: () => void this.run(kind, paths, target, 'keepBoth'),
+                    run: () => void this.run(kind, paths, target, 'keepBoth', connection),
                 },
                 {
                     label: 'Replace',
                     title: 'Put them in place of those there',
-                    run: () => void this.run(kind, paths, target, 'replace'),
+                    run: () => void this.run(kind, paths, target, 'replace', connection),
                 },
             ],
         });

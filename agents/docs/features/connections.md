@@ -124,9 +124,29 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   Delete and transfer answer a result per item; an error stopping the provider (sign-in ended, wait, unreachable)
   answers the usual problem and doesn't list what was done before it.
 - No SFE trash: a delete goes to the provider's own (`OwnTrash`); no Undo.
-- Client: `PlaceFiles` picks the library's or the connection's route; `PlaceTransfers` remembers the place of a cut or
-  copy and refuses a paste or drop in another place (phase 5 copies between them). The folder picker (Move to / Copy
-  to) lists the library only: hidden on a connection.
+- Client: `PlaceFiles` picks the library's or the connection's route. The clipboard (`FileClipboard.connection`) and
+  the drag data (`files/drag-items.ts`: `{ connection, paths }`, a plain array = the library) carry the place;
+  `PlaceTransfers` routes: one connection → its `transfer`, the library → the library's jobs, two places →
+  `POST api/files/jobs/transfer` (`between`), followed by `FileTransfers` like a library job; the panel names both
+  places (`journey`, names from `UsableConnections`). The folder picker of Move to / Copy to has a top level (Places:
+  the library and the connections written to, `FolderBrowser.offer`) and browses a connection with its browse route;
+  sidebar connections take drops onto their root.
+
+## Transfers between the library and a connection (`Core/Transfers/`)
+
+- `POST api/files/jobs/transfer` (`TransferRequest`: kind, from {connection?, paths}, to {connection?, path},
+  conflicts) starts a `TransferJobs` job on the library's `JobBoard`: followed, answered and cancelled through the
+  library's job routes; `FileJobView.FromConnection` / `ToConnection` name the places. Same place: 400 (their own
+  routes).
+- The route checks the sides at once (`TransferOpening`); the job opens its own storage (`ConnectionService.
+  OpenAsync`), since the request's is disposed with the response.
+- `TransferRun`: depth-first, page by page; a move deletes a folder's files only after its listing is read (paged
+  cursors shift otherwise). `TransferStream`: parts of at most 32 MB (or the target's part size), the provider's
+  offset followed, a failed part retried twice. `TransferFileWriter`: the source's hash checked before commit, the
+  target's after (a mismatch removes the written file). An ended sign-in marks the connection (both probed when both
+  sides are connections) and fails the rest.
+- A library source of a move goes to SFE's trash (owner's default, plan phase 5); files arriving in the library are
+  indexed with the folder's default tags; tags don't travel.
 
 ## Properties
 

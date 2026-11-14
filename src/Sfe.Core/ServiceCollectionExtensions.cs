@@ -124,6 +124,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<LibraryClashes>();
         services.AddSingleton<FileJobs>();
         services.AddSingleton<Transfers.LibraryTransfers>();
+        services.AddSingleton<Transfers.TransferJobs>();
         services.AddSingleton<Uploads>();
         services.AddSingleton<Archives>();
         // Shared by every library (the application's instance, handed to each one), like FfmpegLimits.

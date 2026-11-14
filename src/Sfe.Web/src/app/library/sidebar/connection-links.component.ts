@@ -5,12 +5,16 @@ import { ConfigService } from '../../core/config.service';
 import { UsableConnection } from '../../core/connection.models';
 import { Rights } from '../../core/rights';
 import { IconComponent } from '../../shared/icon.component';
+import { FileTransfers } from '../../files/file-transfers';
+import { parseDragItems } from '../../files/drag-items';
 import { ListingStore } from '../listing.store';
+import { DRAG_ITEMS } from '../quick-links/quick-links.service';
 import { SidebarService } from './sidebar.service';
 
 /**
  * The sidebar's connections: those the session may use in its library (`GET api/connections`), each opening its
- * files in the listing (`?c=`). Hidden without the right or without any.
+ * files in the listing (`?c=`). Items dragged onto one it writes to go to its root: a move, a copy with Ctrl (as on
+ * the folders of the listing). Hidden without the right or without any.
  */
 @Component({
     selector: 'section[sfeConnectionLinks]',
@@ -21,7 +25,14 @@ import { SidebarService } from './sidebar.service';
         <div class="sidebar-heading"><h2>Connections</h2></div>
         <ul class="quick-link-list">
             @for (connection of connections(); track connection.id) {
-                <li class="quick-link" [class.current]="store.route().c === connection.id">
+                <li
+                    class="quick-link"
+                    [class.current]="store.route().c === connection.id"
+                    [class.drop-over]="over() === connection.id"
+                    (dragover)="dragOver($event, connection)"
+                    (dragleave)="over.set(null)"
+                    (drop)="drop($event, connection)"
+                >
                     <a
                         class="quick-link-target"
                         routerLink="/"
@@ -46,7 +57,10 @@ export class ConnectionLinksComponent implements OnInit {
     private readonly config = inject(ConfigService);
     protected readonly store = inject(ListingStore);
     protected readonly sidebar = inject(SidebarService);
+    private readonly transfers = inject(FileTransfers);
     protected readonly connections = signal<UsableConnection[]>([]);
+    /** The connection under the pointer during a drag of items it takes. */
+    protected readonly over = signal<number | null>(null);
     private readonly kinds = computed(() => this.config.config()?.connections?.kinds ?? []);
 
     ngOnInit(): void {
@@ -57,6 +71,24 @@ export class ConnectionLinksComponent implements OnInit {
             .catch(() => {
                 /* the section stays hidden */
             });
+    }
+
+    protected dragOver(event: DragEvent, connection: UsableConnection): void {
+        if (!takes(event, connection)) return;
+        event.preventDefault();
+        event.dataTransfer!.dropEffect = copying(event) ? 'copy' : 'move';
+        this.over.set(connection.id);
+    }
+
+    /** Items dropped: moved (copied with Ctrl) to the connection's root, from wherever they are. */
+    protected drop(event: DragEvent, connection: UsableConnection): void {
+        this.over.set(null);
+        if (!takes(event, connection)) return;
+        const dragged = parseDragItems(event.dataTransfer!.getData(DRAG_ITEMS));
+        if (!dragged.paths.length) return;
+        event.preventDefault();
+        const places = { from: dragged.connection, to: connection.id };
+        void this.transfers.transfer(copying(event) ? 'copy' : 'move', dragged.paths, '', places);
     }
 
     protected kindIcon(connection: UsableConnection): string {
@@ -70,4 +102,17 @@ export class ConnectionLinksComponent implements OnInit {
             ? `${connection.name} (${kind}): it must be signed in to again`
             : `${connection.name} (${kind}, ${access})`;
     }
+}
+
+/** Items of the page are dragged onto a connection the session writes to (and may use now). */
+function takes(event: DragEvent, connection: UsableConnection): boolean {
+    return (
+        Boolean(event.dataTransfer?.types.includes(DRAG_ITEMS)) &&
+        connection.access === 'write' &&
+        connection.state === 'ready'
+    );
+}
+
+function copying(event: DragEvent): boolean {
+    return event.ctrlKey || event.metaKey;
 }

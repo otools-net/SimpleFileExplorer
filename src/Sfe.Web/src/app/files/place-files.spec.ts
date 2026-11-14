@@ -20,7 +20,6 @@ import { connectionPage, enterPlace } from '../library/connection-pages';
 import { ListingStore } from '../library/listing.store';
 import { DeleteDialog } from './delete.dialog';
 import { FileTransfers } from './file-transfers';
-import { BETWEEN_PLACES } from './place-transfers';
 
 const FILE_CHANGES = [
     Rights.createFolders,
@@ -96,24 +95,32 @@ afterEach(() => {
 describe('the rights on a connection', () => {
     const query = { path: '', offset: 0, limit: 100, sort: 'name' as const, desc: false };
 
-    it('gives back no file change where the session only reads', async () => {
+    it('gives back only copies (out of it) where the session only reads', async () => {
         api.connectionBrowse.mockResolvedValue(page('read', { serverSideMove: true, serverSideCopy: true }));
         await connectionPage(TestBed.inject(Api), config, 7, query, new AbortController().signal);
 
         expect(config.place()).toEqual(place({ access: 'read', ownTrash: false }));
-        expect(fileChanges()).toEqual([]);
+        expect(fileChanges()).toEqual([Rights.copyFiles]);
+        // Copied out of it, never pasted into it.
+        expect(TestBed.inject(FileTransfers).canInto('copy')).toBe(false);
         expect(config.can(Rights.viewFiles) && config.can(Rights.download)).toBe(true);
     });
 
-    it('gives back new folders, renames and deletes where it writes, moves and copies by capability', async () => {
-        api.connectionBrowse.mockResolvedValue(page('write', { serverSideMove: false, serverSideCopy: false }));
-        await connectionPage(TestBed.inject(Api), config, 7, query, new AbortController().signal);
-        expect(fileChanges()).toEqual([Rights.createFolders, Rights.renameFiles, Rights.deleteFiles]);
-
-        api.connectionBrowse.mockResolvedValue(page('write', { serverSideMove: true, ownTrash: true }));
+    it('gives back new folders, renames, deletes, moves and copies where it writes', async () => {
+        api.connectionBrowse.mockResolvedValue(
+            page('write', { serverSideMove: false, serverSideCopy: false, ownTrash: true }),
+        );
         await connectionPage(TestBed.inject(Api), config, 7, query, new AbortController().signal);
         expect(config.place()?.ownTrash).toBe(true);
-        expect(fileChanges()).toEqual([Rights.createFolders, Rights.renameFiles, Rights.deleteFiles, Rights.moveFiles]);
+        expect(fileChanges()).toEqual(
+            expect.arrayContaining([
+                Rights.createFolders,
+                Rights.renameFiles,
+                Rights.deleteFiles,
+                Rights.moveFiles,
+                Rights.copyFiles,
+            ]),
+        );
         expect(config.can(Rights.assignTags)).toBe(false);
     });
 
@@ -123,7 +130,7 @@ describe('the rights on a connection', () => {
         expect(config.place()).toEqual(
             place({ name: '', access: 'read', serverSideMove: false, serverSideCopy: false, ownTrash: false }),
         );
-        expect(fileChanges()).toEqual([]);
+        expect(fileChanges()).toEqual([Rights.copyFiles]);
     });
 });
 
@@ -218,34 +225,6 @@ describe('moves and copies on a connection', () => {
         toasts = TestBed.inject(ToastService);
         const store = TestBed.inject(ListingStore);
         vi.spyOn(store, 'load').mockResolvedValue();
-    });
-
-    it('refuses a paste between the library and a connection, both ways', () => {
-        expect(transfers.keep('copy', [photo])).toBe(true);
-        config.place.set(place());
-        expect(transfers.paste('Saved')).toBe(true);
-
-        transfers.keep('move', [photo]);
-        enterPlace(config, null);
-        expect(transfers.paste('Saved')).toBe(true);
-
-        expect(
-            toasts
-                .toasts()
-                .filter((toast) => toast.error)
-                .map((toast) => toast.message),
-        ).toEqual([BETWEEN_PLACES, BETWEEN_PLACES]);
-        expect(transfers.clipboard()?.kind).toBe('move');
-        expect(api.connectionFiles).not.toHaveBeenCalled();
-        expect(api.startFileJob).not.toHaveBeenCalled();
-        expect(api.checkMove).not.toHaveBeenCalled();
-    });
-
-    it('refuses picking a folder of the library for items of a connection', () => {
-        config.place.set(place());
-
-        expect(transfers.pick('move', [photo])).toBe(true);
-        expect(toasts.toasts()[0]).toMatchObject({ message: BETWEEN_PLACES, error: true });
     });
 
     it('pastes on the same connection through the provider, asking about names taken', async () => {

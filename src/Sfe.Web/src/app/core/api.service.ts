@@ -23,6 +23,7 @@ import {
     ExtractRequest,
     FileJobRequest,
     FileJobView,
+    TransferRequest,
     UploadInfo,
     UploadStart,
     TrashPage,
@@ -426,9 +427,8 @@ export class Api {
     /** Deletes `paths`, to the trash or for good; a result per path. */
     deleteItems = (paths: string[], permanent: boolean) =>
         this.post<DeleteResults>('api/files/delete', { paths, permanent });
-    /** The trash, newest first; `before`: the `next` of the previous page. */
+    /** The trash, newest first (`before`: the `next` of the previous page); how many items of it the session sees. */
     trash = (before: number | null = null) => this.get<TrashPage>('api/files/trash', { before });
-    /** How many items of the trash the session sees, for the sidebar's Trash link. */
     trashCount = () => this.get<TrashCount>('api/files/trash/count');
     /** Puts an item of the trash back. Resolves with the conflict (409: a scan runs there...). */
     restoreFromTrash = (id: number) => this.post<FileOperationResult>(`api/files/trash/${id}/restore`);
@@ -439,10 +439,10 @@ export class Api {
         this.post<{ gains: AccessGain[] }>('api/files/jobs/check', { paths, target });
     /** Starts a move or copy in the background; its first state. */
     startFileJob = (request: FileJobRequest) => this.post<FileJobView>('api/files/jobs', request);
-    /** Extracts an archive: a job followed as moves and copies are. */
+    /** Extracts an archive, compresses into a zip, moves or copies between places: jobs followed as moves are. */
     startExtract = (request: ExtractRequest) => this.post<FileJobView>('api/files/jobs/extract', request);
-    /** Compresses files and folders into a zip in the library: a job followed as moves and copies are. */
     startCompress = (request: CompressRequest) => this.post<FileJobView>('api/files/jobs/compress', request);
+    startTransfer = (request: TransferRequest) => this.post<FileJobView>('api/files/jobs/transfer', request);
     /** The session's moves and copies, running and recent, newest first. */
     fileJobs = () => this.get<FileJobView[]>('api/files/jobs');
     answerFileJob = (id: number, choice: ConflictChoice, forAll: boolean) =>

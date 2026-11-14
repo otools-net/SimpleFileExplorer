@@ -2,7 +2,10 @@ using System.Collections.Concurrent;
 
 namespace Sfe.Core.Files;
 
-/// <summary>One move, copy, extraction or compression: its progress and its answers (<see cref="FileJobs"/>).</summary>
+/// <summary>
+/// One move, copy, extraction or compression (<see cref="FileJobs"/>), or transfer with a connection
+/// (<see cref="Transfers.TransferJobs"/>): its progress and its answers.
+/// </summary>
 internal sealed class JobRun(
     int id,
     FileJobRequest request,
@@ -39,7 +42,13 @@ internal sealed class JobRun(
     public string? Password { get; set; }
 
     /// <summary>The partial folders the job writes into.</summary>
-    public ConcurrentBag<string> Partials { get; } = [];
+    public ConcurrentBag<string> Partials { get; init; } = [];
+
+    /// <summary>A transfer's connection it reads from; null for the library.</summary>
+    public int? FromConnection { get; init; }
+
+    /// <summary>A transfer's connection it writes into; null for the library.</summary>
+    public int? ToConnection { get; init; }
 
     public void Report(FileJobItem item)
     {
@@ -115,7 +124,9 @@ internal sealed class JobRun(
                 [.. _results],
                 Started,
                 _finished,
-                Actor.AccountId
+                Actor.AccountId,
+                FromConnection,
+                ToConnection
             );
         }
     }

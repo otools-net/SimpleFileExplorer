@@ -4,8 +4,8 @@
 at Dropbox once; then people with the rights connect their Dropbox, or one for a space or for the whole server.
 
 This version makes, signs in again and manages connections, browses their files
-([browsing a connection](#browsing-a-connection)) and changes them where you may, uploads included. Copying and moving to and from the library come with a later
-version.
+([browsing a connection](#browsing-a-connection)) and changes them where you may, uploads included, and copies and moves files between it and the library
+([below](#between-the-library-and-a-connection)).
 
 ## Levels
 
@@ -93,3 +93,15 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
   page starts over.
 - When Dropbox no longer accepts the connection's sign-in, the listing says so and the connection shows **Sign in
   again** for whoever manages it. When Dropbox asks to wait (too many requests), wait a moment and try again.
+
+## Between the library and a connection
+
+Copy or move files and folders between the library and a connection like between two folders: **cut and paste**
+(Ctrl+X / Ctrl+C, then Ctrl+V in the other place), **drag** them onto a folder or onto a connection in the sidebar, or
+**Move to… / Copy to…**, whose folder picker starts with **Places**: the library and the connections you may change.
+
+- It runs as a job of the operations panel (progress, cancel, the same keep both / replace / skip question).
+- Each part goes on as it is read: the server keeps no copy. Sizes, and Dropbox's content hash, are checked; a moved
+  file leaves its place only once its copy is checked, into SFE's trash (library) or Dropbox's deleted files.
+- Tags stay with the library: files moved out lose them, files arriving get the folder's default tags.
+- From a connection you only read, files can be copied into the library, never pasted into it.

@@ -220,7 +220,7 @@ describe('FileTransfers', () => {
         const moved = toasts.toasts().find((t) => t.actions.length)!;
         expect(moved.actions.map((action) => action.label)).toEqual(['Undo', 'Open']);
         toasts.act(moved, moved.actions[1]);
-        expect(navigate).toHaveBeenCalledWith({ path: 'Media/Holidays' });
+        expect(navigate).toHaveBeenCalledWith({ path: 'Media/Holidays', c: null });
     });
 
     it('cuts once and pastes into the folder listed; keeps nothing it may not move', async () => {
@@ -232,7 +232,10 @@ describe('FileTransfers', () => {
         expect(transfers.keep('move', [photo, clip])).toBe(true);
         expect(transfers.paste('Media/Holidays')).toBe(true);
 
-        expect(transfers.transfer).toHaveBeenCalledWith('move', [photo.path, clip.path], 'Media/Holidays');
+        expect(transfers.transfer).toHaveBeenCalledWith('move', [photo.path, clip.path], 'Media/Holidays', {
+            from: null,
+            to: null,
+        });
         expect(transfers.clipboard()).toBeNull();
         expect(transfers.paste('Media')).toBe(false);
     });
@@ -261,7 +264,7 @@ describe('ItemMenu, moves and copies', () => {
         expect(paste.label).toBe('Paste into Holidays');
         const transfer = vi.spyOn(TestBed.inject(FileTransfers), 'transfer').mockResolvedValue();
         paste.run();
-        expect(transfer).toHaveBeenCalledWith('move', [photo.path], folder.path);
+        expect(transfer).toHaveBeenCalledWith('move', [photo.path], folder.path, { from: null, to: null });
 
         await loadConfig(api, limitedConfig([Rights.browse, Rights.viewFiles]));
         expect(menu.entries(photo).map((e) => e.id)).toEqual(['newTab', 'properties']);
@@ -384,8 +387,8 @@ describe('OperationsPanelComponent', () => {
         target.remove();
 
         expect(transfer.mock.calls).toEqual([
-            ['move', [photo.path], folder.path],
-            ['copy', [clip.path], folder.path],
+            ['move', [photo.path], folder.path, { from: null, to: null }],
+            ['copy', [clip.path], folder.path, { from: null, to: null }],
         ]);
     });
 });

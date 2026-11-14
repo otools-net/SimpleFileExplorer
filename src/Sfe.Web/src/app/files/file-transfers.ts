@@ -19,22 +19,13 @@ import { isExtractable } from '../formats/formats';
 import { Dialogs } from '../library/dialogs.service';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
-import { PlaceTransfers } from './place-transfers';
+import { FileClipboard } from './file-clipboard';
+import { jobPlaces, PlaceTransfers, TransferPlaces } from './place-transfers';
 
 /** How often (ms) running jobs are asked for. */
 const POLL = 700;
 
-/** Items cut or copied (Ctrl+X, Ctrl+C), pasted into a folder by Ctrl+V or the menu. */
-export interface FileClipboard {
-    kind: FileJobKind;
-    items: LibraryItem[];
-}
-
-/** The tooltip of a Paste entry: "Move a.jpg into this folder", "Copy the 3 items kept into this folder". */
-export function pasteTitle(clipboard: FileClipboard): string {
-    const items = clipboard.items.length === 1 ? clipboard.items[0].name : `the ${clipboard.items.length} items kept`;
-    return `${clipboard.kind === 'move' ? 'Move' : 'Copy'} ${items} into this folder`;
-}
+export { type FileClipboard, pasteTitle } from './file-clipboard';
 
 /**
  * Moves and copies (agents/docs/features/move-and-copy.md): starts them on the server, where each is a job running in
@@ -190,7 +181,7 @@ export class FileTransfers {
 
     /** The session may move or copy into the folder listed (`folder` of it, when given). */
     canInto(kind: FileJobKind, folder?: LibraryItem | null): boolean {
-        if (this.store.route().q && !folder) return false;
+        if ((this.store.route().q && !folder) || this.config.place()?.access === 'read') return false;
         const right = kind === 'move' ? Rights.moveFiles : Rights.copyFiles;
         return folder
             ? this.store.can(right, folder) && this.config.can(right)
@@ -201,7 +192,7 @@ export class FileTransfers {
     pick(kind: FileJobKind, items: LibraryItem[]): boolean {
         const allowed = items.filter((item) => (kind === 'move' ? this.canMove(item) : this.canCopy(item)));
         if (!allowed.length) return false;
-        if (!this.places.refusesPick()) this.dialogs.transfer()?.pick(kind, allowed);
+        this.dialogs.transfer()?.pick(kind, allowed);
         return true;
     }
 
@@ -209,8 +200,7 @@ export class FileTransfers {
     keep(kind: FileJobKind, items: LibraryItem[]): boolean {
         const allowed = items.filter((item) => (kind === 'move' ? this.canMove(item) : this.canCopy(item)));
         if (!allowed.length) return false;
-        this.clipboard.set({ kind, items: allowed });
-        this.places.kept();
+        this.clipboard.set({ kind, items: allowed, connection: this.places.here() });
         this.toasts.show(
             `${plural(allowed.length, 'item')} ${kind === 'move' ? 'cut' : 'copied'}: ` +
                 `paste them into a folder with Ctrl+V or its menu.`,
@@ -222,19 +212,20 @@ export class FileTransfers {
     paste(target: string): boolean {
         const clipboard = this.clipboard();
         if (!clipboard) return false;
-        if (this.places.refusesPaste()) return true;
         if (clipboard.kind === 'move') this.clipboard.set(null);
         const paths = clipboard.items.map((item) => item.path);
-        void this.transfer(clipboard.kind, paths, target);
+        void this.transfer(clipboard.kind, paths, target, { from: clipboard.connection, to: this.places.here() });
         return true;
     }
 
     /**
      * Moves or copies `paths` into `target` without picking a folder (paste, drop): a copy asks about the tags, a move
-     * whether to keep the access of folders that would be seen by more people there.
+     * whether to keep the access of folders that would be seen by more people there. Between places, a transfer job.
      */
-    async transfer(kind: FileJobKind, paths: string[], target: string): Promise<void> {
-        if (this.places.handles(kind, paths, target)) return;
+    async transfer(kind: FileJobKind, paths: string[], target: string, places = this.places.listed()): Promise<void> {
+        const between = this.places.between(kind, paths, target, places);
+        if (between) await this.follow(() => this.api.startTransfer(between), kind);
+        if (between || this.places.handles(kind, paths, target, places.to)) return;
         if (kind === 'copy') {
             this.dialogs.transfer()?.ask({ kind, paths, target }, []);
             return;
@@ -327,9 +318,10 @@ export class FileTransfers {
         if (jobs.some((job) => !finished(job))) this.poll();
     }
 
-    /** Undo of a move: the items go back into the folders they came from. */
-    private undoMove(done: FileJobItem[]): void {
-        for (const [origin, paths] of groupByOrigin(done)) void this.transfer('move', paths, origin);
+    /** Undo of a move: the items go back into the folders they came from (in the place they came from). */
+    private undoMove(done: FileJobItem[], { from, to }: TransferPlaces): void {
+        for (const [origin, paths] of groupByOrigin(done))
+            void this.transfer('move', paths, origin, { from: to, to: from });
     }
 
     /** A compression has ended: its toast says the ratio and shows the zip in its folder. */
@@ -399,7 +391,9 @@ export class FileTransfers {
         const done = job.results.filter((result) => result.status === 'done');
         const route = this.store.route();
         const listed = route.path;
-        if (job.kind === 'move' && !route.q)
+        const places = jobPlaces(job);
+        const here = this.places.here();
+        if (job.kind === 'move' && !route.q && places.from === here)
             this.store.applyRemoved(
                 done
                     .filter(
@@ -407,11 +401,11 @@ export class FileTransfers {
                     )
                     .map((result) => result.path),
             );
-        if (done.length && (route.q || job.target === listed))
+        if (done.length && (route.q || (job.target === listed && places.to === here)))
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + done.length });
 
         const verb = pastOf(job.kind);
-        const where = baseName(job.target) || this.config.config()?.rootName || 'the library';
+        const where = baseName(job.target) || this.places.nameOf(places.to);
         if (job.kind === 'extract') {
             this.extracted(job, where);
             return;
@@ -428,13 +422,13 @@ export class FileTransfers {
                 actions.push({
                     label: 'Undo',
                     title: 'Move them back where they were',
-                    run: () => this.undoMove(done),
+                    run: () => this.undoMove(done, places),
                 });
-            if (job.target !== listed)
+            if (job.target !== listed || places.to !== here)
                 actions.push({
                     label: 'Open',
                     title: `Open ${where}`,
-                    run: () => this.store.navigate({ path: job.target }),
+                    run: () => this.store.navigate({ path: job.target, c: places.to }),
                 });
             this.toasts.show(`${plural(done.length, 'item')} ${verb} to “${where}”.`, { timeout: 8000, actions });
         }

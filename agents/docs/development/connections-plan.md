@@ -305,9 +305,19 @@ in `FolderRules`:
 
 ### Phase 5: transfers with the library
 
-- [ ] `ITransferEndpoint` for the library and for a connection; `TransferJobs` with conflicts, progress, cancel,
-  resume of a large file's upload after a failure
-- [ ] Clipboard, drops and Move/Copy dialogs accept a location on both sides; operations panel and task history
+- [x] `ITransferEndpoint` for the library and for a connection; `TransferJobs` with conflicts, progress, cancel,
+  resume of a large file's upload after a failure. As built: `LibraryTransferEndpoint` / `RemoteTransferEndpoint`
+  (`TransferCalls`: waits out the provider, retries, one write at a time per connection), `TransferJobs` per library
+  on the `JobBoard` (`TransferRun` walks folders page by page, asks conflicts as library jobs do, `TransferStream`
+  sends parts and follows the provider's offset, a failed part retried twice, sizes and content hashes verified,
+  a move deletes each source once verified); `POST api/files/jobs/transfer`. Still to do: a retry route for failed
+  items (24 h resume points), a task-history run per job, `MaxFileSizeMegabytes` into a connection
+- [x] Clipboard, drops and Move/Copy dialogs accept a location on both sides; operations panel and task history. As
+  built: clipboard and drag data carry the place (`drag-items.ts`, `file-clipboard.ts`); `PlaceTransfers` routes same
+  place to the old routes and between places to the transfer route; the folder picker has a "Places" level (the
+  library and the connections one writes to); sidebar connections take drops; the panel names both places; copies
+  out of a connection one only reads are offered (`atPlace` keeps `files.copy`), pasting into it never. Task history:
+  with the retry route, above
 - [ ] Free space checked at the destination when it tells; a move verifies before deleting
 
 Design (fourth session, a Plan agent's study; defaults taken where the owner hasn't answered, marked *default*):

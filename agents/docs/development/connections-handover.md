@@ -40,8 +40,9 @@ Checks run for the last commit: the new suites, `npm test` (1179 passed), the fu
    `ConnectionArchiveEndpoints`; the client's `?c=` and `ConfigService.place`). Item 3 (`ConnectionGates`, policy
    `connections`) too: phase 3 is done. Phase 4 item 1 done (`ConnectionWriteEndpoints`, `PlaceFiles`,
    `PlaceTransfers`). Item 2 done (`ConnectionUploadEndpoints`, `RemoteUploads`, `uploadsRoute`). Item 3 done
-   (`GetConnectionItemProperties`, `place-properties.ts`): phase 4 is done. Next: phase 5 (transfers between the
-   library and a connection: `PlaceTransfers` refuses them today), then 6 and 7. Phase 4 makes `atPlace` give the write rights back by the connection's
+   (`GetConnectionItemProperties`, `place-properties.ts`): phase 4 is done. Phase 5 items 1 and 2 done
+   (`Core/Transfers/`, `TransferEndpoints`, place-aware clipboard and picker). Next: phase 5's leftovers (retry
+   route, task history, `MaxFileSizeMegabytes` into a connection) and item 3; then phases 6 and 7. Phase 4 makes `atPlace` give the write rights back by the connection's
    `access` and capabilities, and calls `RemoteListings.Forget` after each change.
 
 Per commit, as the epic asks: tick the item in the plan with an "As built" sentence, update the status board and

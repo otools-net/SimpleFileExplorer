@@ -224,8 +224,11 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
             entry.Content?.LongLength,
             entry.Modified,
             entry.Id,
-            entry.Content is { } bytes ? Convert.ToHexStringLower(SHA256.HashData(bytes)) : null
+            entry.Content is { } bytes ? HashOf(bytes) : null
         );
+
+    private string HashOf(byte[] bytes) =>
+        account.WrongHashes ? new string('0', 64) : Convert.ToHexStringLower(SHA256.HashData(bytes));
 
     private static RemoteStorageException NotFound(string path) =>
         new(RemoteErrorKind.NotFound, $"Nothing at '{path}'.");

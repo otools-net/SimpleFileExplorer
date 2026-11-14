@@ -156,6 +156,7 @@ api.MapTaskEndpoints();
 api.MapFileTrackingEndpoints();
 api.MapEditorEndpoints();
 api.MapFileEndpoints();
+api.MapTransferEndpoints();
 api.MapUploadEndpoints();
 api.MapArchiveEndpoints();
 api.MapPropertyEndpoints();

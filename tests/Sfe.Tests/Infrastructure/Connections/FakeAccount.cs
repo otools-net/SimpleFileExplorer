@@ -28,6 +28,9 @@ public sealed class FakeAccount(FakeProvider provider)
 
     public long TotalSpace { get; set; } = 1024 * 1024;
 
+    /// <summary>Files are told with a hash that is not their content's (a file damaged at the provider).</summary>
+    public bool WrongHashes { get; set; }
+
     /// <summary>Paths deleted, in order: what went to the provider's own trash.</summary>
     public List<string> Trash { get; } = [];
 

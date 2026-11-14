@@ -152,6 +152,9 @@ export class ConfigService {
         return config ? createUrls(config) : null;
     });
 
+    /** The library's name, wherever the listing is (the folder picker, the places of a transfer). */
+    readonly libraryName = computed(() => this.loaded()?.rootName || 'Library');
+
     /** What the session may do in the library: the rights of /api/config. */
     readonly rights = computed(() => new Set(this.config()?.rights ?? []));
     /** The signed-in account; null for a visitor without one (or before loading). */
@@ -182,6 +185,11 @@ export class ConfigService {
     /** The session has `right` in the library (e.g. `tags.assign`): what it doesn't have is hidden. */
     can(right: string): boolean {
         return this.rights().has(right);
+    }
+
+    /** The session has `right` in the library itself, even while a connection is listed (the folder picker). */
+    canInLibrary(right: string): boolean {
+        return this.loaded()?.rights.includes(right) ?? false;
     }
 
     /** The session has one of `rights`. */

@@ -40,17 +40,17 @@ export class PlaceFiles {
         return answered(await this.api.connectionFiles<DeleteResults>(place.id, 'delete', { paths, permanent }));
     }
 
-    /** Moves or copies `paths` into `target`, both on the connection listed (its provider does it, at once). */
+    /** Moves or copies `paths` into `target`, both on `connection` (the one listed; its provider does it, at once). */
     async transfer(
         kind: 'move' | 'copy',
         paths: string[],
         target: string,
         conflict: PlaceConflict,
+        connection = this.config.place()?.id,
     ): Promise<PlaceTransferResults> {
-        const place = this.config.place();
-        if (!place) throw new Error('Only the files of a connection are moved this way.');
+        if (connection === undefined) throw new Error('Only the files of a connection are moved this way.');
         const body = { kind, paths, target, conflict };
-        return answered(await this.api.connectionFiles<PlaceTransferResults>(place.id, 'transfer', body));
+        return answered(await this.api.connectionFiles<PlaceTransferResults>(connection, 'transfer', body));
     }
 }
 

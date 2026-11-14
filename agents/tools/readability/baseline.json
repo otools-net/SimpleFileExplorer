@@ -87,7 +87,7 @@
     "src/Sfe.Web/src/app/editor/crop.ts": {"manyParameterFunctions":1},
     "src/Sfe.Web/src/app/editor/image-editor.dialog.html": {"longLines":1},
     "src/Sfe.Web/src/app/editor/image-editor.dialog.ts": {"fileLines":463},
-    "src/Sfe.Web/src/app/files/file-transfers.ts": {"fileLines":474},
+    "src/Sfe.Web/src/app/files/file-transfers.ts": {"fileLines":468},
     "src/Sfe.Web/src/app/files/item-menu.ts": {"fileLines":526,"longFunctions":1,"heavyClasses":1},
     "src/Sfe.Web/src/app/files/operations-panel.component.html": {"longLines":1},
     "src/Sfe.Web/src/app/files/properties.dialog.html": {"longLines":1},

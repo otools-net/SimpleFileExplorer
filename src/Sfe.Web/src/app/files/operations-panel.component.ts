@@ -24,6 +24,8 @@ import { FileTransfers, finished, pastOf } from './file-transfers';
 import { UploadsPanelComponent } from './uploads-panel.component';
 import { droppedFiles, UploadQueue } from './uploads';
 import { uploadConnection } from './upload-places';
+import { dragItemsData, parseDragItems } from './drag-items';
+import { PlaceTransfers } from './place-transfers';
 
 /** Drop targets: listed folders and the folders of the location bar (`data-drop` holding their path). */
 const DROP_TARGET = '[data-drop]';
@@ -57,6 +59,7 @@ export class OperationsPanelComponent implements OnInit {
     private readonly store = inject(ListingStore);
     private readonly config = inject(ConfigService);
     private readonly folders = inject(FolderMenu);
+    private readonly places = inject(PlaceTransfers);
 
     protected readonly forAll = signal(false);
     protected readonly baseName = baseName;
@@ -165,12 +168,13 @@ export class OperationsPanelComponent implements OnInit {
                     : `${archive} not extracted`;
             return `Extracting ${job.current ? `“${baseName(job.current)}”` : ''} to ${where}`;
         }
-        if (job.state === 'cancelled') return `Stopped: ${job.done} of ${count} ${pastOf(job.kind)} to ${where}`;
+        const to = this.places.journey(job) ?? `to ${where}`;
+        if (job.state === 'cancelled') return `Stopped: ${job.done} of ${count} ${pastOf(job.kind)} ${to}`;
         if (job.state === 'completed') {
             const done = job.results.filter((result) => result.status === 'done').length;
-            return `${plural(done, 'item')} ${pastOf(job.kind)} to ${where}`;
+            return `${plural(done, 'item')} ${pastOf(job.kind)} ${to}`;
         }
-        return `${job.kind === 'move' ? 'Moving' : 'Copying'} ${count} to ${where}`;
+        return `${job.kind === 'move' ? 'Moving' : 'Copying'} ${count} ${to}`;
     }
 
     protected progressMax(job: FileJobView): number {
@@ -247,7 +251,8 @@ export class OperationsPanelComponent implements OnInit {
         if (!element || !event.dataTransfer) return;
         const path = element.getAttribute('data-path')!;
         const paths = this.store.isSelected(path) ? this.store.selectedItems().map((item) => item.path) : [path];
-        if (!event.dataTransfer.getData(DRAG_ITEMS)) event.dataTransfer.setData(DRAG_ITEMS, JSON.stringify(paths));
+        if (!event.dataTransfer.getData(DRAG_ITEMS))
+            event.dataTransfer.setData(DRAG_ITEMS, dragItemsData(paths, this.places.here()));
         event.dataTransfer.effectAllowed = 'all';
     }
 
@@ -295,10 +300,15 @@ export class OperationsPanelComponent implements OnInit {
         const kind = event.ctrlKey || event.metaKey ? 'copy' : 'move';
         if (!this.allowed(target, kind)) return;
         const into = target.getAttribute('data-drop')!;
-        const paths = parsePaths(data).filter((path) => path !== into && !into.startsWith(`${path}/`));
+        const dragged = parseDragItems(data);
+        const places = { from: dragged.connection, to: this.places.here() };
+        // Within one place, a folder can't go into itself (nor where it is).
+        const paths = dragged.paths.filter(
+            (path) => places.from !== places.to || (path !== into && !into.startsWith(`${path}/`)),
+        );
         if (!paths.length) return;
         event.preventDefault();
-        void this.transfers.transfer(kind, paths, into);
+        void this.transfers.transfer(kind, paths, into, places);
     }
 
     protected endDrag(): void {
@@ -348,15 +358,6 @@ export class OperationsPanelComponent implements OnInit {
         this.over?.classList.remove('drop-over');
         target?.classList.add('drop-over');
         this.over = target;
-    }
-}
-
-function parsePaths(json: string): string[] {
-    try {
-        const value: unknown = JSON.parse(json);
-        return Array.isArray(value) ? value.filter((path): path is string => typeof path === 'string') : [];
-    } catch {
-        return [];
     }
 }
 

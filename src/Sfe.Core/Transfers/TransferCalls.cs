@@ -59,25 +59,11 @@ public sealed class TransferCalls(ConnectionGates gates, TimeProvider clock)
         while (true)
         {
             await WaitForProviderAsync(connectionId, cancellationToken);
-            RemoteStorageException failure;
-            using (var turn = await gates.EnterAsync(connectionId, cancellationToken))
-            {
-                if (turn is null)
-                    failure = new RemoteStorageException(RemoteErrorKind.Unavailable, "The connection is busy.");
-                else
-                {
-                    try
-                    {
-                        return await call(cancellationToken);
-                    }
-                    catch (RemoteStorageException thrown) when (IsPassing(thrown.Kind))
-                    {
-                        failure = thrown;
-                    }
-                }
-            }
+            var (done, answer, failure) = await TryAsync(connectionId, call, cancellationToken);
+            if (done)
+                return answer!;
 
-            if (failure.Kind == RemoteErrorKind.RateLimited)
+            if (failure!.Kind == RemoteErrorKind.RateLimited)
             {
                 if (++rateLimits > MaxRateLimits)
                     throw failure;
@@ -87,6 +73,26 @@ public sealed class TransferCalls(ConnectionGates gates, TimeProvider clock)
             if (retries == MaxRetries)
                 throw failure;
             await Task.Delay(Backoff(retries++), clock, cancellationToken);
+        }
+    }
+
+    /// <summary>One try in a turn of the connection: its answer, or the failure worth trying again.</summary>
+    private async Task<(bool Done, T? Answer, RemoteStorageException? Failure)> TryAsync<T>(
+        int connectionId,
+        Func<CancellationToken, Task<T>> call,
+        CancellationToken cancellationToken
+    )
+    {
+        using var turn = await gates.EnterAsync(connectionId, cancellationToken);
+        if (turn is null)
+            return (false, default, new RemoteStorageException(RemoteErrorKind.Unavailable, "The connection is busy."));
+        try
+        {
+            return (true, await call(cancellationToken), null);
+        }
+        catch (RemoteStorageException thrown) when (IsPassing(thrown.Kind))
+        {
+            return (false, default, thrown);
         }
     }
 

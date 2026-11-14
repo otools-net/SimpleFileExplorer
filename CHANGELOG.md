@@ -32,7 +32,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   rename, delete (into Dropbox's own deleted files) and moving or copying inside it by cut and paste or dragging,
   done by Dropbox itself; uploading files and folders there (button or drop), each part sent on to Dropbox as it
   comes, resumable as in the library while the page stays open; **Properties** of its files and folders (size,
-  date, Dropbox's content hash).
+  date, Dropbox's content hash); **copying and moving between the library and a connection** (cut and paste, drag
+  and drop, including onto a connection in the sidebar, or Move to / Copy to, whose folder picker lists the
+  connections), as a job of the operations panel: each part sent on as it is read, sizes and content hashes
+  checked, a moved library file going to the trash only once its copy is verified; copies out of a connection you
+  only read work too.
 - **API: a connection's files**: `GET api/v1/connections/{id}/browse` (a folder in the listing's shape, with what
   the provider can do), `files/raw/{path}` (one HTTP range when the provider reads parts), `thumbnails/{path}` and
   `POST …/archive` (a zip, then its one-time link), `POST …/files/folders`, `rename`, `delete` and `transfer` (move

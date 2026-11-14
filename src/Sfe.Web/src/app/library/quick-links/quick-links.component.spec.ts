@@ -237,7 +237,7 @@ describe('Quick links', () => {
 
             drag(element.querySelector('.folder-item .folder')!, 'dragstart', data);
             await settle();
-            expect(JSON.parse(data.getData(DRAG_ITEMS))).toEqual(['Media/Trips']);
+            expect(JSON.parse(data.getData(DRAG_ITEMS))).toEqual({ connection: null, paths: ['Media/Trips'] });
             expect(section().classList).toContain('drop-ready');
 
             const over = drag(rows()[1], 'dragover', data, 40);

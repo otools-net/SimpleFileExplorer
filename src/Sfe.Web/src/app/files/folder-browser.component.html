@@ -1,0 +1,58 @@
+<nav class="transfer-crumbs" aria-label="The folder chosen">
+    @for (crumb of browser().crumbs(); track $index; let last = $last) {
+        @if (last) {
+            <strong><svg [sfeIcon]="crumb.top ? 'globe' : 'folder'"></svg>{{ crumb.name }}</strong>
+        } @else {
+            <button
+                type="button"
+                class="link-button"
+                [title]="'Go back to ' + crumb.name"
+                (click)="browser().go(crumb)"
+            >{{ crumb.name }}</button>
+            <span aria-hidden="true">/</span>
+        }
+    }
+</nav>
+<ul class="transfer-folders">
+    @if (browser().top()) {
+        <li>
+            <button type="button" class="transfer-folder" data-place="library" (click)="browser().browse('', null)">
+                <svg sfeIcon="folder"></svg><span>{{ browser().nameOf(null) }}</span>
+            </button>
+        </li>
+        @for (place of browser().places(); track place.id) {
+            <li>
+                <button
+                    type="button"
+                    class="transfer-folder"
+                    [attr.data-place]="place.id"
+                    [disabled]="place.state === 'needsReconnecting'"
+                    [title]="placeTitle(place)"
+                    (click)="browser().browse('', place.id)"
+                >
+                    <svg [sfeIcon]="kindIcon(place)"></svg><span>{{ place.name }}</span>
+                </button>
+            </li>
+        }
+    } @else {
+        @for (folder of browser().folders(); track folder.path) {
+            <li>
+                @let closed = closedBecause()(folder.path);
+                <button
+                    type="button"
+                    class="transfer-folder"
+                    [disabled]="closed !== null"
+                    [title]="closed ?? 'Open ' + folder.name"
+                    (click)="browser().browse(folder.path)"
+                >
+                    <svg sfeIcon="folder"></svg><span>{{ folder.name }}</span>
+                </button>
+            </li>
+        } @empty {
+            <li class="muted">{{ browser().loading() ? 'Loading…' : 'No folders in here.' }}</li>
+        }
+        @if (browser().truncated()) {
+            <li class="muted">Only the first {{ shown }} folders are listed.</li>
+        }
+    }
+</ul>

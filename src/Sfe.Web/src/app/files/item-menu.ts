@@ -305,7 +305,7 @@ export class ItemMenu {
                 title: pasteTitle(clipboard),
                 run: () => this.transfers.paste(item.path),
             });
-        if (canMove && !this.config.place())
+        if (canMove)
             entries.push({
                 id: 'moveTo',
                 label: 'Move to…',
@@ -313,7 +313,7 @@ export class ItemMenu {
                 title: 'Move it to another folder, picked next',
                 run: () => this.transfers.pick('move', targets()),
             });
-        if (canCopy && !this.config.place())
+        if (canCopy)
             entries.push({
                 id: 'copyTo',
                 label: 'Copy to…',

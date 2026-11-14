@@ -47,6 +47,14 @@ export interface FileJobRequest {
     keepTags?: boolean;
 }
 
+/** A move or copy between two places (`POST api/files/jobs/transfer`): a connection's id, null for the library. */
+export interface TransferRequest {
+    kind: 'move' | 'copy';
+    from: { connection: number | null; paths: string[] };
+    to: { connection: number | null; path: string };
+    conflicts: ConflictChoice;
+}
+
 /** What became of one item of a job; `newPath`: where it is now (moved, or the copy). */
 export interface FileJobItem {
     path: string;
@@ -71,6 +79,9 @@ export interface FileJobView {
     results: FileJobItem[];
     started: string;
     finished: string | null;
+    /** The places of a transfer between them (`api/files/jobs/transfer`): a connection's id, null for the library. */
+    fromConnection?: number | null;
+    toConnection?: number | null;
 }
 
 /** What starts an upload (`POST …/uploads`): the folder, the file's name (its path below it), size and date. */

@@ -14,6 +14,7 @@ import { ItemActions } from '../items/item-actions.service';
 import { ListingStore } from '../listing.store';
 import { SidebarService } from '../sidebar/sidebar.service';
 import { DRAG_ITEMS, DRAG_LINK, QuickLinksService } from './quick-links.service';
+import { dragItemsData, parseDragItems } from '../../files/drag-items';
 
 /**
  * The sidebar's quick links: folders open their listing, files open in their folder (media in the viewer). Folders
@@ -227,7 +228,7 @@ export class QuickLinksComponent implements OnInit {
         if (!this.links.enabled() || !event.dataTransfer) return;
         const paths = this.links.dragPaths(event.target);
         if (!paths?.length) return;
-        event.dataTransfer.setData(DRAG_ITEMS, JSON.stringify(paths));
+        event.dataTransfer.setData(DRAG_ITEMS, dragItemsData(paths, this.config.place()?.id ?? null));
         // Every effect: dropping a file's link elsewhere (another tab, the desktop) keeps working, and on a folder of
         // the page it is moved or copied (OperationsPanelComponent).
         event.dataTransfer.effectAllowed = 'all';
@@ -268,8 +269,9 @@ export class QuickLinksComponent implements OnInit {
             void this.links.move(moved, index);
             return;
         }
-        const paths = parsePaths(items);
-        if (paths.length) void this.links.add(paths, index);
+        // Links are the library's: items of a connection (dragged from another tab) are not added.
+        const dragged = parseDragItems(items);
+        if (dragged.connection === null && dragged.paths.length) void this.links.add(dragged.paths, index);
     }
 
     protected endDrag(): void {
@@ -295,14 +297,5 @@ export class QuickLinksComponent implements OnInit {
     /** A gone target stays listed (it may come back): the user removes it. */
     private notFound(link: QuickLink): void {
         this.toasts.show(`“${link.name}” is not there any more (moved, renamed or deleted). Remove its link with ×.`);
-    }
-}
-
-function parsePaths(json: string): string[] {
-    try {
-        const value: unknown = JSON.parse(json);
-        return Array.isArray(value) ? value.filter((path): path is string => typeof path === 'string') : [];
-    } catch {
-        return [];
     }
 }

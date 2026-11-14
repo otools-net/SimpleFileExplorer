@@ -11,10 +11,12 @@ import { SheetComponent } from '../shared/sheet.component';
 import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { FileTransfers } from './file-transfers';
+import { UsableConnections } from '../core/usable-connections';
 import { folderBrowser, FolderBrowserComponent } from './folder-browser.component';
 
 /**
- * Move to… and Copy to…: picks the folder by clicking through the library, then starts the job. Also the confirmation
+ * Move to… and Copy to…: picks the folder by clicking through the library or a connection the session writes to, then
+ * starts the job (between two places, a transfer job: `FileTransfers.transfer`). Also the confirmation
  * of a paste or a drop: a copy asks whether the tags come along, a move into a place where more people would see or
  * change a folder says who, and offers to keep the access the folder has now.
  */
@@ -28,12 +30,15 @@ export class TransferDialog {
     private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
     private readonly transfers = inject(FileTransfers);
+    private readonly connections = inject(UsableConnections);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
 
     protected readonly kind = signal<FileJobKind>('move');
     protected readonly step = signal<'pick' | 'confirm'>('pick');
     private readonly paths = signal<string[]>([]);
     private readonly items = signal<LibraryItem[]>([]);
+    /** Where the items are: a connection's id, null for the library. */
+    private readonly from = signal<number | null>(null);
     /** The folder chosen (picker), or where the paste or drop goes. */
     protected readonly browser = folderBrowser();
     private readonly target = this.browser.target;
@@ -41,6 +46,16 @@ export class TransferDialog {
     protected readonly gains = signal<AccessGain[]>([]);
     protected readonly keepAccess = signal(false);
     protected readonly keepTags = signal(true);
+    /** The folder chosen is in the place the items are. */
+    private readonly samePlace = computed(() => this.browser.connection() === this.from());
+    /** Tags are the library's: asked about for a copy within it only. */
+    protected readonly tagsAsked = computed(
+        () => this.kind() === 'copy' && this.from() === null && this.browser.connection() === null,
+    );
+    /** A move out of the library: the files leave its index, as deleted ones do. */
+    protected readonly tagsLost = computed(
+        () => this.kind() === 'move' && this.from() === null && this.browser.connection() !== null,
+    );
 
     protected readonly what = computed(() => {
         const items = this.items();
@@ -68,7 +83,11 @@ export class TransferDialog {
         if (!listing) return 'Pick a folder.';
         if (!this.browser.allows(this.kind() === 'move' ? Rights.moveFiles : Rights.copyFiles))
             return `You may not ${this.kind()} files into this folder: open another.`;
-        if (this.kind() === 'move' && this.paths().every((path) => parentPath(path) === listing.path))
+        if (
+            this.kind() === 'move' &&
+            this.samePlace() &&
+            this.paths().every((path) => parentPath(path) === listing.path)
+        )
             return 'They are in this folder already: open another.';
         return null;
     });
@@ -84,9 +103,7 @@ export class TransferDialog {
     protected readonly confirmTitle = computed(
         () => `${this.kind() === 'move' ? 'Move' : 'Copy'} into “${this.targetName()}”: it goes on in the background`,
     );
-    private readonly targetName = computed(
-        () => baseName(this.target()) || this.config.config()?.rootName || 'the library',
-    );
+    private readonly targetName = computed(() => baseName(this.target()) || this.browser.placeName());
 
     constructor() {
         registerDialog((dialogs) => dialogs.transfer, this);
@@ -100,8 +117,12 @@ export class TransferDialog {
             'pick',
         );
         this.items.set(items);
+        this.from.set(this.config.place()?.id ?? null);
         const route = this.store.route();
-        void this.browser.browse(route.q ? parentPath(items[0]?.path ?? '') : route.path);
+        void this.browser.browse(route.q ? parentPath(items[0]?.path ?? '') : route.path, this.from());
+        void this.connections.load(true).then((usable) => {
+            if (usable.length) this.browser.offer(usable);
+        });
         this.sheet().open();
     }
 
@@ -117,6 +138,8 @@ export class TransferDialog {
         this.kind.set(kind);
         this.paths.set(paths);
         this.items.set([]);
+        this.from.set(null);
+        this.browser.places.set(null);
         this.step.set(step);
         this.gains.set([]);
         this.keepAccess.set(false);
@@ -126,7 +149,9 @@ export class TransferDialog {
 
     /** A folder moved can't take itself. */
     protected readonly closedBecause = (path: string): string | null =>
-        this.kind() === 'move' && this.paths().some((moved) => path === moved || path.startsWith(`${moved}/`))
+        this.kind() === 'move' &&
+        this.samePlace() &&
+        this.paths().some((moved) => path === moved || path.startsWith(`${moved}/`))
             ? 'It is moved itself'
             : null;
 
@@ -142,6 +167,10 @@ export class TransferDialog {
 
     protected async confirm(): Promise<void> {
         const request: FileJobRequest = { kind: this.kind(), paths: this.paths(), target: this.target() };
+        if (this.from() !== null || this.browser.connection() !== null) {
+            await this.elsewhere(request);
+            return;
+        }
         if (this.step() === 'pick' && request.kind === 'move') {
             const gains = await whileBusy(this.busy, () => this.transfers.gains(request.paths, request.target));
             if (gains === null) return;
@@ -158,5 +187,13 @@ export class TransferDialog {
             this.store.clearSelection();
             this.sheet().close();
         }
+    }
+
+    /** Into a connection, or out of one: its provider's move or copy, or a transfer job between the two places. */
+    private async elsewhere({ kind, paths, target }: FileJobRequest): Promise<void> {
+        const places = { from: this.from(), to: this.browser.connection() };
+        await whileBusy(this.busy, () => this.transfers.transfer(kind, paths, target, places));
+        this.store.clearSelection();
+        this.sheet().close();
     }
 }

@@ -21,7 +21,11 @@
             </label>
         }
     }
-    @if (kind() === 'copy') {
+    @if (tagsLost()) {
+        <p class="field-hint" data-tags-lost>Their tags are not kept: the files leave the library, as deleted ones
+        do.</p>
+    }
+    @if (tagsAsked()) {
         <label class="check">
             <input type="checkbox" [checked]="keepTags()" (change)="keepTags.set(checked($event))">
             <span>Copy their tags too<span class="field-hint">The copies get the tags of the files they come

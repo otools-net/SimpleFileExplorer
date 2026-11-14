@@ -6,15 +6,17 @@ import { Rights } from './rights';
 const PLACE_RIGHTS: ReadonlySet<string> = new Set([Rights.browse, Rights.viewFiles, Rights.download]);
 
 /**
- * What they offer too where the session may write there: new folders, renames, deletes; moves and copies when the
- * provider does them itself; uploads when it takes files in parts. No new files, extract, compress, permanent delete,
- * edits or tags yet.
+ * What they offer too: copies out of any connection; where the session may write there, new folders, renames,
+ * deletes, moves and copies, uploads when the provider takes files in parts. No new files, extract, compress,
+ * permanent delete, edits or tags yet.
  */
 function placeRights(place: ConnectionPlace): ReadonlySet<string> {
-    if (place.access !== 'write') return PLACE_RIGHTS;
+    // A copy only reads its source: copying out of a connection one reads (into the library) is allowed.
+    if (place.access !== 'write') return new Set([...PLACE_RIGHTS, Rights.copyFiles]);
     const rights = new Set([...PLACE_RIGHTS, Rights.createFolders, Rights.renameFiles, Rights.deleteFiles]);
-    if (place.serverSideMove) rights.add(Rights.moveFiles);
-    if (place.serverSideCopy) rights.add(Rights.copyFiles);
+    // Between places the server streams the bytes; inside the connection it needs the provider's own move or copy
+    // (`files/transfer` answers connection-not-supported without it).
+    rights.add(Rights.moveFiles).add(Rights.copyFiles);
     if (place.uploadsInParts) rights.add(Rights.uploadFiles);
     return rights;
 }
