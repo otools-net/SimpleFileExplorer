@@ -26,6 +26,7 @@ public static class ConnectionArchiveEndpoints
 
         archive
             .MapPost("", Create)
+            .RequireRateLimiting(RequestLimits.Connections)
             .RequireRight(Rights.UseConnections)
             .FolderScoped("files.view and files.download; 404 for a connection the subject may not use")
             .WithName("CreateConnectionArchive")
@@ -33,6 +34,7 @@ public static class ConnectionArchiveEndpoints
             .WithDescription(CreateDescription);
         archive
             .MapGet("/{token:regex(^[0-9a-f]{{48}}$)}", Download)
+            .RequireRateLimiting(RequestLimits.Connections)
             .RequireRight(Rights.UseConnections)
             .FolderScoped("files.view and files.download again; 404 for a connection the subject may not use")
             .WithName("DownloadConnectionArchive")

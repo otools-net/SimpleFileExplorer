@@ -273,7 +273,11 @@ in `FolderRules`:
   PDF); Properties and adding quick links hidden there; sidebar section `ConnectionLinksComponent` (the connections
   page is the existing My account / Administration › Connections); zips: `POST api/connections/{id}/archive` and its
   one-time link (`ArchiveLinks` with a scope), written from the provider by `RemoteArchives`
-- [ ] Rate limits and waits: Dropbox 429 honoured, a per-connection gate, per-caller limits on listing and reads
+- [x] Rate limits and waits: Dropbox 429 honoured, a per-connection gate, per-caller limits on listing and reads. As
+  built: `ConnectionGates` (singleton): 4 provider calls at once per connection (30 s to get a turn, else 429), and
+  after a `RateLimited` answer no call until its `Retry-After` (5 s when none) is over: the routes answer 429 with the
+  time left (`ConnectionFileServices.RunAsync`); per caller, the policy `RequestLimits.Connections` (6 requests at
+  once, 100 queued) on browse, raw and the zip routes, thumbnails keep `Media`
 
 ### Phase 4: file management
 

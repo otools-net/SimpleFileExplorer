@@ -30,6 +30,15 @@ public static class RequestLimits
     /// </summary>
     public const string Unlock = "unlock";
 
+    /// <summary>
+    /// A connection's files (listings, reads, zips): requests of one caller at once, the next ones queued. Each holds
+    /// a provider's answer; the provider's own limits are kept per connection (<c>ConnectionGates</c>).
+    /// </summary>
+    public const string Connections = "connections";
+
+    public const int ConnectionConcurrency = 6;
+    public const int ConnectionQueue = 100;
+
     public const int UnlocksPerMinute = 10;
 
     public const int MediaConcurrency = 8;
@@ -43,6 +52,14 @@ public static class RequestLimits
             {
                 PermitLimit = MediaConcurrency,
                 QueueLimit = MediaQueue,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            })
+        );
+        options.AddPolicy(Connections, context =>
+            RateLimitPartition.GetConcurrencyLimiter(Caller(context), _ => new ConcurrencyLimiterOptions
+            {
+                PermitLimit = ConnectionConcurrency,
+                QueueLimit = ConnectionQueue,
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
             })
         );

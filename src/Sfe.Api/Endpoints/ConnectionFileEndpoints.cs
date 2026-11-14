@@ -28,6 +28,7 @@ public static class ConnectionFileEndpoints
 
         connections
             .MapGet("/browse", Browse)
+            .RequireRateLimiting(RequestLimits.Connections)
             .RequireRight(Rights.UseConnections)
             .FolderScoped("library.browse; 404 for a connection the subject may not use")
             .WithName("BrowseConnection")
@@ -36,6 +37,7 @@ public static class ConnectionFileEndpoints
 
         connections
             .MapGet("/files/raw/{**path}", Raw)
+            .RequireRateLimiting(RequestLimits.Connections)
             .RequireRight(Rights.UseConnections)
             .NeverRunByPages()
             .FolderScoped("files.view (files.download to download); 404 for a connection the subject may not use")

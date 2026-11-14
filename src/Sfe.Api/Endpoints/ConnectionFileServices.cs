@@ -12,6 +12,7 @@ internal sealed record ConnectionFileServices(
     ConnectionAccess Access,
     ConnectionService Connections,
     ConnectionProviders Providers,
+    ConnectionGates Gates,
     HttpContext Context
 )
 {
@@ -46,16 +47,27 @@ internal sealed record ConnectionFileServices(
         return (new OpenConnection(usable, storage, provider.Capabilities), null);
     }
 
-    /// <summary>Runs a call on the connection's files; the provider's errors as their answers.</summary>
+    /// <summary>
+    /// Runs a call on the connection's files in its turn (<see cref="ConnectionGates"/>); the provider's errors as
+    /// their answers. While the provider asks to wait, answers 429 without calling it.
+    /// </summary>
     public async Task<IResult> RunAsync(OpenConnection open, Func<IRemoteStorage, Task<IResult>> call)
     {
+        var id = open.Connection.Id;
+        if (Gates.WaitLeft(id) is { } left)
+            return ConnectionProblems.Waiting(left, Context);
+        using var turn = await Gates.EnterAsync(id, Context.RequestAborted);
+        if (turn is null)
+            return ConnectionProblems.Waiting(TimeSpan.FromSeconds(1), Context);
         try
         {
             return await call(open.Storage);
         }
         catch (RemoteStorageException error)
         {
-            return await ConnectionProblems.OfAsync(error, open.Connection.Id, Context, Connections);
+            if (error.Kind == RemoteErrorKind.RateLimited)
+                Gates.Wait(id, error.RetryAfter);
+            return await ConnectionProblems.OfAsync(error, id, Context, Connections);
         }
     }
 }

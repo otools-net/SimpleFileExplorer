@@ -163,12 +163,8 @@ public sealed class ConnectionFileRouteTests
     }
 
     [TestMethod]
-    public async Task AnEndedSignInMarksTheConnectionAndAWaitIsPassedOn()
+    public async Task AnEndedSignInMarksTheConnectionAndAnUnreachableProviderIsSaid()
     {
-        _account.Failing = RemoteErrorKind.RateLimited;
-        _account.RetryAfter = TimeSpan.FromSeconds(30);
-        using var limited = await _admin.GetAsync(Browse(""), Cancel);
-
         _account.Failing = RemoteErrorKind.Unavailable;
         using var down = await _admin.GetAsync(Browse(""), Cancel);
 
@@ -177,9 +173,6 @@ public sealed class ConnectionFileRouteTests
         _account.Failing = null;
         using var after = await _admin.GetAsync(Browse(""), Cancel);
 
-        Assert.AreEqual(HttpStatusCode.TooManyRequests, limited.StatusCode);
-        Assert.AreEqual(TimeSpan.FromSeconds(30), limited.Headers.RetryAfter!.Delta);
-        Assert.AreEqual(ConnectionProblems.RateLimitedType, await TypeOfAsync(limited));
         Assert.AreEqual(HttpStatusCode.BadGateway, down.StatusCode);
         Assert.AreEqual(ConnectionProblems.UnavailableType, await TypeOfAsync(down));
         Assert.AreEqual(HttpStatusCode.Conflict, ended.StatusCode);
@@ -188,6 +181,27 @@ public sealed class ConnectionFileRouteTests
         Assert.AreEqual(ConnectionProblems.NeedsReconnectingType, await TypeOfAsync(after));
         var info = await _factory.Services.GetRequiredService<ConnectionService>().FindAsync(_id, Cancel);
         Assert.AreEqual(ConnectionState.NeedsReconnecting, info!.State);
+    }
+
+    [TestMethod]
+    public async Task WhileTheProviderAsksToWaitNobodyCallsIt()
+    {
+        _account.Failing = RemoteErrorKind.RateLimited;
+        _account.RetryAfter = TimeSpan.FromMinutes(2);
+        using var first = await _admin.GetAsync(Browse(""), Cancel);
+        _account.Failing = null;
+        var calls = _account.Calls.Count;
+
+        using var next = await _admin.GetAsync(Browse("path=Trips"), Cancel);
+        using var read = await _admin.GetAsync($"{Base}/files/raw/a.mp4", Cancel);
+
+        Assert.AreEqual(HttpStatusCode.TooManyRequests, first.StatusCode);
+        Assert.AreEqual(TimeSpan.FromMinutes(2), first.Headers.RetryAfter!.Delta);
+        Assert.AreEqual(HttpStatusCode.TooManyRequests, next.StatusCode);
+        Assert.AreEqual(HttpStatusCode.TooManyRequests, read.StatusCode);
+        Assert.IsGreaterThan(TimeSpan.FromSeconds(60), next.Headers.RetryAfter!.Delta!.Value);
+        Assert.AreEqual(ConnectionProblems.RateLimitedType, await TypeOfAsync(read));
+        Assert.HasCount(calls, _account.Calls, "the provider was not called during its wait");
     }
 
     [TestMethod]

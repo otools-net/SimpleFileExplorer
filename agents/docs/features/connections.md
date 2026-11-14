@@ -108,6 +108,10 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   `Forget(id)` drops a connection's reads: call it when SFE changes its files (phase 4).
 - `files/raw` serves one range (`RemoteRanges`), under the library's sandbox (`RemoteFileResult`: `FilePolicy`, types
   a page could run downloaded); a provider without `RangedReads` serves the whole file with no `Accept-Ranges`.
+- `ConnectionFileServices.RunAsync` runs every provider call in a turn of `ConnectionGates` (4 at once per
+  connection); after a `RateLimited` answer the connection is left alone until its `Retry-After`: the routes answer
+  429 with the time left without calling the provider. Per caller: policy `RequestLimits.Connections`. A raw read
+  gives its turn back when its answer starts (the bytes stream after).
 - A provider's error becomes `ConnectionProblems`: `CredentialsEnded` marks the connection `NeedsReconnecting` and
   answers 409 `connection-needs-reconnecting`; `RateLimited` 429 with `Retry-After`; `Unavailable` 502.
 - Dropbox: `DropboxStorage`; an endpoint's error (`ApiException<T>`) is read from its `error_summary`

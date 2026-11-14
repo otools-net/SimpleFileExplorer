@@ -28,6 +28,18 @@ public static class ConnectionProblems
     /// <summary>409: the provider lacks the function.</summary>
     public const string NotSupportedType = "connection-not-supported";
 
+    /// <summary>429 while the provider's wait lasts, or while the connection's calls are all taken.</summary>
+    public static IResult Waiting(TimeSpan left, HttpContext context)
+    {
+        var seconds = Math.Max(1, (int)Math.Ceiling(left.TotalSeconds));
+        context.Response.Headers[HeaderNames.RetryAfter] = seconds.ToString();
+        return TypedResults.Problem(
+            $"The provider asks to wait: try again in {seconds} s.",
+            statusCode: StatusCodes.Status429TooManyRequests,
+            type: RateLimitedType
+        );
+    }
+
     /// <summary>The answer to <see cref="ConnectionService.OpenAsync"/>'s conflict.</summary>
     public static IResult OfOpening(string? problem) =>
         TypedResults.Problem(
