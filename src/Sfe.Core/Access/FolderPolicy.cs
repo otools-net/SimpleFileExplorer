@@ -11,17 +11,27 @@ namespace Sfe.Core.Access;
 /// <remarks>
 /// The table holds the root and every path some principal has a rule on, each with the subject's rights there. It is
 /// exact: no principal has a rule between a path and the deepest table entry above it, so every principal's nearest
-/// rule, hence the rights, are the same for both. Without any rule the policy is <see cref="Unrestricted"/>.
+/// rule, hence the rights, are the same for both. Without any rule (nor default level) the policy is
+/// <see cref="Unrestricted"/>. Paths are compared as the place they belong to compares them: the library as its host
+/// (<see cref="LibraryPaths.PathComparison"/>), a connection as its provider.
 /// </remarks>
 public sealed class FolderPolicy
 {
     /// <summary>No folder rule applies: the subject's rights apply everywhere.</summary>
-    public static FolderPolicy Unrestricted { get; } = new(null);
+    public static FolderPolicy Unrestricted { get; } = new(null, LibraryPaths.PathComparison);
 
-    /// <summary>Rights by path (<see cref="LibraryPaths.PathComparer"/>); null when unrestricted.</summary>
+    /// <summary>Rights by path (compared by <see cref="_comparer"/>); null when unrestricted.</summary>
     private readonly Dictionary<string, IReadOnlySet<string>>? _entries;
 
-    private FolderPolicy(Dictionary<string, IReadOnlySet<string>>? entries) => _entries = entries;
+    private readonly StringComparison _comparison;
+    private readonly StringComparer _comparer;
+
+    private FolderPolicy(Dictionary<string, IReadOnlySet<string>>? entries, StringComparison comparison)
+    {
+        _entries = entries;
+        _comparison = comparison;
+        _comparer = StringComparer.FromComparison(comparison);
+    }
 
     public bool IsUnrestricted => _entries is null;
 
@@ -30,23 +40,26 @@ public sealed class FolderPolicy
     /// </summary>
     public IEnumerable<string> Paths => _entries is null ? [string.Empty] : _entries.Keys;
 
-    public static FolderPolicy Compile(IReadOnlyList<FolderPrincipal> principals)
+    /// <summary>The policy of a library folder: paths compared as the host compares them.</summary>
+    public static FolderPolicy Compile(IReadOnlyList<FolderPrincipal> principals) =>
+        Compile(principals, LibraryPaths.PathComparison);
+
+    /// <summary>The policy of a tree whose paths compare by <paramref name="comparison"/>.</summary>
+    public static FolderPolicy Compile(IReadOnlyList<FolderPrincipal> principals, StringComparison comparison)
     {
-        if (principals.All(p => p.Rules.Count == 0))
+        if (principals.All(p => p.Rules.Count == 0 && p.DefaultLevel is null))
             return Unrestricted;
 
+        var comparer = StringComparer.FromComparison(comparison);
         var normalized = principals
-            .Select(p => p with { Rules = new Dictionary<string, FolderLevel>(p.Rules, LibraryPaths.PathComparer) })
+            .Select(p => p with { Rules = new Dictionary<string, FolderLevel>(p.Rules, comparer) })
             .ToList();
-        var paths = new HashSet<string>(LibraryPaths.PathComparer) { string.Empty };
+        var paths = new HashSet<string>(comparer) { string.Empty };
         foreach (var principal in normalized)
             paths.UnionWith(principal.Rules.Keys);
         return new FolderPolicy(
-            paths.ToDictionary(
-                path => path,
-                IReadOnlySet<string> (path) => RightsAt(normalized, path),
-                LibraryPaths.PathComparer
-            )
+            paths.ToDictionary(path => path, IReadOnlySet<string> (path) => RightsAt(normalized, path), comparer),
+            comparison
         );
     }
 
@@ -70,8 +83,8 @@ public sealed class FolderPolicy
     {
         if (_entries is null)
             return new Dictionary<string, FolderAccess>();
-        var children = new Dictionary<string, FolderAccess>(LibraryPaths.PathComparer);
-        foreach (var path in _entries.Keys.Where(p => IsBelow(p, folder)))
+        var children = new Dictionary<string, FolderAccess>(_comparer);
+        foreach (var path in _entries.Keys.Where(p => IsBelow(p, folder, _comparison)))
         {
             var name = path[(folder.Length == 0 ? 0 : folder.Length + 1)..].Split('/')[0];
             if (!children.ContainsKey(name))
@@ -87,7 +100,10 @@ public sealed class FolderPolicy
     /// </summary>
     public bool AllowsThroughout(string folder, string right, IReadOnlySet<string> granted) =>
         At(folder, granted).Has(right)
-        && (_entries is null || _entries.Where(e => IsBelow(e.Key, folder)).All(e => e.Value.Contains(right)));
+        && (
+            _entries is null
+            || _entries.Where(e => IsBelow(e.Key, folder, _comparison)).All(e => e.Value.Contains(right))
+        );
 
     /// <summary>Where the subject may use <paramref name="right"/>, for the queries over the index.</summary>
     public PathFilter FilterFor(string right, IReadOnlySet<string> granted)
@@ -99,7 +115,7 @@ public sealed class FolderPolicy
 
         // Parents first: keep an entry only where it changes whether the right applies, so that kept entries
         // alternate down the tree (allowed, then not allowed below it, then allowed again...).
-        var kept = new Dictionary<string, (bool Allowed, string? Parent)>(LibraryPaths.PathComparer);
+        var kept = new Dictionary<string, (bool Allowed, string? Parent)>(_comparer);
         foreach (var (path, rights) in _entries.OrderBy(e => Depth(e.Key)))
         {
             var allowed = rights.Contains(right);
@@ -111,10 +127,7 @@ public sealed class FolderPolicy
         var regions = kept.Where(k => k.Value.Allowed)
             .Select(k => new PathRegion(
                 k.Key,
-                [
-                    .. kept.Where(c => c.Value.Parent is { } parent && LibraryPaths.PathComparer.Equals(parent, k.Key))
-                        .Select(c => c.Key),
-                ]
+                [.. kept.Where(c => c.Value.Parent is { } parent && _comparer.Equals(parent, k.Key)).Select(c => c.Key)]
             ))
             .ToList();
         return new PathFilter(regions);
@@ -144,12 +157,12 @@ public sealed class FolderPolicy
         folder.Length == 0 || LibraryPaths.PathComparer.Equals(path, folder) || IsBelow(path, folder);
 
     /// <summary><paramref name="path"/> is strictly below <paramref name="folder"/>.</summary>
-    public static bool IsBelow(string path, string folder) =>
+    public static bool IsBelow(string path, string folder) => IsBelow(path, folder, LibraryPaths.PathComparison);
+
+    private static bool IsBelow(string path, string folder, StringComparison comparison) =>
         folder.Length == 0
             ? path.Length > 0
-            : path.Length > folder.Length + 1
-                && path[folder.Length] == '/'
-                && path.StartsWith(folder, LibraryPaths.PathComparison);
+            : path.Length > folder.Length + 1 && path[folder.Length] == '/' && path.StartsWith(folder, comparison);
 
     /// <summary>The path, then each folder above it up to the root (<c>a/b</c>, <c>a</c>, empty).</summary>
     public static IEnumerable<string> SelfAndAncestors(string path)
@@ -180,14 +193,16 @@ public sealed class FolderPolicy
     private bool IsPathOnly(string path, IReadOnlySet<string> rights, IReadOnlySet<string> granted) =>
         granted.Contains(Rights.Browse)
         && !rights.Contains(Rights.Browse)
-        && _entries!.Any(e => IsBelow(e.Key, path) && e.Value.Contains(Rights.Browse));
+        && _entries!.Any(e => IsBelow(e.Key, path, _comparison) && e.Value.Contains(Rights.Browse));
 
     private static HashSet<string> RightsAt(IReadOnlyList<FolderPrincipal> principals, string path)
     {
         var rights = new HashSet<string>(StringComparer.Ordinal);
         foreach (var principal in principals)
         {
-            var level = LevelAt(principal.Rules, path, principal.UnrestrictedByDefault);
+            var level = principal.DefaultLevel is { } fallback
+                ? LevelAt(principal.Rules, path, false) ?? fallback
+                : LevelAt(principal.Rules, path, principal.UnrestrictedByDefault);
             foreach (var right in principal.Rights)
             {
                 if (RightCatalog.Find(right) is not { } definition)

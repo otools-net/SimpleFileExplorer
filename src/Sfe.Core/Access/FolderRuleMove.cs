@@ -6,7 +6,7 @@ namespace Sfe.Core.Access;
 /// </summary>
 public sealed class FolderRuleMove : IAsyncDisposable
 {
-    private readonly FolderRuleService _service;
+    private readonly FolderRuleMoves _moves;
     private readonly SemaphoreSlim _gate;
     private readonly int _tenantId;
     private readonly IReadOnlyList<int> _originals;
@@ -15,7 +15,7 @@ public sealed class FolderRuleMove : IAsyncDisposable
     private int _released;
 
     internal FolderRuleMove(
-        FolderRuleService service,
+        FolderRuleMoves moves,
         SemaphoreSlim gate,
         int tenantId,
         IReadOnlyList<int> originals,
@@ -23,7 +23,7 @@ public sealed class FolderRuleMove : IAsyncDisposable
         IReadOnlyDictionary<int, string>? previousPaths
     )
     {
-        _service = service;
+        _moves = moves;
         _gate = gate;
         _tenantId = tenantId;
         _originals = originals;
@@ -37,7 +37,7 @@ public sealed class FolderRuleMove : IAsyncDisposable
         EnsureOpen();
         try
         {
-            await _service.DeleteAsync(_tenantId, _originals, cancellationToken);
+            await _moves.DeleteAsync(_tenantId, _originals, cancellationToken);
         }
         finally
         {
@@ -52,9 +52,9 @@ public sealed class FolderRuleMove : IAsyncDisposable
         try
         {
             if (_previousPaths is not null)
-                await _service.RestorePathsAsync(_tenantId, _previousPaths, cancellationToken);
+                await _moves.RestorePathsAsync(_tenantId, _previousPaths, cancellationToken);
             else
-                await _service.DeleteAsync(_tenantId, _copies, cancellationToken);
+                await _moves.DeleteAsync(_tenantId, _copies, cancellationToken);
         }
         finally
         {

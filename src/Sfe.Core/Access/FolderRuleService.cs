@@ -21,6 +21,8 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
     /// <summary>One lock per library: rule changes wait for a move in progress, and the other way round.</summary>
     private readonly ConcurrentDictionary<int, SemaphoreSlim> _locks = new();
 
+    private FolderRuleMoves? _moves;
+
     public async Task<IReadOnlyList<FolderRuleInfo>> GetAsync(
         int tenantId,
         CancellationToken cancellationToken = default
@@ -121,20 +123,9 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
         CancellationToken cancellationToken = default
     )
     {
-        if (MoveError(from, to, out var source, out var target) is { } error)
+        if (FolderRuleMoves.MoveError(from, to, out var source, out var target) is { } error)
             return AccessResult<IReadOnlyList<FolderLevelChange>>.Invalid(error.Key, error.Message);
-
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var rules = await db
-            .FolderRules.AsNoTracking()
-            .Where(r => r.TenantId == tenantId)
-            .ToListAsync(cancellationToken);
-        var groups = await db
-            .Groups.AsNoTracking()
-            .Where(g => g.TenantId == tenantId)
-            .Select(g => g.Id)
-            .ToListAsync(cancellationToken);
-        return AccessResult<IReadOnlyList<FolderLevelChange>>.Ok(Compare(rules, groups, source, target));
+        return await Moves.CompareAsync(tenantId, (source, target), cancellationToken);
     }
 
     /// <summary>
@@ -157,104 +148,9 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
         CancellationToken cancellationToken = default
     )
     {
-        if (MoveError(from, to, out var source, out var target) is { } error)
+        if (FolderRuleMoves.MoveError(from, to, out var source, out var target) is { } error)
             return AccessResult<FolderRuleMove>.Invalid(error.Key, error.Message);
-
-        var gate = Gate(tenantId);
-        await gate.WaitAsync(cancellationToken);
-        var handed = false;
-        try
-        {
-            await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-            var rules = await db.FolderRules.Where(r => r.TenantId == tenantId).ToListAsync(cancellationToken);
-            var moving = rules.Where(r => FolderPolicy.IsSameOrBelow(r.Path, source)).ToList();
-            var caseOnly = LibraryPaths.PathComparer.Equals(source, target);
-            var renamed = moving.Select(r => (Rule: r, Path: target + r.Path[source.Length..])).ToList();
-            if (renamed.FirstOrDefault(m => m.Path.Length > SfeDbContext.MaxPathLength) is { Rule: not null } tooLong)
-            {
-                return AccessResult<FolderRuleMove>.Invalid(
-                    "to",
-                    $"“{tooLong.Path}” is longer than {SfeDbContext.MaxPathLength} characters."
-                );
-            }
-            // Rules where the folder goes are left from a folder that is gone: they would apply to the moved one.
-            if (!caseOnly && rules.Any(r => !moving.Contains(r) && FolderPolicy.IsSameOrBelow(r.Path, target)))
-            {
-                return AccessResult<FolderRuleMove>.Conflict(
-                    "Folder rules are already set where the folder goes: remove them or point them elsewhere first."
-                );
-            }
-
-            var now = DateTime.UtcNow;
-            var pins = new List<FolderRule>();
-            if (keepAccess && !caseOnly)
-            {
-                var groups = await db
-                    .Groups.AsNoTracking()
-                    .Where(g => g.TenantId == tenantId)
-                    .Select(g => g.Id)
-                    .ToListAsync(cancellationToken);
-                // An account had no say before: an account rule that adds nothing (Hidden) keeps it so.
-                pins.AddRange(
-                    Compare(rules, groups, source, target)
-                        .Select(c => new FolderRule
-                        {
-                            TenantId = tenantId,
-                            Path = target,
-                            GroupId = c.Principal.GroupId,
-                            UserId = c.Principal.UserId,
-                            Level = c.Before ?? FolderLevel.Hidden,
-                            Created = now,
-                            CreatedById = changedById,
-                        })
-                );
-            }
-
-            FolderRuleMove move;
-            if (caseOnly)
-            {
-                // The same folder for the file system: rewrite the paths in place (they protect the same files).
-                var previous = moving.ToDictionary(r => r.Id, r => r.Path);
-                foreach (var (rule, path) in renamed)
-                    rule.Path = path;
-                await db.SaveChangesAsync(cancellationToken);
-                move = new FolderRuleMove(this, gate, tenantId, [], [], previous);
-            }
-            else
-            {
-                var copies = renamed
-                    .Select(m => new FolderRule
-                    {
-                        TenantId = tenantId,
-                        Path = m.Path,
-                        GroupId = m.Rule.GroupId,
-                        UserId = m.Rule.UserId,
-                        Level = m.Rule.Level,
-                        Created = m.Rule.Created,
-                        CreatedById = m.Rule.CreatedById,
-                    })
-                    .ToList();
-                db.FolderRules.AddRange(copies);
-                db.FolderRules.AddRange(pins);
-                await db.SaveChangesAsync(cancellationToken);
-                move = new FolderRuleMove(
-                    this,
-                    gate,
-                    tenantId,
-                    [.. moving.Select(r => r.Id)],
-                    [.. copies.Concat(pins).Select(r => r.Id)],
-                    null
-                );
-            }
-            changes.Changed();
-            handed = true;
-            return AccessResult<FolderRuleMove>.Ok(move);
-        }
-        finally
-        {
-            if (!handed)
-                gate.Release();
-        }
+        return await Moves.BeginAsync(tenantId, (source, target), keepAccess, changedById, cancellationToken);
     }
 
     /// <summary>
@@ -361,82 +257,12 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
         }
     }
 
-    internal async Task DeleteAsync(int tenantId, IReadOnlyCollection<int> ids, CancellationToken cancellationToken)
-    {
-        if (ids.Count == 0)
-            return;
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        await db
-            .FolderRules.Where(r => r.TenantId == tenantId && ids.Contains(r.Id))
-            .ExecuteDeleteAsync(cancellationToken);
-        changes.Changed();
-    }
-
-    internal async Task RestorePathsAsync(
-        int tenantId,
-        IReadOnlyDictionary<int, string> paths,
-        CancellationToken cancellationToken
-    )
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var ids = paths.Keys.ToList();
-        foreach (
-            var rule in await db
-                .FolderRules.Where(r => r.TenantId == tenantId && ids.Contains(r.Id))
-                .ToListAsync(cancellationToken)
-        )
-        {
-            rule.Path = paths[rule.Id];
-        }
-
-        await db.SaveChangesAsync(cancellationToken);
-        changes.Changed();
-    }
+    private FolderRuleMoves Moves => _moves ??= new FolderRuleMoves(dbFactory, changes, Gate);
 
     private SemaphoreSlim Gate(int tenantId) => _locks.GetOrAdd(tenantId, _ => new SemaphoreSlim(1, 1));
 
-    private static List<FolderLevelChange> Compare(
-        List<FolderRule> rules,
-        IReadOnlyList<int> groupIds,
-        string source,
-        string target
-    )
-    {
-        var principals = groupIds
-            .Select(FolderPrincipalRef.Group)
-            .Concat(
-                rules
-                    .Where(r => r.UserId is not null)
-                    .Select(r => FolderPrincipalRef.Account(r.UserId!.Value))
-                    .Distinct()
-            );
-        var result = new List<FolderLevelChange>();
-        foreach (var principal in principals)
-        {
-            var own = rules.Where(principal.Owns).ToList();
-            var before = RightsEvaluator.RuleMap(own.Select(r => (r.Path, r.Level)));
-            // After the move: the moved folder's rules at their new paths, the others where they are.
-            var after = RightsEvaluator.RuleMap(
-                own.Select(r =>
-                    FolderPolicy.IsSameOrBelow(r.Path, source)
-                        ? (target + r.Path[source.Length..], r.Level)
-                        : (r.Path, r.Level)
-                )
-            );
-            var unrestricted = principal.GroupId is not null;
-            var change = new FolderLevelChange(
-                principal,
-                FolderPolicy.LevelAt(before, source, unrestricted),
-                FolderPolicy.LevelAt(after, target, unrestricted)
-            );
-            if (change.Before != change.After)
-                result.Add(change);
-        }
-        return result;
-    }
-
     /// <summary>Why a rule can't be set at the path; null when it can, with the stored form of the path.</summary>
-    private static string? PathError(string? path, out string normalized)
+    internal static string? PathError(string? path, out string normalized)
     {
         normalized = LibraryPaths.NormalizeRelative(path) ?? string.Empty;
         if (LibraryPaths.NormalizeRelative(path) is null)
@@ -446,27 +272,6 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
         // Windows drops them when it opens a path: "Private." is "Private", so a rule on it would protect nothing.
         if (OperatingSystem.IsWindows() && normalized.Split('/').Any(s => s.EndsWith('.') || s.EndsWith(' ')))
             return "Folder names can't end with a dot or a space.";
-        return null;
-    }
-
-    private static (string Key, string Message)? MoveError(
-        string? from,
-        string? to,
-        out string source,
-        out string target
-    )
-    {
-        target = string.Empty;
-        if (PathError(from, out source) is { } fromError)
-            return ("from", fromError);
-        if (PathError(to, out target) is { } toError)
-            return ("to", toError);
-        if (source.Length == 0 || target.Length == 0)
-            return ("from", "The library's root folder can't be moved.");
-        if (string.Equals(source, target, StringComparison.Ordinal))
-            return ("to", "The folder is already there.");
-        if (!LibraryPaths.PathComparer.Equals(source, target) && FolderPolicy.IsBelow(target, source))
-            return ("to", "A folder can't move into itself.");
         return null;
     }
 

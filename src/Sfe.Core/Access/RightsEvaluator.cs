@@ -187,7 +187,7 @@ public sealed class RightsEvaluator(
                 )
             )
             .ToList();
-        return FolderPolicy.Compile(principals);
+        return FolderPolicy.Compile(principals, LibraryPaths.PathComparison);
     }
 
     /// <summary>

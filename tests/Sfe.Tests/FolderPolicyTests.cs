@@ -204,6 +204,44 @@ public sealed class FolderPolicyTests
     }
 
     [TestMethod]
+    [DataRow(StringComparison.Ordinal)]
+    [DataRow(StringComparison.OrdinalIgnoreCase)]
+    public void PathsCompareAsTheyAreToldTo(StringComparison comparison)
+    {
+        var policy = FolderPolicy.Compile(
+            [Group([Rights.Browse], ("Private", FolderLevel.Hidden), ("Private/Shared", FolderLevel.Read))],
+            comparison
+        );
+        var granted = Granted(Rights.Browse);
+        var sensitive = comparison == StringComparison.Ordinal;
+
+        Assert.AreEqual(sensitive, policy.At("private/a.jpg", granted).Has(Rights.Browse));
+        Assert.AreEqual(sensitive, policy.AllowsThroughout("PRIVATE", Rights.Browse, granted));
+        Assert.AreEqual(sensitive ? 0 : 1, policy.ChildrenWithRules("private", granted).Count);
+    }
+
+    [TestMethod]
+    public void ADefaultLevelAppliesWhereNoRuleIs()
+    {
+        var reader = new FolderPrincipal(
+            new Dictionary<string, FolderLevel> { ["Inbox"] = FolderLevel.Write },
+            Granted(Rights.Browse, Rights.EditImages),
+            true,
+            FolderLevel.Read
+        );
+        var policy = FolderPolicy.Compile([reader]);
+        var granted = Granted(Rights.Browse, Rights.EditImages);
+
+        Assert.IsTrue(policy.At("Photos", granted).Has(Rights.Browse));
+        Assert.IsFalse(policy.At("Photos", granted).Has(Rights.EditImages), "Read, not the group's Write");
+        Assert.IsTrue(policy.At("Inbox/a.jpg", granted).Has(Rights.EditImages));
+        Assert.IsFalse(
+            FolderPolicy.Compile([reader with { Rules = new Dictionary<string, FolderLevel>() }]).IsUnrestricted,
+            "A default level restricts even without rules"
+        );
+    }
+
+    [TestMethod]
     [DataRow(1)]
     [DataRow(2)]
     [DataRow(3)]
