@@ -394,11 +394,11 @@ describe('PreviewsService', () => {
         const previews = TestBed.inject(PreviewsService);
 
         expect(previews.sources(item('a b.jpg', { size: 10 }))).toEqual([
-            'api/files/raw/a%20b.jpg',
-            'api/thumbnails/a%20b.jpg',
+            'api/v1/files/raw/a%20b.jpg',
+            'api/v1/thumbnails/a%20b.jpg',
         ]);
-        expect(previews.sources(item('big.jpg', { size: 5000 }))).toEqual(['api/thumbnails/big.jpg']);
-        expect(previews.sources(item('v.mp4'))).toEqual(['api/thumbnails/v.mp4']);
+        expect(previews.sources(item('big.jpg', { size: 5000 }))).toEqual(['api/v1/thumbnails/big.jpg']);
+        expect(previews.sources(item('v.mp4'))).toEqual(['api/v1/thumbnails/v.mp4']);
         expect(previews.sources(item('a.txt'))).toEqual([]);
     });
 
@@ -407,17 +407,17 @@ describe('PreviewsService', () => {
         const previews = TestBed.inject(PreviewsService);
 
         expect(previews.sources(item('big.jpg', { size: 5000 }), true)).toEqual([
-            'api/files/raw/big.jpg',
-            'api/thumbnails/big.jpg',
+            'api/v1/files/raw/big.jpg',
+            'api/v1/thumbnails/big.jpg',
         ]);
-        expect(previews.sources(item('v.mp4'), true)).toEqual(['api/thumbnails/v.mp4']);
+        expect(previews.sources(item('v.mp4'), true)).toEqual(['api/v1/thumbnails/v.mp4']);
     });
 
     it('shows images as they are without thumbnails, and videos without a preview', async () => {
         await setUp(fakeConfig({ largeImageSize: 1000, features: { thumbnails: false, trickplay: false } }));
         const previews = TestBed.inject(PreviewsService);
 
-        expect(previews.sources(item('big.jpg', { size: 5000 }))).toEqual(['api/files/raw/big.jpg']);
+        expect(previews.sources(item('big.jpg', { size: 5000 }))).toEqual(['api/v1/files/raw/big.jpg']);
         expect(previews.sources(item('v.mp4'))).toEqual([]);
     });
 
@@ -484,15 +484,15 @@ describe('FileTileComponent', () => {
     }
 
     it('shows a large image through its thumbnail in the one-per-row view by default', async () => {
-        expect(await tileSource('single', false)).toBe('api/thumbnails/big.jpg');
+        expect(await tileSource('single', false)).toBe('api/v1/thumbnails/big.jpg');
     });
 
     it('shows the image itself in the one-per-row view when singleViewOriginals is on', async () => {
-        expect(await tileSource('single', true)).toBe('api/files/raw/big.jpg');
+        expect(await tileSource('single', true)).toBe('api/v1/files/raw/big.jpg');
     });
 
     it('keeps thumbnails in the grid view when singleViewOriginals is on', async () => {
-        expect(await tileSource('grid', true)).toBe('api/thumbnails/big.jpg');
+        expect(await tileSource('grid', true)).toBe('api/v1/thumbnails/big.jpg');
     });
 
     async function tileMeta(showResolution: boolean, overrides: Partial<LibraryItem>): Promise<string> {

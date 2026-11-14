@@ -48,10 +48,10 @@ public sealed class ServerModeTests
         var factory = LocalFactory();
         var remote = ApiClients.Create(factory);
 
-        using var setupInfo = await remote.GetAsync("/api/setup", TestContext.CancellationToken);
+        using var setupInfo = await remote.GetAsync($"{V1}/setup", TestContext.CancellationToken);
         using (
             var setup = await remote.PostAsJsonAsync(
-                "/api/setup",
+                $"{V1}/setup",
                 new SetupInput(TestLibrary.SetupCode, ApiClients.AdminName, ApiClients.AdminPassword),
                 TestContext.CancellationToken
             )
@@ -60,12 +60,12 @@ public sealed class ServerModeTests
             Assert.AreEqual(HttpStatusCode.OK, setup.StatusCode, "Nothing is restricted before the setup is done");
         }
 
-        using var remoteBrowse = await remote.GetAsync("/api/browse", TestContext.CancellationToken);
-        using var remoteSession = await remote.GetAsync("/api/session", TestContext.CancellationToken);
+        using var remoteBrowse = await remote.GetAsync($"{V1}/browse", TestContext.CancellationToken);
+        using var remoteSession = await remote.GetAsync($"{V1}/session", TestContext.CancellationToken);
         using var remoteDocs = await remote.GetAsync("/openapi/v1.json", TestContext.CancellationToken);
         remote.DefaultRequestHeaders.Add(ApiClients.AddressHeader, Localhost);
-        using var localBrowse = await remote.GetAsync("/api/browse", TestContext.CancellationToken);
-        var config = await GetAsync<JsonObject>(remote, "/api/config");
+        using var localBrowse = await remote.GetAsync($"{V1}/browse", TestContext.CancellationToken);
+        var config = await GetAsync<JsonObject>(remote, $"{V1}/config");
 
         Assert.AreEqual(HttpStatusCode.OK, setupInfo.StatusCode);
         Assert.AreEqual(HttpStatusCode.Forbidden, remoteBrowse.StatusCode);
@@ -88,7 +88,7 @@ public sealed class ServerModeTests
     {
         var factory = LocalFactory();
         var admin = await LocalAdminAsync(factory);
-        var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
+        var groups = await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups");
         await CreateUserAsync(admin, "viewer", groups.Single(g => g.BuiltIn == BuiltInGroup.Users).Id);
         await CreateUserAsync(admin, "spaceadmin", groups.Single(g => g.BuiltIn == BuiltInGroup.Administrators).Id);
 
@@ -112,7 +112,7 @@ public sealed class ServerModeTests
     {
         var factory = LocalFactory();
         var admin = await LocalAdminAsync(factory);
-        var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
+        var groups = await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups");
         var id = await CreateUserAsync(
             admin,
             "spaceadmin",
@@ -121,7 +121,7 @@ public sealed class ServerModeTests
         var client = ApiClients.CreateFrom(factory, Localhost);
         using (
             var signedIn = await client.PostAsJsonAsync(
-                "/api/session/login",
+                $"{V1}/session/login",
                 new SignInRequest("spaceadmin", "spaceadmin-password"),
                 TestContext.CancellationToken
             )
@@ -130,11 +130,11 @@ public sealed class ServerModeTests
             Assert.AreEqual(HttpStatusCode.OK, signedIn.StatusCode);
         }
 
-        using var before = await client.GetAsync("/api/browse", TestContext.CancellationToken);
+        using var before = await client.GetAsync($"{V1}/browse", TestContext.CancellationToken);
 
         using (
             var demoted = await admin.PutAsJsonAsync(
-                $"/api/access/users/{id}",
+                $"{V1}/access/users/{id}",
                 new UserInput("spaceadmin", GroupIds: [groups.Single(g => g.BuiltIn == BuiltInGroup.Users).Id]),
                 Json,
                 TestContext.CancellationToken
@@ -148,8 +148,8 @@ public sealed class ServerModeTests
             );
         }
 
-        using var after = await client.GetAsync("/api/browse", TestContext.CancellationToken);
-        var session = await GetAsync<JsonObject>(client, "/api/session");
+        using var after = await client.GetAsync($"{V1}/browse", TestContext.CancellationToken);
+        var session = await GetAsync<JsonObject>(client, $"{V1}/session");
 
         Assert.AreEqual(HttpStatusCode.OK, before.StatusCode);
         Assert.AreEqual(HttpStatusCode.Unauthorized, after.StatusCode);
@@ -164,15 +164,15 @@ public sealed class ServerModeTests
         var visitor = ApiClients.CreateFrom(factory, Localhost);
 
         using var opened = await admin.PutAsJsonAsync(
-            "/api/access/tenant/guest-access",
+            $"{V1}/access/tenant/guest-access",
             new GuestAccessChange(true),
             TestContext.CancellationToken
         );
         var access = (await opened.Content.ReadFromJsonAsync<TenantAccessInfo>(Json, TestContext.CancellationToken))!;
-        var session = await GetAsync<JsonObject>(visitor, "/api/session");
-        using var browse = await visitor.GetAsync("/api/browse", TestContext.CancellationToken);
+        var session = await GetAsync<JsonObject>(visitor, $"{V1}/session");
+        using var browse = await visitor.GetAsync($"{V1}/browse", TestContext.CancellationToken);
         using var guest = await visitor.PostAsJsonAsync(
-            "/api/session/guest",
+            $"{V1}/session/guest",
             new TenantChoice(AccessService.DefaultTenantSlug),
             TestContext.CancellationToken
         );
@@ -189,12 +189,12 @@ public sealed class ServerModeTests
         var factory = ApiClients.CreateFactory(_library);
         _disposables.Add(factory);
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
+        var groups = await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups");
         await CreateUserAsync(admin, "viewer", groups.Single(g => g.BuiltIn == BuiltInGroup.Users).Id);
 
         var viewer = await ApiClients.SignInAsync(factory, "viewer", "viewer-password", TestContext.CancellationToken);
-        using var browse = await viewer.GetAsync("/api/browse", TestContext.CancellationToken);
-        var config = await GetAsync<JsonObject>(viewer, "/api/config");
+        using var browse = await viewer.GetAsync($"{V1}/browse", TestContext.CancellationToken);
+        var config = await GetAsync<JsonObject>(viewer, $"{V1}/config");
 
         Assert.AreEqual(
             HttpStatusCode.OK,
@@ -223,7 +223,7 @@ public sealed class ServerModeTests
     private async Task<int> CreateUserAsync(HttpClient admin, string name, int groupId)
     {
         using var created = await admin.PostAsJsonAsync(
-            "/api/access/users",
+            $"{V1}/access/users",
             new UserInput(name, Password: $"{name}-password", GroupIds: [groupId]),
             Json,
             TestContext.CancellationToken
@@ -240,7 +240,7 @@ public sealed class ServerModeTests
         ApiClients
             .CreateFrom(factory, Localhost)
             .PostAsJsonAsync(
-                "/api/session/login",
+                $"{V1}/session/login",
                 new SignInRequest(name, $"{name}-password"),
                 TestContext.CancellationToken
             );

@@ -17,7 +17,7 @@ test.describe('@ffmpeg hold-to-preview', () => {
             .poll(
                 async () =>
                     (
-                        await page.request.get(`api/trickplay/files/${video}`, { headers: { 'X-SFE-Request': '1' } })
+                        await page.request.get(`api/v1/trickplay/files/${video}`, { headers: { 'X-SFE-Request': '1' } })
                     ).status(),
                 { timeout: 120_000, intervals: [1000] },
             )

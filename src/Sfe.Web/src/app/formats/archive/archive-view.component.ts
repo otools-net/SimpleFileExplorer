@@ -15,7 +15,7 @@ import {
     untracked,
     viewChild,
 } from '@angular/core';
-import { Api, ApiError } from '../../core/api.service';
+import { Api, API_BASE, ApiError } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { formatDate, formatSize } from '../../core/format';
 import { ArchiveItem } from '../../core/archive.models';
@@ -696,7 +696,7 @@ export class ArchiveViewComponent {
             entry.id > 0
                 ? `${entry.id}/${encodeURIComponent(entry.name)}`
                 : `at/${(entry.at ?? '').split('/').map(encodeURIComponent).join('/')}`;
-        return `api/files/explore/entry/${pathToken(this.item().path)}/${which}${search ? '?' + search : ''}`;
+        return `${API_BASE}files/explore/entry/${pathToken(this.item().path)}/${which}${search ? '?' + search : ''}`;
     }
 
     /** Extract…: the folder shown (the whole archive at its top), into a folder of the library picked in the dialog. */

@@ -73,12 +73,12 @@ const until = async (b, expression, ms = 15000) => {
 
 try {
     for (let i = 0; i < 120; i++) {
-        try { await fetch(url + 'api/migration'); break; } catch { await sleep(500); }
+        try { await fetch(url + 'api/v1/migration'); break; } catch { await sleep(500); }
     }
     for (const [name, width, height] of [['desktop', 1280, 800], ['phone', 390, 844]]) {
         const b = await launch({ width, height, mobile: width < 600 });
         await b.goto(url + 'login', 1500);
-        await b.eval(`fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
+        await b.eval(`fetch('api/v1/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
         await b.goto(page, 1500);
         check(await until(b, `document.querySelectorAll('.archive-body .archive-row:not(.placeholder)').length >= 3`), `${name}: the top of the archive listed`);
         const top = JSON.parse(await b.eval(`JSON.stringify([...document.querySelectorAll('.archive-body .archive-open')].map(e => e.textContent.trim()))`));

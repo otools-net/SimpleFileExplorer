@@ -106,7 +106,7 @@ public sealed class FolderExclusionRouteTests
         );
 
         // Saved for the space, like the settings page does.
-        var settings = await _admin.GetFromJsonAsync<SettingsView>("/api/settings?level=tenant", Json, Token);
+        var settings = await _admin.GetFromJsonAsync<SettingsView>($"{V1}/settings?level=tenant", Json, Token);
         CollectionAssert.AreEqual(new[] { "Media" }, settings!.Values.Scan.ExcludedFolders);
         CollectionAssert.AreEqual(new[] { "Media" }, settings.Values.Thumbnails.ExcludedFolders);
         Assert.IsEmpty(settings.Values.Trickplay.ExcludedFolders);
@@ -114,7 +114,7 @@ public sealed class FolderExclusionRouteTests
         // A scan of it, or inside it, has nothing to do; a scan of the library skips it.
         foreach (var path in new[] { "Media", "Media/Sub" })
         {
-            using var refused = await _admin.PostAsJsonAsync("/api/scan", new ScanRequest(path), Token);
+            using var refused = await _admin.PostAsJsonAsync($"{V1}/scan", new ScanRequest(path), Token);
             Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode, path);
             StringAssert.Contains(await refused.Content.ReadAsStringAsync(Token), "excluded from scans");
         }
@@ -122,7 +122,7 @@ public sealed class FolderExclusionRouteTests
         // A sub-folder is let in only through the folder listed.
         using (
             var inherited = await _ada.PutAsJsonAsync(
-                "/api/index/exclusions",
+                $"{V1}/index/exclusions",
                 new FolderExclusionChange("Media/Sub", false, null, null),
                 Token
             )
@@ -146,7 +146,7 @@ public sealed class FolderExclusionRouteTests
     {
         using (
             var member = await _alice.PutAsJsonAsync(
-                "/api/index/exclusions",
+                $"{V1}/index/exclusions",
                 new FolderExclusionChange("Media", true, null, null),
                 Token
             )
@@ -157,7 +157,7 @@ public sealed class FolderExclusionRouteTests
 
         using (
             var hidden = await _ada.PutAsJsonAsync(
-                "/api/index/exclusions",
+                $"{V1}/index/exclusions",
                 new FolderExclusionChange("SpecialDir", true, null, null),
                 Token
             )
@@ -168,7 +168,7 @@ public sealed class FolderExclusionRouteTests
 
         using (
             var missing = await _ada.PutAsJsonAsync(
-                "/api/index/exclusions",
+                $"{V1}/index/exclusions",
                 new FolderExclusionChange("Nowhere", true, null, null),
                 Token
             )
@@ -179,7 +179,7 @@ public sealed class FolderExclusionRouteTests
 
         using (
             var file = await _ada.PutAsJsonAsync(
-                "/api/index/exclusions",
+                $"{V1}/index/exclusions",
                 new FolderExclusionChange("RFile1.txt", true, null, null),
                 Token
             )
@@ -190,7 +190,7 @@ public sealed class FolderExclusionRouteTests
 
         using (
             var library = await _ada.PutAsJsonAsync(
-                "/api/index/exclusions",
+                $"{V1}/index/exclusions",
                 new FolderExclusionChange("", true, null, null),
                 Token
             )
@@ -201,7 +201,7 @@ public sealed class FolderExclusionRouteTests
 
         using (
             var outside = await _ada.PutAsJsonAsync(
-                "/api/index/exclusions",
+                $"{V1}/index/exclusions",
                 new FolderExclusionChange("../..", true, null, null),
                 Token
             )
@@ -210,7 +210,7 @@ public sealed class FolderExclusionRouteTests
             Assert.AreEqual(HttpStatusCode.BadRequest, outside.StatusCode);
         }
 
-        var settings = await _admin.GetFromJsonAsync<SettingsView>("/api/settings?level=tenant", Json, Token);
+        var settings = await _admin.GetFromJsonAsync<SettingsView>($"{V1}/settings?level=tenant", Json, Token);
         Assert.IsEmpty(settings!.Values.Scan.ExcludedFolders);
     }
 
@@ -233,13 +233,13 @@ public sealed class FolderExclusionRouteTests
         );
         // A space administrator doesn't see the folder hidden from her, even by name.
         CollectionAssert.AreEqual(new[] { "ChildDir", "Media" }, (await ListAsync(_ada)).Select(f => f.Path).ToArray());
-        using (var member = await _alice.GetAsync("/api/index/exclusions", Token))
+        using (var member = await _alice.GetAsync($"{V1}/index/exclusions", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, member.StatusCode);
 
         // Gone from the disk: it can be taken off the lists, not put on more of them.
         using (
             var more = await _ada.PutAsJsonAsync(
-                "/api/index/exclusions",
+                $"{V1}/index/exclusions",
                 new FolderExclusionChange("ChildDir", true, null, null),
                 Token
             )
@@ -254,7 +254,7 @@ public sealed class FolderExclusionRouteTests
         );
         using (
             var never = await _ada.PutAsJsonAsync(
-                "/api/index/exclusions",
+                $"{V1}/index/exclusions",
                 new FolderExclusionChange("Nowhere", false, null, null),
                 Token
             )
@@ -267,11 +267,11 @@ public sealed class FolderExclusionRouteTests
     }
 
     private async Task<ExcludedFolder[]> ListAsync(HttpClient client) =>
-        (await client.GetFromJsonAsync<ExcludedFolder[]>("/api/index/exclusions", Json, Token))!;
+        (await client.GetFromJsonAsync<ExcludedFolder[]>($"{V1}/index/exclusions", Json, Token))!;
 
     private async Task<FolderExclusionState> PutAsync(HttpClient client, FolderExclusionChange change)
     {
-        using var response = await client.PutAsJsonAsync("/api/index/exclusions", change, Token);
+        using var response = await client.PutAsJsonAsync($"{V1}/index/exclusions", change, Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<FolderExclusionState>(Json, Token))!;
     }
@@ -279,7 +279,7 @@ public sealed class FolderExclusionRouteTests
     private async Task<DirectoryListing> BrowseAsync(HttpClient client, string path) =>
         (
             await client.GetFromJsonAsync<DirectoryListing>(
-                $"/api/browse?path={Uri.EscapeDataString(path)}",
+                $"{V1}/browse?path={Uri.EscapeDataString(path)}",
                 Json,
                 Token
             )

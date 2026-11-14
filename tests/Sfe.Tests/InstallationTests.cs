@@ -52,17 +52,17 @@ public sealed class InstallationTests
         var factory = Factory(settings => settings["Sfe:Setup:Code"] = "");
         var client = ApiClients.Create(factory);
 
-        var setup = await GetAsync<SetupInfo>(client, "/api/setup");
+        var setup = await GetAsync<SetupInfo>(client, $"{V1}/setup");
         var code = (await File.ReadAllTextAsync(CodeFile, TestContext.CancellationToken)).Trim();
-        var again = await GetAsync<SetupInfo>(client, "/api/setup");
+        var again = await GetAsync<SetupInfo>(client, $"{V1}/setup");
         using var wrong = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput("ABCD-EFGH-JKMN-PQRS", "admin", "admin-password"),
             TestContext.CancellationToken
         );
         // Retyped from the console: lower case, without the dashes.
         using var done = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(code.Replace("-", "").ToLowerInvariant(), "admin", "admin-password"),
             TestContext.CancellationToken
         );
@@ -91,7 +91,7 @@ public sealed class InstallationTests
     {
         var client = ApiClients.Create(Factory());
 
-        var setup = await GetAsync<SetupInfo>(client, "/api/setup");
+        var setup = await GetAsync<SetupInfo>(client, $"{V1}/setup");
 
         Assert.IsTrue(setup.CodeConfigured);
         Assert.IsFalse(setup.CodeGenerated);
@@ -106,7 +106,7 @@ public sealed class InstallationTests
         await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var later = Factory(settings => settings["Sfe:Setup:Code"] = "");
 
-        var setup = await GetAsync<SetupInfo>(ApiClients.Create(later), "/api/setup");
+        var setup = await GetAsync<SetupInfo>(ApiClients.Create(later), $"{V1}/setup");
 
         Assert.IsFalse(setup.Required);
         Assert.IsFalse(File.Exists(CodeFile), "Nothing needs a code until the next update");
@@ -133,19 +133,19 @@ public sealed class InstallationTests
         var client = ApiClients.Create(Factory());
 
         using var wrong = await client.PostAsJsonAsync(
-            "/api/installation/check",
+            $"{V1}/installation/check",
             new InstallationCheck("not-the-setup-code"),
             TestContext.CancellationToken
         );
-        using var noToken = await client.GetAsync("/api/installation", TestContext.CancellationToken);
-        using var noTokenFolders = await client.GetAsync("/api/installation/folders", TestContext.CancellationToken);
+        using var noToken = await client.GetAsync($"{V1}/installation", TestContext.CancellationToken);
+        using var noTokenFolders = await client.GetAsync($"{V1}/installation/folders", TestContext.CancellationToken);
         using var noTokenSave = await client.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Port: 6000),
             TestContext.CancellationToken
         );
         client.DefaultRequestHeaders.Add(InstallationAccess.Header, "forged-token");
-        using var forged = await client.GetAsync("/api/installation", TestContext.CancellationToken);
+        using var forged = await client.GetAsync($"{V1}/installation", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, wrong.StatusCode);
         StringAssert.Contains(await wrong.Content.ReadAsStringAsync(TestContext.CancellationToken), "code");
@@ -165,7 +165,7 @@ public sealed class InstallationTests
         for (var i = 0; i < 3; i++)
         {
             using var response = await client.PostAsJsonAsync(
-                "/api/installation/check",
+                $"{V1}/installation/check",
                 new InstallationCheck("not-the-setup-code"),
                 TestContext.CancellationToken
             );
@@ -186,26 +186,26 @@ public sealed class InstallationTests
         });
         var visitor = ApiClients.Create(factory);
         var grant = await GrantAsync(visitor);
-        var top = await GetAsync<ServerFolders>(visitor, "/api/installation/folders");
+        var top = await GetAsync<ServerFolders>(visitor, $"{V1}/installation/folders");
         var media = await GetAsync<ServerFolders>(
             visitor,
-            "/api/installation/folders?path=" + Uri.EscapeDataString(_library.Root)
+            $"{V1}/installation/folders?path=" + Uri.EscapeDataString(_library.Root)
         );
 
         using var missing = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Root: Path.Combine(_library.Root, "Nowhere")),
             TestContext.CancellationToken
         );
         using var saved = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Root: _library.FullPath("Media")),
             TestContext.CancellationToken
         );
         var result = (await saved.Content.ReadFromJsonAsync<InstallationSaved>(Json, TestContext.CancellationToken))!;
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         admin.DefaultRequestHeaders.Add(ApiClients.AddressHeader, "127.0.0.1");
-        var listing = await GetAsync<JsonObject>(admin, "/api/browse");
+        var listing = await GetAsync<JsonObject>(admin, $"{V1}/browse");
         var file = JsonNode.Parse(await File.ReadAllTextAsync(InstallationFile, TestContext.CancellationToken))!;
 
         Assert.IsFalse(grant.Settings.Root.Locked, "Nothing but the installation file sets the folder here");
@@ -241,7 +241,7 @@ public sealed class InstallationTests
         var grant = await GrantAsync(visitor);
 
         using var refused = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Root: _library.FullPath("Media")),
             TestContext.CancellationToken
         );
@@ -260,17 +260,17 @@ public sealed class InstallationTests
         await GrantAsync(visitor);
 
         using var badPort = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Port: 70000),
             TestContext.CancellationToken
         );
         using var noFfmpeg = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(FfmpegPath: _library.Root),
             TestContext.CancellationToken
         );
         using var saved = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Network: true, Port: 5181),
             TestContext.CancellationToken
         );
@@ -299,7 +299,7 @@ public sealed class InstallationTests
         var factory = Factory(settings => settings["Sfe:Root"] = Path.Combine(_library.BasePath, "unplugged drive"));
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
 
-        using var root = await admin.GetAsync("/api/browse", TestContext.CancellationToken);
+        using var root = await admin.GetAsync($"{V1}/browse", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, root.StatusCode);
         StringAssert.Contains(
@@ -333,11 +333,11 @@ public sealed class InstallationTests
     {
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
+        var groups = await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups");
         var spaceAdmins = groups.Single(g => g.BuiltIn == BuiltInGroup.Administrators);
         using (
             var created = await admin.PostAsJsonAsync(
-                "/api/access/users",
+                $"{V1}/access/users",
                 new UserInput("spaceadmin", Password: "spaceadmin-password", GroupIds: [spaceAdmins.Id]),
                 Json,
                 TestContext.CancellationToken
@@ -360,12 +360,12 @@ public sealed class InstallationTests
         var visitor = ApiClients.Create(factory);
 
         using var anonymous = await visitor.PostAsJsonAsync(
-            "/api/installation/check",
+            $"{V1}/installation/check",
             new InstallationCheck(TestLibrary.SetupCode),
             TestContext.CancellationToken
         );
         using var notServerAdmin = await spaceAdmin.PostAsJsonAsync(
-            "/api/installation/check",
+            $"{V1}/installation/check",
             new InstallationCheck(TestLibrary.SetupCode),
             TestContext.CancellationToken
         );
@@ -374,13 +374,13 @@ public sealed class InstallationTests
         visitor.DefaultRequestHeaders.Add(InstallationAccess.Header, grant.Token);
         spaceAdmin.DefaultRequestHeaders.Add(InstallationAccess.Header, grant.Token);
         using var visitorSave = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Port: 6000),
             TestContext.CancellationToken
         );
-        using var visitorFolders = await visitor.GetAsync("/api/installation/folders", TestContext.CancellationToken);
-        using var spaceAdminGet = await spaceAdmin.GetAsync("/api/installation", TestContext.CancellationToken);
-        using var adminGet = await admin.GetAsync("/api/installation", TestContext.CancellationToken);
+        using var visitorFolders = await visitor.GetAsync($"{V1}/installation/folders", TestContext.CancellationToken);
+        using var spaceAdminGet = await spaceAdmin.GetAsync($"{V1}/installation", TestContext.CancellationToken);
+        using var adminGet = await admin.GetAsync($"{V1}/installation", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, anonymous.StatusCode);
         Assert.AreEqual(HttpStatusCode.Forbidden, notServerAdmin.StatusCode);
@@ -404,17 +404,17 @@ public sealed class InstallationTests
         await File.WriteAllTextAsync(other, "x", TestContext.CancellationToken);
 
         using var inLibrary = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(FfmpegPath: planted),
             TestContext.CancellationToken
         );
         using var folderInLibrary = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(FfmpegPath: _library.FullPath("Tools")),
             TestContext.CancellationToken
         );
         using var notFfmpeg = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(FfmpegPath: other),
             TestContext.CancellationToken
         );
@@ -440,11 +440,11 @@ public sealed class InstallationTests
     {
         var factory = Factory(settings => settings["Sfe:Setup:Code"] = "");
         var visitor = ApiClients.Create(factory);
-        var before = await GetAsync<SetupInfo>(visitor, "/api/setup");
+        var before = await GetAsync<SetupInfo>(visitor, $"{V1}/setup");
         var code = (await File.ReadAllTextAsync(CodeFile, TestContext.CancellationToken)).Trim();
         using (
             var done = await visitor.PostAsJsonAsync(
-                "/api/setup",
+                $"{V1}/setup",
                 new SetupInput(code, "admin", "admin-password"),
                 TestContext.CancellationToken
             )
@@ -453,8 +453,8 @@ public sealed class InstallationTests
             Assert.AreEqual(HttpStatusCode.OK, done.StatusCode);
         }
 
-        var after = await GetAsync<SetupInfo>(ApiClients.Create(factory), "/api/setup");
-        var migration = await GetAsync<MigrationInfo>(ApiClients.Create(factory), "/api/migration");
+        var after = await GetAsync<SetupInfo>(ApiClients.Create(factory), $"{V1}/setup");
+        var migration = await GetAsync<MigrationInfo>(ApiClients.Create(factory), $"{V1}/migration");
 
         Assert.IsNotNull(before.CodeFile);
         Assert.IsNull(after.CodeFile);
@@ -502,13 +502,13 @@ public sealed class InstallationTests
         var localGrant = await GrantAsync(local);
 
         using var remoteLocal = await remote.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Mode: ServerMode.Local),
             Json,
             TestContext.CancellationToken
         );
         using var external = await remote.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Mode: ServerMode.External),
             Json,
             TestContext.CancellationToken
@@ -518,7 +518,7 @@ public sealed class InstallationTests
         )!;
         // Before the setup is done, whoever sets it up may still change their mind.
         using var back = await local.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Mode: ServerMode.Local),
             Json,
             TestContext.CancellationToken
@@ -559,13 +559,13 @@ public sealed class InstallationTests
         await GrantAsync(admin);
 
         using var external = await admin.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Mode: ServerMode.External),
             Json,
             TestContext.CancellationToken
         );
         using var local = await admin.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Mode: ServerMode.Local),
             Json,
             TestContext.CancellationToken
@@ -589,7 +589,7 @@ public sealed class InstallationTests
         var grant = await GrantAsync(visitor);
 
         using var refused = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Mode: ServerMode.Local),
             Json,
             TestContext.CancellationToken
@@ -609,19 +609,19 @@ public sealed class InstallationTests
         var grant = await GrantAsync(visitor);
 
         using var root = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Root: _library.FullPath("Media")),
             Json,
             TestContext.CancellationToken
         );
         using var ffmpeg = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(FfmpegPath: ""),
             Json,
             TestContext.CancellationToken
         );
         using var port = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Network: true, Port: 5182),
             Json,
             TestContext.CancellationToken
@@ -653,7 +653,7 @@ public sealed class InstallationTests
         await GrantAsync(visitor);
 
         using var both = await visitor.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Root: _library.FullPath("Media"), Mode: ServerMode.External),
             Json,
             TestContext.CancellationToken
@@ -684,7 +684,7 @@ public sealed class InstallationTests
     private async Task<InstallationGrant> GrantAsync(HttpClient client)
     {
         using var response = await client.PostAsJsonAsync(
-            "/api/installation/check",
+            $"{V1}/installation/check",
             new InstallationCheck(TestLibrary.SetupCode),
             TestContext.CancellationToken
         );

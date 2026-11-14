@@ -52,8 +52,8 @@ public sealed class RuledConnection : IAsyncDisposable
 
     public TestLibrary Library => _library;
 
-    /// <summary>The connection's routes, <c>/api/connections/{id}</c>.</summary>
-    public string Base => $"/api/connections/{Id}";
+    /// <summary>The connection's routes, <c>/api/v1/connections/{id}</c>.</summary>
+    public string Base => $"{V1}/connections/{Id}";
 
     public static async Task<RuledConnection> CreateAsync(CancellationToken cancellationToken)
     {

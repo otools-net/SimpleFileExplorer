@@ -84,9 +84,9 @@ describe('a connection in the listing', () => {
         await list({ thumbnails: true });
 
         const urls = config.urls()!;
-        expect(urls.file('Trips/Sunrise.jpg')).toBe('api/connections/7/files/raw/Trips/Sunrise.jpg');
-        expect(urls.download('a b.jpg')).toBe('api/connections/7/files/raw/a%20b.jpg?download=true');
-        expect(urls.thumbnail('Sunrise.jpg')).toBe('api/connections/7/thumbnails/Sunrise.jpg');
+        expect(urls.file('Trips/Sunrise.jpg')).toBe('api/v1/connections/7/files/raw/Trips/Sunrise.jpg');
+        expect(urls.download('a b.jpg')).toBe('api/v1/connections/7/files/raw/a%20b.jpg?download=true');
+        expect(urls.thumbnail('Sunrise.jpg')).toBe('api/v1/connections/7/thumbnails/Sunrise.jpg');
         expect(urls.player('clip.mp4')).toBe('player?path=clip.mp4&c=7');
         expect(config.config()!.features).toEqual({ thumbnails: true, trickplay: false });
         expect(config.config()!.rootName).toBe('My Dropbox');
@@ -99,12 +99,15 @@ describe('a connection in the listing', () => {
         expect(isViewable(item('Sunrise.jpg'))).toBe(true);
         expect(isViewable(item('notes.txt'))).toBe(false);
         // The library's quick links keep their addresses.
-        expect(config.libraryUrls()!.file('a.jpg')).toBe('api/files/raw/a.jpg');
+        expect(config.libraryUrls()!.file('a.jpg')).toBe('api/v1/files/raw/a.jpg');
     });
 
     it('downloads several of its files as a zip of its own', async () => {
         await list();
-        api.createArchive.mockResolvedValue({ url: `api/connections/7/archive/${'a'.repeat(48)}`, fileName: 'x.zip' });
+        api.createArchive.mockResolvedValue({
+            url: `api/v1/connections/7/archive/${'a'.repeat(48)}`,
+            fileName: 'x.zip',
+        });
 
         const saved: string[] = [];
         vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
@@ -114,7 +117,7 @@ describe('a connection in the listing', () => {
         await TestBed.inject(FileDownloads).download([item('a.jpg'), item('b.jpg')]);
 
         expect(api.createArchive).toHaveBeenCalledWith(['a.jpg', 'b.jpg'], 7);
-        expect(saved).toEqual([`api/connections/7/archive/${'a'.repeat(48)}`]);
+        expect(saved).toEqual([`api/v1/connections/7/archive/${'a'.repeat(48)}`]);
     });
 
     it('goes back to the library with a folder of it, and with a search', async () => {
@@ -134,7 +137,7 @@ describe('a connection in the listing', () => {
         store.route.set({ c: null, path: '', q: '', sort: '', desc: false });
         await store.load();
         expect(config.place()).toBeNull();
-        expect(config.urls()!.file('a.jpg')).toBe('api/files/raw/a.jpg');
+        expect(config.urls()!.file('a.jpg')).toBe('api/v1/files/raw/a.jpg');
         expect(isViewable(item('notes.txt'))).toBe(true);
     });
 });

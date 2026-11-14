@@ -95,7 +95,7 @@ describe('PdfViewComponent', () => {
         await show();
 
         expect(opened).toHaveLength(1);
-        expect(opened[0].url).toBe('api/files/raw/Docs/Guide.pdf');
+        expect(opened[0].url).toBe('api/v1/files/raw/Docs/Guide.pdf');
         expect(opened[0].container.classList).toContain('pdf-container');
         expect(opened[0].start).toBeNull();
         expect(element.querySelector('.text-status')!.textContent).toContain(

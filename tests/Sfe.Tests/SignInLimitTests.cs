@@ -145,7 +145,7 @@ public sealed class SignInLimitTests
 
     private Task<HttpResponseMessage> SignInAsync(HttpClient client, string password) =>
         client.PostAsJsonAsync(
-            "/api/session/login",
+            $"{V1}/session/login",
             new SignInRequest(ApiClients.AdminName, password),
             TestContext.CancellationToken
         );

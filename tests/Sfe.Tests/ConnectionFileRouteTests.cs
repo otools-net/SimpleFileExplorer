@@ -114,7 +114,7 @@ public sealed class ConnectionFileRouteTests
         using var raw = await _admin.GetAsync($"{Base}/files/raw/..%2FSecret.txt", Cancel);
         using var missing = await _admin.GetAsync(Browse("path=Nowhere"), Cancel);
         using var bobs = await _bob.GetAsync(Browse(""), Cancel);
-        using var unknown = await _admin.GetAsync("/api/connections/999/browse", Cancel);
+        using var unknown = await _admin.GetAsync($"{V1}/connections/999/browse", Cancel);
 
         Assert.AreEqual(HttpStatusCode.NotFound, raw.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode);
@@ -289,10 +289,10 @@ public sealed class ConnectionFileRouteTests
             Assert.AreEqual(HttpStatusCode.NotFound, answer.StatusCode, path);
         }
         using var bobs = await _bob.GetAsync(Properties("b.jpg"), Cancel);
-        using var unknown = await _admin.GetAsync("/api/connections/999/files/properties?path=b.jpg", Cancel);
+        using var unknown = await _admin.GetAsync($"{V1}/connections/999/files/properties?path=b.jpg", Cancel);
         var library = (
             await _admin.GetFromJsonAsync<ConnectionItemProperties>(
-                $"/api/connections/{shared.Value!.Id}/files/properties?path=Secret.txt",
+                $"{V1}/connections/{shared.Value!.Id}/files/properties?path=Secret.txt",
                 Json,
                 Cancel
             )
@@ -304,7 +304,7 @@ public sealed class ConnectionFileRouteTests
         Assert.AreEqual(("Secret.txt", null), (library.Item.Name, library.Account));
     }
 
-    private string Base => $"/api/connections/{_id}";
+    private string Base => $"{V1}/connections/{_id}";
 
     private string Properties(string path) => $"{Base}/files/properties?path={Uri.EscapeDataString(path)}";
 

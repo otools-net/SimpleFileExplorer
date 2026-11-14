@@ -101,7 +101,7 @@ public static class ApiClients
     {
         var client = Create(factory);
         using var response = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(TestLibrary.SetupCode, AdminName, AdminPassword),
             cancellationToken
         );
@@ -124,7 +124,7 @@ public static class ApiClients
         client.DefaultRequestHeaders.Add(MigrationEndpoints.SetupCodeHeader, TestLibrary.SetupCode);
         using (
             var response = await client.PostAsJsonAsync(
-                "/api/migration",
+                $"{V1}/migration",
                 new MigrationInput(TestLibrary.SetupCode),
                 cancellationToken
             )
@@ -144,7 +144,7 @@ public static class ApiClients
         var timeout = DateTime.UtcNow.AddSeconds(60);
         while (true)
         {
-            var info = (await client.GetFromJsonAsync<MigrationInfo>("/api/migration", json, cancellationToken))!;
+            var info = (await client.GetFromJsonAsync<MigrationInfo>($"{V1}/migration", json, cancellationToken))!;
             if (info.Status == MigrationStatus.None)
                 return;
             Assert.AreNotEqual(MigrationStatus.Failed, info.Status, info.Error);
@@ -163,7 +163,7 @@ public static class ApiClients
     {
         var client = Create(factory);
         using var response = await client.PostAsJsonAsync(
-            "/api/session/login",
+            $"{V1}/session/login",
             new SignInRequest(userName, password),
             cancellationToken
         );

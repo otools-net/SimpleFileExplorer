@@ -181,23 +181,23 @@ public sealed class StreamingTests
         );
         _library.AddFile("Films/film.avi", 100);
 
-        using var config = await GetJsonAsync(admin, "/api/config");
+        using var config = await GetJsonAsync(admin, $"{V1}/config");
         Assert.AreEqual(JsonValueKind.Null, config.RootElement.GetProperty("streaming").ValueKind);
         using (
-            var probe = await admin.GetAsync("/api/streaming/probe?path=Films/film.avi", TestContext.CancellationToken)
+            var probe = await admin.GetAsync($"{V1}/streaming/probe?path=Films/film.avi", TestContext.CancellationToken)
         )
         {
             Assert.AreEqual(HttpStatusCode.NotFound, probe.StatusCode);
         }
 
         using (
-            var play = await admin.GetAsync("/api/streaming/play?path=Films/film.avi", TestContext.CancellationToken)
+            var play = await admin.GetAsync($"{V1}/streaming/play?path=Films/film.avi", TestContext.CancellationToken)
         )
         {
             Assert.AreEqual(HttpStatusCode.NotFound, play.StatusCode);
         }
 
-        using var info = await GetJsonAsync(admin, "/api/system/info");
+        using var info = await GetJsonAsync(admin, $"{V1}/system/info");
         Assert.AreEqual(
             Path.TrimEndingDirectorySeparator(_library.Root),
             Path.TrimEndingDirectorySeparator(info.RootElement.GetProperty("root").GetString()!)
@@ -206,7 +206,7 @@ public sealed class StreamingTests
         Assert.AreEqual(missing, ffmpeg.GetProperty("configured").GetString());
         Assert.AreEqual(JsonValueKind.Null, ffmpeg.GetProperty("path").ValueKind);
 
-        using var sessions = await GetJsonAsync(admin, "/api/streaming/sessions");
+        using var sessions = await GetJsonAsync(admin, $"{V1}/streaming/sessions");
         Assert.IsFalse(sessions.RootElement.GetProperty("available").GetBoolean());
         Assert.AreEqual("fallback", sessions.RootElement.GetProperty("mode").GetString());
     }
@@ -217,11 +217,11 @@ public sealed class StreamingTests
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var visitor = ApiClients.Create(factory);
-        using (var response = await visitor.GetAsync("/api/streaming/sessions", TestContext.CancellationToken))
+        using (var response = await visitor.GetAsync($"{V1}/streaming/sessions", TestContext.CancellationToken))
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-        using (var response = await visitor.GetAsync("/api/system/info", TestContext.CancellationToken))
+        using (var response = await visitor.GetAsync($"{V1}/system/info", TestContext.CancellationToken))
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-        using (var response = await admin.GetAsync("/api/streaming/sessions", TestContext.CancellationToken))
+        using (var response = await admin.GetAsync($"{V1}/streaming/sessions", TestContext.CancellationToken))
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -243,7 +243,7 @@ public sealed class StreamingTests
         }
 
         var admin = await ApiClients.SetUpAsync(Factory(), TestContext.CancellationToken);
-        using var current = await GetJsonAsync(admin, "/api/settings");
+        using var current = await GetJsonAsync(admin, $"{V1}/settings");
         var values = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
             current.RootElement.GetProperty("values").GetRawText()
         )!;
@@ -260,7 +260,7 @@ public sealed class StreamingTests
                 copyVideo = true,
             }
         );
-        using (var invalid = await admin.PutAsJsonAsync("/api/settings", values, TestContext.CancellationToken))
+        using (var invalid = await admin.PutAsJsonAsync($"{V1}/settings", values, TestContext.CancellationToken))
         {
             Assert.AreEqual(HttpStatusCode.BadRequest, invalid.StatusCode);
             StringAssert.Contains(
@@ -279,7 +279,7 @@ public sealed class StreamingTests
                 copyVideo = true,
             }
         );
-        using (var saved = await admin.PutAsJsonAsync("/api/settings", values, TestContext.CancellationToken))
+        using (var saved = await admin.PutAsJsonAsync($"{V1}/settings", values, TestContext.CancellationToken))
         {
             Assert.AreEqual(
                 HttpStatusCode.OK,
@@ -304,9 +304,9 @@ public sealed class StreamingTests
             TestContext.CancellationToken
         );
 
-        using (var config = await GetJsonAsync(admin, "/api/config"))
+        using (var config = await GetJsonAsync(admin, $"{V1}/config"))
             Assert.IsFalse(config.RootElement.GetProperty("streaming").GetProperty("always").GetBoolean());
-        using (var probe = await GetJsonAsync(admin, "/api/streaming/probe?path=Films/clip.avi"))
+        using (var probe = await GetJsonAsync(admin, $"{V1}/streaming/probe?path=Films/clip.avi"))
         {
             Assert.AreEqual(4, probe.RootElement.GetProperty("duration").GetDouble(), 0.1);
             Assert.IsTrue(probe.RootElement.GetProperty("transcoded").GetBoolean());
@@ -315,7 +315,7 @@ public sealed class StreamingTests
         var output = Path.Combine(_library.BasePath, "streamed.mp4");
         using (
             var response = await admin.GetAsync(
-                "/api/streaming/play?path=Films/clip.avi&t=1&id=test",
+                $"{V1}/streaming/play?path=Films/clip.avi&t=1&id=test",
                 HttpCompletionOption.ResponseHeadersRead,
                 TestContext.CancellationToken
             )
@@ -328,7 +328,7 @@ public sealed class StreamingTests
             await body.ReadExactlyAsync(head, TestContext.CancellationToken);
             Assert.AreEqual("ftyp", Encoding.ASCII.GetString(head, 4, 4), "An MP4 file");
 
-            using (var sessions = await GetJsonAsync(admin, "/api/streaming/sessions"))
+            using (var sessions = await GetJsonAsync(admin, $"{V1}/streaming/sessions"))
             {
                 var stream = sessions.RootElement.GetProperty("streams").EnumerateArray().Single();
                 Assert.AreEqual("Films/clip.avi", stream.GetProperty("path").GetString());
@@ -351,7 +351,7 @@ public sealed class StreamingTests
         var deadline = DateTime.UtcNow + SlowWork.Limit(10);
         while (true)
         {
-            using var sessions = await GetJsonAsync(admin, "/api/streaming/sessions");
+            using var sessions = await GetJsonAsync(admin, $"{V1}/streaming/sessions");
             if (sessions.RootElement.GetProperty("streams").GetArrayLength() == 0)
                 break;
             Assert.IsLessThan(deadline, DateTime.UtcNow, "The ended stream left the list");
@@ -370,19 +370,19 @@ public sealed class StreamingTests
             TestContext.CancellationToken
         );
 
-        using (var probe = await GetJsonAsync(admin, "/api/streaming/probe?path=Films/clip.mp4"))
+        using (var probe = await GetJsonAsync(admin, $"{V1}/streaming/probe?path=Films/clip.mp4"))
             Assert.IsFalse(probe.RootElement.GetProperty("transcoded").GetBoolean(), "H.264 pictures are copied");
 
         using (
             var response = await admin.GetAsync(
-                "/api/streaming/play?path=Films/clip.mp4",
+                $"{V1}/streaming/play?path=Films/clip.mp4",
                 HttpCompletionOption.ResponseHeadersRead,
                 TestContext.CancellationToken
             )
         )
         {
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await ErrorAsync(response));
-            using var sessions = await GetJsonAsync(admin, "/api/streaming/sessions");
+            using var sessions = await GetJsonAsync(admin, $"{V1}/streaming/sessions");
             Assert.IsFalse(sessions.RootElement.GetProperty("streams")[0].GetProperty("transcoded").GetBoolean());
         }
 
@@ -390,7 +390,7 @@ public sealed class StreamingTests
         var deadline = DateTime.UtcNow + SlowWork.Limit(10);
         while (true)
         {
-            using var sessions = await GetJsonAsync(admin, "/api/streaming/sessions");
+            using var sessions = await GetJsonAsync(admin, $"{V1}/streaming/sessions");
             if (sessions.RootElement.GetProperty("streams").GetArrayLength() == 0)
                 break;
             Assert.IsLessThan(deadline, DateTime.UtcNow, "The stream the viewer left ended");

@@ -24,7 +24,7 @@ public sealed class ConfigurationWatcherTests
         {
             await using var factory = ApiClients.CreateFactory(library);
             using var client = factory.CreateClient();
-            using var _ = await client.GetAsync("/api/config", TestContext.CancellationToken);
+            using var _ = await client.GetAsync($"{V1}/config", TestContext.CancellationToken);
         }
 
         Assert.IsLessThanOrEqualTo(before, InotifyInstances());

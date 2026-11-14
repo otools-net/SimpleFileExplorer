@@ -68,13 +68,13 @@ describe('FileDownloads', () => {
 
         expect(await TestBed.inject(FileDownloads).download([photo])).toBe(true);
 
-        expect(saved).toEqual([['api/files/raw/Media/beach.jpg?download=true', 'beach.jpg']]);
+        expect(saved).toEqual([['api/v1/files/raw/Media/beach.jpg?download=true', 'beach.jpg']]);
         expect(api.createArchive).not.toHaveBeenCalled();
     });
 
     it('downloads several files or a folder as a zip from the link the server answers', async () => {
         await setUp();
-        api.createArchive.mockResolvedValue({ url: 'api/files/archive/' + 'a'.repeat(48), fileName: 'Media.zip' });
+        api.createArchive.mockResolvedValue({ url: 'api/v1/files/archive/' + 'a'.repeat(48), fileName: 'Media.zip' });
         const downloads = TestBed.inject(FileDownloads);
 
         await downloads.download([photo, clip]);
@@ -82,8 +82,8 @@ describe('FileDownloads', () => {
 
         expect(api.createArchive.mock.calls).toEqual([[['Media/beach.jpg', 'Media/clip.mp4']], [['Media/Holidays']]]);
         expect(saved).toEqual([
-            ['api/files/archive/' + 'a'.repeat(48), 'Media.zip'],
-            ['api/files/archive/' + 'a'.repeat(48), 'Media.zip'],
+            ['api/v1/files/archive/' + 'a'.repeat(48), 'Media.zip'],
+            ['api/v1/files/archive/' + 'a'.repeat(48), 'Media.zip'],
         ]);
         expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toContain('Downloading Media.zip');
     });
@@ -120,7 +120,7 @@ describe('FileDownloads', () => {
         expect(downloads.isZip([photo, clip])).toBe(false);
         await downloads.download([photo, clip]);
 
-        expect(saved).toEqual([['api/files/raw/Media/beach.jpg?download=true', 'beach.jpg']]);
+        expect(saved).toEqual([['api/v1/files/raw/Media/beach.jpg?download=true', 'beach.jpg']]);
     });
 
     it('offers nothing without the right to download', async () => {
@@ -135,7 +135,7 @@ describe('FileDownloads', () => {
 describe('Download in the selection bar and the item menu', () => {
     it('downloads the selection from the selection bar', async () => {
         await setUp();
-        api.createArchive.mockResolvedValue({ url: 'api/files/archive/' + 'b'.repeat(48), fileName: 'Media.zip' });
+        api.createArchive.mockResolvedValue({ url: 'api/v1/files/archive/' + 'b'.repeat(48), fileName: 'Media.zip' });
         const fixture = TestBed.createComponent(SelectionBarComponent);
         store.select(photo, true);
         store.select(folder, true);

@@ -38,7 +38,7 @@ test.describe('listing', () => {
         // Another test's scan may be running or its result shown: over and dismissed first, so ours is the one coming
         // in.
         await expect
-            .poll(async () => (await (await page.request.get('api/scan', { headers })).json()).state, {
+            .poll(async () => (await (await page.request.get('api/v1/scan', { headers })).json()).state, {
                 timeout: 60_000,
             })
             .not.toBe('running');
@@ -52,7 +52,7 @@ test.describe('listing', () => {
         await expect
             .poll(
                 async () =>
-                    (await (await page.request.post('api/scan', { data: { path: scratch }, headers })).json()).path,
+                    (await (await page.request.post('api/v1/scan', { data: { path: scratch }, headers })).json()).path,
                 { timeout: 60_000 },
             )
             .toBe(scratch);

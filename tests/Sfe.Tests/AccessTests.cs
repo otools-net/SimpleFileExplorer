@@ -29,6 +29,8 @@ public sealed class AccessTests
 
     public TestContext TestContext { get; set; } = null!;
 
+    private CancellationToken Token => TestContext.CancellationToken;
+
     [TestInitialize]
     public void Initialize() => _library = new TestLibrary();
 
@@ -53,21 +55,18 @@ public sealed class AccessTests
         });
         var client = Client(factory);
 
-        var setup = await GetAsync<SetupInfo>(client, "/api/setup");
-        using var config = await client.GetAsync("/api/config", TestContext.CancellationToken);
+        var setup = await GetAsync<SetupInfo>(client, $"{V1}/setup");
+        using var config = await client.GetAsync($"{V1}/config", Token);
         using var attempt = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput("", "admin", "admin-password"),
-            TestContext.CancellationToken
+            Token
         );
 
         Assert.IsTrue(setup.Required);
         Assert.IsFalse(setup.CodeConfigured);
         Assert.AreEqual(HttpStatusCode.ServiceUnavailable, config.StatusCode);
-        StringAssert.Contains(
-            await config.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            RequestGuard.SetupRequiredType
-        );
+        StringAssert.Contains(await config.Content.ReadAsStringAsync(Token), RequestGuard.SetupRequiredType);
         Assert.AreEqual(HttpStatusCode.Conflict, attempt.StatusCode);
     }
 
@@ -76,11 +75,11 @@ public sealed class AccessTests
     {
         var client = Client(Factory(settings => settings["Sfe:Setup:Code"] = "short"));
 
-        var setup = await GetAsync<SetupInfo>(client, "/api/setup");
+        var setup = await GetAsync<SetupInfo>(client, $"{V1}/setup");
         using var attempt = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput("short", "admin", "admin-password"),
-            TestContext.CancellationToken
+            Token
         );
 
         Assert.IsFalse(setup.CodeConfigured);
@@ -95,34 +94,30 @@ public sealed class AccessTests
         var client = Client(factory);
 
         using var wrong = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput("not-the-code-at-all", "admin", "admin-password"),
-            TestContext.CancellationToken
+            Token
         );
         using var weak = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(TestLibrary.SetupCode, "admin", "short"),
-            TestContext.CancellationToken
+            Token
         );
         using var done = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(TestLibrary.SetupCode, "admin", "admin-password", "The Admin", "Family media"),
-            TestContext.CancellationToken
+            Token
         );
-        var session = (await done.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!;
+        var session = (await done.Content.ReadFromJsonAsync<SessionInfo>(Json, Token))!;
         using var again = await Client(factory)
-            .PostAsJsonAsync(
-                "/api/setup",
-                new SetupInput(TestLibrary.SetupCode, "other", "other-password"),
-                TestContext.CancellationToken
-            );
-        var config = await GetAsync<ClientConfig>(client, "/api/config");
-        var accounts = await GetAsync<List<UserInfo>>(client, "/api/access/users?all=true");
+            .PostAsJsonAsync($"{V1}/setup", new SetupInput(TestLibrary.SetupCode, "other", "other-password"), Token);
+        var config = await GetAsync<ClientConfig>(client, $"{V1}/config");
+        var accounts = await GetAsync<List<UserInfo>>(client, $"{V1}/access/users?all=true");
 
         Assert.AreEqual(HttpStatusCode.BadRequest, wrong.StatusCode);
-        StringAssert.Contains(await wrong.Content.ReadAsStringAsync(TestContext.CancellationToken), "code");
+        StringAssert.Contains(await wrong.Content.ReadAsStringAsync(Token), "code");
         Assert.AreEqual(HttpStatusCode.BadRequest, weak.StatusCode);
-        StringAssert.Contains(await weak.Content.ReadAsStringAsync(TestContext.CancellationToken), "password");
+        StringAssert.Contains(await weak.Content.ReadAsStringAsync(Token), "password");
         Assert.AreEqual(HttpStatusCode.OK, done.StatusCode);
         Assert.AreEqual("admin", session.User?.UserName);
         Assert.IsTrue(session.User!.IsServerAdmin);
@@ -138,21 +133,14 @@ public sealed class AccessTests
     public async Task RequestsChangingSomethingNeedTheRequestHeader()
     {
         var factory = Factory();
-        var client = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var client = await ApiClients.SetUpAsync(factory, Token);
         client.DefaultRequestHeaders.Remove(RequestGuard.Header);
 
-        using var refused = await client.PostAsJsonAsync(
-            "/api/tags",
-            new TagInputLike("Holiday"),
-            TestContext.CancellationToken
-        );
-        using var read = await client.GetAsync("/api/config", TestContext.CancellationToken);
+        using var refused = await client.PostAsJsonAsync($"{V1}/tags", new TagInputLike("Holiday"), Token);
+        using var read = await client.GetAsync($"{V1}/config", Token);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
-        StringAssert.Contains(
-            await refused.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            RequestGuard.Header
-        );
+        StringAssert.Contains(await refused.Content.ReadAsStringAsync(Token), RequestGuard.Header);
         Assert.AreEqual(HttpStatusCode.OK, read.StatusCode);
     }
 
@@ -250,13 +238,13 @@ public sealed class AccessTests
 
     [TestMethod]
     [DataRow("/api/v1/thumbnails/{**path}", RequestLimits.Media)]
-    [DataRow("/api/v1/browse/covers", RequestLimits.Media)]
-    [DataRow("/api/v1/streaming/probe", RequestLimits.Media)]
-    [DataRow("/api/v1/streaming/play", RequestLimits.Media)]
-    [DataRow("/api/v1/trickplay/states", RequestLimits.Media)]
+    [DataRow($"{V1}/browse/covers", RequestLimits.Media)]
+    [DataRow($"{V1}/streaming/probe", RequestLimits.Media)]
+    [DataRow($"{V1}/streaming/play", RequestLimits.Media)]
+    [DataRow($"{V1}/trickplay/states", RequestLimits.Media)]
     [DataRow("/api/v1/trickplay/files/{**path}", RequestLimits.Media)]
-    [DataRow("/api/v1/search", RequestLimits.Search)]
-    [DataRow("/api/v1/editor/images", RequestLimits.Upload)]
+    [DataRow($"{V1}/search", RequestLimits.Search)]
+    [DataRow($"{V1}/editor/images", RequestLimits.Upload)]
     public void ExpensiveRoutesAreLimitedPerCaller(string route, string policy)
     {
         var factory = Factory();
@@ -286,7 +274,7 @@ public sealed class AccessTests
     public async Task OneCallersFloodWaitsForItsOwnTurn()
     {
         var factory = Factory();
-        var flooder = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var flooder = await ApiClients.SetUpAsync(factory, Token);
         _disposables.Add(flooder);
         await CreateUserAsync(
             flooder,
@@ -297,17 +285,17 @@ public sealed class AccessTests
             )
         );
         // Another account, from the same address: limits follow the account.
-        var other = await ApiClients.SignInAsync(factory, "bob", "bob-password", TestContext.CancellationToken);
+        var other = await ApiClients.SignInAsync(factory, "bob", "bob-password", Token);
         _disposables.Add(other);
 
         // As many searches as the limit allows a minute, then one more: the flood is refused, others are not.
         await Task.WhenAll(
             Enumerable
                 .Range(0, RequestLimits.SearchesPerMinute)
-                .Select(async _ => (await flooder.GetAsync("/api/search?q=x", TestContext.CancellationToken)).Dispose())
+                .Select(async _ => (await flooder.GetAsync($"{V1}/search?q=x", Token)).Dispose())
         );
-        using var refused = await flooder.GetAsync("/api/search?q=x", TestContext.CancellationToken);
-        using var served = await other.GetAsync("/api/search?q=x", TestContext.CancellationToken);
+        using var refused = await flooder.GetAsync($"{V1}/search?q=x", Token);
+        using var served = await other.GetAsync($"{V1}/search?q=x", Token);
 
         Assert.AreEqual(HttpStatusCode.TooManyRequests, refused.StatusCode);
         Assert.AreNotEqual(HttpStatusCode.TooManyRequests, served.StatusCode);
@@ -317,7 +305,7 @@ public sealed class AccessTests
     public async Task SignInChecksThePasswordAndLocksAfterRepeatedFailures()
     {
         var factory = Factory(settings => settings["Sfe:Security:MaxFailedSignIns"] = "3");
-        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        await ApiClients.SetUpAsync(factory, Token);
         var client = Client(factory);
 
         using var unknown = await SignInAsync(client, "nobody", "whatever-password");
@@ -333,18 +321,15 @@ public sealed class AccessTests
         Assert.AreEqual(HttpStatusCode.BadRequest, unknown.StatusCode);
         Assert.IsTrue(failures.All(s => s == HttpStatusCode.BadRequest));
         Assert.AreEqual(HttpStatusCode.BadRequest, locked.StatusCode);
-        StringAssert.Contains(
-            await locked.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            "Too many failed attempts"
-        );
-        Assert.IsNull((await GetAsync<SessionInfo>(client, "/api/session")).User);
+        StringAssert.Contains(await locked.Content.ReadAsStringAsync(Token), "Too many failed attempts");
+        Assert.IsNull((await GetAsync<SessionInfo>(client, $"{V1}/session")).User);
     }
 
     [TestMethod]
     public async Task AStrangersFailuresDontLockTheOwnerOut()
     {
         var factory = Factory(settings => settings["Sfe:Security:MaxFailedSignIns"] = "3");
-        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        await ApiClients.SetUpAsync(factory, Token);
         var attacker = ApiClients.CreateFrom(factory, "203.0.113.7");
         var owner = ApiClients.CreateFrom(factory, "192.168.1.20");
         _disposables.Add(attacker);
@@ -356,10 +341,7 @@ public sealed class AccessTests
         using var ownerSignsIn = await SignInAsync(owner, ApiClients.AdminName, ApiClients.AdminPassword);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, attackerLocked.StatusCode);
-        StringAssert.Contains(
-            await attackerLocked.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            "Too many failed attempts"
-        );
+        StringAssert.Contains(await attackerLocked.Content.ReadAsStringAsync(Token), "Too many failed attempts");
         Assert.AreEqual(HttpStatusCode.OK, ownerSignsIn.StatusCode);
     }
 
@@ -367,7 +349,7 @@ public sealed class AccessTests
     public async Task UnknownNamesAreThrottledAsKnownOnes()
     {
         var factory = Factory(settings => settings["Sfe:Security:MaxFailedSignIns"] = "2");
-        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        await ApiClients.SetUpAsync(factory, Token);
         var client = ApiClients.CreateFrom(factory, "203.0.113.8");
         _disposables.Add(client);
 
@@ -376,7 +358,7 @@ public sealed class AccessTests
             for (var i = 0; i < 2; i++)
                 (await SignInAsync(client, name, "wrong-password")).Dispose();
             using var third = await SignInAsync(client, name, "wrong-password");
-            return await third.Content.ReadAsStringAsync(TestContext.CancellationToken);
+            return await third.Content.ReadAsStringAsync(Token);
         }
 
         StringAssert.Contains(await ThirdAnswerAsync(ApiClients.AdminName), "Too many failed attempts");
@@ -391,7 +373,7 @@ public sealed class AccessTests
     public async Task GuessesFromManyAddressesLockTheAccount()
     {
         var factory = Factory(settings => settings["Sfe:Security:AccountLockoutFailures"] = "4");
-        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        await ApiClients.SetUpAsync(factory, Token);
 
         for (var i = 0; i < 4; i++)
         {
@@ -402,10 +384,7 @@ public sealed class AccessTests
         using var owner = ApiClients.CreateFrom(factory, "192.168.1.20");
         using var locked = await SignInAsync(owner, ApiClients.AdminName, ApiClients.AdminPassword);
 
-        StringAssert.Contains(
-            await locked.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            "Too many failed attempts"
-        );
+        StringAssert.Contains(await locked.Content.ReadAsStringAsync(Token), "Too many failed attempts");
     }
 
     private string RecoveryFile => Path.Combine(_library.BasePath, "recovery-code.txt");
@@ -422,7 +401,7 @@ public sealed class AccessTests
     public async Task ALockedOutAdministratorRecoversWithACodeFromTheConsole()
     {
         var factory = Factory(settings => settings["Sfe:Security:AccountLockoutFailures"] = "3");
-        var oldSession = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var oldSession = await ApiClients.SetUpAsync(factory, Token);
         _disposables.Add(oldSession);
         // Guesses from many addresses lock the account itself.
         for (var i = 0; i < 3; i++)
@@ -435,63 +414,56 @@ public sealed class AccessTests
         _disposables.Add(owner);
         using (var locked = await SignInAsync(owner, ApiClients.AdminName, ApiClients.AdminPassword))
         {
-            StringAssert.Contains(
-                await locked.Content.ReadAsStringAsync(TestContext.CancellationToken),
-                "Too many failed attempts"
-            );
+            StringAssert.Contains(await locked.Content.ReadAsStringAsync(Token), "Too many failed attempts");
         }
 
         using var asked = await owner.PostAsJsonAsync(
-            "/api/session/recovery",
+            $"{V1}/session/recovery",
             new RecoveryRequest(ApiClients.AdminName),
-            TestContext.CancellationToken
+            Token
         );
-        Assert.AreEqual(
-            HttpStatusCode.OK,
-            asked.StatusCode,
-            await asked.Content.ReadAsStringAsync(TestContext.CancellationToken)
-        );
+        Assert.AreEqual(HttpStatusCode.OK, asked.StatusCode, await asked.Content.ReadAsStringAsync(Token));
         var code = RecoveryCodeOf(ApiClients.AdminName);
         using var askedAgain = await owner.PostAsJsonAsync(
-            "/api/session/recovery",
+            $"{V1}/session/recovery",
             new RecoveryRequest(ApiClients.AdminName),
-            TestContext.CancellationToken
+            Token
         );
         var codeAgain = RecoveryCodeOf(ApiClients.AdminName);
         using var wrongCode = await owner.PostAsJsonAsync(
-            "/api/session/recovery/complete",
+            $"{V1}/session/recovery/complete",
             new RecoveryCompletion(ApiClients.AdminName, "AAAA-BBBB-CCCC-DDDD", "new-admin-password"),
-            TestContext.CancellationToken
+            Token
         );
         using var shortPassword = await owner.PostAsJsonAsync(
-            "/api/session/recovery/complete",
+            $"{V1}/session/recovery/complete",
             new RecoveryCompletion(ApiClients.AdminName, code, "short"),
-            TestContext.CancellationToken
+            Token
         );
         // Retyped from the console: lower case, without the dashes.
         using var recovered = await owner.PostAsJsonAsync(
-            "/api/session/recovery/complete",
+            $"{V1}/session/recovery/complete",
             new RecoveryCompletion(
                 ApiClients.AdminName,
                 code.Replace("-", "").ToLowerInvariant(),
                 "new-admin-password"
             ),
-            TestContext.CancellationToken
+            Token
         );
-        var session = (await recovered.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!;
+        var session = (await recovered.Content.ReadFromJsonAsync<SessionInfo>(Json, Token))!;
         using var reused = await owner.PostAsJsonAsync(
-            "/api/session/recovery/complete",
+            $"{V1}/session/recovery/complete",
             new RecoveryCompletion(ApiClients.AdminName, code, "another-password"),
-            TestContext.CancellationToken
+            Token
         );
-        using var oldSessionAfter = await oldSession.GetAsync("/api/config", TestContext.CancellationToken);
+        using var oldSessionAfter = await oldSession.GetAsync($"{V1}/config", Token);
         using var newPassword = await SignInAsync(Client(factory), ApiClients.AdminName, "new-admin-password");
 
         Assert.AreEqual(HttpStatusCode.OK, asked.StatusCode);
         Assert.AreEqual(code, codeAgain, "Asking again shows the same code: nobody can replace it");
         Assert.AreEqual(HttpStatusCode.BadRequest, wrongCode.StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, shortPassword.StatusCode);
-        StringAssert.Contains(await shortPassword.Content.ReadAsStringAsync(TestContext.CancellationToken), "password");
+        StringAssert.Contains(await shortPassword.Content.ReadAsStringAsync(Token), "password");
         Assert.AreEqual(HttpStatusCode.OK, recovered.StatusCode, "A wrong attempt doesn't use the code up");
         Assert.AreEqual(ApiClients.AdminName, session.User?.UserName);
         Assert.AreEqual(HttpStatusCode.BadRequest, reused.StatusCode, "A code works once");
@@ -504,7 +476,7 @@ public sealed class AccessTests
     public async Task RecoveryAnswersTheSameForEveryNameAndOnlyServesAdministrators()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
         _disposables.Add(admin);
         await CreateUserAsync(
             admin,
@@ -517,26 +489,26 @@ public sealed class AccessTests
         var visitor = Client(factory);
 
         using var unknown = await visitor.PostAsJsonAsync(
-            "/api/session/recovery",
+            $"{V1}/session/recovery",
             new RecoveryRequest("nobody"),
-            TestContext.CancellationToken
+            Token
         );
         // A space's administrator, not the server's: another administrator unlocks it.
         using var notServerAdmin = await visitor.PostAsJsonAsync(
-            "/api/session/recovery",
+            $"{V1}/session/recovery",
             new RecoveryRequest("alice"),
-            TestContext.CancellationToken
+            Token
         );
         using var completeUnknown = await visitor.PostAsJsonAsync(
-            "/api/session/recovery/complete",
+            $"{V1}/session/recovery/complete",
             new RecoveryCompletion("alice", "AAAA-BBBB-CCCC-DDDD", "new-alice-password"),
-            TestContext.CancellationToken
+            Token
         );
 
         Assert.AreEqual(HttpStatusCode.OK, unknown.StatusCode);
         Assert.AreEqual(
-            await unknown.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            await notServerAdmin.Content.ReadAsStringAsync(TestContext.CancellationToken)
+            await unknown.Content.ReadAsStringAsync(Token),
+            await notServerAdmin.Content.ReadAsStringAsync(Token)
         );
         Assert.IsFalse(File.Exists(RecoveryFile));
         Assert.AreEqual(HttpStatusCode.BadRequest, completeUnknown.StatusCode);
@@ -546,7 +518,7 @@ public sealed class AccessTests
     public async Task OnlyTrustedProxiesTellTheVisitorsAddressAndScheme()
     {
         var factory = Factory(settings => settings["Sfe:Security:SignInsPerMinute"] = "1");
-        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        await ApiClients.SetUpAsync(factory, Token);
 
         // Behind a proxy on this computer: each visitor has their own limit, and https at the proxy secures the cookie.
         HttpClient ThroughProxy(string proxy, string visitor)
@@ -597,7 +569,7 @@ public sealed class AccessTests
     public async Task RequireHttpsSecuresTheCookie()
     {
         var factory = Factory(settings => settings["Sfe:Security:RequireHttps"] = "true");
-        (await ApiClients.SetUpAsync(factory, TestContext.CancellationToken)).Dispose();
+        (await ApiClients.SetUpAsync(factory, Token)).Dispose();
         var client = Client(factory);
 
         using var signIn = await SignInAsync(client, ApiClients.AdminName, ApiClients.AdminPassword);
@@ -613,15 +585,15 @@ public sealed class AccessTests
     public async Task SignInAndOutChangeTheSession()
     {
         var factory = Factory();
-        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        await ApiClients.SetUpAsync(factory, Token);
         var client = Client(factory);
 
-        using var anonymous = await client.GetAsync("/api/config", TestContext.CancellationToken);
+        using var anonymous = await client.GetAsync($"{V1}/config", Token);
         using var signIn = await SignInAsync(client, "ADMIN", ApiClients.AdminPassword);
-        var session = (await signIn.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!;
-        using var signedIn = await client.GetAsync("/api/config", TestContext.CancellationToken);
-        using var signOut = await client.PostAsync("/api/session/logout", null, TestContext.CancellationToken);
-        using var after = await client.GetAsync("/api/config", TestContext.CancellationToken);
+        var session = (await signIn.Content.ReadFromJsonAsync<SessionInfo>(Json, Token))!;
+        using var signedIn = await client.GetAsync($"{V1}/config", Token);
+        using var signOut = await client.PostAsync($"{V1}/session/logout", null, Token);
+        using var after = await client.GetAsync($"{V1}/config", Token);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, anonymous.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, signIn.StatusCode, "Names are matched whatever the case");
@@ -641,9 +613,9 @@ public sealed class AccessTests
             var client = first.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false });
             client.DefaultRequestHeaders.Add(RequestGuard.Header, "1");
             using var setup = await client.PostAsJsonAsync(
-                "/api/setup",
+                $"{V1}/setup",
                 new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"),
-                TestContext.CancellationToken
+                Token
             );
             cookie = setup
                 .Headers.GetValues("Set-Cookie")
@@ -655,7 +627,7 @@ public sealed class AccessTests
         var restarted = second.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false });
         restarted.DefaultRequestHeaders.Add("Cookie", cookie);
 
-        var session = await GetAsync<SessionInfo>(restarted, "/api/session");
+        var session = await GetAsync<SessionInfo>(restarted, $"{V1}/session");
 
         Assert.AreEqual("admin", session.User?.UserName, "The keys are kept on the disk (Sfe:Security:KeysDirectory)");
     }
@@ -667,9 +639,9 @@ public sealed class AccessTests
         var factory = Factory();
         var client = PortClient(factory, 5000);
         using var setup = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"),
-            TestContext.CancellationToken
+            Token
         );
         var cookie = SetCookie(setup, "sfe.session-5000");
         Assert.IsNotNull(cookie, string.Join(" | ", setup.Headers.GetValues("Set-Cookie")));
@@ -680,9 +652,9 @@ public sealed class AccessTests
         var other = PortClient(factory, 5001);
         other.DefaultRequestHeaders.Add("Cookie", cookie);
 
-        Assert.AreEqual("admin", (await GetAsync<SessionInfo>(same, "/api/session")).User?.UserName);
+        Assert.AreEqual("admin", (await GetAsync<SessionInfo>(same, $"{V1}/session")).User?.UserName);
         Assert.IsNull(
-            (await GetAsync<SessionInfo>(other, "/api/session")).User,
+            (await GetAsync<SessionInfo>(other, $"{V1}/session")).User,
             "Another port's cookie isn't this one's"
         );
     }
@@ -694,16 +666,16 @@ public sealed class AccessTests
         var factory = Factory();
         var client = PortClient(factory, 5000);
         using var setup = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(TestLibrary.SetupCode, "admin", "admin-password"),
-            TestContext.CancellationToken
+            Token
         );
         var value = SetCookie(setup, "sfe.session-5000")!.Split('=', 2)[1];
 
         var before = PortClient(factory, 5000);
         before.DefaultRequestHeaders.Add("Cookie", $"{SfeSession.CookieName}={value}");
-        using var response = await before.GetAsync("/api/session", TestContext.CancellationToken);
-        var session = (await response.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!;
+        using var response = await before.GetAsync($"{V1}/session", Token);
+        var session = (await response.Content.ReadFromJsonAsync<SessionInfo>(Json, Token))!;
 
         Assert.AreEqual("admin", session.User?.UserName);
         Assert.IsNotNull(SetCookie(response, "sfe.session-5000"), "Written under the new name");
@@ -716,8 +688,8 @@ public sealed class AccessTests
         // One this instance can't read (another instance's) is left alone.
         var foreign = PortClient(factory, 5000);
         foreign.DefaultRequestHeaders.Add("Cookie", $"{SfeSession.CookieName}=another-instances-session");
-        using var left = await foreign.GetAsync("/api/session", TestContext.CancellationToken);
-        Assert.IsNull((await left.Content.ReadFromJsonAsync<SessionInfo>(Json, TestContext.CancellationToken))!.User);
+        using var left = await foreign.GetAsync($"{V1}/session", Token);
+        Assert.IsNull((await left.Content.ReadFromJsonAsync<SessionInfo>(Json, Token))!.User);
         Assert.IsFalse(
             left.Headers.TryGetValues("Set-Cookie", out var set)
                 && set.Any(c => c.StartsWith(SfeSession.CookieName + "=", StringComparison.Ordinal))
@@ -752,21 +724,17 @@ public sealed class AccessTests
     public async Task UsersOnlyGetTheRightsOfTheirGroups()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
         var users = await GroupAsync(admin, BuiltInGroup.Users);
         await CreateUserAsync(admin, new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]));
-        var alice = await ApiClients.SignInAsync(factory, "alice", "alice-password", TestContext.CancellationToken);
+        var alice = await ApiClients.SignInAsync(factory, "alice", "alice-password", Token);
 
-        var config = await GetAsync<ClientConfig>(alice, "/api/config");
-        using var browse = await alice.GetAsync("/api/browse", TestContext.CancellationToken);
-        using var scan = await alice.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken);
-        using var settings = await alice.GetAsync("/api/settings", TestContext.CancellationToken);
-        using var accounts = await alice.GetAsync("/api/access/users", TestContext.CancellationToken);
-        using var tag = await alice.PostAsJsonAsync(
-            "/api/tags",
-            new TagInputLike("Holiday"),
-            TestContext.CancellationToken
-        );
+        var config = await GetAsync<ClientConfig>(alice, $"{V1}/config");
+        using var browse = await alice.GetAsync($"{V1}/browse", Token);
+        using var scan = await alice.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token);
+        using var settings = await alice.GetAsync($"{V1}/settings", Token);
+        using var accounts = await alice.GetAsync($"{V1}/access/users", Token);
+        using var tag = await alice.PostAsJsonAsync($"{V1}/tags", new TagInputLike("Holiday"), Token);
 
         CollectionAssert.AreEquivalent(
             RightCatalog.All.Where(r => r.DefaultGroups.Contains(BuiltInGroup.Users)).Select(r => r.Id).ToList(),
@@ -784,29 +752,29 @@ public sealed class AccessTests
     public async Task GuestsNeverGetRightsThatChangeSomething()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
         var guests = await GroupAsync(admin, BuiltInGroup.Guests);
         var administrators = await GroupAsync(admin, BuiltInGroup.Administrators);
 
         using var refused = await admin.PutAsJsonAsync(
-            $"/api/access/groups/{guests.Id}",
+            $"{V1}/access/groups/{guests.Id}",
             new GroupInput(guests.Name, Rights: [.. guests.Rights, Rights.ManageTags]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         // A guest account in the Administrators group still only gets what guests may have.
         await CreateUserAsync(
             admin,
             new UserInput("kids", Password: "kids-password", Kind: UserKind.Guest, GroupIds: [administrators.Id])
         );
-        var kids = await ApiClients.SignInAsync(factory, "kids", "kids-password", TestContext.CancellationToken);
-        var config = await GetAsync<ClientConfig>(kids, "/api/config");
-        using var scan = await kids.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken);
+        var kids = await ApiClients.SignInAsync(factory, "kids", "kids-password", Token);
+        var config = await GetAsync<ClientConfig>(kids, $"{V1}/config");
+        using var scan = await kids.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token);
         using var guestAdmin = await admin.PostAsJsonAsync(
-            "/api/access/users",
+            $"{V1}/access/users",
             new UserInput("bad", Password: "bad-password", Kind: UserKind.Guest, IsServerAdmin: true),
             Json,
-            TestContext.CancellationToken
+            Token
         );
 
         Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
@@ -822,30 +790,27 @@ public sealed class AccessTests
     public async Task VisitorsBrowseOnlyLibrariesOpenToGuests()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
         var visitor = Client(factory);
 
-        using var closed = await visitor.GetAsync("/api/config", TestContext.CancellationToken);
-        var before = await GetAsync<SessionInfo>(visitor, "/api/session");
+        using var closed = await visitor.GetAsync($"{V1}/config", Token);
+        var before = await GetAsync<SessionInfo>(visitor, $"{V1}/session");
         using (
             var open = await admin.PutAsJsonAsync(
-                "/api/access/tenant/guest-access",
+                $"{V1}/access/tenant/guest-access",
                 new GuestAccessChange(true),
-                TestContext.CancellationToken
+                Token
             )
         )
         {
             Assert.AreEqual(HttpStatusCode.OK, open.StatusCode);
         }
 
-        var after = await GetAsync<SessionInfo>(visitor, "/api/session");
-        var config = await GetAsync<ClientConfig>(visitor, "/api/config");
-        using var file = await visitor.GetAsync("/api/files/raw/Media/photo.jpg", TestContext.CancellationToken);
-        using var download = await visitor.GetAsync(
-            "/api/files/raw/Media/photo.jpg?download=true",
-            TestContext.CancellationToken
-        );
-        using var scan = await visitor.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken);
+        var after = await GetAsync<SessionInfo>(visitor, $"{V1}/session");
+        var config = await GetAsync<ClientConfig>(visitor, $"{V1}/config");
+        using var file = await visitor.GetAsync($"{V1}/files/raw/Media/photo.jpg", Token);
+        using var download = await visitor.GetAsync($"{V1}/files/raw/Media/photo.jpg?download=true", Token);
+        using var scan = await visitor.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, closed.StatusCode);
         Assert.IsEmpty(before.GuestTenants);
@@ -865,16 +830,10 @@ public sealed class AccessTests
     public async Task TheServerCanForbidVisitorsWithoutAnAccount()
     {
         var factory = Factory(settings => settings["Sfe:Security:AnonymousGuests"] = "false");
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        using (
-            await admin.PutAsJsonAsync(
-                "/api/access/tenant/guest-access",
-                new GuestAccessChange(true),
-                TestContext.CancellationToken
-            )
-        ) { }
+        var admin = await ApiClients.SetUpAsync(factory, Token);
+        using (await admin.PutAsJsonAsync($"{V1}/access/tenant/guest-access", new GuestAccessChange(true), Token)) { }
 
-        using var config = await Client(factory).GetAsync("/api/config", TestContext.CancellationToken);
+        using var config = await Client(factory).GetAsync($"{V1}/config", Token);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, config.StatusCode);
     }
@@ -883,11 +842,11 @@ public sealed class AccessTests
     public async Task RightsDisabledByTheServerAreRefusedEvenToAdministrators()
     {
         var factory = Factory(settings => settings["Sfe:Rights:Disabled:0"] = "tracking.*");
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
 
-        using var duplicates = await admin.GetAsync("/api/duplicates", TestContext.CancellationToken);
-        var config = await GetAsync<ClientConfig>(admin, "/api/config");
-        var catalog = await GetAsync<RightsCatalogInfo>(admin, "/api/access/rights");
+        using var duplicates = await admin.GetAsync($"{V1}/duplicates", Token);
+        var config = await GetAsync<ClientConfig>(admin, $"{V1}/config");
+        var catalog = await GetAsync<RightsCatalogInfo>(admin, $"{V1}/access/rights");
 
         Assert.AreEqual(HttpStatusCode.Forbidden, duplicates.StatusCode);
         Assert.IsFalse(config.Rights.Any(r => r.StartsWith("tracking.", StringComparison.Ordinal)));
@@ -898,10 +857,10 @@ public sealed class AccessTests
     public async Task TheServerCanSwitchOffEveryRightThatChangesFiles()
     {
         var factory = Factory(settings => settings["Sfe:Rights:Disabled:0"] = RightCatalog.FileWriteSelector);
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
 
-        var config = await GetAsync<ClientConfig>(admin, "/api/config");
-        var catalog = await GetAsync<RightsCatalogInfo>(admin, "/api/access/rights");
+        var config = await GetAsync<ClientConfig>(admin, $"{V1}/config");
+        var catalog = await GetAsync<RightsCatalogInfo>(admin, $"{V1}/access/rights");
 
         CollectionAssert.AreEquivalent(
             new[]
@@ -931,13 +890,13 @@ public sealed class AccessTests
     public async Task TheServerCanBeMadeReadOnly()
     {
         var factory = Factory(settings => settings["Sfe:Rights:Disabled:0"] = RightCatalog.WriteSelector);
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
 
-        var config = await GetAsync<ClientConfig>(admin, "/api/config");
+        var config = await GetAsync<ClientConfig>(admin, $"{V1}/config");
         using var tag = await admin.PostAsJsonAsync(
-            "/api/file-tags",
+            $"{V1}/file-tags",
             new { paths = Array.Empty<string>(), add = Array.Empty<int>() },
-            TestContext.CancellationToken
+            Token
         );
 
         Assert.IsTrue(
@@ -952,57 +911,52 @@ public sealed class AccessTests
     public async Task ChangingAnAccountEndsItsSessions()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
         var users = await GroupAsync(admin, BuiltInGroup.Users);
         var alice = await CreateUserAsync(
             admin,
             new UserInput("alice", Password: "alice-password", GroupIds: [users.Id])
         );
-        var aliceClient = await ApiClients.SignInAsync(
-            factory,
-            "alice",
-            "alice-password",
-            TestContext.CancellationToken
-        );
+        var aliceClient = await ApiClients.SignInAsync(factory, "alice", "alice-password", Token);
 
-        using var before = await aliceClient.GetAsync("/api/config", TestContext.CancellationToken);
+        using var before = await aliceClient.GetAsync($"{V1}/config", Token);
         using (
             var disabled = await admin.PutAsJsonAsync(
-                $"/api/access/users/{alice.Id}",
+                $"{V1}/access/users/{alice.Id}",
                 new UserInput("alice", Disabled: true, GroupIds: [users.Id]),
                 Json,
-                TestContext.CancellationToken
+                Token
             )
         )
         {
             Assert.AreEqual(HttpStatusCode.OK, disabled.StatusCode);
         }
 
-        using var after = await aliceClient.GetAsync("/api/config", TestContext.CancellationToken);
+        using var after = await aliceClient.GetAsync($"{V1}/config", Token);
         using var signIn = await SignInAsync(Client(factory), "alice", "alice-password");
 
         Assert.AreEqual(HttpStatusCode.OK, before.StatusCode);
         Assert.AreEqual(HttpStatusCode.Unauthorized, after.StatusCode);
-        StringAssert.Contains(await signIn.Content.ReadAsStringAsync(TestContext.CancellationToken), "disabled");
+        StringAssert.Contains(await signIn.Content.ReadAsStringAsync(Token), "disabled");
     }
 
     [TestMethod]
     public async Task OwnPasswordChangesKeepTheSession()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
 
         using var wrong = await admin.PutAsJsonAsync(
-            "/api/session/password",
+            $"{V1}/session/password",
             new PasswordChange("not-it", "new-password-1"),
-            TestContext.CancellationToken
+            Token
         );
         using var changed = await admin.PutAsJsonAsync(
-            "/api/session/password",
+            $"{V1}/session/password",
             new PasswordChange(ApiClients.AdminPassword, "new-password-1"),
-            TestContext.CancellationToken
+            Token
         );
-        using var still = await admin.GetAsync("/api/config", TestContext.CancellationToken);
+        using var still = await admin.GetAsync($"{V1}/config", Token);
         using var old = await SignInAsync(Client(factory), ApiClients.AdminName, ApiClients.AdminPassword);
         using var fresh = await SignInAsync(Client(factory), ApiClients.AdminName, "new-password-1");
 
@@ -1017,11 +971,12 @@ public sealed class AccessTests
     public async Task TheApiDocumentationNeedsItsRight()
     {
         var factory = Factory();
-        await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        await ApiClients.SetUpAsync(factory, Token);
         var visitor = Client(factory);
 
-        using var page = await visitor.GetAsync("/api/docs/index.html", TestContext.CancellationToken);
-        using var document = await visitor.GetAsync("/openapi/v1.json", TestContext.CancellationToken);
+        // Swagger UI's pages are outside the API's versions (ApiRoutes.Docs).
+        using var page = await visitor.GetAsync("/api/docs/index.html", Token);
+        using var document = await visitor.GetAsync("/openapi/v1.json", Token);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, page.StatusCode);
         Assert.AreEqual(HttpStatusCode.Unauthorized, document.StatusCode);
@@ -1031,46 +986,46 @@ public sealed class AccessTests
     public async Task ExternalPlayerLinksWorkWithoutSignInUntilRevoked()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
 
         using var created = await admin.PostAsJsonAsync(
-            "/api/files/links",
+            $"{V1}/files/links",
             new FileLinkRequest("Media/Episode 2.mkv"),
-            TestContext.CancellationToken
+            Token
         );
-        var link = (await created.Content.ReadFromJsonAsync<FileLink>(Json, TestContext.CancellationToken))!;
+        var link = (await created.Content.ReadFromJsonAsync<FileLink>(Json, Token))!;
         using var missing = await admin.PostAsJsonAsync(
-            "/api/files/links",
+            $"{V1}/files/links",
             new FileLinkRequest("Media/nothing.mkv"),
-            TestContext.CancellationToken
+            Token
         );
         var player = Client(factory);
-        using var whole = await player.GetAsync("/" + link.Url, TestContext.CancellationToken);
+        using var whole = await player.GetAsync("/" + link.Url, Token);
         using var range = new HttpRequestMessage(HttpMethod.Get, "/" + link.Url)
         {
             Headers = { Range = new RangeHeaderValue(0, 99) },
         };
-        using var part = await player.SendAsync(range, TestContext.CancellationToken);
+        using var part = await player.SendAsync(range, Token);
         var token = link.Url.Split('/')[3];
         using var forged = await player.GetAsync(
             "/" + link.Url.Replace(token, token[..^2] + (token[^2] == 'A' ? "BB" : "AA")),
-            TestContext.CancellationToken
+            Token
         );
         using (
             await admin.PutAsJsonAsync(
-                "/api/session/password",
+                $"{V1}/session/password",
                 new PasswordChange(ApiClients.AdminPassword, "new-password-1"),
-                TestContext.CancellationToken
+                Token
             )
         ) { }
-        using var revoked = await player.GetAsync("/" + link.Url, TestContext.CancellationToken);
+        using var revoked = await player.GetAsync("/" + link.Url, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, created.StatusCode);
         StringAssert.EndsWith(link.Url, "/Episode%202.mkv");
         Assert.IsGreaterThan(DateTimeOffset.UtcNow.AddMinutes(300), link.Expires);
         Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, whole.StatusCode);
-        Assert.HasCount(200 * 1024, await whole.Content.ReadAsByteArrayAsync(TestContext.CancellationToken));
+        Assert.HasCount(200 * 1024, await whole.Content.ReadAsByteArrayAsync(Token));
         Assert.AreEqual(HttpStatusCode.PartialContent, part.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, forged.StatusCode);
         Assert.AreEqual(HttpStatusCode.Forbidden, revoked.StatusCode);
@@ -1080,16 +1035,16 @@ public sealed class AccessTests
     public async Task TheLastServerAdministratorStays()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        var self = (await GetAsync<SessionInfo>(admin, "/api/session")).User!;
+        var admin = await ApiClients.SetUpAsync(factory, Token);
+        var self = (await GetAsync<SessionInfo>(admin, $"{V1}/session")).User!;
 
         using var demoted = await admin.PutAsJsonAsync(
-            $"/api/access/users/{self.Id}",
+            $"{V1}/access/users/{self.Id}",
             new UserInput(self.UserName, IsServerAdmin: false),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        using var deleted = await admin.DeleteAsync($"/api/access/users/{self.Id}", TestContext.CancellationToken);
+        using var deleted = await admin.DeleteAsync($"{V1}/access/users/{self.Id}", Token);
 
         Assert.AreEqual(HttpStatusCode.Conflict, demoted.StatusCode);
         Assert.AreEqual(HttpStatusCode.Conflict, deleted.StatusCode);
@@ -1099,19 +1054,19 @@ public sealed class AccessTests
     public async Task RecoveryRestoresALocalAdministrator()
     {
         using (var first = Factory())
-            await ApiClients.SetUpAsync(first, TestContext.CancellationToken);
+            await ApiClients.SetUpAsync(first, Token);
 
         var recovering = Factory(settings => settings["Sfe:Setup:Recover"] = "true");
         var client = Client(recovering);
-        var setup = await GetAsync<SetupInfo>(client, "/api/setup");
-        using var browse = await Client(recovering).GetAsync("/api/session", TestContext.CancellationToken);
+        var setup = await GetAsync<SetupInfo>(client, $"{V1}/setup");
+        using var browse = await Client(recovering).GetAsync($"{V1}/session", Token);
         using var restored = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(TestLibrary.SetupCode, "admin", "recovered-password"),
-            TestContext.CancellationToken
+            Token
         );
         using var signIn = await SignInAsync(Client(recovering), "admin", "recovered-password");
-        var users = await GetAsync<List<UserInfo>>(client, "/api/access/users?all=true");
+        var users = await GetAsync<List<UserInfo>>(client, $"{V1}/access/users?all=true");
 
         Assert.IsFalse(setup.Required, "The app keeps working during a recovery");
         Assert.IsTrue(setup.Available);
@@ -1125,42 +1080,37 @@ public sealed class AccessTests
     public async Task LibraryAdministratorsOnlyManageTheirLibrarysAccounts()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
         var administrators = await GroupAsync(admin, BuiltInGroup.Administrators);
         var users = await GroupAsync(admin, BuiltInGroup.Users);
         await CreateUserAsync(
             admin,
             new UserInput("manager", Password: "manager-password", GroupIds: [administrators.Id])
         );
-        var manager = await ApiClients.SignInAsync(
-            factory,
-            "manager",
-            "manager-password",
-            TestContext.CancellationToken
-        );
-        var self = (await GetAsync<SessionInfo>(admin, "/api/session")).User!;
+        var manager = await ApiClients.SignInAsync(factory, "manager", "manager-password", Token);
+        var self = (await GetAsync<SessionInfo>(admin, $"{V1}/session")).User!;
 
         using var created = await manager.PostAsJsonAsync(
-            "/api/access/users",
+            $"{V1}/access/users",
             new UserInput("bob", Password: "bob-password", IsServerAdmin: true, GroupIds: [users.Id]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var bob = (await created.Content.ReadFromJsonAsync<UserInfo>(Json, TestContext.CancellationToken))!;
+        var bob = (await created.Content.ReadFromJsonAsync<UserInfo>(Json, Token))!;
         using var noGroup = await manager.PostAsJsonAsync(
-            "/api/access/users",
+            $"{V1}/access/users",
             new UserInput("carol", Password: "carol-password"),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        using var serverSettings = await manager.GetAsync("/api/settings?level=server", TestContext.CancellationToken);
+        using var serverSettings = await manager.GetAsync($"{V1}/settings?level=server", Token);
         using var libraryAdmin = await manager.PutAsJsonAsync(
-            $"/api/access/users/{self.Id}",
+            $"{V1}/access/users/{self.Id}",
             new UserInput("renamed", Disabled: true, GroupIds: []),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var adminAfter = (await GetAsync<List<UserInfo>>(admin, "/api/access/users?all=true")).Single(u =>
+        var adminAfter = (await GetAsync<List<UserInfo>>(admin, $"{V1}/access/users?all=true")).Single(u =>
             u.Id == self.Id
         );
 
@@ -1181,7 +1131,7 @@ public sealed class AccessTests
     public async Task LibraryAdministratorsOnlyPutTheirLibrarysAccountsInGroups()
     {
         var factory = Factory();
-        var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
+        var admin = await ApiClients.SetUpAsync(factory, Token);
         var administrators = await GroupAsync(admin, BuiltInGroup.Administrators);
         var users = await GroupAsync(admin, BuiltInGroup.Users);
         await CreateUserAsync(
@@ -1194,50 +1144,45 @@ public sealed class AccessTests
         );
         var outsider = await CreateUserAsync(admin, new UserInput("outsider", Password: "outsider-password"));
         users = await GroupAsync(admin, BuiltInGroup.Users);
-        var manager = await ApiClients.SignInAsync(
-            factory,
-            "manager",
-            "manager-password",
-            TestContext.CancellationToken
-        );
+        var manager = await ApiClients.SignInAsync(factory, "manager", "manager-password", Token);
 
         // Taken into a group, the account would belong to this library alone: its administrators could set its
         // password.
         using var pulledIn = await manager.PutAsJsonAsync(
-            $"/api/access/groups/{users.Id}",
+            $"{V1}/access/groups/{users.Id}",
             new GroupInput(users.Name, MemberIds: [.. users.MemberIds, outsider.Id]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         using var newGroup = await manager.PostAsJsonAsync(
-            "/api/access/groups",
+            $"{V1}/access/groups",
             new GroupInput("Friends", MemberIds: [outsider.Id]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         using var takenOver = await manager.PutAsJsonAsync(
-            $"/api/access/users/{outsider.Id}",
+            $"{V1}/access/users/{outsider.Id}",
             new UserInput("outsider", Password: "taken-over", GroupIds: [users.Id]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         using var promoted = await manager.PutAsJsonAsync(
-            $"/api/access/groups/{administrators.Id}",
+            $"{V1}/access/groups/{administrators.Id}",
             new GroupInput(
                 administrators.Name,
                 MemberIds: [.. (await GroupAsync(admin, BuiltInGroup.Administrators)).MemberIds, member.Id]
             ),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var outsiderAfter = (await GetAsync<List<UserInfo>>(admin, "/api/access/users?all=true")).Single(u =>
+        var outsiderAfter = (await GetAsync<List<UserInfo>>(admin, $"{V1}/access/users?all=true")).Single(u =>
             u.Id == outsider.Id
         );
         using var byServerAdmin = await admin.PutAsJsonAsync(
-            $"/api/access/groups/{users.Id}",
+            $"{V1}/access/groups/{users.Id}",
             new GroupInput(users.Name, MemberIds: [.. users.MemberIds, outsider.Id]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
 
         Assert.AreEqual(HttpStatusCode.BadRequest, pulledIn.StatusCode);
@@ -1290,40 +1235,27 @@ public sealed class AccessTests
     }
 
     private Task<HttpResponseMessage> SignInAsync(HttpClient client, string userName, string password) =>
-        client.PostAsJsonAsync(
-            "/api/session/login",
-            new SignInRequest(userName, password),
-            TestContext.CancellationToken
-        );
+        client.PostAsJsonAsync($"{V1}/session/login", new SignInRequest(userName, password), Token);
 
     private async Task<GroupInfo> GroupAsync(HttpClient admin, BuiltInGroup builtIn) =>
-        (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g => g.BuiltIn == builtIn);
+        (await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups")).Single(g => g.BuiltIn == builtIn);
 
     private async Task<UserInfo> CreateUserAsync(HttpClient admin, UserInput input)
     {
-        using var response = await admin.PostAsJsonAsync(
-            "/api/access/users",
-            input,
-            Json,
-            TestContext.CancellationToken
-        );
-        Assert.AreEqual(
-            HttpStatusCode.Created,
-            response.StatusCode,
-            await response.Content.ReadAsStringAsync(TestContext.CancellationToken)
-        );
-        return (await response.Content.ReadFromJsonAsync<UserInfo>(Json, TestContext.CancellationToken))!;
+        using var response = await admin.PostAsJsonAsync($"{V1}/access/users", input, Json, Token);
+        Assert.AreEqual(HttpStatusCode.Created, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+        return (await response.Content.ReadFromJsonAsync<UserInfo>(Json, Token))!;
     }
 
     private async Task<T> GetAsync<T>(HttpClient client, string url)
     {
-        using var response = await client.GetAsync(url, TestContext.CancellationToken);
+        using var response = await client.GetAsync(url, Token);
         Assert.AreEqual(
             HttpStatusCode.OK,
             response.StatusCode,
-            $"{url}: {await response.Content.ReadAsStringAsync(TestContext.CancellationToken)}"
+            $"{url}: {await response.Content.ReadAsStringAsync(Token)}"
         );
-        return (await response.Content.ReadFromJsonAsync<T>(Json, TestContext.CancellationToken))!;
+        return (await response.Content.ReadFromJsonAsync<T>(Json, Token))!;
     }
 
     /// <summary>The body of <c>POST /api/tags</c>.</summary>

@@ -55,7 +55,7 @@ async function rightClick(b, selector, modifiers = 0) {
 
 async function signIn(b) {
     await b.goto(url + 'login', 1500);
-    await b.eval(`fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
+    await b.eval(`fetch('api/v1/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
 }
 
 async function closeMenu(b) {
@@ -65,7 +65,7 @@ async function closeMenu(b) {
 
 try {
     for (let i = 0; i < 120; i++) {
-        try { await fetch(url + 'api/migration'); break; } catch { await sleep(500); }
+        try { await fetch(url + 'api/v1/migration'); break; } catch { await sleep(500); }
     }
     const b = await launch({ width: 1280, height: 800 });
     await signIn(b);
@@ -297,8 +297,8 @@ try {
         console.log('skip duplicates: none found in the docs data');
 
     // The trash: a file made and deleted for the check, its row's menu, then deleted for good.
-    await b.eval(`fetch('api/files/new-file', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ path: 'Inbox', name: 'menu-check.txt' }) }).then(r => r.status)`);
-    await b.eval(`fetch('api/files/delete', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ paths: ['Inbox/menu-check.txt'], permanent: false }) }).then(r => r.status)`);
+    await b.eval(`fetch('api/v1/files/new-file', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ path: 'Inbox', name: 'menu-check.txt' }) }).then(r => r.status)`);
+    await b.eval(`fetch('api/v1/files/delete', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ paths: ['Inbox/menu-check.txt'], permanent: false }) }).then(r => r.status)`);
     await b.goto(url + 'admin?section=files&page=trash', 3000);
     await sleep(1000);
     await b.eval(recorder);
@@ -308,7 +308,7 @@ try {
         await closeMenu(b);
     } else
         check('trash: the deleted file listed', false);
-    await b.eval(`fetch('api/files/trash', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(page => Promise.all(page.items.filter(i => i.path.endsWith('menu-check.txt')).map(i => fetch('api/files/trash/' + i.id, { method: 'DELETE', headers: { 'X-SFE-Request': '1' } })))).then(() => 1)`);
+    await b.eval(`fetch('api/v1/files/trash', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(page => Promise.all(page.items.filter(i => i.path.endsWith('menu-check.txt')).map(i => fetch('api/v1/files/trash/' + i.id, { method: 'DELETE', headers: { 'X-SFE-Request': '1' } })))).then(() => 1)`);
 
     // The folder picker (adding an excluded folder): no menu.
     await b.goto(url + 'admin?section=scanning&page=exclusions', 3000);

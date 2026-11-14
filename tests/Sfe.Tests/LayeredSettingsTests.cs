@@ -53,7 +53,7 @@ public sealed class LayeredSettingsTests
         await SaveAsync(admin, "tenant", s => s.Player.SeekSeconds = 20);
         var library = await SettingsAsync(admin, "tenant");
         var libraryValue = (await ConfigAsync(admin)).SeekSeconds;
-        using (var reset = await admin.DeleteAsync("/api/settings?level=tenant", TestContext.CancellationToken))
+        using (var reset = await admin.DeleteAsync($"{V1}/settings?level=tenant", TestContext.CancellationToken))
             Assert.AreEqual(HttpStatusCode.OK, reset.StatusCode);
 
         Assert.AreEqual(15, serverDefault);
@@ -114,7 +114,7 @@ public sealed class LayeredSettingsTests
         await SaveAsync(admin, "server", s => s.Player.SeekSeconds = 15);
         using (
             var locked = await admin.PutAsJsonAsync(
-                "/api/settings/locks?level=server",
+                $"{V1}/settings/locks?level=server",
                 new SettingLocks(["player.seekSeconds"]),
                 TestContext.CancellationToken
             )
@@ -126,7 +126,7 @@ public sealed class LayeredSettingsTests
         var library = await SettingsAsync(admin, "tenant");
         using var refused = await PutAsync(admin, "tenant", library.Values, s => s.Player.SeekSeconds = 20);
         using var serverOnly = await admin.PutAsJsonAsync(
-            "/api/settings/locks?level=server",
+            $"{V1}/settings/locks?level=server",
             new SettingLocks(["scan.parallelism"]),
             TestContext.CancellationToken
         );
@@ -175,7 +175,7 @@ public sealed class LayeredSettingsTests
         await CreateUserAsync(admin, new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]));
         var alice = await ApiClients.SignInAsync(factory, "alice", "alice-password", TestContext.CancellationToken);
 
-        var preferences = await GetAsync<SettingsView>(alice, "/api/me/preferences");
+        var preferences = await GetAsync<SettingsView>(alice, $"{V1}/me/preferences");
         using (var saved = await PutPreferencesAsync(alice, preferences.Values, s => s.Player.SeekSeconds = 30))
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
         using var notMine = await PutPreferencesAsync(alice, preferences.Values, s => s.Scan.ComputeHashes = false);
@@ -183,7 +183,7 @@ public sealed class LayeredSettingsTests
         var adminsOwn = (await ConfigAsync(admin)).SeekSeconds;
         using (
             var locked = await admin.PutAsJsonAsync(
-                "/api/settings/locks?level=tenant",
+                $"{V1}/settings/locks?level=tenant",
                 new SettingLocks(["player.seekSeconds"]),
                 TestContext.CancellationToken
             )
@@ -195,7 +195,7 @@ public sealed class LayeredSettingsTests
         var afterLock = (await ConfigAsync(alice)).SeekSeconds;
         using var refused = await PutPreferencesAsync(
             alice,
-            (await GetAsync<SettingsView>(alice, "/api/me/preferences")).Values,
+            (await GetAsync<SettingsView>(alice, $"{V1}/me/preferences")).Values,
             s => s.Player.SeekSeconds = 40
         );
 
@@ -215,7 +215,7 @@ public sealed class LayeredSettingsTests
         var admin = await AdminAsync(factory);
         using (
             await admin.PutAsJsonAsync(
-                "/api/access/tenant/guest-access",
+                $"{V1}/access/tenant/guest-access",
                 new GuestAccessChange(true),
                 TestContext.CancellationToken
             )
@@ -223,7 +223,7 @@ public sealed class LayeredSettingsTests
 
         using var preferences = await ApiClients
             .Create(factory)
-            .GetAsync("/api/me/preferences", TestContext.CancellationToken);
+            .GetAsync($"{V1}/me/preferences", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, preferences.StatusCode);
     }
@@ -234,7 +234,7 @@ public sealed class LayeredSettingsTests
         var factory = Factory();
         var admin = await AdminAsync(factory);
         using var created = await admin.PostAsJsonAsync(
-            "/api/access/groups",
+            $"{V1}/access/groups",
             new GroupInput("Playback", Rights: [Rights.Browse, Rights.PlaybackSettings]),
             Json,
             TestContext.CancellationToken
@@ -246,7 +246,7 @@ public sealed class LayeredSettingsTests
         var view = await SettingsAsync(carol, null);
         using var playback = await PutAsync(carol, null, view.Values, s => s.Player.SeekSeconds = 25);
         using var scanning = await PutAsync(carol, null, view.Values, s => s.Scan.ComputeHashes = false);
-        using var server = await carol.GetAsync("/api/settings?level=server", TestContext.CancellationToken);
+        using var server = await carol.GetAsync($"{V1}/settings?level=server", TestContext.CancellationToken);
 
         Assert.AreEqual(
             SettingLevel.Tenant,
@@ -465,7 +465,7 @@ public sealed class LayeredSettingsTests
         using var notMine = await PatchPreferencesAsync(alice, new() { ["scan.computeHashes"] = false });
         using var locks = await PatchPreferencesAsync(alice, new(), lockKeys: ["player.loop"]);
         await PatchOkAsync(admin, "tenant", new() { ["browse.showDuration"] = false });
-        var preferences = await GetAsync<SettingsView>(alice, "/api/me/preferences");
+        var preferences = await GetAsync<SettingsView>(alice, $"{V1}/me/preferences");
 
         Assert.AreEqual(30, (await ConfigAsync(alice)).SeekSeconds);
         Assert.AreEqual(HttpStatusCode.BadRequest, notMine.StatusCode);
@@ -514,7 +514,7 @@ public sealed class LayeredSettingsTests
         using var width = await PatchPreferencesAsync(alice, new() { ["reading.prose.width"] = 75 });
         var alices = (await ConfigAsync(alice)).Reading!;
         var admins = (await ConfigAsync(admin)).Reading!;
-        var preferences = await GetAsync<SettingsView>(alice, "/api/me/preferences");
+        var preferences = await GetAsync<SettingsView>(alice, $"{V1}/me/preferences");
 
         Assert.AreEqual(
             ("app", 17, "literata", 1.5, true),
@@ -547,7 +547,7 @@ public sealed class LayeredSettingsTests
         var factory = Factory();
         var admin = await AdminAsync(factory);
         using var created = await admin.PostAsJsonAsync(
-            "/api/access/groups",
+            $"{V1}/access/groups",
             new GroupInput("Playback", Rights: [Rights.Browse, Rights.PlaybackSettings]),
             Json,
             TestContext.CancellationToken
@@ -611,7 +611,7 @@ public sealed class LayeredSettingsTests
         var factory = Factory();
         await ApiClients.MigrateAsync(factory, TestContext.CancellationToken);
         var admin = await AdminAsync(factory);
-        using var search = await admin.GetAsync("/api/search?q=photo", TestContext.CancellationToken);
+        using var search = await admin.GetAsync($"{V1}/search?q=photo", TestContext.CancellationToken);
         var results = (await search.Content.ReadFromJsonAsync<SearchResults>(Json, TestContext.CancellationToken))!;
         var library = await SettingsAsync(admin, "tenant");
         var server = await SettingsAsync(admin, "server");
@@ -665,7 +665,7 @@ public sealed class LayeredSettingsTests
         var copy = SettingKeys.FromJson(SettingKeys.ToJson(values));
         change(copy);
         return client.PutAsJsonAsync(
-            level is null ? "/api/settings" : $"/api/settings?level={level}",
+            level is null ? $"{V1}/settings" : $"{V1}/settings?level={level}",
             copy,
             Json,
             TestContext.CancellationToken
@@ -680,7 +680,7 @@ public sealed class LayeredSettingsTests
     {
         var copy = SettingKeys.FromJson(SettingKeys.ToJson(values));
         change(copy);
-        return client.PutAsJsonAsync("/api/me/preferences", copy, Json, TestContext.CancellationToken);
+        return client.PutAsJsonAsync($"{V1}/me/preferences", copy, Json, TestContext.CancellationToken);
     }
 
     private Task<HttpResponseMessage> PatchAsync(
@@ -691,7 +691,7 @@ public sealed class LayeredSettingsTests
         string[]? unlockKeys = null
     ) =>
         client.PatchAsJsonAsync(
-            level is null ? "/api/settings" : $"/api/settings?level={level}",
+            level is null ? $"{V1}/settings" : $"{V1}/settings?level={level}",
             new SettingChanges(values, lockKeys, unlockKeys),
             Json,
             TestContext.CancellationToken
@@ -719,24 +719,24 @@ public sealed class LayeredSettingsTests
         string[]? lockKeys = null
     ) =>
         client.PatchAsJsonAsync(
-            "/api/me/preferences",
+            $"{V1}/me/preferences",
             new SettingChanges(values, lockKeys),
             Json,
             TestContext.CancellationToken
         );
 
     private Task<SettingsView> SettingsAsync(HttpClient client, string? level) =>
-        GetAsync<SettingsView>(client, level is null ? "/api/settings" : $"/api/settings?level={level}");
+        GetAsync<SettingsView>(client, level is null ? $"{V1}/settings" : $"{V1}/settings?level={level}");
 
-    private Task<ClientConfig> ConfigAsync(HttpClient client) => GetAsync<ClientConfig>(client, "/api/config");
+    private Task<ClientConfig> ConfigAsync(HttpClient client) => GetAsync<ClientConfig>(client, $"{V1}/config");
 
     private async Task<GroupInfo> GroupAsync(HttpClient admin, BuiltInGroup builtIn) =>
-        (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g => g.BuiltIn == builtIn);
+        (await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups")).Single(g => g.BuiltIn == builtIn);
 
     private async Task CreateUserAsync(HttpClient admin, UserInput input)
     {
         using var response = await admin.PostAsJsonAsync(
-            "/api/access/users",
+            $"{V1}/access/users",
             input,
             Json,
             TestContext.CancellationToken

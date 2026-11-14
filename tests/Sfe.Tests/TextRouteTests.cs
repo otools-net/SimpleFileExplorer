@@ -167,7 +167,7 @@ public sealed class TextRouteTests
             Token
         );
 
-        using var response = await _alice.GetAsync("/api/files/text?path=Media/notes.txt", Token);
+        using var response = await _alice.GetAsync($"{V1}/files/text?path=Media/notes.txt", Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         var text = (await response.Content.ReadFromJsonAsync<TextFile>(Json, Token))!;
 
@@ -185,7 +185,7 @@ public sealed class TextRouteTests
     {
         _library.AddFile(".sfe/trash/x.txt", 10);
 
-        using (var forbidden = await _bob.GetAsync("/api/files/text?path=RFile1.txt", Token))
+        using (var forbidden = await _bob.GetAsync($"{V1}/files/text?path=RFile1.txt", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode, "Bob may not open files");
         foreach (
             var path in new[]
@@ -199,10 +199,10 @@ public sealed class TextRouteTests
             }
         )
         {
-            using var response = await _alice.GetAsync($"/api/files/text?path={Uri.EscapeDataString(path)}", Token);
+            using var response = await _alice.GetAsync($"{V1}/files/text?path={Uri.EscapeDataString(path)}", Token);
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, path);
         }
-        using (var hiddenForAlice = await _admin.GetAsync("/api/files/text?path=SpecialDir/SDРусский.txt", Token))
+        using (var hiddenForAlice = await _admin.GetAsync($"{V1}/files/text?path=SpecialDir/SDРусский.txt", Token))
             Assert.AreEqual(HttpStatusCode.OK, hiddenForAlice.StatusCode);
     }
 
@@ -212,8 +212,8 @@ public sealed class TextRouteTests
         await File.WriteAllBytesAsync(_library.FullPath("RFile2"), [0x89, 0x50, 0x4E, 0x47, 0x00, 0x00], Token);
         _library.AddFile("big.log", TextEndpoints.MaxBytes + 1);
 
-        using var binary = await _alice.GetAsync("/api/files/text?path=RFile2", Token);
-        using var big = await _alice.GetAsync("/api/files/text?path=big.log", Token);
+        using var binary = await _alice.GetAsync($"{V1}/files/text?path=RFile2", Token);
+        using var big = await _alice.GetAsync($"{V1}/files/text?path=big.log", Token);
         var binaryBody = await binary.Content.ReadAsStringAsync(Token);
         var bigBody = await big.Content.ReadAsStringAsync(Token);
 
@@ -231,7 +231,7 @@ public sealed class TextRouteTests
         const string Text = "Ünïcödé — 写真\n";
         await File.WriteAllTextAsync(_library.FullPath("ChildDir/unicode.md"), Text, new UTF8Encoding(false), Token);
 
-        var read = (await _alice.GetFromJsonAsync<TextFile>("/api/files/text?path=ChildDir/unicode.md", Json, Token))!;
+        var read = (await _alice.GetFromJsonAsync<TextFile>($"{V1}/files/text?path=ChildDir/unicode.md", Json, Token))!;
 
         Assert.AreEqual((Text, TextCodec.Utf8, "lf"), (read.Text, read.Encoding, read.LineEnding));
     }
@@ -336,7 +336,7 @@ public sealed class TextRouteTests
 
         using (
             var copy = await _cara.PostAsJsonAsync(
-                "/api/files/text",
+                $"{V1}/files/text",
                 new CopyTextRequest("Docs", "notes (copy).txt", "edited", TextCodec.Utf8, "lf"),
                 Json,
                 Token
@@ -352,7 +352,7 @@ public sealed class TextRouteTests
         Assert.AreEqual("edited", File.ReadAllText(_library.FullPath("Docs/notes (copy).txt")));
         using (
             var clash = await _cara.PostAsJsonAsync(
-                "/api/files/text",
+                $"{V1}/files/text",
                 new CopyTextRequest("Docs", "notes.txt", "over", TextCodec.Utf8, "lf"),
                 Json,
                 Token
@@ -365,7 +365,7 @@ public sealed class TextRouteTests
         Assert.AreEqual("notes", File.ReadAllText(_library.FullPath("Docs/notes.txt")));
         using (
             var alice = await _alice.PostAsJsonAsync(
-                "/api/files/text",
+                $"{V1}/files/text",
                 new CopyTextRequest("Docs", "x.txt", "x", TextCodec.Utf8, "lf"),
                 Json,
                 Token
@@ -377,7 +377,7 @@ public sealed class TextRouteTests
 
         using (
             var work = await _cara.PostAsJsonAsync(
-                "/api/files/text",
+                $"{V1}/files/text",
                 new CopyTextRequest(".sfe", "x.txt", "x", TextCodec.Utf8, "lf"),
                 Json,
                 Token
@@ -412,9 +412,9 @@ public sealed class TextRouteTests
         await File.WriteAllBytesAsync(_library.FullPath("Media/notes.txt"), [0x63, 0x61, 0x66, 0xC3, 0xA9], Token);
 
         var asIs = await ReadAsync(_alice, "Media/notes.txt");
-        using var ansi = await _alice.GetAsync("/api/files/text?path=Media/notes.txt&encoding=windows-1252", Token);
+        using var ansi = await _alice.GetAsync($"{V1}/files/text?path=Media/notes.txt&encoding=windows-1252", Token);
         var asAnsi = (await ansi.Content.ReadFromJsonAsync<TextFile>(Json, Token))!;
-        using var unknown = await _alice.GetAsync("/api/files/text?path=Media/notes.txt&encoding=latin-9", Token);
+        using var unknown = await _alice.GetAsync($"{V1}/files/text?path=Media/notes.txt&encoding=latin-9", Token);
 
         Assert.AreEqual(("café", TextCodec.Utf8), (asIs.Text, asIs.Encoding));
         Assert.AreEqual(("cafÃ©", TextCodec.Windows1252, asIs.Version), (asAnsi.Text, asAnsi.Encoding, asAnsi.Version));
@@ -430,15 +430,15 @@ public sealed class TextRouteTests
 
         var start = await PartAsync(_alice, "big.log&offset=0&length=100");
         var end = await PartAsync(_alice, "big.log&length=100");
-        using var binary = await _alice.GetAsync("/api/files/text/part?path=RFile2", Token);
+        using var binary = await _alice.GetAsync($"{V1}/files/text/part?path=RFile2", Token);
         using var tooLong = await _alice.GetAsync(
-            $"/api/files/text/part?path=big.log&length={TextEndpoints.MaxPartBytes + 1}",
+            $"{V1}/files/text/part?path=big.log&length={TextEndpoints.MaxPartBytes + 1}",
             Token
         );
-        using var forbidden = await _bob.GetAsync("/api/files/text/part?path=big.log", Token);
-        using var work = await _alice.GetAsync("/api/files/text/part?path=.sfe/trash/x.log", Token);
+        using var forbidden = await _bob.GetAsync($"{V1}/files/text/part?path=big.log", Token);
+        using var work = await _alice.GetAsync($"{V1}/files/text/part?path=.sfe/trash/x.log", Token);
         using var hidden = await _alice.GetAsync(
-            $"/api/files/text/part?path={Uri.EscapeDataString("SpecialDir/SDРусский.txt")}",
+            $"{V1}/files/text/part?path={Uri.EscapeDataString("SpecialDir/SDРусский.txt")}",
             Token
         );
 
@@ -464,7 +464,7 @@ public sealed class TextRouteTests
         WriteText("Media/notes.txt", "second!");
         var changed = await VersionAsync(_alice, $"Media/notes.txt&known={Uri.EscapeDataString(opened.Version)}");
         var big = await VersionAsync(_alice, "big.log");
-        using var forbidden = await _bob.GetAsync("/api/files/text/version?path=Media/notes.txt", Token);
+        using var forbidden = await _bob.GetAsync($"{V1}/files/text/version?path=Media/notes.txt", Token);
 
         Assert.AreEqual(opened.Version, same.Version);
         Assert.AreNotEqual(opened.Version, changed.Version);
@@ -483,10 +483,10 @@ public sealed class TextRouteTests
 
         Assert.AreEqual("Media/Film.mkv", (await VideoAsync(_alice, "Media/Film.en.forced.srt")).Path);
         Assert.IsNull((await VideoAsync(_alice, "Media/Notes.srt")).Path, "no video named so");
-        using (var forbidden = await _bob.GetAsync("/api/files/text/video?path=Media/Film.en.forced.srt", Token))
+        using (var forbidden = await _bob.GetAsync($"{V1}/files/text/video?path=Media/Film.en.forced.srt", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode, "Bob may not open files");
         WriteText("SpecialDir/Clip.srt", "");
-        using (var hidden = await _alice.GetAsync("/api/files/text/video?path=SpecialDir/Clip.srt", Token))
+        using (var hidden = await _alice.GetAsync($"{V1}/files/text/video?path=SpecialDir/Clip.srt", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode, "hidden from Alice");
     }
 
@@ -497,12 +497,12 @@ public sealed class TextRouteTests
         WriteBook("SpecialDir/Hidden.epub");
         var token = EpubEntries.Token("Media/Trip.epub");
 
-        using (var container = await _alice.GetAsync($"/api/files/epub/{token}/META-INF/container.xml", Token))
+        using (var container = await _alice.GetAsync($"{V1}/files/epub/{token}/META-INF/container.xml", Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, container.StatusCode);
             StringAssert.Contains(await container.Content.ReadAsStringAsync(Token), "OEBPS/content.opf");
         }
-        using (var chapter = await _alice.GetAsync($"/api/files/epub/{token}/OEBPS/Chapter%201.xhtml", Token))
+        using (var chapter = await _alice.GetAsync($"{V1}/files/epub/{token}/OEBPS/Chapter%201.xhtml", Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, chapter.StatusCode);
             Assert.AreEqual("application/xhtml+xml", chapter.Content.Headers.ContentType?.MediaType);
@@ -511,7 +511,7 @@ public sealed class TextRouteTests
             Assert.IsNotNull(etag);
             using var again = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"/api/files/epub/{token}/OEBPS/Chapter%201.xhtml"
+                $"{V1}/files/epub/{token}/OEBPS/Chapter%201.xhtml"
             );
             again.Headers.IfNoneMatch.Add(etag);
             using var notModified = await _alice.SendAsync(again, Token);
@@ -521,7 +521,7 @@ public sealed class TextRouteTests
                 "the same book: from the browser's cache"
             );
         }
-        using (var style = await _alice.GetAsync($"/api/files/epub/{token}/oebps/STYLE.css", Token))
+        using (var style = await _alice.GetAsync($"{V1}/files/epub/{token}/oebps/STYLE.css", Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, style.StatusCode, "any case when not found as written");
             Assert.AreEqual("text/css", style.Content.Headers.ContentType?.MediaType);
@@ -537,14 +537,14 @@ public sealed class TextRouteTests
             }
         )
         {
-            using var response = await _alice.GetAsync($"/api/files/epub/{missing}", Token);
+            using var response = await _alice.GetAsync($"{V1}/files/epub/{missing}", Token);
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, missing);
         }
-        using (var forbidden = await _bob.GetAsync($"/api/files/epub/{token}/META-INF/container.xml", Token))
+        using (var forbidden = await _bob.GetAsync($"{V1}/files/epub/{token}/META-INF/container.xml", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode, "Bob may not open files");
         using (
             var hidden = await _alice.GetAsync(
-                $"/api/files/epub/{EpubEntries.Token("SpecialDir/Hidden.epub")}/META-INF/container.xml",
+                $"{V1}/files/epub/{EpubEntries.Token("SpecialDir/Hidden.epub")}/META-INF/container.xml",
                 Token
             )
         )
@@ -579,21 +579,21 @@ public sealed class TextRouteTests
 
     private async Task<SubtitleVideo> VideoAsync(HttpClient client, string path)
     {
-        using var response = await client.GetAsync($"/api/files/text/video?path={Uri.EscapeDataString(path)}", Token);
+        using var response = await client.GetAsync($"{V1}/files/text/video?path={Uri.EscapeDataString(path)}", Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<SubtitleVideo>(Json, Token))!;
     }
 
     private async Task<TextPart> PartAsync(HttpClient client, string query)
     {
-        using var response = await client.GetAsync($"/api/files/text/part?path={query}", Token);
+        using var response = await client.GetAsync($"{V1}/files/text/part?path={query}", Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<TextPart>(Json, Token))!;
     }
 
     private async Task<TextVersion> VersionAsync(HttpClient client, string query)
     {
-        using var response = await client.GetAsync($"/api/files/text/version?path={query}", Token);
+        using var response = await client.GetAsync($"{V1}/files/text/version?path={query}", Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<TextVersion>(Json, Token))!;
     }
@@ -608,7 +608,7 @@ public sealed class TextRouteTests
 
     private async Task<TextFile> ReadAsync(HttpClient client, string path)
     {
-        using var response = await client.GetAsync($"/api/files/text?path={Uri.EscapeDataString(path)}", Token);
+        using var response = await client.GetAsync($"{V1}/files/text?path={Uri.EscapeDataString(path)}", Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<TextFile>(Json, Token))!;
     }
@@ -622,7 +622,7 @@ public sealed class TextRouteTests
         string encoding = TextCodec.Utf8
     )
     {
-        var request = new HttpRequestMessage(HttpMethod.Put, $"/api/files/text?path={Uri.EscapeDataString(path)}")
+        var request = new HttpRequestMessage(HttpMethod.Put, $"{V1}/files/text?path={Uri.EscapeDataString(path)}")
         {
             Content = JsonContent.Create(new SaveTextRequest(text, encoding, "crlf", session), options: Json),
         };

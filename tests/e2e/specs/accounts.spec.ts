@@ -51,11 +51,11 @@ test.describe('accounts', () => {
 
 test.describe('the connection', () => {
     // The change feed refused while "the server is down": the browser logs it.
-    test.use({ allowedErrors: /api\/files\/changes|ERR_FAILED|EventSource/ });
+    test.use({ allowedErrors: /api\/v1\/files\/changes|ERR_FAILED|EventSource/ });
 
     test('the server not answering: a warning on the ⋮, gone when it answers again', async ({ page }) => {
         await page.clock.install();
-        await page.route('**/api/files/changes', (route) => route.abort());
+        await page.route('**/api/v1/files/changes', (route) => route.abort());
         await openFolder(page, 'Photos');
         const more = page.getByRole('button', { name: /^More/ }).first();
         await page.clock.fastForward(11_000);
@@ -66,7 +66,7 @@ test.describe('the connection', () => {
         await expectTapTargets(page, 'sfe-main-menu');
         await page.keyboard.press('Escape');
 
-        await page.unroute('**/api/files/changes');
+        await page.unroute('**/api/v1/files/changes');
         await page.clock.fastForward(70_000);
         await expect(more.locator('.menu-keep-alive.failing')).toHaveCount(0, { timeout: 15_000 });
     });
@@ -83,7 +83,7 @@ test.describe('preferences', () => {
         const open = async () => {
             // The boxes show the defaults until the account's own values come.
             const loaded = page.waitForResponse(
-                (response) => response.url().includes('api/me/preferences') && response.request().method() === 'GET',
+                (response) => response.url().includes('api/v1/me/preferences') && response.request().method() === 'GET',
             );
             await page.goto('./admin?section=account');
             await loaded;
@@ -101,7 +101,8 @@ test.describe('preferences', () => {
         // Saved once the server answered (the button is disabled while saving too; leaving earlier cancels it).
         const save = async () => {
             const saved = page.waitForResponse(
-                (response) => response.url().includes('api/me/preferences') && response.request().method() === 'PATCH',
+                (response) =>
+                    response.url().includes('api/v1/me/preferences') && response.request().method() === 'PATCH',
             );
             await button.tap();
             expect((await saved).ok()).toBe(true);

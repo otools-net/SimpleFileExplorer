@@ -167,7 +167,7 @@ async function startApp(appUrl, folder, log) {
         },
     });
     for (let i = 0; i < 120; i++) {
-        try { await fetch(appUrl + 'api/migration'); return app; } catch { await sleep(500); }
+        try { await fetch(appUrl + 'api/v1/migration'); return app; } catch { await sleep(500); }
     }
     app.kill();
     throw new Error(`the app didn't start: see ${path.join(work, `${log}.err.log`)}`);
@@ -208,7 +208,7 @@ step(`app on ${url}`);
 const app = await startApp(url, data, 'app');
 try {
     // An earlier run's database made by an earlier version: the app only shows its update page, and every scene waits.
-    const migration = await (await fetch(url + 'api/migration')).json();
+    const migration = await (await fetch(url + 'api/v1/migration')).json();
     if (migration.status !== 'none')
         throw new Error(`the database of the earlier run belongs to SFE ${migration.databaseVersion}, this is ${migration.appVersion}: run without --shots-only`);
     if (!shotsOnly) {

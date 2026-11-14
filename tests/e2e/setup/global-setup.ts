@@ -30,17 +30,17 @@ export default async function globalSetup(): Promise<void> {
     fs.mkdirSync(path.dirname(auth('admin')), { recursive: true });
 
     const admin = await request.newContext({ baseURL, extraHTTPHeaders: headers });
-    await call(admin, 'POST', 'api/setup', {
+    await call(admin, 'POST', 'api/v1/setup', {
         code: setupCode,
         userName: accounts.admin.userName,
         password: accounts.admin.password,
         displayName: 'Alex (admin)',
         libraryName: 'Home media',
     });
-    await call(admin, 'POST', 'api/scan', { path: '' });
+    await call(admin, 'POST', 'api/v1/scan', { path: '' });
     let scanStartedAt = '';
     for (let i = 0; ; i++) {
-        const scan = await call<{ state?: string; startedAt?: string }>(admin, 'GET', 'api/scan');
+        const scan = await call<{ state?: string; startedAt?: string }>(admin, 'GET', 'api/v1/scan');
         // Idle: not started yet; then running; then completed (or failed, cancelled).
         if (scan.state !== 'running' && scan.state !== 'idle') {
             scanStartedAt = scan.startedAt ?? '';
@@ -53,11 +53,11 @@ export default async function globalSetup(): Promise<void> {
     const groups = await call<{ groups?: { id: number; name: string }[] } | { id: number; name: string }[]>(
         admin,
         'GET',
-        'api/access/groups',
+        'api/v1/access/groups',
     );
     const users = (Array.isArray(groups) ? groups : (groups.groups ?? [])).find((group) => /users/i.test(group.name));
     if (!users) throw new Error('no Users group');
-    await call(admin, 'POST', 'api/access/users', {
+    await call(admin, 'POST', 'api/v1/access/users', {
         userName: accounts.sam.userName,
         displayName: 'Sam',
         password: accounts.sam.password,
@@ -70,7 +70,7 @@ export default async function globalSetup(): Promise<void> {
     await admin.dispose();
 
     const sam = await request.newContext({ baseURL, extraHTTPHeaders: headers });
-    await call(sam, 'POST', 'api/session/login', {
+    await call(sam, 'POST', 'api/v1/session/login', {
         userName: accounts.sam.userName,
         password: accounts.sam.password,
         remember: true,

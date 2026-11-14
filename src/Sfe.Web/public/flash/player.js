@@ -49,7 +49,7 @@
             return post({ type: 'failed', message: 'not an address' });
         }
         // Only the app's flash links (the frame's own address is the app's, though it has no origin).
-        if (url.origin !== location.origin || !url.pathname.includes('/api/files/flash/'))
+        if (url.origin !== location.origin || !url.pathname.includes('/api/v1/files/flash/'))
             return post({ type: 'failed', message: 'not a movie of the library' });
 
         player?.remove();

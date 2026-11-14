@@ -97,7 +97,7 @@ export const test = base.extend<Options & { guard: void; slowCpu: void; finalLay
                 // it. Only with ffmpeg.
                 if (
                     /^Failed to load resource: .*404/.test(message.text()) &&
-                    /\/api\/trickplay\/files\/[^?]+(\?(?!.*\bsheet=).*)?$/.test(message.location().url)
+                    /\/api\/v1\/trickplay\/files\/[^?]+(\?(?!.*\bsheet=).*)?$/.test(message.location().url)
                 )
                     return;
                 // A failed load names its address (the browser's message doesn't).
@@ -149,7 +149,7 @@ export async function openFolder(page: Page, folder: string): Promise<void> {
  * and the hold ends; a scroll position compared); call it before the page opens. listing.spec.ts tests the panel.
  */
 export async function quietScans(page: Page): Promise<void> {
-    await page.route(/\/api\/scan(\?.*)?$/, async (route) => {
+    await page.route(/\/api\/v1\/scan(\?.*)?$/, async (route) => {
         if (route.request().method() !== 'GET') return route.fallback();
         const response = await route.fetch();
         await route.fulfill({ response, json: { ...(await response.json()), state: 'idle' } });

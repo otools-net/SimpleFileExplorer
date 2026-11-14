@@ -78,7 +78,7 @@ public sealed class ChangeFeedRouteTests
     [TestMethod]
     public async Task AFolderChangedElsewhereIsToldToThoseWhoSeeIt()
     {
-        using var feed = await _alice.GetAsync("/api/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
+        using var feed = await _alice.GetAsync($"{V1}/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
         Assert.AreEqual(HttpStatusCode.OK, feed.StatusCode);
         Assert.AreEqual("text/event-stream", feed.Content.Headers.ContentType?.MediaType);
         using var reader = new StreamReader(await feed.Content.ReadAsStreamAsync(Token));
@@ -105,14 +105,14 @@ public sealed class ChangeFeedRouteTests
     [TestMethod]
     public async Task KeepAliveIsToldFirstThenWhenItChanges()
     {
-        using var feed = await _alice.GetAsync("/api/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
+        using var feed = await _alice.GetAsync($"{V1}/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
         using var reader = new StreamReader(await feed.Content.ReadAsStreamAsync(Token));
         Assert.AreEqual(KeepAliveState.None, (await NextEventAsync<KeepAliveSignal>(reader, "keepAlive")).State);
 
         // Turned on for the space: the settings change pings at once, and the feed tells it (no folder named).
         using (
             var saved = await _admin.PatchAsJsonAsync(
-                "/api/settings?level=tenant",
+                $"{V1}/settings?level=tenant",
                 new SettingChanges(new Dictionary<string, JsonNode?> { ["keepAlive.mode"] = "always" }),
                 Json,
                 Token
@@ -129,13 +129,13 @@ public sealed class ChangeFeedRouteTests
     public async Task TrashChangesAreToldToThoseWhoMayDelete()
     {
         using var adminFeed = await _admin.GetAsync(
-            "/api/files/changes",
+            $"{V1}/files/changes",
             HttpCompletionOption.ResponseHeadersRead,
             Token
         );
         using var admin = new StreamReader(await adminFeed.Content.ReadAsStreamAsync(Token));
         using var aliceFeed = await _alice.GetAsync(
-            "/api/files/changes",
+            $"{V1}/files/changes",
             HttpCompletionOption.ResponseHeadersRead,
             Token
         );
@@ -146,7 +146,7 @@ public sealed class ChangeFeedRouteTests
 
         using (
             var deleted = await _admin.PostAsJsonAsync(
-                "/api/files/delete",
+                $"{V1}/files/delete",
                 new DeleteRequest(["ChildDir/AFile1.txt"]),
                 Json,
                 Token
@@ -181,19 +181,19 @@ public sealed class ChangeFeedRouteTests
     public async Task NewFilesNeedTheirRight()
     {
         using var refused = await _alice.PostAsJsonAsync(
-            "/api/files/new-file",
+            $"{V1}/files/new-file",
             new CreateFileRequest("ChildDir", "notes.txt"),
             Json,
             Token
         );
         using var created = await _admin.PostAsJsonAsync(
-            "/api/files/new-file",
+            $"{V1}/files/new-file",
             new CreateFileRequest("ChildDir", "notes.txt"),
             Json,
             Token
         );
         using var again = await _admin.PostAsJsonAsync(
-            "/api/files/new-file",
+            $"{V1}/files/new-file",
             new CreateFileRequest("ChildDir", "notes.txt"),
             Json,
             Token
@@ -207,7 +207,7 @@ public sealed class ChangeFeedRouteTests
 
     private async Task CreateFolderAsync(string path, string name, string? tab)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/files/folders")
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{V1}/files/folders")
         {
             Content = JsonContent.Create(new CreateFolderRequest(path, name), options: Json),
         };

@@ -53,18 +53,18 @@ public sealed class LocalStartTests
         var factory = Factory();
         var local = ApiClients.CreateWithSetupLink(factory);
 
-        var info = await GetAsync<SetupInfo>(local, "/api/setup");
+        var info = await GetAsync<SetupInfo>(local, $"{V1}/setup");
         using var check = await local.PostAsJsonAsync(
-            "/api/installation/check",
+            $"{V1}/installation/check",
             new InstallationCheck(null),
             TestContext.CancellationToken
         );
         var grant = (await check.Content.ReadFromJsonAsync<InstallationGrant>(Json, TestContext.CancellationToken))!;
-        using var installation = new HttpRequestMessage(HttpMethod.Get, "/api/installation");
+        using var installation = new HttpRequestMessage(HttpMethod.Get, $"{V1}/installation");
         installation.Headers.Add(InstallationAccess.Header, grant.Token);
         using var settings = await local.SendAsync(installation, TestContext.CancellationToken);
         using var done = await local.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(null, "admin", "admin-password", FastSignIn: true),
             TestContext.CancellationToken
         );
@@ -97,14 +97,14 @@ public sealed class LocalStartTests
 
         foreach (var visitor in new[] { loopback, guessed })
         {
-            var info = await GetAsync<SetupInfo>(visitor, "/api/setup");
+            var info = await GetAsync<SetupInfo>(visitor, $"{V1}/setup");
             using var check = await visitor.PostAsJsonAsync(
-                "/api/installation/check",
+                $"{V1}/installation/check",
                 new InstallationCheck(null),
                 TestContext.CancellationToken
             );
             using var done = await visitor.PostAsJsonAsync(
-                "/api/setup",
+                $"{V1}/setup",
                 new SetupInput(null, "admin", "admin-password"),
                 TestContext.CancellationToken
             );
@@ -132,7 +132,7 @@ public sealed class LocalStartTests
         var factory = Factory();
         var local = ApiClients.CreateWithSetupLink(factory);
         using var check = await local.PostAsJsonAsync(
-            "/api/installation/check",
+            $"{V1}/installation/check",
             new InstallationCheck(null),
             TestContext.CancellationToken
         );
@@ -140,11 +140,11 @@ public sealed class LocalStartTests
         await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var admin = await SignInFromAsync(factory, ThisComputer);
 
-        using var installation = new HttpRequestMessage(HttpMethod.Get, "/api/installation");
+        using var installation = new HttpRequestMessage(HttpMethod.Get, $"{V1}/installation");
         installation.Headers.Add(InstallationAccess.Header, grant.Token);
         using var settings = await admin.SendAsync(installation, TestContext.CancellationToken);
         using var noCode = await admin.PostAsJsonAsync(
-            "/api/installation/check",
+            $"{V1}/installation/check",
             new InstallationCheck(null),
             TestContext.CancellationToken
         );
@@ -176,14 +176,14 @@ public sealed class LocalStartTests
         if (host is not null)
             client.DefaultRequestHeaders.Host = host;
 
-        var info = await GetAsync<SetupInfo>(client, "/api/setup");
+        var info = await GetAsync<SetupInfo>(client, $"{V1}/setup");
         using var check = await client.PostAsJsonAsync(
-            "/api/installation/check",
+            $"{V1}/installation/check",
             new InstallationCheck(null),
             TestContext.CancellationToken
         );
         using var setup = await client.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(null, "admin", "admin-password"),
             TestContext.CancellationToken
         );
@@ -211,12 +211,12 @@ public sealed class LocalStartTests
             library: OtherLibrary()
         );
 
-        var usedInfo = await GetAsync<SetupInfo>(ApiClients.CreateWithSetupLink(used), "/api/setup");
-        var offInfo = await GetAsync<SetupInfo>(ApiClients.CreateWithSetupLink(switchedOff), "/api/setup");
+        var usedInfo = await GetAsync<SetupInfo>(ApiClients.CreateWithSetupLink(used), $"{V1}/setup");
+        var offInfo = await GetAsync<SetupInfo>(ApiClients.CreateWithSetupLink(switchedOff), $"{V1}/setup");
         using var setup = await ApiClients
             .CreateWithSetupLink(used)
             .PostAsJsonAsync(
-                "/api/setup",
+                $"{V1}/setup",
                 new SetupInput(null, "admin", "admin-password"),
                 TestContext.CancellationToken
             );
@@ -236,10 +236,10 @@ public sealed class LocalStartTests
         var browser = Browser(factory, ThisComputer);
 
         using var start = await browser.GetAsync($"/{FastSignIn.Route}?token={token}", TestContext.CancellationToken);
-        var session = await GetAsync<SessionInfo>(browser, "/api/session");
+        var session = await GetAsync<SessionInfo>(browser, $"{V1}/session");
         var other = Browser(factory, ThisComputer);
         using var again = await other.GetAsync($"/{FastSignIn.Route}?token={token}", TestContext.CancellationToken);
-        var otherSession = await GetAsync<SessionInfo>(other, "/api/session");
+        var otherSession = await GetAsync<SessionInfo>(other, $"{V1}/session");
 
         Assert.IsNotNull(token);
         Assert.AreEqual(HttpStatusCode.Redirect, start.StatusCode);
@@ -264,13 +264,13 @@ public sealed class LocalStartTests
                 TestContext.CancellationToken
             )
         ) { }
-        var remoteSession = await GetAsync<SessionInfo>(remote, "/api/session");
+        var remoteSession = await GetAsync<SessionInfo>(remote, $"{V1}/session");
 
         var late = Browser(factory, ThisComputer);
         var token = await links.IssueAsync(TestContext.CancellationToken);
         time.Offset = FastSignIn.Lifetime + TimeSpan.FromSeconds(1);
         using (await late.GetAsync($"/{FastSignIn.Route}?token={token}", TestContext.CancellationToken)) { }
-        var lateSession = await GetAsync<SessionInfo>(late, "/api/session");
+        var lateSession = await GetAsync<SessionInfo>(late, $"{V1}/session");
 
         Assert.IsNull(remoteSession.User);
         Assert.IsNull(lateSession.User);
@@ -288,7 +288,7 @@ public sealed class LocalStartTests
         var pending = await links.IssueAsync(TestContext.CancellationToken);
         using (
             var created = await admin.PostAsJsonAsync(
-                "/api/access/users",
+                $"{V1}/access/users",
                 new UserInput("second", Password: "second-password", IsServerAdmin: true),
                 Json,
                 TestContext.CancellationToken
@@ -311,7 +311,7 @@ public sealed class LocalStartTests
             "Two administrators: whose session would it be?"
         );
         Assert.IsNull(
-            (await GetAsync<SessionInfo>(browser, "/api/session")).User,
+            (await GetAsync<SessionInfo>(browser, $"{V1}/session")).User,
             "A link given before the second administrator no longer works"
         );
     }
@@ -326,7 +326,7 @@ public sealed class LocalStartTests
         });
         var local = ApiClients.CreateFrom(factory, ThisComputer);
 
-        var info = await GetAsync<SetupInfo>(local, "/api/setup");
+        var info = await GetAsync<SetupInfo>(local, $"{V1}/setup");
         await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         var links = factory.Services.GetRequiredService<FastSignIn>();
 
@@ -340,7 +340,7 @@ public sealed class LocalStartTests
         var factory = Factory();
         var local = ApiClients.CreateWithSetupLink(factory);
         using var check = await local.PostAsJsonAsync(
-            "/api/installation/check",
+            $"{V1}/installation/check",
             new InstallationCheck(null),
             TestContext.CancellationToken
         );
@@ -348,13 +348,13 @@ public sealed class LocalStartTests
         local.DefaultRequestHeaders.Add(InstallationAccess.Header, grant.Token);
 
         using var external = await local.PutAsJsonAsync(
-            "/api/installation",
+            $"{V1}/installation",
             new InstallationInput(Mode: ServerMode.External),
             Json,
             TestContext.CancellationToken
         );
         using var done = await local.PostAsJsonAsync(
-            "/api/setup",
+            $"{V1}/setup",
             new SetupInput(null, "admin", "admin-password", FastSignIn: true),
             TestContext.CancellationToken
         );
@@ -380,13 +380,13 @@ public sealed class LocalStartTests
         admin.DefaultRequestHeaders.Add(ApiClients.AddressHeader, ThisComputer);
 
         using var saved = await admin.PatchAsJsonAsync(
-            "/api/settings?level=server",
+            $"{V1}/settings?level=server",
             new SettingChanges(new Dictionary<string, JsonNode?> { ["openBrowser"] = false, ["fastSignIn"] = true }),
             Json,
             TestContext.CancellationToken
         );
         using var tenant = await admin.PatchAsJsonAsync(
-            "/api/settings?level=tenant",
+            $"{V1}/settings?level=tenant",
             new SettingChanges(new Dictionary<string, JsonNode?> { ["openBrowser"] = true }),
             Json,
             TestContext.CancellationToken
@@ -491,7 +491,7 @@ public sealed class LocalStartTests
     {
         var client = ApiClients.CreateFrom(factory, address);
         using var response = await client.PostAsJsonAsync(
-            "/api/session/login",
+            $"{V1}/session/login",
             new SignInRequest(ApiClients.AdminName, ApiClients.AdminPassword),
             TestContext.CancellationToken
         );

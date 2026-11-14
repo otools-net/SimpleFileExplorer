@@ -30,7 +30,7 @@ describe('openFlash', () => {
     afterEach(() => container.remove());
 
     it('plays the movie in a frame of no origin, told what to play once it is ready', async () => {
-        const opening = openFlash(container, 'http://sfe/api/files/flash/T/Run.swf', 0.5, events);
+        const opening = openFlash(container, 'http://sfe/api/v1/files/flash/T/Run.swf', 0.5, events);
         const iframe = frame();
         const sent = vi.spyOn(iframe.contentWindow!, 'postMessage');
 
@@ -40,7 +40,7 @@ describe('openFlash', () => {
 
         message({ type: 'ready' });
         expect(sent).toHaveBeenCalledWith(
-            { type: 'load', url: 'http://sfe/api/files/flash/T/Run.swf', volume: 0.5 },
+            { type: 'load', url: 'http://sfe/api/v1/files/flash/T/Run.swf', volume: 0.5 },
             '*',
         );
         message({ type: 'metadata', metadata: { width: 550 } });
@@ -63,7 +63,7 @@ describe('openFlash', () => {
 
     it('hears only its own frame', async () => {
         let handle: FlashHandle | null = null;
-        void openFlash(container, 'http://sfe/api/files/flash/T/Run.swf', 1, events).then(
+        void openFlash(container, 'http://sfe/api/v1/files/flash/T/Run.swf', 1, events).then(
             (opened) => (handle = opened),
         );
 
@@ -80,7 +80,7 @@ describe('openFlash', () => {
     });
 
     it('fails when Ruffle can not play the movie, and leaves nothing behind', async () => {
-        const opening = openFlash(container, 'http://sfe/api/files/flash/T/Bad.swf', 1, events);
+        const opening = openFlash(container, 'http://sfe/api/v1/files/flash/T/Bad.swf', 1, events);
 
         message({ type: 'failed', message: 'Invalid SWF' });
 

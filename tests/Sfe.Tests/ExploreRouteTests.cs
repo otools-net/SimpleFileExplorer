@@ -35,6 +35,8 @@ public sealed class ExploreRouteTests
 
     private CancellationToken Token => TestContext.CancellationToken;
 
+    private const string Explore = $"{V1}/files/explore";
+
     [TestInitialize]
     public Task InitializeAsync()
     {
@@ -142,9 +144,9 @@ public sealed class ExploreRouteTests
         var deep = await ListAsync(_alice, $"path=Media/trip.zip&at={Uri.EscapeDataString("Day 2/Deep")}");
         Assert.AreEqual("x.txt", deep.Items.Single().Name);
         CollectionAssert.AreEqual(new[] { "Day 2", "Deep" }, deep.Trail.Last.Select(crumb => crumb.Name).ToList());
-        using (var none = await _alice.GetAsync("/api/files/explore?path=Media/trip.zip&at=Nowhere", Token))
+        using (var none = await _alice.GetAsync($"{V1}/files/explore?path=Media/trip.zip&at=Nowhere", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, none.StatusCode);
-        using (var badCursor = await _alice.GetAsync("/api/files/explore?path=Media/trip.zip&after=nonsense", Token))
+        using (var badCursor = await _alice.GetAsync($"{V1}/files/explore?path=Media/trip.zip&after=nonsense", Token))
             Assert.AreEqual(HttpStatusCode.BadRequest, badCursor.StatusCode);
     }
 
@@ -170,22 +172,19 @@ public sealed class ExploreRouteTests
         var still = pictures.Items.Single();
         var token = EpubEntries.Token("Media/files.zip");
 
-        using (var picture = await _alice.GetAsync($"/api/files/explore/entry/{token}/{still.Id}/still.png", Token))
+        using (var picture = await _alice.GetAsync($"{Explore}/entry/{token}/{still.Id}/still.png", Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, picture.StatusCode, await picture.Content.ReadAsStringAsync(Token));
             Assert.AreEqual("image/png", picture.Content.Headers.ContentType?.MediaType);
             Assert.IsNull(picture.Content.Headers.ContentDisposition, "a picture shows inline");
             CollectionAssert.AreEqual(png, await picture.Content.ReadAsByteArrayAsync(Token));
             StringAssert.Contains(picture.Headers.GetValues("Content-Security-Policy").Single(), "sandbox");
-            using var again = new HttpRequestMessage(
-                HttpMethod.Get,
-                $"/api/files/explore/entry/{token}/{still.Id}/still.png"
-            );
+            using var again = new HttpRequestMessage(HttpMethod.Get, $"{Explore}/entry/{token}/{still.Id}/still.png");
             again.Headers.IfNoneMatch.Add(picture.Headers.ETag!);
             using var notModified = await _alice.SendAsync(again, Token);
             Assert.AreEqual(HttpStatusCode.NotModified, notModified.StatusCode);
         }
-        using (var page = await _alice.GetAsync($"/api/files/explore/entry/{token}/{html.Id}/page.html", Token))
+        using (var page = await _alice.GetAsync($"{Explore}/entry/{token}/{html.Id}/page.html", Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, page.StatusCode);
             Assert.AreEqual(
@@ -194,12 +193,7 @@ public sealed class ExploreRouteTests
                 "a page of a stranger never opens on the app's origin"
             );
         }
-        using (
-            var saved = await _alice.GetAsync(
-                $"/api/files/explore/entry/{token}/{still.Id}/still.png?download=true",
-                Token
-            )
-        )
+        using (var saved = await _alice.GetAsync($"{Explore}/entry/{token}/{still.Id}/still.png?download=true", Token))
         {
             Assert.AreEqual("attachment", saved.Content.Headers.ContentDisposition?.DispositionType);
         }
@@ -214,10 +208,10 @@ public sealed class ExploreRouteTests
             }
         )
         {
-            using var response = await _alice.GetAsync($"/api/files/explore/entry/{wrong}", Token);
+            using var response = await _alice.GetAsync($"{Explore}/entry/{wrong}", Token);
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, wrong);
         }
-        using (var bob = await _bob.GetAsync($"/api/files/explore/entry/{token}/{still.Id}/still.png", Token))
+        using (var bob = await _bob.GetAsync($"{Explore}/entry/{token}/{still.Id}/still.png", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, bob.StatusCode, "Bob may not open files");
     }
 
@@ -240,7 +234,7 @@ public sealed class ExploreRouteTests
 
         using (
             var response = await _alice.GetAsync(
-                $"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}",
+                $"{Explore}/text?path=Media/texts.zip&id={items["notes.txt"].Id}",
                 Token
             )
         )
@@ -252,7 +246,7 @@ public sealed class ExploreRouteTests
         }
         using (
             var latin = await _alice.GetAsync(
-                $"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=windows-1252",
+                $"{Explore}/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=windows-1252",
                 Token
             )
         )
@@ -261,10 +255,7 @@ public sealed class ExploreRouteTests
         }
 
         using (
-            var binary = await _alice.GetAsync(
-                $"/api/files/explore/text?path=Media/texts.zip&id={items["data.bin"].Id}",
-                Token
-            )
+            var binary = await _alice.GetAsync($"{Explore}/text?path=Media/texts.zip&id={items["data.bin"].Id}", Token)
         )
         {
             Assert.AreEqual(HttpStatusCode.UnsupportedMediaType, binary.StatusCode);
@@ -272,7 +263,7 @@ public sealed class ExploreRouteTests
 
         using (
             var badEncoding = await _alice.GetAsync(
-                $"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=ebcdic",
+                $"{Explore}/text?path=Media/texts.zip&id={items["notes.txt"].Id}&encoding=ebcdic",
                 Token
             )
         )
@@ -280,14 +271,9 @@ public sealed class ExploreRouteTests
             Assert.AreEqual(HttpStatusCode.BadRequest, badEncoding.StatusCode);
         }
 
-        using (var none = await _alice.GetAsync("/api/files/explore/text?path=Media/texts.zip&id=99999", Token))
+        using (var none = await _alice.GetAsync($"{Explore}/text?path=Media/texts.zip&id=99999", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, none.StatusCode);
-        using (
-            var bob = await _bob.GetAsync(
-                $"/api/files/explore/text?path=Media/texts.zip&id={items["notes.txt"].Id}",
-                Token
-            )
-        )
+        using (var bob = await _bob.GetAsync($"{Explore}/text?path=Media/texts.zip&id={items["notes.txt"].Id}", Token))
         {
             Assert.AreEqual(HttpStatusCode.Forbidden, bob.StatusCode, "Bob may not open files");
         }
@@ -313,7 +299,7 @@ public sealed class ExploreRouteTests
         var token = EpubEntries.Token("Media/site.zip");
         foreach (var at in new[] { "docs/img/a.png", "DOCS/Img/A.PNG" })
         {
-            using var picture = await _alice.GetAsync($"/api/files/explore/entry/{token}/at/{at}", Token);
+            using var picture = await _alice.GetAsync($"{Explore}/entry/{token}/at/{at}", Token);
             Assert.AreEqual(HttpStatusCode.OK, picture.StatusCode, at);
             Assert.AreEqual("png bytes", await picture.Content.ReadAsStringAsync(Token));
             StringAssert.Contains(picture.Headers.GetValues("Content-Security-Policy").Single(), "sandbox");
@@ -321,17 +307,17 @@ public sealed class ExploreRouteTests
         // A path only names files of the catalog (`..` is no folder of it, and addresses drop dot segments first).
         foreach (var at in new[] { "docs/none.png", "docs", "docs/img" })
         {
-            using var missing = await _alice.GetAsync($"/api/files/explore/entry/{token}/at/{at}", Token);
+            using var missing = await _alice.GetAsync($"{Explore}/entry/{token}/at/{at}", Token);
             Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode, at);
         }
-        using (var bob = await _bob.GetAsync($"/api/files/explore/entry/{token}/at/top.txt", Token))
+        using (var bob = await _bob.GetAsync($"{Explore}/entry/{token}/at/top.txt", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, bob.StatusCode);
 
-        using (var text = await _alice.GetAsync("/api/files/explore/text?path=Media/site.zip&at=docs/readme.md", Token))
+        using (var text = await _alice.GetAsync($"{Explore}/text?path=Media/site.zip&at=docs/readme.md", Token))
             StringAssert.StartsWith((await text.Content.ReadFromJsonAsync<TextFile>(Json, Token))!.Text, "# Hello");
         using (
             var both = await _alice.GetAsync(
-                $"/api/files/explore/text?path=Media/site.zip&at=top.txt&id={top.Items[0].Id}",
+                $"{Explore}/text?path=Media/site.zip&at=top.txt&id={top.Items[0].Id}",
                 Token
             )
         )
@@ -355,7 +341,7 @@ public sealed class ExploreRouteTests
         );
 
         File.WriteAllText(_library.FullPath("Media/fake.docx"), "not a zip at all");
-        using var fake = await _alice.GetAsync("/api/files/explore?path=Media/fake.docx", Token);
+        using var fake = await _alice.GetAsync($"{V1}/files/explore?path=Media/fake.docx", Token);
         Assert.AreEqual(HttpStatusCode.Conflict, fake.StatusCode);
     }
 
@@ -366,7 +352,7 @@ public sealed class ExploreRouteTests
         TestArchives.Zip(_library.Root, "Media/seen.zip", ("a.txt", "a"));
         TestArchives.Zip(_library.Root, ".sfe/trash/work.zip", ("a.txt", "a"));
 
-        using (var bob = await _bob.GetAsync("/api/files/explore?path=Media/seen.zip", Token))
+        using (var bob = await _bob.GetAsync($"{V1}/files/explore?path=Media/seen.zip", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, bob.StatusCode);
         foreach (
             var path in new[]
@@ -379,7 +365,7 @@ public sealed class ExploreRouteTests
             }
         )
         {
-            using var response = await _alice.GetAsync($"/api/files/explore?path={Uri.EscapeDataString(path)}", Token);
+            using var response = await _alice.GetAsync($"{V1}/files/explore?path={Uri.EscapeDataString(path)}", Token);
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, path);
         }
         Assert.AreEqual(1L, (await ListAsync(_admin, "path=SpecialDir/hidden.zip")).Entries, "hidden from Alice only");
@@ -393,7 +379,7 @@ public sealed class ExploreRouteTests
 
         foreach (var path in new[] { "Media/fake.zip", "Media/one.gz", "RFile1.txt" })
         {
-            using var response = await _alice.GetAsync($"/api/files/explore?path={path}", Token);
+            using var response = await _alice.GetAsync($"{V1}/files/explore?path={path}", Token);
             Assert.AreEqual(HttpStatusCode.Conflict, response.StatusCode, path);
             StringAssert.Contains(await response.Content.ReadAsStringAsync(Token), ExploreEndpoints.NotExplorableType);
         }
@@ -416,7 +402,7 @@ public sealed class ExploreRouteTests
         var zeros = listing.Items.Single();
         Assert.AreEqual(1_000_000_000L, zeros.Size);
         using var refused = await _alice.GetAsync(
-            $"/api/files/explore/entry/{EpubEntries.Token("Media/hostile.zip")}/{zeros.Id}/zeros.bin?download=true",
+            $"{Explore}/entry/{EpubEntries.Token("Media/hostile.zip")}/{zeros.Id}/zeros.bin?download=true",
             Token
         );
         Assert.AreEqual(HttpStatusCode.UnprocessableEntity, refused.StatusCode);
@@ -435,7 +421,7 @@ public sealed class ExploreRouteTests
         });
         TestArchives.Zip(_library.Root, "Media/big.zip", ("big.txt", new string('b', 2 * 1024 * 1024)));
         var big = (await ListAsync(_alice, "path=Media/big.zip")).Items.Single();
-        var url = $"/api/files/explore/entry/{EpubEntries.Token("Media/big.zip")}/{big.Id}/big.txt";
+        var url = $"{Explore}/entry/{EpubEntries.Token("Media/big.zip")}/{big.Id}/big.txt";
 
         using (var preview = await _alice.GetAsync(url, Token))
             Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, preview.StatusCode);
@@ -452,7 +438,7 @@ public sealed class ExploreRouteTests
             ("clip.mp4", bytes)
         );
         var clip = (await ListAsync(_alice, "path=Media/stored.zip")).Items.Single();
-        var clipUrl = $"/api/files/explore/entry/{EpubEntries.Token("Media/stored.zip")}/{clip.Id}/clip.mp4";
+        var clipUrl = $"{Explore}/entry/{EpubEntries.Token("Media/stored.zip")}/{clip.Id}/clip.mp4";
         using (var whole = await _alice.GetAsync(clipUrl, Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, whole.StatusCode, "stored: over the preview's size, nothing unpacked");
@@ -469,7 +455,7 @@ public sealed class ExploreRouteTests
         using (
             var byPath = new HttpRequestMessage(
                 HttpMethod.Get,
-                $"/api/files/explore/entry/{EpubEntries.Token("Media/stored.zip")}/at/clip.mp4"
+                $"{Explore}/entry/{EpubEntries.Token("Media/stored.zip")}/at/clip.mp4"
             )
         )
         {
@@ -501,7 +487,7 @@ public sealed class ExploreRouteTests
         }
         var after = (await ListAsync(_alice, "path=Media/far.tar.gz")).Items.Single(item => item.Name == "after.txt");
         using var far = await _alice.GetAsync(
-            $"/api/files/explore/entry/{EpubEntries.Token("Media/far.tar.gz")}/{after.Id}/after.txt?download=true",
+            $"{Explore}/entry/{EpubEntries.Token("Media/far.tar.gz")}/{after.Id}/after.txt?download=true",
             Token
         );
         Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, far.StatusCode);
@@ -520,7 +506,7 @@ public sealed class ExploreRouteTests
         );
         var readme = top.Items.Single(item => item.Name == "readme.txt");
         Assert.IsTrue(readme.Encrypted);
-        var url = $"/api/files/explore/entry/{EpubEntries.Token("Media/secret.zip")}/{readme.Id}/readme.txt";
+        var url = $"{Explore}/entry/{EpubEntries.Token("Media/secret.zip")}/{readme.Id}/readme.txt";
         using (var locked = await _alice.GetAsync(url, Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, locked.StatusCode);
 
@@ -552,12 +538,11 @@ public sealed class ExploreRouteTests
         File.Copy(TestSamples.ArchiveOf("tree-zipcrypto.zip"), _library.FullPath("Media/secret.zip"));
         var readme = (await ListAsync(_alice, "path=Media/secret.zip")).Items.Single(item => item.Name == "readme.txt");
         var unlock = await UnlockedAsync(_alice, "Media/secret.zip", "secret");
-        var url =
-            $"/api/files/explore/entry/{EpubEntries.Token("Media/secret.zip")}/{readme.Id}/readme.txt?unlock={unlock}";
+        var url = $"{Explore}/entry/{EpubEntries.Token("Media/secret.zip")}/{readme.Id}/readme.txt?unlock={unlock}";
         using (var opened = await _alice.GetAsync(url, Token))
             Assert.AreEqual(HttpStatusCode.OK, opened.StatusCode);
 
-        using (var signOut = await _alice.PostAsync("/api/session/logout", null, Token))
+        using (var signOut = await _alice.PostAsync($"{V1}/session/logout", null, Token))
             Assert.AreEqual(HttpStatusCode.OK, signOut.StatusCode);
         using var again = await ApiClients.SignInAsync(_factory, "alice", "alice-password-1", Token);
         using var ended = await again.GetAsync(url, Token);
@@ -586,7 +571,7 @@ public sealed class ExploreRouteTests
         var archive = EpubEntries.Token("Media/hidden names.7z");
         using (
             var opened = await _alice.GetAsync(
-                $"/api/files/explore/entry/{archive}/{readme.Id}/readme.txt?unlock={unlock}",
+                $"{Explore}/entry/{archive}/{readme.Id}/readme.txt?unlock={unlock}",
                 Token
             )
         )
@@ -649,7 +634,7 @@ public sealed class ExploreRouteTests
         // Alice (Users) has no right to extract; the jobs route doesn't take extractions.
         using (
             var refused = await _alice.PostAsJsonAsync(
-                "/api/files/jobs/extract",
+                $"{V1}/files/jobs/extract",
                 new ExtractRequest("Media/trip.zip", "ChildDir"),
                 Token
             )
@@ -660,7 +645,7 @@ public sealed class ExploreRouteTests
 
         using (
             var wrongRoute = await _admin.PostAsJsonAsync(
-                "/api/files/jobs",
+                $"{V1}/files/jobs",
                 new FileJobRequest(FileJobKind.Extract, ["Media/trip.zip"], "ChildDir"),
                 Json,
                 Token
@@ -693,7 +678,7 @@ public sealed class ExploreRouteTests
         );
         await ListAsync(_alice, "path=Media/trip.zip");
 
-        using var response = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=SUMMIT", Token);
+        using var response = await _alice.GetAsync($"{Explore}/search?path=Media/trip.zip&q=SUMMIT", Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         var found = (await response.Content.ReadFromJsonAsync<ArchiveSearch>(Json, Token))!;
         CollectionAssert.AreEquivalent(
@@ -702,19 +687,14 @@ public sealed class ExploreRouteTests
         );
         Assert.IsNull(found.Next);
 
-        using (var tooShort = await _alice.GetAsync("/api/files/explore/search?path=Media/trip.zip&q=s", Token))
+        using (var tooShort = await _alice.GetAsync($"{Explore}/search?path=Media/trip.zip&q=s", Token))
             Assert.AreEqual(HttpStatusCode.BadRequest, tooShort.StatusCode);
-        using (
-            var badCursor = await _alice.GetAsync(
-                "/api/files/explore/search?path=Media/trip.zip&q=summit&after=x1",
-                Token
-            )
-        )
+        using (var badCursor = await _alice.GetAsync($"{Explore}/search?path=Media/trip.zip&q=summit&after=x1", Token))
         {
             Assert.AreEqual(HttpStatusCode.BadRequest, badCursor.StatusCode);
         }
 
-        using (var hidden = await _alice.GetAsync("/api/files/explore/search?path=SpecialDir/trip.zip&q=summit", Token))
+        using (var hidden = await _alice.GetAsync($"{Explore}/search?path=SpecialDir/trip.zip&q=summit", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
     }
 
@@ -734,7 +714,7 @@ public sealed class ExploreRouteTests
 
         using (
             var response = await _alice.GetAsync(
-                $"/api/files/explore/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&limit=2",
+                $"{Explore}/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&limit=2",
                 Token
             )
         )
@@ -749,7 +729,7 @@ public sealed class ExploreRouteTests
             Assert.IsNotNull(first.Next);
 
             using var rest = await _alice.GetAsync(
-                $"/api/files/explore/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&after={first.Next}",
+                $"{Explore}/search?path=Media/trip.zip&q=SUMMIT&folder={day1}&after={first.Next}",
                 Token
             );
             var second = (await rest.Content.ReadFromJsonAsync<ArchiveSearch>(Json, Token))!;
@@ -758,7 +738,7 @@ public sealed class ExploreRouteTests
         }
         using (
             var searchCursor = await _alice.GetAsync(
-                $"/api/files/explore/search?path=Media/trip.zip&q=summit&folder={day1}&after=f10",
+                $"{Explore}/search?path=Media/trip.zip&q=summit&folder={day1}&after=f10",
                 Token
             )
         )
@@ -770,12 +750,7 @@ public sealed class ExploreRouteTests
             );
         }
 
-        using (
-            var noFolder = await _alice.GetAsync(
-                "/api/files/explore/search?path=Media/trip.zip&q=summit&folder=999",
-                Token
-            )
-        )
+        using (var noFolder = await _alice.GetAsync($"{Explore}/search?path=Media/trip.zip&q=summit&folder=999", Token))
         {
             Assert.AreEqual(HttpStatusCode.NotFound, noFolder.StatusCode);
         }
@@ -790,10 +765,7 @@ public sealed class ExploreRouteTests
         // The entry route of an archive never read answers 404 without reading it.
         TestArchives.Zip(_library.Root, "Media/never.zip", ("b.txt", "b"));
         using (
-            var entry = await _alice.GetAsync(
-                $"/api/files/explore/entry/{EpubEntries.Token("Media/never.zip")}/2/b.txt",
-                Token
-            )
+            var entry = await _alice.GetAsync($"{Explore}/entry/{EpubEntries.Token("Media/never.zip")}/2/b.txt", Token)
         )
         {
             Assert.AreEqual(HttpStatusCode.NotFound, entry.StatusCode);
@@ -804,11 +776,11 @@ public sealed class ExploreRouteTests
         for (var i = 1; i < CatalogBuildLimits.PerMinute; i++)
         {
             TestArchives.Zip(_library.Root, $"Media/many{i}.zip", ("c.txt", "c"));
-            using var response = await _alice.GetAsync($"/api/files/explore?path=Media/many{i}.zip", Token);
+            using var response = await _alice.GetAsync($"{V1}/files/explore?path=Media/many{i}.zip", Token);
             statuses.Add(response.StatusCode);
         }
         Assert.DoesNotContain(HttpStatusCode.TooManyRequests, statuses, "read.zip and these: the limit");
-        using (var refused = await _alice.GetAsync("/api/files/explore?path=Media/never.zip", Token))
+        using (var refused = await _alice.GetAsync($"{V1}/files/explore?path=Media/never.zip", Token))
         {
             Assert.AreEqual(HttpStatusCode.TooManyRequests, refused.StatusCode);
             StringAssert.Contains(await refused.Content.ReadAsStringAsync(Token), "wait a minute");
@@ -831,7 +803,7 @@ public sealed class ExploreRouteTests
         Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
         Assert.AreEqual("from the zip", File.ReadAllText(_library.FullPath("README.md")));
         using var noTarget = await _admin.PostAsJsonAsync(
-            "/api/files/jobs/extract",
+            $"{V1}/files/jobs/extract",
             new ExtractRequest("README.zip", null),
             Token
         );
@@ -845,7 +817,7 @@ public sealed class ExploreRouteTests
         await ListAsync(_admin, "path=Media/hidden.7z");
         using (
             var locked = await _admin.PostAsJsonAsync(
-                "/api/files/jobs/extract",
+                $"{V1}/files/jobs/extract",
                 new ExtractRequest("Media/hidden.7z", "Media", Files: [1]),
                 Token
             )
@@ -869,27 +841,27 @@ public sealed class ExploreRouteTests
             File.ReadAllText(_library.FullPath("Media/hidden/readme.txt"))
         );
         Assert.IsFalse(Directory.Exists(_library.FullPath("Media/hidden/Photos")));
-        using var listed = await _admin.GetAsync("/api/files/jobs", Token);
+        using var listed = await _admin.GetAsync($"{V1}/files/jobs", Token);
         Assert.DoesNotContain("secret", await listed.Content.ReadAsStringAsync(Token));
     }
 
     /// <summary>Starts an extraction and follows it to its end.</summary>
     private async Task<FileJobView> ExtractAsync(HttpClient client, ExtractRequest request)
     {
-        using var started = await client.PostAsJsonAsync("/api/files/jobs/extract", request, Json, Token);
+        using var started = await client.PostAsJsonAsync($"{V1}/files/jobs/extract", request, Json, Token);
         Assert.AreEqual(HttpStatusCode.Accepted, started.StatusCode, await started.Content.ReadAsStringAsync(Token));
         var view = (await started.Content.ReadFromJsonAsync<FileJobView>(Json, Token))!;
         for (var attempt = 0; attempt < 400 && view.State is FileJobState.Running; attempt++)
         {
             await Task.Delay(25, Token);
-            view = (await client.GetFromJsonAsync<FileJobView>($"/api/files/jobs/{view.Id}", Json, Token))!;
+            view = (await client.GetFromJsonAsync<FileJobView>($"{V1}/files/jobs/{view.Id}", Json, Token))!;
         }
         Assert.AreEqual(FileJobState.Completed, view.State);
         return view;
     }
 
     private Task<HttpResponseMessage> UnlockAsync(HttpClient client, string path, string password) =>
-        client.PostAsJsonAsync("/api/files/explore/unlock", new ArchiveUnlockRequest(path, password), Token);
+        client.PostAsJsonAsync($"{Explore}/unlock", new ArchiveUnlockRequest(path, password), Token);
 
     private async Task<string> UnlockedAsync(HttpClient client, string path, string password)
     {
@@ -903,7 +875,7 @@ public sealed class ExploreRouteTests
     {
         for (var attempt = 0; attempt < 400; attempt++)
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/files/explore?{query}");
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{V1}/files/explore?{query}");
             if (unlock is not null)
                 request.Headers.Add(ExploreEndpoints.UnlockHeader, unlock);
             using var response = await client.SendAsync(request, Token);

@@ -60,9 +60,22 @@ client and the ~940 test paths on routes that don't answer.
 
 ### Phase 3: client, tests and tools on v1
 
-- [ ] Client: one base constant in `core/`, every path through it (`npm test`, e2e quick set)
-- [ ] Server tests on v1 (the aliases are covered by `LegacyPathTests` only)
-- [ ] `tests/e2e/`, `agents/tools/*` (docs-screenshots, visual-check, battery-probe, readability references)
+- [x] Client: one base constant in `core/`, every path through it (`npm test`, e2e quick set). As built:
+  `API_BASE = 'api/v1/'` in `core/api.service.ts` (re-used by `config.service.ts`, archive entries, epub, change feed,
+  backup link); `Api`'s private `get`/`post`/… and its direct `http` calls prefix it, so routes there read
+  `'tags'`, `files/jobs/${id}` (`uploadsRoute` too); `withVersion` marks only `API_BASE` addresses;
+  `public/flash/player.js` accepts `/api/v1/files/flash/` links only (the server makes those). Left unversioned:
+  `api/docs` (link in System › About). Specs assert the `api/v1/…` strings. No unversioned call: a grep of the
+  production bundle finds only `api/v1/` and `api/docs`.
+- [x] Server tests on v1 (the aliases are covered by `LegacyPathTests` only). As built: `ApiPaths.V1`
+  (`= ApiRoutes.Base`), imported in every test file by `<Using Static="true">` in `Sfe.Tests.csproj`, so paths read
+  `$"{V1}/tags"` (constant, so `[DataRow]` takes it too); still unversioned, on purpose: `LegacyPathTests`, Swagger
+  UI's `/api/docs/…` (outside the versions) and the OAuth return address (`ApiRoutes.OAuthCallback`, registered at
+  the provider); route patterns with `{…}` in `AccessTests`' `[DataRow]`s stay literal `/api/v1/…`.
+- [x] `tests/e2e/`, `agents/tools/*` (docs-screenshots, visual-check, battery-probe, readability references). As
+  built: every path `api/v1/…` (fixtures' route patterns, global setup, specs, `webServer.url`; docs-screenshots,
+  visual-check, battery-probe, archives/measure); `menu-profile.spec.ts` still filters on `/api/` (both forms).
+  `references.mjs` calls no API path.
 
 ### Phase 4: compatibility net
 

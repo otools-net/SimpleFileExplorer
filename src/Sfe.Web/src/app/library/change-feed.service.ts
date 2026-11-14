@@ -1,5 +1,5 @@
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
-import { TAB_ID } from '../core/api.service';
+import { API_BASE, TAB_ID } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { KeepAliveState } from './library.models';
 import { Rights } from '../core/rights';
@@ -114,7 +114,7 @@ export class ChangeFeed {
     }
 
     private open(): void {
-        const source = (this.source = new EventSource('api/files/changes'));
+        const source = (this.source = new EventSource(`${API_BASE}files/changes`));
         source.addEventListener('open', () => this.opened());
         source.addEventListener('error', () => this.dropped(source));
         source.addEventListener('ping', () => this.heard());

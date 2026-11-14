@@ -8,7 +8,7 @@ import { holdLikeIos } from '../fixtures/touch';
 test.describe('tags', () => {
     test('tag a selected file from the selection bar', async ({ page, scratch }, testInfo) => {
         const name = `Phone ${testInfo.project.name} ${testInfo.repeatEachIndex} ${testInfo.retry}`;
-        const created = await page.request.post('api/tags', { data: { name }, headers: { 'X-SFE-Request': '1' } });
+        const created = await page.request.post('api/v1/tags', { data: { name }, headers: { 'X-SFE-Request': '1' } });
         expect(created.ok(), await created.text()).toBe(true);
 
         await openFolder(page, scratch);
@@ -42,7 +42,7 @@ test.describe('tags', () => {
 async function newTag(page: Page, label: string): Promise<{ id: number; name: string }> {
     const info = test.info();
     const name = `${label} ${info.project.name} ${info.repeatEachIndex} ${info.retry}`;
-    const created = await page.request.post('api/tags', { data: { name }, headers });
+    const created = await page.request.post('api/v1/tags', { data: { name }, headers });
     expect(created.ok(), await created.text()).toBe(true);
     return { id: (await created.json()).id, name };
 }
@@ -55,7 +55,7 @@ test.describe('tag panels and menus', () => {
         scratch,
     }) => {
         const tag = await newTag(page, 'Default');
-        const set = await page.request.put('api/folder-default-tags', {
+        const set = await page.request.put('api/v1/folder-default-tags', {
             data: { path: scratch, add: [tag.id] },
             headers,
         });
@@ -81,7 +81,7 @@ test.describe('tag panels and menus', () => {
 
     test('a tag on a file: holding it opens its menu, Add to the search works', async ({ page, scratch }) => {
         const tag = await newTag(page, 'Chip');
-        const tagged = await page.request.post('api/file-tags', {
+        const tagged = await page.request.post('api/v1/file-tags', {
             data: { paths: [`${scratch}/A.jpg`], add: [tag.id] },
             headers,
         });

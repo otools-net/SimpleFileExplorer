@@ -181,7 +181,7 @@ public sealed class ConnectionFolderAccessJobTests
     private Task<HttpResponseMessage> TransferAsync(int? from, IReadOnlyList<string> paths, int? to, string target)
     {
         var request = new TransferRequest("copy", new TransferSide(from, paths), new TransferTarget(to, target));
-        return Bob.PostAsJsonAsync("/api/files/jobs/transfer", request, RuledConnection.Json, Cancel);
+        return Bob.PostAsJsonAsync($"{V1}/files/jobs/transfer", request, RuledConnection.Json, Cancel);
     }
 
     private async Task<FileJobView> FinishedAsync(HttpResponseMessage started)
@@ -191,7 +191,7 @@ public sealed class ConnectionFolderAccessJobTests
         var until = DateTime.UtcNow.AddSeconds(30);
         while (true)
         {
-            var job = (await Bob.GetFromJsonAsync<FileJobView>($"/api/files/jobs/{id}", RuledConnection.Json, Cancel))!;
+            var job = (await Bob.GetFromJsonAsync<FileJobView>($"{V1}/files/jobs/{id}", RuledConnection.Json, Cancel))!;
             if (job.State is FileJobState.Completed or FileJobState.Cancelled)
                 return job;
             Assert.IsLessThan(until, DateTime.UtcNow, $"Job {id} is {job.State}");

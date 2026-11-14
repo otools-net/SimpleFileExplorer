@@ -53,7 +53,7 @@ public sealed class LibraryLinkTests
 
         Assert.AreEqual(
             HttpStatusCode.OK,
-            await PostAsync(admin, "/api/files/folders", new CreateFolderRequest(Link, "made"))
+            await PostAsync(admin, $"{V1}/files/folders", new CreateFolderRequest(Link, "made"))
         );
         Assert.IsTrue(Directory.Exists(Path.Combine(_outside, "made")));
     }
@@ -65,7 +65,7 @@ public sealed class LibraryLinkTests
 
         var upload = await PostAsync(
             admin,
-            "/api/files/uploads",
+            $"{V1}/files/uploads",
             new
             {
                 target = Link,
@@ -74,7 +74,7 @@ public sealed class LibraryLinkTests
             }
         );
         using var copy = await admin.PostAsJsonAsync(
-            "/api/files/jobs",
+            $"{V1}/files/jobs",
             new
             {
                 kind = "copy",
@@ -96,8 +96,8 @@ public sealed class LibraryLinkTests
     {
         var admin = await AdminAsync(ReadOnly);
 
-        using var file = await admin.GetAsync($"/api/files/raw/{Link}/theirs.txt", Token);
-        using var listing = await admin.GetAsync($"/api/browse?path={Link}", Token);
+        using var file = await admin.GetAsync($"{V1}/files/raw/{Link}/theirs.txt", Token);
+        using var listing = await admin.GetAsync($"{V1}/browse?path={Link}", Token);
 
         Assert.AreEqual(HttpStatusCode.OK, file.StatusCode);
         Assert.AreEqual("not the library's", await file.Content.ReadAsStringAsync(Token));
@@ -109,12 +109,12 @@ public sealed class LibraryLinkTests
     {
         var admin = await AdminAsync(ReadOnly);
 
-        var folder = await PostAsync(admin, "/api/files/folders", new CreateFolderRequest(Link, "made"));
-        var deeper = await PostAsync(admin, "/api/files/folders", new CreateFolderRequest($"{Link}/Sub", "made"));
-        var file = await PostAsync(admin, "/api/files/new-file", new CreateFileRequest(Link, "made.txt"));
-        var rename = await PostAsync(admin, "/api/files/rename", new RenameRequest($"{Link}/theirs.txt", "mine.txt"));
+        var folder = await PostAsync(admin, $"{V1}/files/folders", new CreateFolderRequest(Link, "made"));
+        var deeper = await PostAsync(admin, $"{V1}/files/folders", new CreateFolderRequest($"{Link}/Sub", "made"));
+        var file = await PostAsync(admin, $"{V1}/files/new-file", new CreateFileRequest(Link, "made.txt"));
+        var rename = await PostAsync(admin, $"{V1}/files/rename", new RenameRequest($"{Link}/theirs.txt", "mine.txt"));
         using var delete = await admin.PostAsJsonAsync(
-            "/api/files/delete",
+            $"{V1}/files/delete",
             new DeleteRequest([$"{Link}/theirs.txt"], Permanent: true),
             Token
         );
@@ -139,7 +139,7 @@ public sealed class LibraryLinkTests
 
         var upload = await PostAsync(
             admin,
-            "/api/files/uploads",
+            $"{V1}/files/uploads",
             new
             {
                 target = Link,
@@ -148,7 +148,7 @@ public sealed class LibraryLinkTests
             }
         );
         using var copy = await admin.PostAsJsonAsync(
-            "/api/files/jobs",
+            $"{V1}/files/jobs",
             new
             {
                 kind = "copy",
@@ -173,7 +173,7 @@ public sealed class LibraryLinkTests
 
         Assert.AreEqual(
             HttpStatusCode.OK,
-            await PostAsync(admin, "/api/files/folders", new CreateFolderRequest("ChildDir/Inside", "made"))
+            await PostAsync(admin, $"{V1}/files/folders", new CreateFolderRequest("ChildDir/Inside", "made"))
         );
         Assert.IsTrue(Directory.Exists(_library.FullPath("Media/made")));
     }
@@ -189,7 +189,7 @@ public sealed class LibraryLinkTests
 
         Assert.AreEqual(
             HttpStatusCode.OK,
-            await PostAsync(admin, "/api/files/folders", new CreateFolderRequest($"{Link}/Sub", "made"))
+            await PostAsync(admin, $"{V1}/files/folders", new CreateFolderRequest($"{Link}/Sub", "made"))
         );
         Assert.IsTrue(Directory.Exists(Path.Combine(_outside, "Sub", "made")));
     }

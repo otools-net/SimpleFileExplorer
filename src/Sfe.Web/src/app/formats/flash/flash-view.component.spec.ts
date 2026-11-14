@@ -49,7 +49,7 @@ describe('FlashViewComponent', () => {
         localStorage.removeItem(FLASH_VOLUME_KEY);
         localStorage.removeItem(FLASH_MUTED_KEY);
         api = mockApi();
-        api.flashLink.mockResolvedValue({ url: 'api/files/flash/TOKEN/Run.swf', expires: '2026-10-26T00:00:00Z' });
+        api.flashLink.mockResolvedValue({ url: 'api/v1/files/flash/TOKEN/Run.swf', expires: '2026-10-26T00:00:00Z' });
         opened = [];
         failure = null;
         canDownload = true;
@@ -82,7 +82,7 @@ describe('FlashViewComponent', () => {
 
         expect(api.flashLink).toHaveBeenCalledWith('Games/Run.swf');
         expect(opened).toHaveLength(1);
-        expect(opened[0].url).toBe(new URL('api/files/flash/TOKEN/Run.swf', document.baseURI).href);
+        expect(opened[0].url).toBe(new URL('api/v1/files/flash/TOKEN/Run.swf', document.baseURI).href);
         expect(opened[0].container.classList).toContain('flash-stage');
         expect(opened[0].volume).toBe(1);
         expect(handle.focus).toHaveBeenCalled();

@@ -79,13 +79,13 @@ public sealed class FolderAccessRouteTests
     [TestMethod]
     public async Task ListingsLeaveOutWhatTheSubjectDoesNotSee()
     {
-        var everything = await GetAsync<DirectoryListing>(_admin, "/api/browse");
-        var root = await GetAsync<DirectoryListing>(_alice, "/api/browse");
-        var through = await GetAsync<DirectoryListing>(_alice, "/api/browse?path=RepeatedDir");
-        var inside = await GetAsync<DirectoryListing>(_alice, "/api/browse?path=RepeatedDir/ChildDir");
-        using var hidden = await _alice.GetAsync("/api/browse?path=SpecialDir", Token);
+        var everything = await GetAsync<DirectoryListing>(_admin, $"{V1}/browse");
+        var root = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse");
+        var through = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse?path=RepeatedDir");
+        var inside = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse?path=RepeatedDir/ChildDir");
+        using var hidden = await _alice.GetAsync($"{V1}/browse?path=SpecialDir", Token);
         using var below = await _alice.GetAsync(
-            $"/api/browse?path={Uri.EscapeDataString("SpecialDir/" + TestLibrary.SpecialFolder)}",
+            $"{V1}/browse?path={Uri.EscapeDataString("SpecialDir/" + TestLibrary.SpecialFolder)}",
             Token
         );
 
@@ -116,12 +116,12 @@ public sealed class FolderAccessRouteTests
     [TestMethod]
     public async Task PagesOfAFilteredListingFollowEachOther()
     {
-        var all = await GetAsync<DirectoryListing>(_alice, "/api/browse");
+        var all = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse");
         var pages = new List<string>();
         for (var offset = 0; offset < all.Total; offset += 2)
         {
             pages.AddRange(
-                (await GetAsync<DirectoryListing>(_alice, $"/api/browse?offset={offset}&limit=2")).Items.Select(i =>
+                (await GetAsync<DirectoryListing>(_alice, $"{V1}/browse?offset={offset}&limit=2")).Items.Select(i =>
                     i.Name
                 )
             );
@@ -135,27 +135,33 @@ public sealed class FolderAccessRouteTests
     {
         var spelled = LibraryPaths.IsCaseInsensitiveFileSystem ? "specialdir/SDEspañol" : "SpecialDir/SDEspañol";
 
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/files/raw/SpecialDir/SDEspañol"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, $"{V1}/files/raw/SpecialDir/SDEspañol"));
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await StatusAsync(_alice, "/api/files/raw/" + spelled),
+            await StatusAsync(_alice, $"{V1}/files/raw/" + spelled),
             "Whatever the case on Windows"
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await StatusAsync(_alice, "/api/files/raw/RepeatedDir/RDFile1.txt"),
+            await StatusAsync(_alice, $"{V1}/files/raw/RepeatedDir/RDFile1.txt"),
             "A folder that only leads elsewhere shows no file"
         );
-        Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(_alice, "/api/files/raw/RepeatedDir/ChildDir/AFile1.txt"));
-        Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(_admin, "/api/files/raw/SpecialDir/SDEspañol"));
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/thumbnails/SpecialDir/SDEspañol"));
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/file-tags?path=SpecialDir/SDEspañol"));
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/search?path=SpecialDir"));
+        Assert.AreEqual(
+            HttpStatusCode.OK,
+            await StatusAsync(_alice, $"{V1}/files/raw/RepeatedDir/ChildDir/AFile1.txt")
+        );
+        Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(_admin, $"{V1}/files/raw/SpecialDir/SDEspañol"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, $"{V1}/thumbnails/SpecialDir/SDEspañol"));
+        Assert.AreEqual(
+            HttpStatusCode.NotFound,
+            await StatusAsync(_alice, $"{V1}/file-tags?path=SpecialDir/SDEspañol")
+        );
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, $"{V1}/search?path=SpecialDir"));
         if (OperatingSystem.IsWindows())
         {
             Assert.AreEqual(
                 HttpStatusCode.NotFound,
-                await StatusAsync(_alice, "/api/files/raw/SpecialDir./SDEspañol"),
+                await StatusAsync(_alice, $"{V1}/files/raw/SpecialDir./SDEspañol"),
                 "Windows opens \"SpecialDir.\" as SpecialDir"
             );
         }
@@ -168,12 +174,12 @@ public sealed class FolderAccessRouteTests
             Assert.Inconclusive("Folder links can't be made here.");
 
         await ScanAsync();
-        var adminSearch = await GetAsync<SearchResults>(_admin, "/api/search?q=SDEspañol");
-        var aliceSearch = await GetAsync<SearchResults>(_alice, "/api/search?q=SDEspañol");
+        var adminSearch = await GetAsync<SearchResults>(_admin, $"{V1}/search?q=SDEspañol");
+        var aliceSearch = await GetAsync<SearchResults>(_alice, $"{V1}/search?q=SDEspañol");
 
-        Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(_admin, "/api/files/raw/ChildDir/Into/SDEspañol"));
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/files/raw/ChildDir/Into/SDEspañol"));
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/browse?path=ChildDir/Into"));
+        Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(_admin, $"{V1}/files/raw/ChildDir/Into/SDEspañol"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, $"{V1}/files/raw/ChildDir/Into/SDEspañol"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, $"{V1}/browse?path=ChildDir/Into"));
         CollectionAssert.Contains(
             adminSearch.Items.Select(i => i.Path).ToList(),
             "ChildDir/Into/SDEspañol",
@@ -185,22 +191,22 @@ public sealed class FolderAccessRouteTests
     [TestMethod]
     public async Task SiblingsSkipHiddenFolders()
     {
-        var everything = await GetAsync<FolderSiblings>(_admin, "/api/browse/siblings?path=Media");
-        var alice = await GetAsync<FolderSiblings>(_alice, "/api/browse/siblings?path=Media");
+        var everything = await GetAsync<FolderSiblings>(_admin, $"{V1}/browse/siblings?path=Media");
+        var alice = await GetAsync<FolderSiblings>(_alice, $"{V1}/browse/siblings?path=Media");
 
         Assert.AreEqual(everything.Count - 1, alice.Count);
         Assert.AreNotEqual("SpecialDir", alice.Next?.Name);
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/browse/siblings?path=SpecialDir"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, $"{V1}/browse/siblings?path=SpecialDir"));
     }
 
     [TestMethod]
     public async Task SearchesAndTagCountsOnlyCountWhatTheSubjectSees()
     {
         await ScanAsync();
-        var sea = await PostAsync<TagDetails>(_admin, "/api/tags", new TagInput("Sea"));
+        var sea = await PostAsync<TagDetails>(_admin, $"{V1}/tags", new TagInput("Sea"));
         using (
             var tagged = await _admin.PostAsJsonAsync(
-                "/api/file-tags",
+                $"{V1}/file-tags",
                 new FileTagChange(["SpecialDir/SDEspañol", "Media/photo.jpg"], Add: [sea.Id]),
                 Json,
                 Token
@@ -210,12 +216,12 @@ public sealed class FolderAccessRouteTests
             Assert.AreEqual(HttpStatusCode.OK, tagged.StatusCode);
         }
 
-        var adminFiles = await GetAsync<SearchResults>(_admin, "/api/search?q=RDFile");
-        var aliceFiles = await GetAsync<SearchResults>(_alice, "/api/search?q=RDFile");
-        var aliceOthers = await GetAsync<SearchResults>(_alice, "/api/search?q=AFile1");
-        var tagForAdmin = await GetAsync<TagDetails>(_admin, $"/api/tags/{sea.Id}");
-        var tagForAlice = await GetAsync<TagDetails>(_alice, $"/api/tags/{sea.Id}");
-        var tagSearch = await GetAsync<TagSearchResults>(_alice, "/api/tags?q=Sea");
+        var adminFiles = await GetAsync<SearchResults>(_admin, $"{V1}/search?q=RDFile");
+        var aliceFiles = await GetAsync<SearchResults>(_alice, $"{V1}/search?q=RDFile");
+        var aliceOthers = await GetAsync<SearchResults>(_alice, $"{V1}/search?q=AFile1");
+        var tagForAdmin = await GetAsync<TagDetails>(_admin, $"{V1}/tags/{sea.Id}");
+        var tagForAlice = await GetAsync<TagDetails>(_alice, $"{V1}/tags/{sea.Id}");
+        var tagSearch = await GetAsync<TagSearchResults>(_alice, $"{V1}/tags?q=Sea");
 
         Assert.AreEqual(4, adminFiles.Total);
         Assert.AreEqual(0, aliceFiles.Total, "Every RDFile is in a hidden folder for Alice");
@@ -232,27 +238,27 @@ public sealed class FolderAccessRouteTests
     public async Task TaggingNeedsToSeeEveryFile()
     {
         await ScanAsync();
-        var sea = await PostAsync<TagDetails>(_admin, "/api/tags", new TagInput("Sea"));
+        var sea = await PostAsync<TagDetails>(_admin, $"{V1}/tags", new TagInput("Sea"));
 
         using var readOnly = await _alice.PostAsJsonAsync(
-            "/api/file-tags",
+            $"{V1}/file-tags",
             new FileTagChange(["Media/photo.jpg"], Add: [sea.Id]),
             Json,
             Token
         );
         using var mixed = await _alice.PostAsJsonAsync(
-            "/api/file-tags",
+            $"{V1}/file-tags",
             new FileTagChange(["Media/photo.jpg", "SpecialDir/SDEspañol"], Add: [sea.Id]),
             Json,
             Token
         );
         using var scope = await _alice.PostAsJsonAsync(
-            "/api/file-tags/scope",
+            $"{V1}/file-tags/scope",
             new ScopeTagChange("", true, null, Add: [sea.Id]),
             Json,
             Token
         );
-        var tag = await GetAsync<TagDetails>(_admin, $"/api/tags/{sea.Id}");
+        var tag = await GetAsync<TagDetails>(_admin, $"{V1}/tags/{sea.Id}");
 
         Assert.AreEqual(
             HttpStatusCode.OK,
@@ -261,7 +267,7 @@ public sealed class FolderAccessRouteTests
         );
         Assert.AreEqual(HttpStatusCode.BadRequest, mixed.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, scope.StatusCode, await scope.Content.ReadAsStringAsync(Token));
-        var everything = await GetAsync<SearchResults>(_admin, "/api/search?q=*");
+        var everything = await GetAsync<SearchResults>(_admin, $"{V1}/search?q=*");
         var hiddenCount = everything.Items.Count(i =>
             i.Path.StartsWith("SpecialDir/", StringComparison.Ordinal)
             || (
@@ -306,29 +312,29 @@ public sealed class FolderAccessRouteTests
         );
 
         using var editor = await _alice.PostAsync(
-            "/api/editor/images?path=Media/photo.jpg",
+            $"{V1}/editor/images?path=Media/photo.jpg",
             new ByteArrayContent([1, 2, 3]),
             Token
         );
         using var hiddenEditor = await _alice.PostAsync(
-            "/api/editor/images?path=SpecialDir/SDEspañol",
+            $"{V1}/editor/images?path=SpecialDir/SDEspañol",
             new ByteArrayContent([1, 2, 3]),
             Token
         );
         using var readOnly = await _alice.PostAsJsonAsync(
-            "/api/duplicates/remove",
+            $"{V1}/duplicates/remove",
             new RemoveDuplicateRequest("Media/photo.jpg", "ChildDir/AFile1.txt"),
             Json,
             Token
         );
         using var keepHidden = await _alice.PostAsJsonAsync(
-            "/api/duplicates/remove",
+            $"{V1}/duplicates/remove",
             new RemoveDuplicateRequest("ChildDir/AFile1.txt", "SpecialDir/SDEspañol"),
             Json,
             Token
         );
         using var removeHidden = await _alice.PostAsJsonAsync(
-            "/api/duplicates/remove",
+            $"{V1}/duplicates/remove",
             new RemoveDuplicateRequest("SpecialDir/SDEspañol", "ChildDir/AFile1.txt"),
             Json,
             Token
@@ -346,7 +352,7 @@ public sealed class FolderAccessRouteTests
     [TestMethod]
     public async Task ARuleMadeAfterALinkEndsTheLink()
     {
-        var link = await PostAsync<FileLink>(_alice, "/api/files/links", new FileLinkRequest("ChildDir/AFile1.txt"));
+        var link = await PostAsync<FileLink>(_alice, $"{V1}/files/links", new FileLinkRequest("ChildDir/AFile1.txt"));
         var url = "/" + link.Url.TrimStart('/');
         var anonymous = ApiClients.Create(_factory);
 
@@ -356,25 +362,25 @@ public sealed class FolderAccessRouteTests
 
         Assert.AreEqual(HttpStatusCode.OK, before);
         Assert.AreEqual(HttpStatusCode.Forbidden, after);
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/files/raw/ChildDir/AFile1.txt"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, $"{V1}/files/raw/ChildDir/AFile1.txt"));
     }
 
     [TestMethod]
     public async Task QuickLinksOnlyLeadWhereTheSubjectSees()
     {
         using var hidden = await _alice.PostAsJsonAsync(
-            "/api/me/quick-links",
+            $"{V1}/me/quick-links",
             new QuickLinkAdd(["SpecialDir"], null),
             Json,
             Token
         );
         var added = await PostAsync<List<QuickLinkView>>(
             _alice,
-            "/api/me/quick-links",
+            $"{V1}/me/quick-links",
             new QuickLinkAdd(["ChildDir"], null)
         );
         await RuleAsync("ChildDir", FolderLevel.Hidden);
-        var after = await GetAsync<List<QuickLinkView>>(_alice, "/api/me/quick-links");
+        var after = await GetAsync<List<QuickLinkView>>(_alice, $"{V1}/me/quick-links");
 
         Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
         Assert.IsTrue(added.Single().Exists);
@@ -391,23 +397,23 @@ public sealed class FolderAccessRouteTests
         await _rules.SetAsync(_tenant, "Media", FolderPrincipalRef.Group(guests), FolderLevel.Read, null, Token);
         var visitor = ApiClients.Create(_factory);
 
-        var root = await GetAsync<DirectoryListing>(visitor, "/api/browse");
+        var root = await GetAsync<DirectoryListing>(visitor, $"{V1}/browse");
 
         CollectionAssert.AreEqual(
             new[] { "Media" },
             root.Items.Select(i => i.Name).ToArray(),
             "The root only leads to Media"
         );
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(visitor, "/api/files/raw/RFile1.txt"));
-        Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(visitor, "/api/files/raw/Media/photo.jpg"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(visitor, $"{V1}/files/raw/RFile1.txt"));
+        Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(visitor, $"{V1}/files/raw/Media/photo.jpg"));
     }
 
     [TestMethod]
     public async Task ListingsTellWhatTheSubjectMayDoThere()
     {
-        var root = await GetAsync<DirectoryListing>(_alice, "/api/browse");
-        var media = await GetAsync<DirectoryListing>(_alice, "/api/browse?path=Media");
-        var admin = await GetAsync<DirectoryListing>(_admin, "/api/browse");
+        var root = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse");
+        var media = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse?path=Media");
+        var admin = await GetAsync<DirectoryListing>(_admin, $"{V1}/browse");
 
         Assert.IsNull(admin.Access, "No rule applies to server administrators");
         CollectionAssert.Contains(root.Access!.Rights.ToList(), Rights.EditImages);
@@ -426,20 +432,20 @@ public sealed class FolderAccessRouteTests
     public async Task ManagersSetRulesAndSeeWhoMayDoWhat()
     {
         using var refused = await _alice.PutAsJsonAsync(
-            "/api/access/folder-rules",
+            $"{V1}/access/folder-rules",
             new FolderRuleChange("Media", _users, null, FolderLevel.Write),
             Json,
             Token
         );
         using var set = await _admin.PutAsJsonAsync(
-            "/api/access/folder-rules",
+            $"{V1}/access/folder-rules",
             new FolderRuleChange("ChildDir", _users, null, FolderLevel.Hidden),
             Json,
             Token
         );
         var rules = (await set.Content.ReadFromJsonAsync<List<FolderRuleView>>(Json, Token))!;
-        var report = await GetAsync<FolderAccessReport>(_admin, "/api/access/folder-access?path=ChildDir");
-        var picker = await GetAsync<FolderPicker>(_admin, "/api/access/folders");
+        var report = await GetAsync<FolderAccessReport>(_admin, $"{V1}/access/folder-access?path=ChildDir");
+        var picker = await GetAsync<FolderPicker>(_admin, $"{V1}/access/folders");
 
         Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode, "Only those who manage the space's groups");
         Assert.AreEqual(HttpStatusCode.OK, set.StatusCode);
@@ -457,7 +463,7 @@ public sealed class FolderAccessRouteTests
             "SpecialDir",
             "Managers pick among every folder"
         );
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/browse?path=ChildDir"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, $"{V1}/browse?path=ChildDir"));
     }
 
     [TestMethod]
@@ -465,16 +471,16 @@ public sealed class FolderAccessRouteTests
     {
         await RuleAsync("Gone/Away", FolderLevel.Hidden);
 
-        var listed = await GetAsync<List<FolderRuleView>>(_admin, "/api/access/folder-rules");
+        var listed = await GetAsync<List<FolderRuleView>>(_admin, $"{V1}/access/folder-rules");
         using var stillThere = await _admin.PostAsJsonAsync(
-            "/api/access/folder-rules/repoint",
+            $"{V1}/access/folder-rules/repoint",
             new FolderRuleRepoint("Media", "ChildDir"),
             Json,
             Token
         );
         var moved = await PostAsync<List<FolderRuleView>>(
             _admin,
-            "/api/access/folder-rules/repoint",
+            $"{V1}/access/folder-rules/repoint",
             new FolderRuleRepoint("Gone/Away", "ChildDir")
         );
 
@@ -486,7 +492,7 @@ public sealed class FolderAccessRouteTests
         );
         Assert.IsFalse(moved.Any(r => r.Path == "Gone/Away"));
         Assert.IsTrue(moved.Single(r => r.Path == "ChildDir").Exists);
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, "/api/browse?path=ChildDir"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_alice, $"{V1}/browse?path=ChildDir"));
     }
 
     private async Task RuleAsync(string path, FolderLevel level) =>
@@ -497,11 +503,11 @@ public sealed class FolderAccessRouteTests
 
     private async Task ScanAsync()
     {
-        using (var started = await _admin.PostAsJsonAsync("/api/scan", new ScanRequest(""), Json, Token))
+        using (var started = await _admin.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Json, Token))
             Assert.AreEqual(HttpStatusCode.Accepted, started.StatusCode);
         for (var attempt = 0; attempt < 200; attempt++)
         {
-            if ((await GetAsync<ScanStatus>(_admin, "/api/scan")).State != ScanState.Running)
+            if ((await GetAsync<ScanStatus>(_admin, $"{V1}/scan")).State != ScanState.Running)
                 return;
             await Task.Delay(50, Token);
         }

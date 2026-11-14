@@ -123,6 +123,13 @@ import { encodePath } from './paths';
 import { takeSetupLink } from './setup-link';
 
 /** A failed request: the message of the problem response, and its validation messages by field. */
+/**
+ * The base of every address of the server's API: requests, file addresses, the change feed. Relative, so the app also
+ * works under a virtual directory; versioned (agents/docs/development/api-versioning.md): the unversioned `api/` paths
+ * are old names the server still answers, never used by the client. `api/docs` (Swagger UI) has no version.
+ */
+export const API_BASE = 'api/v1/';
+
 /** This tab, for the change feed: its own changes are not told back to it. */
 export const TAB_ID = Math.random().toString(36).slice(2, 12);
 
@@ -169,9 +176,10 @@ function withQuery(url: string, values: Record<string, QueryValue>): string {
 }
 
 /**
- * The JSON API of the server. URLs are relative, so the app also works under a virtual directory. Requests resolve
- * with the body; `signal` (AbortSignal) cancels a request, and the work on the server, e.g. when the user navigates
- * on. A 409 (conflict) resolves with its body: the API answers with the current state then.
+ * The JSON API of the server. Routes are written below `API_BASE` (`config` is `api/v1/config`), relative, so the app
+ * also works under a virtual directory. Requests resolve with the body; `signal` (AbortSignal) cancels a request, and
+ * the work on the server, e.g. when the user navigates on. A 409 (conflict) resolves with its body: the API answers
+ * with the current state then.
  */
 @Injectable({ providedIn: 'root' })
 export class Api {
@@ -179,206 +187,200 @@ export class Api {
     /** The router, asked for when a redirect is due (it needs the Api itself, through the pages). */
     private readonly injector = inject(Injector);
 
-    config = () => this.get<ClientConfig>('api/config');
+    config = () => this.get<ClientConfig>('config');
 
     browse = (
         query: { path: string; offset: number; limit: number; sort: SortField; desc: boolean },
         signal?: AbortSignal,
-    ) => this.get<DirectoryListing>('api/browse', query, signal);
+    ) => this.get<DirectoryListing>('browse', query, signal);
     /** The folders around `path` in its parent, in the given sort. */
     siblings = (query: { path: string; sort: SortField; desc: boolean }, signal?: AbortSignal) =>
-        this.get<FolderSiblings>('api/browse/siblings', query, signal);
+        this.get<FolderSiblings>('browse/siblings', query, signal);
     /** The first pictures of each folder of `paths` that exists (folder cards). */
     folderCovers = (paths: string[], signal?: AbortSignal) =>
-        this.post<FolderCover[]>('api/browse/covers', { paths }, signal);
+        this.post<FolderCover[]>('browse/covers', { paths }, signal);
     /** `after`: the `next` value of the previous page. */
     search = (
         query: { q: string; path: string; after: string | null; limit: number; sort: SortField; desc: boolean },
         signal?: AbortSignal,
-    ) => this.get<SearchResults>('api/search', query, signal);
+    ) => this.get<SearchResults>('search', query, signal);
 
-    scanStatus = () => this.get<ScanStatus>('api/scan');
-    startScan = (path: string) => this.post<ScanStatus>('api/scan', { path });
-    cancelScan = () => this.delete<ScanStatus>('api/scan');
+    scanStatus = () => this.get<ScanStatus>('scan');
+    startScan = (path: string) => this.post<ScanStatus>('scan', { path });
+    cancelScan = () => this.delete<ScanStatus>('scan');
     /** What the index holds of a folder (counts), before removing it. */
-    indexedFolder = (path: string) => this.get<IndexedFolder>('api/index/folder', { path });
+    indexedFolder = (path: string) => this.get<IndexedFolder>('index/folder', { path });
     /**
      * Removes a folder from the index (not from the disk); `exclude` also keeps future scans out of it. Resolves with
      * the scan status (409) while a scan runs.
      */
     removeFromIndex = (path: string, exclude: boolean) =>
-        this.delete<RemovedFromIndex | ScanStatus>(`api/index/folder?${params({ path, exclude }).toString()}`);
+        this.delete<RemovedFromIndex | ScanStatus>(`index/folder?${params({ path, exclude }).toString()}`);
 
     /** Every folder kept out of scans, trickplay or thumbnails in the space (those the session sees). */
-    folderExclusions = () => this.get<ExcludedFolder[]>('api/index/exclusions');
+    folderExclusions = () => this.get<ExcludedFolder[]>('index/exclusions');
     /** Keeps a folder out of scans, trickplay or thumbnails (true) or lets it in again (false); absent kinds stay. */
     setFolderExclusions = (path: string, changes: Partial<Record<ExclusionKind, boolean>>) =>
-        this.put<FolderExclusions>('api/index/exclusions', { path, ...changes });
+        this.put<FolderExclusions>('index/exclusions', { path, ...changes });
 
     /** The background tasks, their schedules and the server's clock. */
-    tasks = () => this.get<TaskOverview>('api/tasks');
+    tasks = () => this.get<TaskOverview>('tasks');
     /** Resolves with the result also when the task could not start (409). */
     startTask = (task: TaskKind, path: string | null = null) =>
-        this.post<TaskActionResult>(`api/tasks/${task}/start?${params({ path }).toString()}`);
+        this.post<TaskActionResult>(`tasks/${task}/start?${params({ path }).toString()}`);
     /** Resolves with the task also when it wasn't running (409). */
-    cancelTask = (task: TaskKind) => this.post<TaskInfo>(`api/tasks/${task}/cancel`);
-    createSchedule = (schedule: TaskScheduleInput) => this.post<TaskSchedule>('api/tasks/schedules', schedule);
+    cancelTask = (task: TaskKind) => this.post<TaskInfo>(`tasks/${task}/cancel`);
+    createSchedule = (schedule: TaskScheduleInput) => this.post<TaskSchedule>('tasks/schedules', schedule);
     updateSchedule = (id: number, schedule: TaskScheduleInput) =>
-        this.put<TaskSchedule>(`api/tasks/schedules/${id}`, schedule);
-    deleteSchedule = (id: number) => this.delete<void>(`api/tasks/schedules/${id}`);
+        this.put<TaskSchedule>(`tasks/schedules/${id}`, schedule);
+    deleteSchedule = (id: number) => this.delete<void>(`tasks/schedules/${id}`);
     /** The next runs of a schedule being edited; rejects with its validation errors. */
     previewSchedule = (schedule: TaskScheduleInput) =>
-        this.post<{ runs: string[] }>('api/tasks/schedules/preview', schedule);
+        this.post<{ runs: string[] }>('tasks/schedules/preview', schedule);
     /** Runs newest first; `before`: the `next` value of the previous page. */
-    taskRuns = (query: { task: TaskKind | null; before: number | null }) =>
-        this.get<TaskRunPage>('api/tasks/runs', query);
-    taskRun = (id: number) => this.get<TaskRunDetails>(`api/tasks/runs/${id}`);
-    clearTaskRuns = () => this.delete<void>('api/tasks/runs');
+    taskRuns = (query: { task: TaskKind | null; before: number | null }) => this.get<TaskRunPage>('tasks/runs', query);
+    taskRun = (id: number) => this.get<TaskRunDetails>(`tasks/runs/${id}`);
+    clearTaskRuns = () => this.delete<void>('tasks/runs');
 
-    logs = (query: LogQuery, signal?: AbortSignal) => this.get<LogSearchResult>('api/logs', { ...query }, signal);
+    logs = (query: LogQuery, signal?: AbortSignal) => this.get<LogSearchResult>('logs', { ...query }, signal);
 
-    tags = (query: { q: string; limit: number }) => this.get<TagSearchResults>('api/tags', query);
-    tag = (id: number) => this.get<TagDetails>(`api/tags/${id}`);
-    createTag = (tag: TagInput) => this.post<TagDetails>('api/tags', tag);
-    updateTag = (id: number, tag: TagInput) => this.put<TagDetails>(`api/tags/${id}`, tag);
-    deleteTag = (id: number) => this.delete<void>(`api/tags/${id}`);
-    fileTags = (path: string) => this.get<FileTags>('api/file-tags', { path });
-    changeFileTags = (change: FileTagChange) => this.post<FileTagChangeResult>('api/file-tags', change);
+    tags = (query: { q: string; limit: number }) => this.get<TagSearchResults>('tags', query);
+    tag = (id: number) => this.get<TagDetails>(`tags/${id}`);
+    createTag = (tag: TagInput) => this.post<TagDetails>('tags', tag);
+    updateTag = (id: number, tag: TagInput) => this.put<TagDetails>(`tags/${id}`, tag);
+    deleteTag = (id: number) => this.delete<void>(`tags/${id}`);
+    fileTags = (path: string) => this.get<FileTags>('file-tags', { path });
+    changeFileTags = (change: FileTagChange) => this.post<FileTagChangeResult>('file-tags', change);
     /** The tags of the files of a folder or of a search's matches, counted. */
     scopeTags = (scope: TagScope, signal?: AbortSignal) =>
         this.get<ScopeTags>(
-            'api/file-tags/scope',
+            'file-tags/scope',
             { path: scope.path, recursive: scope.recursive, q: scope.query },
             signal,
         );
     /** Tags every file of a folder or every match of a search. Resolves with the problem (409) while a scan runs. */
     changeScopeTags = (change: ScopeTagChange) =>
-        this.post<ScopeTagChangeResult | { detail?: string }>('api/file-tags/scope', change);
-    fileViewed = (path: string) => this.post<void>('api/file-tags/viewed', { path });
+        this.post<ScopeTagChangeResult | { detail?: string }>('file-tags/scope', change);
+    fileViewed = (path: string) => this.post<void>('file-tags/viewed', { path });
     /** The default tags of a folder, its own and its parents'. */
     folderDefaultTags = (path: string, signal?: AbortSignal) =>
-        this.get<FolderDefaults>('api/folder-default-tags', { path }, signal);
+        this.get<FolderDefaults>('folder-default-tags', { path }, signal);
     /**
      * Changes a folder's default tags (and the files already there when asked). Resolves with the problem (409) while a
      * scan runs.
      */
     changeFolderDefaultTags = (change: FolderDefaultTagsChange) =>
-        this.put<FolderDefaultTagsResult | { detail?: string }>('api/folder-default-tags', change);
-    tagSidebar = () => this.get<TagSidebar>('api/tags/sidebar');
-    clearTagHistory = () => this.delete<void>('api/tags/history');
+        this.put<FolderDefaultTagsResult | { detail?: string }>('folder-default-tags', change);
+    tagSidebar = () => this.get<TagSidebar>('tags/sidebar');
+    clearTagHistory = () => this.delete<void>('tags/history');
 
     /** The settings of a level: the server's (server administrators) or the space's; else the caller's default. */
-    settings = (level?: SettingLevel) => this.get<SettingsView>('api/settings', { level });
+    settings = (level?: SettingLevel) => this.get<SettingsView>('settings', { level });
     saveSettings = (values: SettingsValues, level?: SettingLevel) =>
-        this.put<SettingsView>(withLevel('api/settings', level), values);
+        this.put<SettingsView>(withLevel('settings', level), values);
     /** Saves only the settings (and locks) in `changes` at `level`: what the level has for the others stays. */
     saveSettingChanges = (changes: SettingChanges, level?: SettingLevel) =>
-        this.patch<SettingsView>(withLevel('api/settings', level), changes);
+        this.patch<SettingsView>(withLevel('settings', level), changes);
     /** Locks `keys` at `level` for the levels below; the other settings it may lock are unlocked. */
     saveSettingLocks = (keys: string[], level: SettingLevel) =>
-        this.put<SettingsView>(withLevel('api/settings/locks', level), { keys });
-    resetSettings = (level?: SettingLevel) => this.delete<SettingsView>(withLevel('api/settings', level));
+        this.put<SettingsView>(withLevel('settings/locks', level), { keys });
+    resetSettings = (level?: SettingLevel) => this.delete<SettingsView>(withLevel('settings', level));
     /** The signed-in user's own preferences (the user level). */
-    preferences = () => this.get<SettingsView>('api/me/preferences');
-    savePreferences = (values: SettingsValues) => this.put<SettingsView>('api/me/preferences', values);
+    preferences = () => this.get<SettingsView>('me/preferences');
+    savePreferences = (values: SettingsValues) => this.put<SettingsView>('me/preferences', values);
     /** Saves only the preferences in `changes.values`; the others keep following the space. */
-    savePreferenceChanges = (changes: SettingChanges) => this.patch<SettingsView>('api/me/preferences', changes);
-    resetPreferences = () => this.delete<SettingsView>('api/me/preferences');
+    savePreferenceChanges = (changes: SettingChanges) => this.patch<SettingsView>('me/preferences', changes);
+    resetPreferences = () => this.delete<SettingsView>('me/preferences');
     /** The signed-in user's quick links in the library, in order. */
-    quickLinks = () => this.get<QuickLink[]>('api/me/quick-links');
+    quickLinks = () => this.get<QuickLink[]>('me/quick-links');
     /**
      * Adds `paths` before the link at `position` (at the end without one); links already there move. Resolves with the
      * whole list.
      */
     addQuickLinks = (paths: string[], position: number | null = null) =>
-        this.post<QuickLink[]>('api/me/quick-links', { paths, position });
-    removeQuickLink = (path: string) => this.delete<QuickLink[]>(withQuery('api/me/quick-links', { path }));
+        this.post<QuickLink[]>('me/quick-links', { paths, position });
+    removeQuickLink = (path: string) => this.delete<QuickLink[]>(withQuery('me/quick-links', { path }));
 
     /** Trickplay of a video; rejects (404) when it has none yet. */
-    trickplay = (path: string) => this.get<TrickplayManifest>(`api/trickplay/files/${encodePath(path)}`);
+    trickplay = (path: string) => this.get<TrickplayManifest>(`trickplay/files/${encodePath(path)}`);
     /** Same, without queueing a video that has none (a thumbnail's hover preview). */
     existingTrickplay = (path: string) =>
-        this.get<TrickplayManifest>(`api/trickplay/files/${encodePath(path)}`, { queue: 'false' });
-    trickplayStatus = () => this.get<TrickplayStatus>('api/trickplay');
+        this.get<TrickplayManifest>(`trickplay/files/${encodePath(path)}`, { queue: 'false' });
+    trickplayStatus = () => this.get<TrickplayStatus>('trickplay');
     /** Whether a picture has more than one frame (read from its structure on the server). */
-    imageAnimation = (path: string) => this.get<{ animated: boolean }>(`api/files/animated/${encodePath(path)}`);
+    imageAnimation = (path: string) => this.get<{ animated: boolean }>(`files/animated/${encodePath(path)}`);
     /** Running videos, the first `limit` waiting ones and the last ones finished. */
-    trickplayActivity = (limit: number) => this.get<TrickplayActivity>('api/trickplay/activity', { limit });
+    trickplayActivity = (limit: number) => this.get<TrickplayActivity>('trickplay/activity', { limit });
     /** Those of `paths` waiting or being processed. */
-    trickplayStates = (paths: string[]) => this.post<TrickplayStates>('api/trickplay/states', { paths });
+    trickplayStates = (paths: string[]) => this.post<TrickplayStates>('trickplay/states', { paths });
     /** Resolves with the status, also when trickplay is off (409). */
-    checkTrickplay = () => this.post<TrickplayStatus>('api/trickplay');
+    checkTrickplay = () => this.post<TrickplayStatus>('trickplay');
 
     /** Groups of identical files under `path`, biggest first; `after`: the `next` value of the previous page. */
-    duplicates = (query: { path: string; after: string | null }) => this.get<DuplicateResults>('api/duplicates', query);
+    duplicates = (query: { path: string; after: string | null }) => this.get<DuplicateResults>('duplicates', query);
     /** Deletes the copy at `path` after adding its tags to the identical copy `keep`. */
-    removeDuplicate = (path: string, keep: string) =>
-        this.post<RemovedDuplicate>('api/duplicates/remove', { path, keep });
+    removeDuplicate = (path: string, keep: string) => this.post<RemovedDuplicate>('duplicates/remove', { path, keep });
     /** Groups of similar videos of the last comparison, with its status. */
     similarVideos = (query: { path: string; after: string | null }) =>
-        this.get<SimilarVideoResults>('api/similar-videos', query);
+        this.get<SimilarVideoResults>('similar-videos', query);
     /** Starts comparing the videos (nothing while a comparison runs). */
-    compareVideos = () => this.post<SimilarVideoResults['status']>('api/similar-videos');
+    compareVideos = () => this.post<SimilarVideoResults['status']>('similar-videos');
     /** Tagged files scans no longer find, with the files that may be them. */
-    missingFiles = (query: { after: number | null }) => this.get<MissingFileResults>('api/missing-files', query);
+    missingFiles = (query: { after: number | null }) => this.get<MissingFileResults>('missing-files', query);
     /** Relinks the missing files that have exactly one likely new place. */
-    relinkMissingFiles = () => this.post<RelinkPassResult>('api/missing-files/relink');
-    relinkMissingFile = (id: number, path: string) => this.post<void>(`api/missing-files/${id}/relink`, { path });
+    relinkMissingFiles = () => this.post<RelinkPassResult>('missing-files/relink');
+    relinkMissingFile = (id: number, path: string) => this.post<void>(`missing-files/${id}/relink`, { path });
     /** Forgets one missing file, or all of them when `id` is omitted. */
-    forgetMissingFiles = (id?: number) =>
-        this.delete<void>(id === undefined ? 'api/missing-files' : `api/missing-files/${id}`);
+    forgetMissingFiles = (id?: number) => this.delete<void>(id === undefined ? 'missing-files' : `missing-files/${id}`);
 
     /** Whether `path` can be played converted by the server, and its length; 404 when it can't. */
-    streamProbe = (path: string) => this.get<StreamProbe>('api/streaming/probe', { path });
+    streamProbe = (path: string) => this.get<StreamProbe>('streaming/probe', { path });
     /** The videos the server converts now, in every library. */
-    streamingStatus = () => this.get<StreamingStatus>('api/streaming/sessions');
+    streamingStatus = () => this.get<StreamingStatus>('streaming/sessions');
 
     /** Where the library is on the server's disk, and the ffmpeg found. */
-    systemInfo = () => this.get<SystemInfo>('api/system/info');
+    systemInfo = () => this.get<SystemInfo>('system/info');
 
     /** Whether the space's library folder is kept alive on its file server, and what the last pings found. */
-    keepAlive = () => this.get<KeepAliveView>('api/keep-alive');
+    keepAlive = () => this.get<KeepAliveView>('keep-alive');
     /** Pings the space's folders now (also while keep alive is off). */
-    pingKeepAlive = () => this.post<KeepAliveView>('api/keep-alive/ping');
+    pingKeepAlive = () => this.post<KeepAliveView>('keep-alive/ping');
 
     /** Who is signed in; works before signing in and before the setup (never redirects). */
-    session = () => this.get<SessionInfo>('api/session', {}, undefined, false);
+    session = () => this.get<SessionInfo>('session', {}, undefined, false);
     signIn = (userName: string, password: string, remember: boolean) =>
-        this.post<SessionInfo>('api/session/login', { userName, password, remember }, undefined, false);
-    signOut = () => this.post<SessionInfo>('api/session/logout', null, undefined, false);
+        this.post<SessionInfo>('session/login', { userName, password, remember }, undefined, false);
+    signOut = () => this.post<SessionInfo>('session/logout', null, undefined, false);
     /** Browses `tenant` (a slug) as a visitor without an account. */
-    browseAsGuest = (tenant: string) => this.post<SessionInfo>('api/session/guest', { tenant }, undefined, false);
+    browseAsGuest = (tenant: string) => this.post<SessionInfo>('session/guest', { tenant }, undefined, false);
     /**
      * Has the server show a one-time code for `userName` where it runs (console, recovery file); same answer for any
      * name.
      */
     requestRecovery = (userName: string) =>
-        this.post<{ minutes: number }>('api/session/recovery', { userName }, undefined, false);
+        this.post<{ minutes: number }>('session/recovery', { userName }, undefined, false);
     /** A new password with the code: unlocks the account and signs it in. */
     completeRecovery = (userName: string, code: string, password: string, remember: boolean) =>
-        this.post<SessionInfo>(
-            'api/session/recovery/complete',
-            { userName, code, password, remember },
-            undefined,
-            false,
-        );
-    switchTenant = (tenant: string) => this.post<SessionInfo>('api/session/tenant', { tenant }, undefined, false);
+        this.post<SessionInfo>('session/recovery/complete', { userName, code, password, remember }, undefined, false);
+    switchTenant = (tenant: string) => this.post<SessionInfo>('session/tenant', { tenant }, undefined, false);
     changePassword = (current: string, password: string) =>
-        this.put<SessionInfo>('api/session/password', { current, password });
-    setupInfo = () => this.get<SetupInfo>('api/setup', {}, undefined, false);
-    completeSetup = (input: SetupInput) => this.post<SessionInfo>('api/setup', input, undefined, false);
+        this.put<SessionInfo>('session/password', { current, password });
+    setupInfo = () => this.get<SetupInfo>('setup', {}, undefined, false);
+    completeSetup = (input: SetupInput) => this.post<SessionInfo>('setup', input, undefined, false);
     /** Checks the setup code; the token answered opens the other installation routes for an hour. */
     checkInstallation = (code: string) =>
-        this.post<InstallationGrant>('api/installation/check', { code }, undefined, false);
+        this.post<InstallationGrant>('installation/check', { code }, undefined, false);
     installation = (token: string) =>
         this.send(
-            this.http.get<InstallationView>('api/installation', { headers: this.installationHeaders(token, false) }),
+            this.http.get<InstallationView>(API_BASE + 'installation', {
+                headers: this.installationHeaders(token, false),
+            }),
             undefined,
             false,
         );
     saveInstallation = (token: string, input: InstallationInput) =>
         this.send(
-            this.http.put<InstallationSaved>('api/installation', input, {
+            this.http.put<InstallationSaved>(API_BASE + 'installation', input, {
                 headers: this.installationHeaders(token, true),
             }),
             undefined,
@@ -387,7 +389,7 @@ export class Api {
     /** The folders of the server's disks (the drives and usual places for null). */
     serverFolders = (token: string, path: string | null) =>
         this.send(
-            this.http.get<FolderPicker>('api/installation/folders', {
+            this.http.get<FolderPicker>(API_BASE + 'installation/folders', {
                 params: params({ path }),
                 headers: this.installationHeaders(token, false),
             }),
@@ -398,52 +400,52 @@ export class Api {
     /** With the setup code (once typed on the update page), the update's log and its error's reason; else neither. */
     migrationInfo = (code = '') =>
         this.send(
-            this.http.get<MigrationInfo>('api/migration', {
+            this.http.get<MigrationInfo>(API_BASE + 'migration', {
                 headers: code ? this.headers(false).set('X-SFE-Setup-Code', code) : this.headers(false),
             }),
             undefined,
             false,
         );
     /** Starts the update (in the background: poll `migrationInfo`); rejects with the code's error. */
-    startMigration = (code: string) => this.post<MigrationInfo>('api/migration', { code }, undefined, false);
+    startMigration = (code: string) => this.post<MigrationInfo>('migration', { code }, undefined, false);
     /** Makes a backup before the update; the browser downloads it from the link answered, once. */
-    migrationBackup = (code: string) => this.post<BackupLink>('api/migration/backup', { code }, undefined, false);
+    migrationBackup = (code: string) => this.post<BackupLink>('migration/backup', { code }, undefined, false);
 
     /** A link to `path` working without signing in, for a while: for external players. */
-    fileLink = (path: string) => this.post<FileLink>('api/files/links', { path });
+    fileLink = (path: string) => this.post<FileLink>('files/links', { path });
     /** A link playing the Flash movie `path` in the player's frame, opening its folder's files to it, read only. */
-    flashLink = (path: string) => this.post<FileLink>('api/files/flash-links', { path });
+    flashLink = (path: string) => this.post<FileLink>('files/flash-links', { path });
     /** Creates the folder `name` in the folder `path`. Resolves with the conflict (409: name taken, scan running). */
-    createFolder = (path: string, name: string) => this.post<FileOperationResult>('api/files/folders', { path, name });
+    createFolder = (path: string, name: string) => this.post<FileOperationResult>('files/folders', { path, name });
     /** Creates the empty file `name` in the folder `path`. Resolves with the conflict (409) as `createFolder`. */
-    createFile = (path: string, name: string) => this.post<FileOperationResult>('api/files/new-file', { path, name });
+    createFile = (path: string, name: string) => this.post<FileOperationResult>('files/new-file', { path, name });
     /** Renames `path` to `name`, in its folder. Resolves with the conflict (409) as `createFolder`. */
-    renameItem = (path: string, name: string) => this.post<FileOperationResult>('api/files/rename', { path, name });
+    renameItem = (path: string, name: string) => this.post<FileOperationResult>('files/rename', { path, name });
     /** Deletes `paths`, to the trash or for good; a result per path. */
     deleteItems = (paths: string[], permanent: boolean) =>
-        this.post<DeleteResults>('api/files/delete', { paths, permanent });
+        this.post<DeleteResults>('files/delete', { paths, permanent });
     /** The trash, newest first (`before`: the `next` of the previous page); how many items of it the session sees. */
-    trash = (before: number | null = null) => this.get<TrashPage>('api/files/trash', { before });
-    trashCount = () => this.get<TrashCount>('api/files/trash/count');
+    trash = (before: number | null = null) => this.get<TrashPage>('files/trash', { before });
+    trashCount = () => this.get<TrashCount>('files/trash/count');
     /** Puts an item of the trash back. Resolves with the conflict (409: a scan runs there...). */
-    restoreFromTrash = (id: number) => this.post<FileOperationResult>(`api/files/trash/${id}/restore`);
-    purgeFromTrash = (id: number) => this.delete<void>(`api/files/trash/${id}`);
-    emptyTrash = () => this.delete<{ purged: number }>('api/files/trash');
+    restoreFromTrash = (id: number) => this.post<FileOperationResult>(`files/trash/${id}/restore`);
+    purgeFromTrash = (id: number) => this.delete<void>(`files/trash/${id}`);
+    emptyTrash = () => this.delete<{ purged: number }>('files/trash');
     /** Who would see or change more of the folders among `paths` once moved into `target`. */
     checkMove = (paths: string[], target: string) =>
-        this.post<{ gains: AccessGain[] }>('api/files/jobs/check', { paths, target });
+        this.post<{ gains: AccessGain[] }>('files/jobs/check', { paths, target });
     /** Starts a move or copy in the background; its first state. */
-    startFileJob = (request: FileJobRequest) => this.post<FileJobView>('api/files/jobs', request);
+    startFileJob = (request: FileJobRequest) => this.post<FileJobView>('files/jobs', request);
     /** Extracts an archive, compresses into a zip, moves or copies between places: jobs followed as moves are. */
-    startExtract = (request: ExtractRequest) => this.post<FileJobView>('api/files/jobs/extract', request);
-    startCompress = (request: CompressRequest) => this.post<FileJobView>('api/files/jobs/compress', request);
-    startTransfer = (request: TransferRequest) => this.post<FileJobView>('api/files/jobs/transfer', request);
+    startExtract = (request: ExtractRequest) => this.post<FileJobView>('files/jobs/extract', request);
+    startCompress = (request: CompressRequest) => this.post<FileJobView>('files/jobs/compress', request);
+    startTransfer = (request: TransferRequest) => this.post<FileJobView>('files/jobs/transfer', request);
     /** The session's moves and copies, running and recent, newest first. */
-    fileJobs = () => this.get<FileJobView[]>('api/files/jobs');
+    fileJobs = () => this.get<FileJobView[]>('files/jobs');
     answerFileJob = (id: number, choice: ConflictChoice, forAll: boolean) =>
-        this.post<void>(`api/files/jobs/${id}/answer`, { choice, forAll });
-    cancelFileJob = (id: number) => this.post<void>(`api/files/jobs/${id}/cancel`);
-    retryFileJob = (id: number) => this.post<FileJobView>(`api/files/jobs/${id}/retry`);
+        this.post<void>(`files/jobs/${id}/answer`, { choice, forAll });
+    cancelFileJob = (id: number) => this.post<void>(`files/jobs/${id}/cancel`);
+    retryFileJob = (id: number) => this.post<FileJobView>(`files/jobs/${id}/retry`);
     /** Which of `names` (paths below `target` for a folder upload) are taken; `connection`: in its files. */
     checkUploads = (target: string, names: string[], connection?: number | null) =>
         this.post<UploadCheck>(`${uploadsRoute(connection)}/check`, { target, names });
@@ -454,7 +456,7 @@ export class Api {
     /** Sends `chunk` at `offset`; the upload also on a 409 (the server has another offset): go on from there. */
     sendUploadChunk = (id: string, offset: number, chunk: Blob, signal?: AbortSignal, connection?: number | null) =>
         this.send(
-            this.http.put<UploadInfo>(`${uploadsRoute(connection)}/${id}`, chunk, {
+            this.http.put<UploadInfo>(API_BASE + `${uploadsRoute(connection)}/${id}`, chunk, {
                 params: params({ offset }),
                 headers: this.headers(true).set('Content-Type', 'application/octet-stream'),
             }),
@@ -466,19 +468,19 @@ export class Api {
     cancelUpload = (id: string, connection?: number | null) => this.delete<void>(`${uploadsRoute(connection)}/${id}`);
     /** Changes a connection's files (`folders`, `rename`, `delete`, `transfer`: see `PlaceFiles`), or reads (`get`). */
     connectionFiles = <T>(id: number, action: string, body: unknown) =>
-        this.post<T>(`api/connections/${id}/files/${action}`, body);
+        this.post<T>(`connections/${id}/files/${action}`, body);
     connectionGet = <T>(id: number, action: string, query: Record<string, QueryValue>) =>
-        this.get<T>(`api/connections/${id}/files/${action}`, query);
+        this.get<T>(`connections/${id}/files/${action}`, query);
     /** Names the items of a zip (of a connection's files with `connection`); the browser downloads it once. */
     createArchive = (paths: string[], connection?: number) =>
-        this.post<ArchiveLink>(connection ? `api/connections/${connection}/archive` : 'api/files/archive', { paths });
-    properties = (path: string) => this.get<ItemProperties>('api/files/properties', { path });
+        this.post<ArchiveLink>(connection ? `connections/${connection}/archive` : 'files/archive', { paths });
+    properties = (path: string) => this.get<ItemProperties>('files/properties', { path });
     /** What the index knows below a folder. */
     folderTotals = (path: string, signal?: AbortSignal) =>
-        this.get<FolderTotals>('api/files/properties/totals', { path }, signal);
-    countFolder = (path: string) => this.post<PropertyJob>('api/files/properties/count', { path });
+        this.get<FolderTotals>('files/properties/totals', { path }, signal);
+    countFolder = (path: string) => this.post<PropertyJob>('files/properties/count', { path });
     startChecksum = (path: string, algorithm: ChecksumAlgorithm) =>
-        this.post<PropertyJob>('api/files/properties/checksum', { path, algorithm });
+        this.post<PropertyJob>('files/properties/checksum', { path, algorithm });
     /**
      * A folder of an archive (`folder`: its id; `at`: its path inside the archive; the root without them): a page, the
      * reading of its list so far (ask again), or 409 `not-explorable`.
@@ -495,7 +497,7 @@ export class Api {
         signal?: AbortSignal,
     ) =>
         this.send(
-            this.http.get<ArchiveAnswer>('api/files/explore', {
+            this.http.get<ArchiveAnswer>(API_BASE + 'files/explore', {
                 params: params({ path, folder: where.folder, at: where.at, after: where.after, limit: where.limit }),
                 headers: where.unlock
                     ? this.headers(false).set('X-SFE-Archive-Unlock', where.unlock)
@@ -513,7 +515,7 @@ export class Api {
         signal?: AbortSignal,
     ) =>
         this.send(
-            this.http.get<ArchiveSearchAnswer>('api/files/explore/search', {
+            this.http.get<ArchiveSearchAnswer>(API_BASE + 'files/explore/search', {
                 params: params({ path, q: query.q, folder: query.folder, after: query.after }),
                 headers: query.unlock
                     ? this.headers(false).set('X-SFE-Archive-Unlock', query.unlock)
@@ -532,7 +534,7 @@ export class Api {
         signal?: AbortSignal,
     ) =>
         this.send(
-            this.http.get<TextFile>('api/files/explore/text', {
+            this.http.get<TextFile>(API_BASE + 'files/explore/text', {
                 params: params({
                     path,
                     ...(typeof entry === 'number' ? { id: entry } : { at: entry }),
@@ -549,20 +551,19 @@ export class Api {
      * read, or 409 `not-protected`; a wrong password rejects (422 `wrong-password`), too many tries too (429).
      */
     unlockArchive = (path: string, password: string) =>
-        this.post<ArchiveUnlockAnswer>('api/files/explore/unlock', { path, password });
+        this.post<ArchiveUnlockAnswer>('files/explore/unlock', { path, password });
     /** A text file's content (413 `too-large`, 415 `not-text`). */
     /** `encoding`: read it in that encoding rather than the one it seems to have (Reopen with encoding). */
     textFile = (path: string, signal?: AbortSignal, encoding?: string | null) =>
-        this.get<TextFile>('api/files/text', { path, encoding }, signal);
+        this.get<TextFile>('files/text', { path, encoding }, signal);
     /** About `length` bytes of a text file of any size from `offset` (-1: its end), cut at whole lines. */
     textPart = (path: string, offset: number, length?: number | null, encoding?: string | null, signal?: AbortSignal) =>
-        this.get<TextPart>('api/files/text/part', { path, offset, length, encoding }, signal);
+        this.get<TextPart>('files/text/part', { path, offset, length, encoding }, signal);
     /** Its version now (read again only when its size or time are not those of `known`); null over 10 MB. */
-    textVersion = (path: string, known: string | null) =>
-        this.get<TextVersion>('api/files/text/version', { path, known });
+    textVersion = (path: string, known: string | null) => this.get<TextVersion>('files/text/version', { path, known });
     /** The video next to a subtitle file, named as it is (`Film.en.srt` → `Film.mkv`). */
     subtitleVideo = (path: string, signal?: AbortSignal) =>
-        this.get<SubtitleVideo>('api/files/text/video', { path }, signal);
+        this.get<SubtitleVideo>('files/text/video', { path }, signal);
     /**
      * Saves text over the file `path`, if it is still `version` (`*`: whatever it is): 412 `file-changed` when it
      * changed meanwhile, 422 `not-encodable`; a 409 (link, read-only, scan) answers its problem.
@@ -570,29 +571,29 @@ export class Api {
     saveText = (path: string, text: TextToSave, session: string, version: string) =>
         this.send(
             this.http.put<SaveTextResult>(
-                withQuery('api/files/text', { path }),
+                API_BASE + withQuery('files/text', { path }),
                 { ...text, session },
                 { headers: this.headers(true).set('If-Match', version === '*' ? '*' : `"${version}"`) },
             ),
         );
     /** Saves text as the new file `name` in the folder `path` (409 `file-exists` when the name is taken). */
     saveTextCopy = (path: string, name: string, text: TextToSave) =>
-        this.post<FileOperationResult>('api/files/text', { path, name, ...text });
-    propertyJob = (id: string) => this.get<PropertyJob>(`api/files/properties/jobs/${id}`);
-    cancelPropertyJob = (id: string) => this.delete<void>(`api/files/properties/jobs/${id}`);
+        this.post<FileOperationResult>('files/text', { path, name, ...text });
+    propertyJob = (id: string) => this.get<PropertyJob>(`files/properties/jobs/${id}`);
+    cancelPropertyJob = (id: string) => this.delete<void>(`files/properties/jobs/${id}`);
 
     /** Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original kept. */
     saveEditedImage = (path: string, image: Blob) =>
-        this.post<EditedImage>(withQuery('api/editor/images', { path }), image);
+        this.post<EditedImage>(withQuery('editor/images', { path }), image);
     /** The picture's version, and whether this account may save over it. */
-    editedImageAccess = (path: string) => this.get<EditedImageAccess>('api/editor/images/access', { path });
+    editedImageAccess = (path: string) => this.get<EditedImageAccess>('editor/images/access', { path });
     /**
      * Saves `image` over the picture `path`, if it is still `version` (`*`: whatever it is): 412 `file-changed`
      * when it changed meanwhile; a 409 (link, read-only, scan) answers its problem.
      */
     saveEditedImageOver = (path: string, image: Blob, session: string, version: string) =>
         this.send(
-            this.http.put<SaveImageResult>(withQuery('api/editor/images', { path, session }), image, {
+            this.http.put<SaveImageResult>(API_BASE + withQuery('editor/images', { path, session }), image, {
                 headers: this.headers(true).set('If-Match', version === '*' ? '*' : `"${version}"`),
             }),
         );
@@ -601,79 +602,78 @@ export class Api {
      * Accounts, groups and rights. `tenant` names another space than the session's (server administrators manage every
      * space from wherever they are); left out, the session's space.
      */
-    rights = (tenant?: number | null) => this.get<RightsCatalog>('api/access/rights', { tenant });
+    rights = (tenant?: number | null) => this.get<RightsCatalog>('access/rights', { tenant });
     /** `all`: every account of the server (server administrators), else those of the space. */
-    users = (all = false, tenant?: number | null) => this.get<UserInfo[]>('api/access/users', { all, tenant });
-    createUser = (user: UserInput) => this.post<UserInfo>('api/access/users', user);
-    updateUser = (id: number, user: UserInput) => this.put<UserInfo>(`api/access/users/${id}`, user);
-    deleteUser = (id: number) => this.delete<void>(`api/access/users/${id}`);
+    users = (all = false, tenant?: number | null) => this.get<UserInfo[]>('access/users', { all, tenant });
+    createUser = (user: UserInput) => this.post<UserInfo>('access/users', user);
+    updateUser = (id: number, user: UserInput) => this.put<UserInfo>(`access/users/${id}`, user);
+    deleteUser = (id: number) => this.delete<void>(`access/users/${id}`);
     /** `all`: the groups of every space (server administrators), else those of the space. */
-    groups = (all = false, tenant?: number | null) => this.get<GroupInfo[]>('api/access/groups', { all, tenant });
+    groups = (all = false, tenant?: number | null) => this.get<GroupInfo[]>('access/groups', { all, tenant });
     createGroup = (group: GroupInput, tenant?: number | null) =>
-        this.post<GroupInfo>(withQuery('api/access/groups', { tenant }), group);
+        this.post<GroupInfo>(withQuery('access/groups', { tenant }), group);
     updateGroup = (id: number, group: GroupInput, tenant?: number | null) =>
-        this.put<GroupInfo>(withQuery(`api/access/groups/${id}`, { tenant }), group);
+        this.put<GroupInfo>(withQuery(`access/groups/${id}`, { tenant }), group);
     deleteGroup = (id: number, tenant?: number | null) =>
-        this.delete<void>(withQuery(`api/access/groups/${id}`, { tenant }));
-    tenantAccess = () => this.get<TenantAccess>('api/access/tenant');
+        this.delete<void>(withQuery(`access/groups/${id}`, { tenant }));
+    tenantAccess = () => this.get<TenantAccess>('access/tenant');
     /** The space's folder rules. */
-    folderRules = (tenant?: number | null) => this.get<FolderRuleView[]>('api/access/folder-rules', { tenant });
+    folderRules = (tenant?: number | null) => this.get<FolderRuleView[]>('access/folder-rules', { tenant });
     /** Sets (or with `level` null removes) a rule; answers every rule. */
     setFolderRule = (change: FolderRuleChange, tenant?: number | null) =>
-        this.put<FolderRuleView[]>(withQuery('api/access/folder-rules', { tenant }), change);
+        this.put<FolderRuleView[]>(withQuery('access/folder-rules', { tenant }), change);
     /** Moves the rules of a folder gone outside SFE to `to`; answers every rule. */
     repointFolderRules = (from: string, to: string, tenant?: number | null) =>
-        this.post<FolderRuleView[]>(withQuery('api/access/folder-rules/repoint', { tenant }), { from, to });
+        this.post<FolderRuleView[]>(withQuery('access/folder-rules/repoint', { tenant }), { from, to });
     /** Who may see and change the folder `path`. */
     folderAccess = (path: string, tenant?: number | null) =>
-        this.get<FolderAccessReport>('api/access/folder-access', { path, tenant });
+        this.get<FolderAccessReport>('access/folder-access', { path, tenant });
     /** Every sub-folder of `path` in the space (for choosing where a rule goes). */
     spaceFolders = (path: string | null, tenant?: number | null) =>
-        this.get<FolderPicker>('api/access/folders', { path, tenant });
-    setGuestAccess = (guestAccess: boolean) =>
-        this.put<TenantAccess>('api/access/tenant/guest-access', { guestAccess });
+        this.get<FolderPicker>('access/folders', { path, tenant });
+    setGuestAccess = (guestAccess: boolean) => this.put<TenantAccess>('access/tenant/guest-access', { guestAccess });
 
     /** Every space (server administrators). */
-    tenants = () => this.get<TenantDetails[]>('api/tenants');
+    tenants = () => this.get<TenantDetails[]>('tenants');
     /** Where a space's library folder can be chosen: the allowed roots without `path`, else their sub-folders. */
-    tenantFolders = (path: string | null) => this.get<FolderPicker>('api/tenants/folders', { path });
-    createTenant = (tenant: TenantInput) => this.post<TenantDetails>('api/tenants', tenant);
-    updateTenant = (id: number, tenant: TenantInput) => this.put<TenantDetails>(`api/tenants/${id}`, tenant);
-    deleteTenant = (id: number) => this.delete<void>(`api/tenants/${id}`);
+    tenantFolders = (path: string | null) => this.get<FolderPicker>('tenants/folders', { path });
+    createTenant = (tenant: TenantInput) => this.post<TenantDetails>('tenants', tenant);
+    updateTenant = (id: number, tenant: TenantInput) => this.put<TenantDetails>(`tenants/${id}`, tenant);
+    deleteTenant = (id: number) => this.delete<void>(`tenants/${id}`);
 
     /** Connections to other storage (agents/docs/features/connections.md); `kind` of a provider (`dropbox`). */
-    connections = () => this.get<ConnectionsView>('api/connections');
+    connections = () => this.get<ConnectionsView>('connections');
     /** A page of a connection's folder (`path` relative to its root). */
     connectionBrowse = (
         id: number,
         query: { path: string; offset: number; limit: number; sort: SortField; desc: boolean },
         signal?: AbortSignal,
-    ) => this.get<ConnectionListing>(`api/connections/${id}/browse`, query, signal);
+    ) => this.get<ConnectionListing>(`connections/${id}/browse`, query, signal);
     updateConnection = (id: number, change: ConnectionChange) =>
-        this.patch<ConnectionInfo>(`api/connections/${id}`, change);
-    removeConnection = (id: number) => this.delete<void>(`api/connections/${id}`);
+        this.patch<ConnectionInfo>(`connections/${id}`, change);
+    removeConnection = (id: number) => this.delete<void>(`connections/${id}`);
     setConnectionLibraries = (id: number, allLibraries: boolean, libraryIds: number[]) =>
-        this.put<ConnectionInfo>(`api/connections/${id}/libraries`, { allLibraries, libraryIds });
+        this.put<ConnectionInfo>(`connections/${id}/libraries`, { allLibraries, libraryIds });
     setConnectionGroups = (id: number, groups: Record<number, FolderLevelName>) =>
-        this.put<ConnectionInfo>(`api/connections/${id}/groups`, { groups });
+        this.put<ConnectionInfo>(`connections/${id}/groups`, { groups });
     /** The library's folder rules in a connection; setting them replaces them all. Its sub-folders, for the picker. */
-    connectionRules = (id: number) => this.get<ConnectionRuleView[]>(`api/connections/${id}/folder-rules`);
+    connectionRules = (id: number) => this.get<ConnectionRuleView[]>(`connections/${id}/folder-rules`);
     setConnectionRules = (id: number, rules: ConnectionRule[]) =>
-        this.put<ConnectionRuleView[]>(`api/connections/${id}/folder-rules`, { rules });
-    connectionFolders = (id: number, path: string) => this.get<FolderPicker>(`api/connections/${id}/folders`, { path });
-    authorizeConnection = (request: ConnectRequest) => this.post<SignInBegun>('api/connections/authorize', request);
+        this.put<ConnectionRuleView[]>(`connections/${id}/folder-rules`, { rules });
+    connectionFolders = (id: number, path: string) => this.get<FolderPicker>(`connections/${id}/folders`, { path });
+    authorizeConnection = (request: ConnectRequest) => this.post<SignInBegun>('connections/authorize', request);
     reauthorizeConnection = (id: number, method: SignInKindName, fields: Record<string, string> = {}) =>
-        this.post<SignInBegun>(`api/connections/${id}/reauthorize`, { method, fields });
+        this.post<SignInBegun>(`connections/${id}/reauthorize`, { method, fields });
     completeConnection = (state: string, fields: Record<string, string>) =>
-        this.post<SignInDone>('api/connections/authorize/complete', { state, fields });
-    connectionProvider = (kind: string) => this.get<ProviderSetup>(`api/connections/providers/${kind}`);
+        this.post<SignInDone>('connections/authorize/complete', { state, fields });
+    connectionProvider = (kind: string) => this.get<ProviderSetup>(`connections/providers/${kind}`);
     setProviderSecret = (kind: string, secret: string) =>
-        this.put<void>(`api/connections/providers/${kind}/secret`, { secret });
-    removeProviderSecret = (kind: string) => this.delete<void>(`api/connections/providers/${kind}/secret`);
-    testProvider = (kind: string) => this.post<ProviderTest>(`api/connections/providers/${kind}/test`);
+        this.put<void>(`connections/providers/${kind}/secret`, { secret });
+    removeProviderSecret = (kind: string) => this.delete<void>(`connections/providers/${kind}/secret`);
+    testProvider = (kind: string) => this.post<ProviderTest>(`connections/providers/${kind}/test`);
 
     /**
-     * The library the page shows (/api/config): sent with every request, so that a session switched to another
+     * The library the page shows (`config`): sent with every request, so that a session switched to another
      * library meanwhile (in another tab) is noticed (409 `tenant-changed`: the page reloads).
      */
     tenantId: number | null = null;
@@ -685,26 +685,26 @@ export class Api {
         redirect = true,
     ): Promise<T> {
         return this.send(
-            this.http.get<T>(url, { params: params(query), headers: this.headers(false) }),
+            this.http.get<T>(API_BASE + url, { params: params(query), headers: this.headers(false) }),
             signal,
             redirect,
         );
     }
 
     private post<T>(url: string, body: unknown = null, signal?: AbortSignal, redirect = true): Promise<T> {
-        return this.send(this.http.post<T>(url, body, { headers: this.headers(true) }), signal, redirect);
+        return this.send(this.http.post<T>(API_BASE + url, body, { headers: this.headers(true) }), signal, redirect);
     }
 
     private put<T>(url: string, body: unknown): Promise<T> {
-        return this.send(this.http.put<T>(url, body, { headers: this.headers(true) }));
+        return this.send(this.http.put<T>(API_BASE + url, body, { headers: this.headers(true) }));
     }
 
     private patch<T>(url: string, body: unknown): Promise<T> {
-        return this.send(this.http.patch<T>(url, body, { headers: this.headers(true) }));
+        return this.send(this.http.patch<T>(API_BASE + url, body, { headers: this.headers(true) }));
     }
 
     private delete<T>(url: string): Promise<T> {
-        return this.send(this.http.delete<T>(url, { headers: this.headers(true) }));
+        return this.send(this.http.delete<T>(API_BASE + url, { headers: this.headers(true) }));
     }
 
     /**

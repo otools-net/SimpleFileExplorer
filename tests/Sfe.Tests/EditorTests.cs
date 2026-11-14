@@ -213,7 +213,7 @@ public sealed class EditorTests
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
 
-        var config = await GetAsync<ClientConfig>(admin, "/api/config");
+        var config = await GetAsync<ClientConfig>(admin, $"{V1}/config");
         using var saved = await PostImageAsync(admin, "Media/photo.jpg", Jpeg(30, 20));
         var image = await saved.Content.ReadFromJsonAsync<EditedImage>(Json, TestContext.CancellationToken);
         using var invalid = await PostImageAsync(admin, "Media/photo.jpg", "not a picture"u8.ToArray());
@@ -234,17 +234,17 @@ public sealed class EditorTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         using (
             await admin.PutAsJsonAsync(
-                "/api/access/tenant/guest-access",
+                $"{V1}/access/tenant/guest-access",
                 new GuestAccessChange(true),
                 TestContext.CancellationToken
             )
         ) { }
-        var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
+        var groups = await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups");
         var users = groups.Single(g => g.BuiltIn == BuiltInGroup.Users);
         var guests = groups.Single(g => g.BuiltIn == BuiltInGroup.Guests);
         using (
             var create = await admin.PostAsJsonAsync(
-                "/api/access/users",
+                $"{V1}/access/users",
                 new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]),
                 Json,
                 TestContext.CancellationToken
@@ -260,17 +260,17 @@ public sealed class EditorTests
         _disposables.Add(visitor);
 
         using var guestGrant = await admin.PutAsJsonAsync(
-            $"/api/access/groups/{guests.Id}",
+            $"{V1}/access/groups/{guests.Id}",
             new GroupInput(guests.Name, Rights: [.. guests.Rights, Rights.EditImages]),
             Json,
             TestContext.CancellationToken
         );
         using var byVisitor = await PostImageAsync(visitor, "Media/photo.jpg", Png(2, 2));
-        var visitorConfig = await GetAsync<ClientConfig>(visitor, "/api/config");
+        var visitorConfig = await GetAsync<ClientConfig>(visitor, $"{V1}/config");
         using var byUser = await PostImageAsync(alice, "Media/photo.jpg", Png(2, 2));
         using (
             var revoke = await admin.PutAsJsonAsync(
-                $"/api/access/groups/{users.Id}",
+                $"{V1}/access/groups/{users.Id}",
                 new GroupInput(users.Name, Rights: users.Rights.Where(r => r != Rights.EditImages).ToList()),
                 Json,
                 TestContext.CancellationToken
@@ -281,7 +281,7 @@ public sealed class EditorTests
         }
 
         using var afterRevoke = await PostImageAsync(alice, "Media/photo.jpg", Png(2, 2));
-        var aliceConfig = await GetAsync<ClientConfig>(alice, "/api/config");
+        var aliceConfig = await GetAsync<ClientConfig>(alice, $"{V1}/config");
 
         Assert.AreEqual(HttpStatusCode.BadRequest, guestGrant.StatusCode, "A guest may never edit");
         Assert.AreEqual(
@@ -349,7 +349,7 @@ public sealed class EditorTests
         int TrashedFiles() =>
             Directory.Exists(trash) ? Directory.GetFiles(trash, "*", SearchOption.AllDirectories).Length : 0;
 
-        var opened = await GetAsync<EditedImageAccess>(admin, "/api/editor/images/access?path=Media/beach.jpg");
+        var opened = await GetAsync<EditedImageAccess>(admin, $"{V1}/editor/images/access?path=Media/beach.jpg");
         using var noVersion = await PutImageAsync(admin, "Media/beach.jpg", Jpeg(20, 30), null, "s1");
         using var otherFormat = await PutImageAsync(admin, "Media/beach.jpg", Png(20, 30), opened.Version, "s1");
         using var saved = await PutImageAsync(admin, "Media/beach.jpg", Jpeg(20, 30), opened.Version, "s1");
@@ -398,7 +398,7 @@ public sealed class EditorTests
         var users = await GroupAsync(admin, BuiltInGroup.Users);
         using (
             var create = await admin.PostAsJsonAsync(
-                "/api/access/users",
+                $"{V1}/access/users",
                 new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]),
                 Json,
                 TestContext.CancellationToken
@@ -421,11 +421,11 @@ public sealed class EditorTests
             TestContext.CancellationToken
         );
 
-        var byAlice = await GetAsync<EditedImageAccess>(alice, "/api/editor/images/access?path=Media/beach.jpg");
+        var byAlice = await GetAsync<EditedImageAccess>(alice, $"{V1}/editor/images/access?path=Media/beach.jpg");
         using var aliceSaves = await PutImageAsync(alice, "Media/beach.jpg", Jpeg(20, 30), "*", "s1");
-        var gif = await GetAsync<EditedImageAccess>(admin, "/api/editor/images/access?path=Media/moving.gif");
+        var gif = await GetAsync<EditedImageAccess>(admin, $"{V1}/editor/images/access?path=Media/moving.gif");
         using var hidden = await admin.GetAsync(
-            "/api/editor/images/access?path=.sfe/trash",
+            $"{V1}/editor/images/access?path=.sfe/trash",
             TestContext.CancellationToken
         );
 
@@ -444,22 +444,22 @@ public sealed class EditorTests
     {
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        var view = await GetAsync<SettingsView>(admin, "/api/settings?level=tenant");
+        var view = await GetAsync<SettingsView>(admin, $"{V1}/settings?level=tenant");
         view.Values.Editor.OutputFolder = @"Photos\Edited/";
         view.Values.Editor.Quality = 80;
 
         using var save = await admin.PutAsJsonAsync(
-            "/api/settings?level=tenant",
+            $"{V1}/settings?level=tenant",
             view.Values,
             Json,
             TestContext.CancellationToken
         );
-        var config = await GetAsync<ClientConfig>(admin, "/api/config");
-        var server = await GetAsync<SettingsView>(admin, "/api/settings?level=server");
+        var config = await GetAsync<ClientConfig>(admin, $"{V1}/config");
+        var server = await GetAsync<SettingsView>(admin, $"{V1}/settings?level=server");
         using var saved = await PostImageAsync(admin, "Media/photo.jpg", Png(4, 4));
         view.Values.Editor.OutputFolder = "../outside";
         using var invalid = await admin.PutAsJsonAsync(
-            "/api/settings?level=tenant",
+            $"{V1}/settings?level=tenant",
             view.Values,
             Json,
             TestContext.CancellationToken
@@ -510,7 +510,7 @@ public sealed class EditorTests
         var guests = await GroupAsync(upgraded, BuiltInGroup.Guests);
         using (
             var revoke = await upgraded.PutAsJsonAsync(
-                $"/api/access/groups/{users.Id}",
+                $"{V1}/access/groups/{users.Id}",
                 new GroupInput(users.Name, Rights: users.Rights.Where(r => r != Rights.EditImages).ToList()),
                 Json,
                 TestContext.CancellationToken
@@ -572,7 +572,7 @@ public sealed class EditorTests
         var body = new ByteArrayContent(content);
         body.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         return client.PostAsync(
-            $"/api/editor/images?path={Uri.EscapeDataString(path)}",
+            $"{V1}/editor/images?path={Uri.EscapeDataString(path)}",
             body,
             TestContext.CancellationToken
         );
@@ -588,7 +588,7 @@ public sealed class EditorTests
     {
         var request = new HttpRequestMessage(
             HttpMethod.Put,
-            $"/api/editor/images?path={Uri.EscapeDataString(path)}&session={session}"
+            $"{V1}/editor/images?path={Uri.EscapeDataString(path)}&session={session}"
         )
         {
             Content = new ByteArrayContent(content),
@@ -599,7 +599,7 @@ public sealed class EditorTests
     }
 
     private async Task<GroupInfo> GroupAsync(HttpClient admin, BuiltInGroup builtIn) =>
-        (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g => g.BuiltIn == builtIn);
+        (await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups")).Single(g => g.BuiltIn == builtIn);
 
     private async Task<T> GetAsync<T>(HttpClient client, string url)
     {

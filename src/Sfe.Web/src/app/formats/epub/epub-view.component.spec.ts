@@ -97,7 +97,7 @@ describe('EpubViewComponent', () => {
         await show();
 
         expect(opened).toHaveLength(1);
-        expect(opened[0].url).toMatch(new RegExp(`api/files/epub/${bookToken('Books/Hut stories.epub')}/$`));
+        expect(opened[0].url).toMatch(new RegExp(`api/v1/files/epub/${bookToken('Books/Hut stories.epub')}/$`));
         expect(opened[0].stage.classList).toContain('epub-stage');
         expect(opened[0].options.mode).toBe('pages');
         expect(opened[0].options.start).toBeNull();

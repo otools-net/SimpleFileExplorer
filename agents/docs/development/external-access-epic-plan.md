@@ -36,7 +36,7 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 | # | Plan | State | Done | Next |
 |---|---|---|---|---|
-| 1 | api-v1 | in progress (**next of the epic**) | phase 0 (rules: [api-versioning](api-versioning.md)); phase 1 (`ApiRoutes`); phase 2 (base `/api/v1`, `LegacyApiPaths` with `Deprecation`, `LegacyPathLog`, `LegacyPathTests`) | phase 3: the client on one base constant, then server tests, e2e and tools on v1 |
+| 1 | api-v1 | in progress (**next of the epic**) | phase 0 (rules: [api-versioning](api-versioning.md)); phase 1 (`ApiRoutes`); phase 2 (base `/api/v1`, `LegacyApiPaths` with `Deprecation`, `LegacyPathLog`, `LegacyPathTests`); phase 3 (client `API_BASE`, server tests `V1`, e2e and tools on v1) | phase 4: the v1 OpenAPI document as a baseline, a test refusing breaking changes, `ProblemTypes`; then phase 5 (user docs, close) |
 | 2 | api-tokens | not started | | |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |

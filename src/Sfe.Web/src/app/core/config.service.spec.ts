@@ -8,18 +8,18 @@ describe('createUrls', () => {
     it('links the files through the API, each segment encoded', () => {
         const urls = createUrls(fakeConfig());
 
-        expect(urls.file('a b/c#1%.jpg')).toBe('api/files/raw/a%20b/c%231%25.jpg');
-        expect(urls.download('x/y.mp4')).toBe('api/files/raw/x/y.mp4?download=true');
-        expect(urls.thumbnail('x/y.mp4')).toBe('api/thumbnails/x/y.mp4');
+        expect(urls.file('a b/c#1%.jpg')).toBe('api/v1/files/raw/a%20b/c%231%25.jpg');
+        expect(urls.download('x/y.mp4')).toBe('api/v1/files/raw/x/y.mp4?download=true');
+        expect(urls.thumbnail('x/y.mp4')).toBe('api/v1/thumbnails/x/y.mp4');
         expect(urls.view('a b/c&d.txt')).toBe('view?path=a+b%2Fc%26d.txt');
-        expect(urls.trickplaySheet('x/y.mp4', 2, 99)).toBe('api/trickplay/files/x/y.mp4?sheet=2&v=99');
+        expect(urls.trickplaySheet('x/y.mp4', 2, 99)).toBe('api/v1/trickplay/files/x/y.mp4?sheet=2&v=99');
     });
 
     it('links the files to the data server when there is one, downloads still through the API', () => {
         const urls = createUrls(fakeConfig({ dataServer: 'http://nas:8080' }));
 
         expect(urls.file('a b.jpg')).toBe('http://nas:8080/a%20b.jpg');
-        expect(urls.download('a b.jpg')).toBe('api/files/raw/a%20b.jpg?download=true');
+        expect(urls.download('a b.jpg')).toBe('api/v1/files/raw/a%20b.jpg?download=true');
     });
 
     it('fills a data server template: {url} with the path, {encodedUrl} with it fully encoded', () => {
@@ -30,7 +30,7 @@ describe('createUrls', () => {
         expect(query.file('Movies/a b&c.mp4')).toBe(
             'http://nas/get?file=Movies%2Fa%20b%26c.mp4&also=Movies/a%20b%26c.mp4',
         );
-        expect(query.download('a.mp4')).toBe('api/files/raw/a.mp4?download=true');
+        expect(query.download('a.mp4')).toBe('api/v1/files/raw/a.mp4?download=true');
     });
 
     it('opens the player at a whole second, from the start when under one', () => {
@@ -49,7 +49,7 @@ describe('createUrls', () => {
     });
 
     it("fills {url} and {encodedUrl} with the file's full address", () => {
-        const address = 'http://nas:5080/api/files/shared/TOKEN/a%20b.mp4';
+        const address = 'http://nas:5080/api/v1/files/shared/TOKEN/a%20b.mp4';
         const vlc = createUrls(fakeConfig({ externalPlayer: { name: 'VLC', url: 'vlc://{url}' } }));
         const encoded = createUrls(
             fakeConfig({
@@ -75,15 +75,17 @@ describe('createUrls', () => {
 
 describe('withVersion', () => {
     it('marks the addresses of a file saved over in this tab only, not those of a data server', () => {
-        expect(withVersion('api/files/raw/a.jpg', { path: 'a.jpg' })).toBe('api/files/raw/a.jpg');
+        expect(withVersion('api/v1/files/raw/a.jpg', { path: 'a.jpg' })).toBe('api/v1/files/raw/a.jpg');
 
         markSaved('b.jpg', '2026-10-19T10:00:00Z');
 
         const time = Date.parse('2026-10-19T10:00:00Z');
-        expect(withVersion('api/files/raw/b.jpg', { path: 'b.jpg' })).toBe(`api/files/raw/b.jpg?v=${time}`);
-        expect(withVersion('api/thumbnails/b.jpg?x=1', { path: 'b.jpg' })).toBe(`api/thumbnails/b.jpg?x=1&v=${time}`);
+        expect(withVersion('api/v1/files/raw/b.jpg', { path: 'b.jpg' })).toBe(`api/v1/files/raw/b.jpg?v=${time}`);
+        expect(withVersion('api/v1/thumbnails/b.jpg?x=1', { path: 'b.jpg' })).toBe(
+            `api/v1/thumbnails/b.jpg?x=1&v=${time}`,
+        );
         expect(withVersion('http://nas/files/b.jpg', { path: 'b.jpg' })).toBe('http://nas/files/b.jpg');
-        expect(withVersion('api/files/raw/a.jpg', { path: 'a.jpg' })).toBe('api/files/raw/a.jpg');
+        expect(withVersion('api/v1/files/raw/a.jpg', { path: 'a.jpg' })).toBe('api/v1/files/raw/a.jpg');
     });
 });
 
@@ -112,7 +114,7 @@ describe('ConfigService', () => {
 
     it('rebuilds the links when loaded again (settings saved)', async () => {
         await loadConfig(api, fakeConfig());
-        expect(config.links.file('a.jpg')).toBe('api/files/raw/a.jpg');
+        expect(config.links.file('a.jpg')).toBe('api/v1/files/raw/a.jpg');
 
         await loadConfig(api, fakeConfig({ dataServer: 'http://media' }));
         expect(config.links.file('a.jpg')).toBe('http://media/a.jpg');
@@ -151,12 +153,12 @@ describe('ConfigService', () => {
 
     it("opens external players through a link of their own, which works without the browser's session", async () => {
         await loadConfig(api, fakeConfig({ externalPlayer: { name: 'VLC', url: 'vlc://{url}' } }));
-        api.fileLink.mockResolvedValue({ url: 'api/files/shared/TOKEN/a%20b.mkv', expires: '2026-01-01T00:00:00Z' });
+        api.fileLink.mockResolvedValue({ url: 'api/v1/files/shared/TOKEN/a%20b.mkv', expires: '2026-01-01T00:00:00Z' });
 
         const link = await config.externalLink('Movies/a b.mkv');
 
         expect(api.fileLink).toHaveBeenCalledWith('Movies/a b.mkv');
-        expect(link).toBe(`vlc://${new URL('api/files/shared/TOKEN/a%20b.mkv', document.baseURI).href}`);
+        expect(link).toBe(`vlc://${new URL('api/v1/files/shared/TOKEN/a%20b.mkv', document.baseURI).href}`);
     });
 
     it("gives external players the data server's address as it is: that server has no sessions", async () => {

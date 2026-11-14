@@ -337,7 +337,7 @@ describe('ArchiveViewComponent', () => {
                 expect(element.querySelector('[data-entry] [data-follow]')).toBeNull();
                 expect(
                     element.querySelector<HTMLAnchorElement>('[data-entry] [data-download]')!.getAttribute('href'),
-                ).toBe(`api/files/explore/entry/${pathToken('Media/trip.zip')}/10/readme.txt?download=true`);
+                ).toBe(`api/v1/files/explore/entry/${pathToken('Media/trip.zip')}/10/readme.txt?download=true`);
                 expect(element.querySelector<HTMLButtonElement>('[data-previous]')!.disabled).toBe(true);
                 expect(element.querySelector<HTMLButtonElement>('[data-next]')!.disabled).toBe(false);
 
@@ -373,19 +373,19 @@ describe('ArchiveViewComponent', () => {
                 open('a.jpg');
                 await stable();
                 expect(element.querySelector<HTMLImageElement>('[data-entry-picture]')!.getAttribute('src')).toBe(
-                    `api/files/explore/entry/${token}/10/a.jpg`,
+                    `api/v1/files/explore/entry/${token}/10/a.jpg`,
                 );
                 element
                     .querySelector<HTMLElement>('[data-entry]')!
                     .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
                 await stable();
                 expect(element.querySelector('[data-entry-video] video')!.getAttribute('src')).toBe(
-                    `api/files/explore/entry/${token}/11/clip.mp4`,
+                    `api/v1/files/explore/entry/${token}/11/clip.mp4`,
                 );
                 element.querySelector<HTMLButtonElement>('[data-next]')!.click();
                 await stable();
                 expect(element.querySelector<HTMLAudioElement>('[data-entry-audio]')!.getAttribute('src')).toBe(
-                    `api/files/explore/entry/${token}/12/song.mp3`,
+                    `api/v1/files/explore/entry/${token}/12/song.mp3`,
                 );
                 expect(
                     element.querySelector<HTMLButtonElement>('[data-next]')!.disabled,
@@ -395,7 +395,7 @@ describe('ArchiveViewComponent', () => {
                 element.querySelector<HTMLAudioElement>('[data-entry-audio]')!.dispatchEvent(new Event('error'));
                 await stable();
                 expect(element.querySelector('[data-cannot-play] a')!.getAttribute('href')).toBe(
-                    `api/files/explore/entry/${token}/12/song.mp3?download=true`,
+                    `api/v1/files/explore/entry/${token}/12/song.mp3?download=true`,
                 );
 
                 element
@@ -424,7 +424,7 @@ describe('ArchiveViewComponent', () => {
                 await until(() => Boolean(element.querySelector('[data-entry] .markdown-content h1')));
                 const token = pathToken('Media/trip.zip');
                 expect(element.querySelector('[data-entry] .markdown-content img')!.getAttribute('src')).toBe(
-                    `api/files/explore/entry/${token}/at/docs/img/map.png`,
+                    `api/v1/files/explore/entry/${token}/at/docs/img/map.png`,
                 );
                 const links = [...element.querySelectorAll<HTMLAnchorElement>('[data-entry] .markdown-content a')];
                 expect(
@@ -535,7 +535,7 @@ describe('ArchiveViewComponent', () => {
 
             const link = element.querySelector<HTMLAnchorElement>('[data-kind="file"] a.archive-open')!;
             expect(link.getAttribute('href')).toBe(
-                `api/files/explore/entry/${pathToken('Media/trip.zip')}/10/photo%20%231.jpg`,
+                `api/v1/files/explore/entry/${pathToken('Media/trip.zip')}/10/photo%20%231.jpg`,
             );
             expect(link.target).toBe('_blank');
             expect(element.querySelectorAll('a.archive-open')).toHaveLength(1);

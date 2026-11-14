@@ -110,13 +110,13 @@ async function start(cache) {
     });
     for (let i = 0; i < 120; i++) {
         try {
-            await fetch(url + 'api/migration');
+            await fetch(url + 'api/v1/migration');
             break;
         } catch {
             await sleep(500);
         }
     }
-    const login = await fetch(url + 'api/session/login', {
+    const login = await fetch(url + 'api/v1/session/login', {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' },
         body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }),
     });
@@ -128,7 +128,7 @@ async function start(cache) {
 
 async function timed(cookie, route, params) {
     const started = performance.now();
-    const response = await fetch(`${url}api/files/explore${route}?${new URLSearchParams(params)}`, { headers: { Cookie: cookie, 'X-SFE-Request': '1' } });
+    const response = await fetch(`${url}api/v1/files/explore${route}?${new URLSearchParams(params)}`, { headers: { Cookie: cookie, 'X-SFE-Request': '1' } });
     const body = response.status === 200 || response.status === 202 ? await response.json() : await response.text();
     if (response.status !== 200 && response.status !== 202)
         throw new Error(`${route} ${JSON.stringify(params).slice(0, 300)}: ${response.status} ${String(body).slice(0, 300)}`);

@@ -86,12 +86,12 @@ public sealed class KeepAliveRouteTests
     [TestMethod]
     public async Task SpaceAdministratorsSeeAndPingTheLibraryFolder()
     {
-        var view = await _ada.GetFromJsonAsync<KeepAliveView>("/api/keep-alive", Json, Token);
+        var view = await _ada.GetFromJsonAsync<KeepAliveView>($"{V1}/keep-alive", Json, Token);
         Assert.AreEqual(KeepAliveMode.Off, view!.Mode);
         Assert.IsEmpty(view.Folders);
 
         // Ping now works while it is off, to try a share first.
-        using var pinged = await _ada.PostAsync("/api/keep-alive/ping", null, Token);
+        using var pinged = await _ada.PostAsync($"{V1}/keep-alive/ping", null, Token);
         Assert.AreEqual(HttpStatusCode.OK, pinged.StatusCode);
         var folder = (await pinged.Content.ReadFromJsonAsync<KeepAliveView>(Json, Token))!.Folders.Single();
         Assert.AreEqual("", folder.Path);
@@ -100,14 +100,14 @@ public sealed class KeepAliveRouteTests
         Assert.IsNull(folder.Error);
         Assert.IsFalse(folder.Waiting);
 
-        Assert.HasCount(1, (await _ada.GetFromJsonAsync<KeepAliveView>("/api/keep-alive", Json, Token))!.Folders);
+        Assert.HasCount(1, (await _ada.GetFromJsonAsync<KeepAliveView>($"{V1}/keep-alive", Json, Token))!.Folders);
     }
 
     [TestMethod]
     public async Task OthersMayNotSeeOrPing()
     {
-        using var get = await _alice.GetAsync("/api/keep-alive", Token);
-        using var ping = await _alice.PostAsync("/api/keep-alive/ping", null, Token);
+        using var get = await _alice.GetAsync($"{V1}/keep-alive", Token);
+        using var ping = await _alice.PostAsync($"{V1}/keep-alive/ping", null, Token);
 
         Assert.AreEqual(HttpStatusCode.Forbidden, get.StatusCode);
         Assert.AreEqual(HttpStatusCode.Forbidden, ping.StatusCode);
@@ -135,7 +135,7 @@ public sealed class KeepAliveRouteTests
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
         }
 
-        var view = await _ada.GetFromJsonAsync<KeepAliveView>("/api/keep-alive", Json, Token);
+        var view = await _ada.GetFromJsonAsync<KeepAliveView>($"{V1}/keep-alive", Json, Token);
         Assert.AreEqual(KeepAliveMode.Always, view!.Mode);
         Assert.AreEqual(60, view.IntervalSeconds);
     }
@@ -162,7 +162,7 @@ public sealed class KeepAliveRouteTests
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
         }
 
-        using var pinged = await _ada.PostAsync("/api/keep-alive/ping", null, Token);
+        using var pinged = await _ada.PostAsync($"{V1}/keep-alive/ping", null, Token);
         var view = (await pinged.Content.ReadFromJsonAsync<KeepAliveView>(Json, Token))!;
         Assert.AreEqual(KeepAliveMethod.Touch, view.Method);
         CollectionAssert.AreEqual(
@@ -174,5 +174,5 @@ public sealed class KeepAliveRouteTests
     }
 
     private Task<HttpResponseMessage> PatchAsync(Dictionary<string, JsonNode?> values) =>
-        _ada.PatchAsJsonAsync("/api/settings?level=tenant", new SettingChanges(values), Json, Token);
+        _ada.PatchAsJsonAsync($"{V1}/settings?level=tenant", new SettingChanges(values), Json, Token);
 }

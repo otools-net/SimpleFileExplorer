@@ -27,7 +27,7 @@ public sealed class OpenApiExportTests
         var document = await ReadDocumentAsync();
 
         await File.WriteAllTextAsync(target, document, TestContext.CancellationToken);
-        StringAssert.Contains(document, "/api/search");
+        StringAssert.Contains(document, $"{V1}/search");
     }
 
     private async Task<string> ReadDocumentAsync()

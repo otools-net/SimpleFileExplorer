@@ -11,6 +11,8 @@ Rules and infrastructure: [testing.md](testing.md). Search expectations: [search
   parallel only for a test of it (`ParallelContextsNeverShareAPooledConnection`).
 - HTTP test servers are **External** (`Sfe:Mode` in `TestLibrary.Settings`): their clients have no remote address, so
   a Local server would refuse them. Local tests remove the key ([server-modes.md](../features/server-modes.md)).
+- Tests call the API at `$"{V1}/…"` (`Infrastructure/ApiPaths`, imported everywhere by `Sfe.Tests.csproj`); only
+  `LegacyPathTests` calls the unversioned `/api/…` aliases ([api-versioning.md](api-versioning.md)).
 - A scan's `progress.Errors` is only logged: pass a `WarningLog` (`Infrastructure/`) to `CoreServices.CreateAsync` and
   use it as the assert message to see why.
 - **Waits on the machine's speed** (ffmpeg making test media, workers rendering trickplay or fingerprints) go through

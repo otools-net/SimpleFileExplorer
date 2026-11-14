@@ -11,7 +11,7 @@ import { VideoPlayerComponent } from './video-player.component';
 describe('VideoPlayerComponent', () => {
     @Component({
         imports: [VideoPlayerComponent],
-        template: `<sfe-video-player src="api/files/raw?path=clip.webm" [loop]="loop()" />`,
+        template: `<sfe-video-player src="api/v1/files/raw?path=clip.webm" [loop]="loop()" />`,
     })
     class Host {
         readonly loop = signal(false);
@@ -274,7 +274,7 @@ describe('VideoPlayerComponent', () => {
     describe('conversion by the server', () => {
         @Component({
             imports: [VideoPlayerComponent],
-            template: `<sfe-video-player src="api/files/raw/clip.avi" [stream]="stream()" [startAt]="startAt()" (unsupported)="failures.push($event)" />`,
+            template: `<sfe-video-player src="api/v1/files/raw/clip.avi" [stream]="stream()" [startAt]="startAt()" (unsupported)="failures.push($event)" />`,
         })
         class StreamHost {
             readonly stream = signal<VideoStream | null>(null);
@@ -294,7 +294,7 @@ describe('VideoPlayerComponent', () => {
         function fakeStream(always = false, probe: StreamProbe | null = { duration: 600, transcoded: true }) {
             return {
                 always,
-                url: vi.fn((start: number) => `api/streaming/play?t=${start}`),
+                url: vi.fn((start: number) => `api/v1/streaming/play?t=${start}`),
                 probe: vi.fn(() => Promise.resolve(probe)),
             };
         }
@@ -335,14 +335,14 @@ describe('VideoPlayerComponent', () => {
         it('plays the conversion from where it was to start when the file fails', async () => {
             const stream = fakeStream();
             await createWith(stream, 30);
-            expect(element().getAttribute('src')).toBe('api/files/raw/clip.avi');
+            expect(element().getAttribute('src')).toBe('api/v1/files/raw/clip.avi');
             expect(convertButton()).not.toBeNull();
 
             element().dispatchEvent(new Event('error'));
             await settle();
             expect(stream.probe).toHaveBeenCalledOnce();
             expect(stream.url).toHaveBeenCalledWith(30);
-            expect(element().getAttribute('src')).toBe('api/streaming/play?t=30');
+            expect(element().getAttribute('src')).toBe('api/v1/streaming/play?t=30');
             expect(host.componentInstance.failures).toEqual([]);
             expect(convertButton()).toBeNull();
 
@@ -363,7 +363,7 @@ describe('VideoPlayerComponent', () => {
             Object.defineProperty(element(), 'videoWidth', { configurable: true, value: 0 });
             element().dispatchEvent(new Event('loadedmetadata'));
             await settle();
-            expect(element().getAttribute('src')).toBe('api/streaming/play?t=0');
+            expect(element().getAttribute('src')).toBe('api/v1/streaming/play?t=0');
         });
 
         it("gives up when the server can't convert it either", async () => {
@@ -371,7 +371,7 @@ describe('VideoPlayerComponent', () => {
             element().dispatchEvent(new Event('error'));
             await settle();
             expect(host.componentInstance.failures).toEqual([true]);
-            expect(element().getAttribute('src')).toBe('api/files/raw/clip.avi');
+            expect(element().getAttribute('src')).toBe('api/v1/files/raw/clip.avi');
         });
 
         it('converts the video on screen with its button', async () => {
@@ -379,24 +379,24 @@ describe('VideoPlayerComponent', () => {
             await createWith(stream);
             convertButton()!.click();
             await settle();
-            expect(element().getAttribute('src')).toBe('api/streaming/play?t=0');
+            expect(element().getAttribute('src')).toBe('api/v1/streaming/play?t=0');
         });
 
         it('always converts, seeking within what arrived and asking again further away', async () => {
             const stream = fakeStream(true);
             await createWith(stream, 5);
-            expect(element().getAttribute('src')).toBe('api/streaming/play?t=5');
+            expect(element().getAttribute('src')).toBe('api/v1/streaming/play?t=5');
             expect(convertButton()).toBeNull();
 
             fakeMedia();
             expect(component().handleKey(new KeyboardEvent('keydown', { key: 'l' }))).toBe(true);
             await settle();
-            expect(element().getAttribute('src')).toBe('api/streaming/play?t=15');
+            expect(element().getAttribute('src')).toBe('api/v1/streaming/play?t=15');
 
             fakeMedia([[0, 60]]);
             component().handleKey(new KeyboardEvent('keydown', { key: 'l' }));
             await settle();
-            expect(element().getAttribute('src')).toBe('api/streaming/play?t=15');
+            expect(element().getAttribute('src')).toBe('api/v1/streaming/play?t=15');
             expect(element().currentTime).toBe(10);
             expect(component().currentTime()).toBe(25);
         });
@@ -405,7 +405,7 @@ describe('VideoPlayerComponent', () => {
     describe('a narrow control row', () => {
         @Component({
             imports: [VideoPlayerComponent, ContextMenuComponent],
-            template: `<sfe-video-player src="api/files/raw?path=clip.webm" /><sfe-context-menu />`,
+            template: `<sfe-video-player src="api/v1/files/raw?path=clip.webm" /><sfe-context-menu />`,
         })
         class NarrowHost {}
 
@@ -515,7 +515,7 @@ describe('VideoPlayerComponent', () => {
     describe('cinema mode and size', () => {
         @Component({
             imports: [VideoPlayerComponent],
-            template: `<sfe-video-player src="api/files/raw?path=clip.webm" [cinemaButton]="cinema()" />`,
+            template: `<sfe-video-player src="api/v1/files/raw?path=clip.webm" [cinemaButton]="cinema()" />`,
         })
         class CinemaHost {
             readonly cinema = signal(true);

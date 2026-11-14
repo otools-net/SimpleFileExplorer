@@ -140,7 +140,7 @@ describe('MigrationPageComponent', () => {
         await create(migration());
         const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
         api.migrationBackup.mockResolvedValue({
-            url: 'api/migration/backup/abc',
+            url: 'api/v1/migration/backup/abc',
             fileName: 'SFE-backup-1.35.0.zip',
             size: 2048,
         });
@@ -153,7 +153,7 @@ describe('MigrationPageComponent', () => {
         expect(api.migrationBackup).toHaveBeenCalledWith('the-setup-code');
         expect(click).toHaveBeenCalled();
         const anchor = click.mock.contexts[0] as HTMLAnchorElement;
-        expect(anchor.getAttribute('href')).toBe('api/migration/backup/abc');
+        expect(anchor.getAttribute('href')).toBe('api/v1/migration/backup/abc');
         expect(anchor.download).toBe('SFE-backup-1.35.0.zip');
         expect(element.querySelector('[role=status]')!.textContent).toContain('SFE-backup-1.35.0.zip');
         expect(api.startMigration).not.toHaveBeenCalled();

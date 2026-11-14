@@ -69,7 +69,7 @@ public sealed class LibraryContentTests
     {
         File.WriteAllText(_library.FullPath(name), Script);
 
-        using var response = await _client.GetAsync($"/api/files/raw/{name}", TestContext.CancellationToken);
+        using var response = await _client.GetAsync($"{V1}/files/raw/{name}", TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual("application/octet-stream", response.Content.Headers.ContentType?.MediaType);
@@ -90,7 +90,7 @@ public sealed class LibraryContentTests
     {
         File.WriteAllText(_library.FullPath("evil.js"), Script);
 
-        using var response = await GetAsAsync("/api/files/raw/evil.js", destination);
+        using var response = await GetAsAsync($"{V1}/files/raw/evil.js", destination);
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -102,7 +102,7 @@ public sealed class LibraryContentTests
     [DataRow("empty")]
     public async Task PicturesPlayersAndDownloadsStillLoadFiles(string destination)
     {
-        using var response = await GetAsAsync("/api/files/raw/Media/photo.jpg", destination);
+        using var response = await GetAsAsync($"{V1}/files/raw/Media/photo.jpg", destination);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
@@ -112,7 +112,7 @@ public sealed class LibraryContentTests
     {
         File.WriteAllText(_library.FullPath("evil.js"), Script);
         using var created = await _client.PostAsJsonAsync(
-            "/api/files/links",
+            $"{V1}/files/links",
             new Sfe.Api.Endpoints.FileLinkRequest("evil.js"),
             TestContext.CancellationToken
         );
@@ -135,9 +135,9 @@ public sealed class LibraryContentTests
         }
         var token = EpubEntries.Token("book.epub");
 
-        using var style = await GetAsAsync($"/api/files/epub/{token}/style.css", "style");
-        using var script = await GetAsAsync($"/api/files/epub/{token}/evil.js", "script");
-        using var worker = await GetAsAsync($"/api/files/epub/{token}/evil.js", "worker");
+        using var style = await GetAsAsync($"{V1}/files/epub/{token}/style.css", "style");
+        using var script = await GetAsAsync($"{V1}/files/epub/{token}/evil.js", "script");
+        using var worker = await GetAsAsync($"{V1}/files/epub/{token}/evil.js", "worker");
 
         Assert.AreEqual(HttpStatusCode.OK, style.StatusCode);
         Assert.AreEqual("text/css", style.Content.Headers.ContentType?.MediaType);

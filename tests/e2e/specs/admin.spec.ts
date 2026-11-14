@@ -92,7 +92,7 @@ test('long names in the trash keep the page within the screen', async ({ page, s
     const name = `IMG_20261029_123456789_${'0123456789'.repeat(6)}.jpg`;
     fs.mkdirSync(path.join(library, folder), { recursive: true });
     fs.copyFileSync(path.join(library, scratch, 'A.jpg'), path.join(library, folder, name));
-    const deleted = await page.request.post('api/files/delete', {
+    const deleted = await page.request.post('api/v1/files/delete', {
         data: { paths: [`${folder}/${name}`] },
         headers: { 'X-SFE-Request': '1' },
     });
@@ -114,12 +114,15 @@ test('the server log scrolls by finger and loads older entries at its end', asyn
     for (let start = 0; start < 110; start += 10)
         await Promise.all(
             Array.from({ length: 10 }, (_, i) =>
-                page.request.post('api/files/folders', { data: { path: scratch, name: `Log ${start + i}` }, headers }),
+                page.request.post('api/v1/files/folders', {
+                    data: { path: scratch, name: `Log ${start + i}` },
+                    headers,
+                }),
             ),
         );
     // Written a moment later (AuditLogWorker).
     await expect
-        .poll(async () => (await (await page.request.get('api/logs', { headers })).json()).next, { timeout: 20_000 })
+        .poll(async () => (await (await page.request.get('api/v1/logs', { headers })).json()).next, { timeout: 20_000 })
         .not.toBeNull();
 
     await page.goto('./admin?section=logs');

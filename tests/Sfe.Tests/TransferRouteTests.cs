@@ -117,7 +117,7 @@ public sealed class TransferRouteTests
         Assert.IsTrue(job.Results.All(r => r.Status == FileOperationStatus.Done), job.Results[0].Message);
         Assert.IsTrue(_account.Exists("Photos/Trips/RFile1.txt"));
         Assert.IsTrue(_account.Exists("Photos/Trips/ChildDir/AFile2"));
-        var listed = (await _admin.GetFromJsonAsync<List<FileJobView>>("/api/files/jobs", Json, Cancel))!;
+        var listed = (await _admin.GetFromJsonAsync<List<FileJobView>>($"{V1}/files/jobs", Json, Cancel))!;
         Assert.AreEqual(_id, listed.Single(j => j.Id == view.Id).ToConnection);
     }
 
@@ -129,7 +129,7 @@ public sealed class TransferRouteTests
         var answered = await StartAsync(Copy(null, ["RFile1.txt"], _id, ""));
         var waiting = await WaitForAsync(answered.Id, j => j.State == FileJobState.Waiting);
         using var answer = await _admin.PostAsJsonAsync(
-            $"/api/files/jobs/{answered.Id}/answer",
+            $"{V1}/files/jobs/{answered.Id}/answer",
             new JobAnswer(ConflictChoice.KeepBoth),
             Json,
             Cancel
@@ -137,7 +137,7 @@ public sealed class TransferRouteTests
         var done = await FinishedAsync(answered.Id);
         var cancelled = await StartAsync(Copy(null, ["RFile1.txt"], _id, ""));
         await WaitForAsync(cancelled.Id, j => j.State == FileJobState.Waiting);
-        using var cancel = await _admin.PostAsync($"/api/files/jobs/{cancelled.Id}/cancel", null, Cancel);
+        using var cancel = await _admin.PostAsync($"{V1}/files/jobs/{cancelled.Id}/cancel", null, Cancel);
         var stopped = await FinishedAsync(cancelled.Id);
 
         Assert.AreEqual("RFile1.txt", waiting.Conflict!.Existing.Name);
@@ -159,13 +159,13 @@ public sealed class TransferRouteTests
         using var bob = await ApiClients.SignInAsync(_factory, "bob", "bob-password-1", Cancel);
         using var others = await RetryAsync(bob, job.Id);
         using var unknown = await RetryAsync(_admin, job.Id + 100);
-        using var cancel = await _admin.PostAsync($"/api/files/jobs/{job.Id}/cancel", null, Cancel);
+        using var cancel = await _admin.PostAsync($"{V1}/files/jobs/{job.Id}/cancel", null, Cancel);
         await FinishedAsync(job.Id);
         using var retried = await RetryAsync(_admin, job.Id);
         var again = (await retried.Content.ReadFromJsonAsync<FileJobView>(Json, Cancel))!;
         await WaitForAsync(again.Id, j => j.State == FileJobState.Waiting);
         using var answer = await _admin.PostAsJsonAsync(
-            $"/api/files/jobs/{again.Id}/answer",
+            $"{V1}/files/jobs/{again.Id}/answer",
             new JobAnswer(ConflictChoice.Skip),
             Json,
             Cancel
@@ -206,7 +206,7 @@ public sealed class TransferRouteTests
     }
 
     private Task<HttpResponseMessage> RetryAsync(HttpClient client, int id) =>
-        client.PostAsync($"/api/files/jobs/{id}/retry", null, Cancel);
+        client.PostAsync($"{V1}/files/jobs/{id}/retry", null, Cancel);
 
     private static TransferRequest Copy(int? from, IReadOnlyList<string> paths, int? to, string target) =>
         new("copy", new TransferSide(from, paths), new TransferTarget(to, target));
@@ -231,7 +231,7 @@ public sealed class TransferRouteTests
     }
 
     private Task<HttpResponseMessage> PostAsync(TransferRequest request) =>
-        _admin.PostAsJsonAsync("/api/files/jobs/transfer", request, Json, Cancel);
+        _admin.PostAsJsonAsync($"{V1}/files/jobs/transfer", request, Json, Cancel);
 
     private async Task<FileJobView> StartAsync(TransferRequest request)
     {
@@ -248,7 +248,7 @@ public sealed class TransferRouteTests
         var until = DateTime.UtcNow.AddSeconds(30);
         while (true)
         {
-            var job = (await _admin.GetFromJsonAsync<FileJobView>($"/api/files/jobs/{id}", Json, Cancel))!;
+            var job = (await _admin.GetFromJsonAsync<FileJobView>($"{V1}/files/jobs/{id}", Json, Cancel))!;
             if (condition(job))
                 return job;
             if (DateTime.UtcNow > until)

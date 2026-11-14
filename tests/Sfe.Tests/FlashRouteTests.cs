@@ -167,7 +167,7 @@ public sealed class FlashRouteTests
             Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_frame, folder + outside), outside);
         }
 
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_frame, "/api/files/flash/not-a-token/game.swf"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_frame, $"{V1}/files/flash/not-a-token/game.swf"));
     }
 
     [TestMethod]
@@ -176,31 +176,31 @@ public sealed class FlashRouteTests
         await StartAsync();
 
         using var bob = await _bob.PostAsJsonAsync(
-            "/api/files/flash-links",
+            $"{V1}/files/flash-links",
             new FlashLinkRequest("Games/Run/game.swf"),
             Json,
             Token
         );
         using var hidden = await _alice.PostAsJsonAsync(
-            "/api/files/flash-links",
+            $"{V1}/files/flash-links",
             new FlashLinkRequest("SpecialDir/hidden.swf"),
             Json,
             Token
         );
         using var text = await _alice.PostAsJsonAsync(
-            "/api/files/flash-links",
+            $"{V1}/files/flash-links",
             new FlashLinkRequest("Games/Run/notes.txt"),
             Json,
             Token
         );
         using var missing = await _alice.PostAsJsonAsync(
-            "/api/files/flash-links",
+            $"{V1}/files/flash-links",
             new FlashLinkRequest("Games/none.swf"),
             Json,
             Token
         );
         using var escape = await _alice.PostAsJsonAsync(
-            "/api/files/flash-links",
+            $"{V1}/files/flash-links",
             new FlashLinkRequest("../outside.swf"),
             Json,
             Token
@@ -259,7 +259,7 @@ public sealed class FlashRouteTests
     {
         await StartAsync();
         using var created = await _admin.PostAsJsonAsync(
-            "/api/files/links",
+            $"{V1}/files/links",
             new FileLinkRequest("Games/Run/game.swf"),
             Json,
             Token
@@ -268,7 +268,7 @@ public sealed class FlashRouteTests
         var token = shared.Url.Split('/')[3];
 
         Assert.AreEqual(HttpStatusCode.OK, await StatusAsync(_frame, "/" + shared.Url));
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_frame, $"/api/files/flash/{token}/game.swf"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_frame, $"{V1}/files/flash/{token}/game.swf"));
     }
 
     [TestMethod]
@@ -279,14 +279,14 @@ public sealed class FlashRouteTests
         Assert.IsTrue((await ConfigAsync(_alice)).GetProperty("flash").GetBoolean());
         Assert.IsFalse((await ConfigAsync(_bob)).GetProperty("flash").GetBoolean(), "Bob may not open files");
 
-        var settings = (await _admin.GetFromJsonAsync<SettingsView>("/api/settings", Json, Token))!;
+        var settings = (await _admin.GetFromJsonAsync<SettingsView>($"{V1}/settings", Json, Token))!;
         Assert.IsTrue(settings.Values.Player.Flash, "on by default");
         settings.Values.Player.Flash = false;
-        using (var off = await _admin.PutAsJsonAsync("/api/settings", settings.Values, Json, Token))
+        using (var off = await _admin.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token))
             Assert.AreEqual(HttpStatusCode.OK, off.StatusCode, await off.Content.ReadAsStringAsync(Token));
 
         using var refused = await _alice.PostAsJsonAsync(
-            "/api/files/flash-links",
+            $"{V1}/files/flash-links",
             new FlashLinkRequest("Games/Run/game.swf"),
             Json,
             Token
@@ -304,7 +304,7 @@ public sealed class FlashRouteTests
         using var page = await _frame.GetAsync("/flash/player.html", Token);
         using var ruffle = await _frame.GetAsync("/flash/ruffle/ruffle.js", Token);
         using var app = await _frame.GetAsync("/", Token);
-        using var api = await _alice.GetAsync("/api/config", Token);
+        using var api = await _alice.GetAsync($"{V1}/config", Token);
 
         Assert.AreEqual("SAMEORIGIN", page.Headers.GetValues("X-Frame-Options").Single());
         Assert.AreEqual(SecurityHeaders.FlashPolicy, page.Headers.GetValues("Content-Security-Policy").Single());
@@ -322,7 +322,7 @@ public sealed class FlashRouteTests
     private async Task<FlashLink> LinkAsync(HttpClient client, string path)
     {
         using var response = await client.PostAsJsonAsync(
-            "/api/files/flash-links",
+            $"{V1}/files/flash-links",
             new FlashLinkRequest(path),
             Json,
             Token
@@ -338,5 +338,5 @@ public sealed class FlashRouteTests
     }
 
     private async Task<JsonElement> ConfigAsync(HttpClient client) =>
-        await client.GetFromJsonAsync<JsonElement>("/api/config", Token);
+        await client.GetFromJsonAsync<JsonElement>($"{V1}/config", Token);
 }

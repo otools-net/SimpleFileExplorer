@@ -162,9 +162,9 @@
     "src/Sfe.Web/src/styles/top-bar.css": {"fileLines":426},
     "src/Sfe.Web/src/styles/trickplay.css": {"fileLines":673},
     "src/Sfe.Web/src/styles/video-player.css": {"fileLines":586},
-    "tests/Sfe.Tests/AccessTests.cs": {"fileLines":1331},
-    "tests/Sfe.Tests/ApiTests.cs": {"fileLines":1788},
-    "tests/Sfe.Tests/ExploreRouteTests.cs": {"fileLines":921},
+    "tests/Sfe.Tests/AccessTests.cs": {"fileLines":1263},
+    "tests/Sfe.Tests/ApiTests.cs": {"fileLines":1550},
+    "tests/Sfe.Tests/ExploreRouteTests.cs": {"fileLines":893},
     "tests/Sfe.Tests/MediaResolutionTests.cs": {"longLines":4},
     "tests/Sfe.Tests/SearchCombinationTests.cs": {"fileLines":1068},
     "tests/Sfe.Tests/TaggingTests.cs": {"fileLines":1487}

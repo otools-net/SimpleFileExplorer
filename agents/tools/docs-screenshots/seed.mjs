@@ -42,19 +42,19 @@ const js = body => `(async () => {
 })()`;
 
 console.log(await b.eval(js(`
-    await call('POST', 'api/setup', { code: ${JSON.stringify(process.env.SFE_SETUP_CODE ?? 'doc-screenshots-setup')}, userName: 'admin', password: 'admin-password-1', displayName: 'Alex (admin)', libraryName: 'Home media' });
+    await call('POST', 'api/v1/setup', { code: ${JSON.stringify(process.env.SFE_SETUP_CODE ?? 'doc-screenshots-setup')}, userName: 'admin', password: 'admin-password-1', displayName: 'Alex (admin)', libraryName: 'Home media' });
     // Trickplay every 2 s (more frames for the seek bar, hover previews and similar videos); off without ffmpeg.
-    const view = await call('GET', 'api/settings?level=tenant');
+    const view = await call('GET', 'api/v1/settings?level=tenant');
     Object.assign(view.values.trickplay, { enabled: true, intervalSeconds: 2 });
-    await call('PUT', 'api/settings?level=tenant', view.values);
-    await call('POST', 'api/scan', { path: '' });
-    for (let i = 0; i < 100; i++) { const s = await call('GET', 'api/scan'); if (!s.isRunning && !s.running) break; await new Promise(r => setTimeout(r, 300)); }
+    await call('PUT', 'api/v1/settings?level=tenant', view.values);
+    await call('POST', 'api/v1/scan', { path: '' });
+    for (let i = 0; i < 100; i++) { const s = await call('GET', 'api/v1/scan'); if (!s.isRunning && !s.running) break; await new Promise(r => setTimeout(r, 300)); }
     return 'ok';
 `)));
 await sleep(2000);
 
 console.log(await b.eval(js(`
-    const tag = async (name, extra = {}) => (await call('POST', 'api/tags', { name, ...extra })).id;
+    const tag = async (name, extra = {}) => (await call('POST', 'api/v1/tags', { name, ...extra })).id;
     const places = await tag('Places', { color: 'teal', isCategory: true });
     const people = await tag('People', { color: 'purple', isCategory: true });
     const beach = await tag('Beach', { color: 'cyan', parentIds: [places] });
@@ -64,7 +64,7 @@ console.log(await b.eval(js(`
     const sea = await tag('Sea', { color: 'blue', aliases: ['Ocean'], parentIds: [places] });
     await tag('Night', { color: 'indigo' });
     await tag('Wallpaper', { color: 'amber' });
-    const set = (paths, add) => call('POST', 'api/file-tags', { paths, add });
+    const set = (paths, add) => call('POST', 'api/v1/file-tags', { paths, add });
     await set(['Photos/2024 Beach trip/Sunset over the bay.jpg', 'Photos/2024 Beach trip/Morning waves.jpg', 'Photos/2024 Beach trip/Lighthouse.jpg', 'Photos/2024 Beach trip/Dunes.jpg', 'Photos/2024 Beach trip/Harbour.jpg', 'Videos/Holidays/Beach walk.webm'], [beach]);
     await set(['Photos/2024 Beach trip/Morning waves.jpg', 'Photos/2024 Beach trip/Harbour.jpg'], [sea]);
     await set(['Photos/2024 Beach trip/Sunset over the bay.jpg', 'Photos/Family/Birthday evening.jpg', 'Videos/Timelapses/Sunset timelapse.webm'], [sunsets]);
@@ -72,22 +72,22 @@ console.log(await b.eval(js(`
     await set(['Photos/Family/Garden party.jpg', 'Photos/Family/Picnic.jpg', 'Photos/Family/Winter walk.jpg', 'Photos/Family/Birthday evening.jpg'], [family]);
     await set(['Photos/2025 Mountains/Summit.jpg'], [1]);
     // A folder whose new photos get tags (its icon in the Photos listing, default-tags-*.png).
-    await call('PUT', 'api/folder-default-tags', { path: 'Photos/Family', add: [family, people] });
+    await call('PUT', 'api/v1/folder-default-tags', { path: 'Photos/Family', add: [family, people] });
     // The administrator's quick links, shown in the sidebar of every library shot.
-    await call('POST', 'api/me/quick-links', { paths: ['Photos/2025 Mountains', 'Videos/Holidays', 'Documents/Packing list.txt'] });
-    const groups = await call('GET', 'api/access/groups');
+    await call('POST', 'api/v1/me/quick-links', { paths: ['Photos/2025 Mountains', 'Videos/Holidays', 'Documents/Packing list.txt'] });
+    const groups = await call('GET', 'api/v1/access/groups');
     const list = groups.groups ?? groups;
     const users = list.find(g => /users/i.test(g.name));
     const guests = list.find(g => /guests/i.test(g.name));
-    await call('POST', 'api/access/users', { userName: 'sam', displayName: 'Sam', password: 'sam-password-1', kind: 'user', isServerAdmin: false, disabled: false, groupIds: [users.id] });
-    await call('POST', 'api/access/users', { userName: 'kids', displayName: 'Kids', password: 'kids-password-1', kind: 'guest', isServerAdmin: false, disabled: false, groupIds: [guests.id] });
-    await call('POST', 'api/access/groups', { name: 'Family editors', rights: ['library.browse', 'files.view', 'files.download', 'tags.view', 'tags.assign', 'files.edit'] });
+    await call('POST', 'api/v1/access/users', { userName: 'sam', displayName: 'Sam', password: 'sam-password-1', kind: 'user', isServerAdmin: false, disabled: false, groupIds: [users.id] });
+    await call('POST', 'api/v1/access/users', { userName: 'kids', displayName: 'Kids', password: 'kids-password-1', kind: 'guest', isServerAdmin: false, disabled: false, groupIds: [guests.id] });
+    await call('POST', 'api/v1/access/groups', { name: 'Family editors', rights: ['library.browse', 'files.view', 'files.download', 'tags.view', 'tags.assign', 'files.edit'] });
     // Folder rules (Folder access on the space's page): visitors don't see the documents, Users may only read the inbox.
-    await call('PUT', 'api/access/folder-rules', { path: 'Documents', groupId: guests.id, userId: null, level: 'hidden' });
-    await call('PUT', 'api/access/folder-rules', { path: 'Inbox', groupId: users.id, userId: null, level: 'read' });
+    await call('PUT', 'api/v1/access/folder-rules', { path: 'Documents', groupId: guests.id, userId: null, level: 'hidden' });
+    await call('PUT', 'api/v1/access/folder-rules', { path: 'Inbox', groupId: users.id, userId: null, level: 'read' });
     const start = new Date(); start.setHours(3, 0, 0, 0);
-    await call('POST', 'api/tasks/schedules', { task: 'scan', path: null, kind: 'weekly', start: start.toISOString(), intervalMinutes: 0, days: 127, enabled: true });
-    await call('POST', 'api/tasks/schedules', { task: 'scan', path: 'Photos', kind: 'interval', start: start.toISOString(), intervalMinutes: 360, enabled: true, days: 0 });
+    await call('POST', 'api/v1/tasks/schedules', { task: 'scan', path: null, kind: 'weekly', start: start.toISOString(), intervalMinutes: 0, days: 127, enabled: true });
+    await call('POST', 'api/v1/tasks/schedules', { task: 'scan', path: 'Photos', kind: 'interval', start: start.toISOString(), intervalMinutes: 360, enabled: true, days: 0 });
     return JSON.stringify(list.map(g => g.name));
 `)));
 
@@ -97,14 +97,14 @@ if (library)
     fs.rmSync(path.join(library, 'Photos/2025 Mountains/Autumn lake.jpg'), { force: true });
 console.log(await b.eval(js(`
     const wait = async (done, seconds) => { for (let i = 0; i < seconds * 2 && !(await done()); i++) await new Promise(r => setTimeout(r, 500)); };
-    const task = async kind => (await call('GET', 'api/tasks')).tasks.find(t => t.task === kind);
-    await call('POST', 'api/tasks/scan/start?path=');
+    const task = async kind => (await call('GET', 'api/v1/tasks')).tasks.find(t => t.task === kind);
+    await call('POST', 'api/v1/tasks/scan/start?path=');
     await wait(async () => (await task('scan')).state !== 'running', 120);
     // Trickplay's first pass (with ffmpeg), so that similar videos have fingerprints to compare.
-    await wait(async () => { const s = await call('GET', 'api/trickplay'); return s.state === 'unavailable' || s.state === 'disabled' || (s.state !== 'running' && s.lastPassFinished); }, 600);
-    await call('POST', 'api/tasks/similarVideos/start');
+    await wait(async () => { const s = await call('GET', 'api/v1/trickplay'); return s.state === 'unavailable' || s.state === 'disabled' || (s.state !== 'running' && s.lastPassFinished); }, 600);
+    await call('POST', 'api/v1/tasks/similarVideos/start');
     await wait(async () => (await task('similarVideos')).state !== 'running', 300);
-    const t = await call('GET', 'api/trickplay');
+    const t = await call('GET', 'api/v1/trickplay');
     return 'trickplay ' + t.state + ': ' + t.generated + ' made, ' + t.failed + ' failed';
 `)));
 await b.close();

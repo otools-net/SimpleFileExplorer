@@ -23,7 +23,7 @@ const option = (name, fallback) => {
 const seconds = Number(option('--seconds', 120));
 const out = option('--out', path.join(os.tmpdir(), 'sfe-battery-probe'));
 
-/** A scan that runs (forever): `api/scan` answered by the probe, so the page polls as during a long scan. */
+/** A scan that runs (forever): `api/v1/scan` answered by the probe, so the page polls as during a long scan. */
 const RUNNING_SCAN = {
     state: 'running', path: '', startedAt: new Date().toISOString(), finishedAt: null, directoriesScanned: 12, directoriesQueued: 40,
     filesIndexed: 300, removed: 0, errors: 0, currentDirectory: 'Videos', message: null, relinked: 0, missing: null,
@@ -103,16 +103,16 @@ const app = spawn('dotnet', [path.join(work, 'build/bin/Sfe.Api/debug/Sfe.Api.dl
 async function ready() {
     let migration = null;
     for (let i = 0; i < 120 && !migration; i++) {
-        try { migration = await (await fetch(url + 'api/migration')).json(); } catch { await sleep(500); }
+        try { migration = await (await fetch(url + 'api/v1/migration')).json(); } catch { await sleep(500); }
     }
     if (!migration)
         throw new Error('the app did not start');
     if (migration.status === 'none')
         return;
     console.log(`updating the docs database from ${migration.databaseVersion} to ${migration.appVersion}`);
-    await fetch(url + 'api/migration', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ code: 'doc-screenshots-setup' }) });
+    await fetch(url + 'api/v1/migration', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ code: 'doc-screenshots-setup' }) });
     for (let i = 0; i < 240; i++) {
-        migration = await (await fetch(url + 'api/migration')).json();
+        migration = await (await fetch(url + 'api/v1/migration')).json();
         if (migration.status === 'none')
             return;
         if (migration.status === 'failed')
@@ -137,10 +137,10 @@ async function run(name) {
                 source: `document.addEventListener('DOMContentLoaded', () => document.head.append(Object.assign(document.createElement('style'), { textContent: '* { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }' })));`,
             });
         await b.goto(url + 'login', 1500);
-        await b.eval(`fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
+        await b.eval(`fetch('api/v1/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
         // The scan panel stays dismissed (its result from the seed), except when the scenario runs one.
         if (s.scan) {
-            await b.send('Fetch.enable', { patterns: [{ urlPattern: '*/api/scan' }] });
+            await b.send('Fetch.enable', { patterns: [{ urlPattern: '*/api/v1/scan' }] });
             b.on('Fetch.requestPaused', ({ requestId }) => b.send('Fetch.fulfillRequest', {
                 requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
                 body: Buffer.from(JSON.stringify(RUNNING_SCAN)).toString('base64'),

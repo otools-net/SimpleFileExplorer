@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { Api } from '../core/api.service';
+import { Api, API_BASE } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { SystemInfo } from './admin.models';
 import { Rights } from '../core/rights';
@@ -24,6 +24,8 @@ export class SystemSectionComponent {
     private readonly configService = inject(ConfigService);
     protected readonly config = this.configService.config;
     protected readonly canBackup = computed(() => this.configService.can(Rights.backup));
+    /** The backup zip, downloaded by a link. */
+    protected readonly backupUrl = `${API_BASE}system/backup`;
 
     /** The sub-page: `about`, `installation` or `maintenance`. */
     readonly tab = input('about');

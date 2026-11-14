@@ -119,14 +119,14 @@ public sealed class ArchiveRouteTests
     public async Task HiddenFoldersAreNotFoundAndLeftOutOfTheRoot()
     {
         using var hidden = await _alice.PostAsJsonAsync(
-            "/api/files/archive",
+            $"{V1}/files/archive",
             new ArchiveRequest(["SpecialDir"]),
             Json,
             Token
         );
         Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
         using var missing = await _alice.PostAsJsonAsync(
-            "/api/files/archive",
+            $"{V1}/files/archive",
             new ArchiveRequest(["../RFile1.txt"]),
             Json,
             Token
@@ -146,7 +146,7 @@ public sealed class ArchiveRouteTests
     public async Task OnlyThoseWhoMayDownloadGetAZip()
     {
         using var refused = await _carol.PostAsJsonAsync(
-            "/api/files/archive",
+            $"{V1}/files/archive",
             new ArchiveRequest(["ChildDir"]),
             Json,
             Token
@@ -170,7 +170,7 @@ public sealed class ArchiveRouteTests
             Assert.Inconclusive("Links can't be made here.");
 
         using var direct = await _admin.PostAsJsonAsync(
-            "/api/files/archive",
+            $"{V1}/files/archive",
             new ArchiveRequest(["ChildDir/Logs"]),
             Json,
             Token
@@ -203,15 +203,15 @@ public sealed class ArchiveRouteTests
     [TestMethod]
     public async Task AZipLargerThanTheSpaceAllowsIsRefusedBeforeItStarts()
     {
-        var settings = (await _admin.GetFromJsonAsync<SettingsView>("/api/settings", Json, Token))!;
+        var settings = (await _admin.GetFromJsonAsync<SettingsView>($"{V1}/settings", Json, Token))!;
         settings.Values.Files.MaxArchiveMegabytes = 1;
-        using (var saved = await _admin.PutAsJsonAsync("/api/settings", settings.Values, Json, Token))
+        using (var saved = await _admin.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token))
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Token));
-        using (var scan = await _admin.PostAsJsonAsync("/api/scan", new ScanRequest(""), Json, Token))
+        using (var scan = await _admin.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Json, Token))
             Assert.IsTrue(scan.IsSuccessStatusCode);
         for (
             var attempt = 0;
-            (await _admin.GetFromJsonAsync<ScanStatus>("/api/scan", Json, Token))!.State == ScanState.Running;
+            (await _admin.GetFromJsonAsync<ScanStatus>($"{V1}/scan", Json, Token))!.State == ScanState.Running;
             attempt++
         )
         {
@@ -220,13 +220,13 @@ public sealed class ArchiveRouteTests
         }
 
         using var tooLarge = await _admin.PostAsJsonAsync(
-            "/api/files/archive",
+            $"{V1}/files/archive",
             new ArchiveRequest(["Media"]),
             Json,
             Token
         );
         using var small = await _admin.PostAsJsonAsync(
-            "/api/files/archive",
+            $"{V1}/files/archive",
             new ArchiveRequest(["ChildDir"]),
             Json,
             Token
@@ -239,7 +239,12 @@ public sealed class ArchiveRouteTests
 
     private async Task<ArchiveLink> LinkAsync(HttpClient client, params string[] paths)
     {
-        using var response = await client.PostAsJsonAsync("/api/files/archive", new ArchiveRequest(paths), Json, Token);
+        using var response = await client.PostAsJsonAsync(
+            $"{V1}/files/archive",
+            new ArchiveRequest(paths),
+            Json,
+            Token
+        );
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         var link = (await response.Content.ReadFromJsonAsync<ArchiveLink>(Json, Token))!;
         return link with { Url = "/" + link.Url };

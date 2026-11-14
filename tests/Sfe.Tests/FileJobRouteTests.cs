@@ -123,7 +123,7 @@ public sealed class FileJobRouteTests
         Assert.IsTrue(File.Exists(_library.FullPath("RepeatedDir/AFile1.txt")));
         Assert.IsTrue(File.Exists(_library.FullPath("Media/photo.jpg")));
 
-        var list = await _alice.GetFromJsonAsync<FileJobView[]>("/api/files/jobs", Json, Token);
+        var list = await _alice.GetFromJsonAsync<FileJobView[]>($"{V1}/files/jobs", Json, Token);
         Assert.AreEqual(started.Id, list!.Single().Id);
     }
 
@@ -150,7 +150,7 @@ public sealed class FileJobRouteTests
 
         using (
             var other = await _admin.PostAsJsonAsync(
-                $"/api/files/jobs/{started.Id}/answer",
+                $"{V1}/files/jobs/{started.Id}/answer",
                 new JobAnswer(ConflictChoice.Skip),
                 Json,
                 Token
@@ -160,11 +160,11 @@ public sealed class FileJobRouteTests
             Assert.AreEqual(HttpStatusCode.NotFound, other.StatusCode, "Someone else's job");
         }
 
-        using (var other = await _admin.GetAsync($"/api/files/jobs/{started.Id}", Token))
+        using (var other = await _admin.GetAsync($"{V1}/files/jobs/{started.Id}", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, other.StatusCode);
         using (
             var answered = await _alice.PostAsJsonAsync(
-                $"/api/files/jobs/{started.Id}/answer",
+                $"{V1}/files/jobs/{started.Id}/answer",
                 new JobAnswer(ConflictChoice.KeepBoth),
                 Json,
                 Token
@@ -178,7 +178,7 @@ public sealed class FileJobRouteTests
         Assert.AreEqual("ChildDir/RFile1 (2).txt", job.Results.Single().NewPath);
         using (
             var again = await _alice.PostAsJsonAsync(
-                $"/api/files/jobs/{started.Id}/answer",
+                $"{V1}/files/jobs/{started.Id}/answer",
                 new JobAnswer(ConflictChoice.Skip),
                 Json,
                 Token
@@ -199,7 +199,7 @@ public sealed class FileJobRouteTests
         );
         await WaitForAsync(_alice, started.Id, j => j.State == FileJobState.Waiting);
 
-        using (var cancelled = await _alice.PostAsync($"/api/files/jobs/{started.Id}/cancel", null, Token))
+        using (var cancelled = await _alice.PostAsync($"{V1}/files/jobs/{started.Id}/cancel", null, Token))
             Assert.AreEqual(HttpStatusCode.NoContent, cancelled.StatusCode);
 
         var job = await FinishedAsync(_alice, started.Id);
@@ -212,7 +212,7 @@ public sealed class FileJobRouteTests
     {
         using (
             var refused = await _carol.PostAsJsonAsync(
-                "/api/files/jobs",
+                $"{V1}/files/jobs",
                 new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "ChildDir"),
                 Json,
                 Token
@@ -222,11 +222,11 @@ public sealed class FileJobRouteTests
             Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode);
         }
 
-        using (var listed = await _carol.GetAsync("/api/files/jobs", Token))
+        using (var listed = await _carol.GetAsync($"{V1}/files/jobs", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, listed.StatusCode);
         using (
             var empty = await _alice.PostAsJsonAsync(
-                "/api/files/jobs",
+                $"{V1}/files/jobs",
                 new FileJobRequest(FileJobKind.Copy, [], "ChildDir"),
                 Json,
                 Token
@@ -241,7 +241,7 @@ public sealed class FileJobRouteTests
     public async Task TheCheckTellsWhoWouldGainAccess()
     {
         using var response = await _alice.PostAsJsonAsync(
-            "/api/files/jobs/check",
+            $"{V1}/files/jobs/check",
             new MoveCheckRequest(["RepeatedDir/ChildDir", "RFile1.txt", "SpecialDir"], ""),
             Json,
             Token
@@ -289,7 +289,7 @@ public sealed class FileJobRouteTests
     {
         using (
             var refused = await _alice.PostAsJsonAsync(
-                "/api/files/jobs/compress",
+                $"{V1}/files/jobs/compress",
                 new CompressRequest(["Media"], "ChildDir"),
                 Json,
                 Token
@@ -301,7 +301,7 @@ public sealed class FileJobRouteTests
 
         using (
             var wrongRoute = await _admin.PostAsJsonAsync(
-                "/api/files/jobs",
+                $"{V1}/files/jobs",
                 new FileJobRequest(FileJobKind.Compress, ["Media"], "ChildDir"),
                 Json,
                 Token
@@ -330,7 +330,7 @@ public sealed class FileJobRouteTests
         );
         using (
             var level = await _alice.PostAsJsonAsync(
-                "/api/files/jobs/compress",
+                $"{V1}/files/jobs/compress",
                 new CompressRequest(["Media"], "ChildDir", Level: 10),
                 Json,
                 Token
@@ -342,7 +342,7 @@ public sealed class FileJobRouteTests
 
         // The whole library, from a read-only folder too, into a folder Alice may change: SpecialDir isn't hers to see.
         using var started = await _alice.PostAsJsonAsync(
-            "/api/files/jobs/compress",
+            $"{V1}/files/jobs/compress",
             new CompressRequest([""], "ChildDir", "everything", Password: "route-secret"),
             Json,
             Token
@@ -362,13 +362,13 @@ public sealed class FileJobRouteTests
         Assert.Contains(n => n.Contains("/Media/photo.jpg"), names);
         Assert.DoesNotContain(n => n.Contains("SpecialDir"), names);
         Assert.DoesNotContain(n => n.Contains("everything"), names);
-        using var listed = await _alice.GetAsync("/api/files/jobs", Token);
+        using var listed = await _alice.GetAsync($"{V1}/files/jobs", Token);
         Assert.DoesNotContain("route-secret", await listed.Content.ReadAsStringAsync(Token));
     }
 
     private async Task<FileJobView> StartAsync(HttpClient client, FileJobRequest request)
     {
-        using var response = await client.PostAsJsonAsync("/api/files/jobs", request, Json, Token);
+        using var response = await client.PostAsJsonAsync($"{V1}/files/jobs", request, Json, Token);
         Assert.AreEqual(HttpStatusCode.Accepted, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<FileJobView>(Json, Token))!;
     }
@@ -381,7 +381,7 @@ public sealed class FileJobRouteTests
         var until = DateTime.UtcNow.AddSeconds(30);
         while (true)
         {
-            var job = (await client.GetFromJsonAsync<FileJobView>($"/api/files/jobs/{id}", Json, Token))!;
+            var job = (await client.GetFromJsonAsync<FileJobView>($"{V1}/files/jobs/{id}", Json, Token))!;
             if (condition(job))
                 return job;
             if (DateTime.UtcNow > until)

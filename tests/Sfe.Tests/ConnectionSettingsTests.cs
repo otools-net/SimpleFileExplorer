@@ -46,7 +46,7 @@ public sealed class ConnectionSettingsTests
 
     private async Task<JsonElement> ConnectionsOfAsync(HttpClient client)
     {
-        using var config = JsonDocument.Parse(await client.GetStringAsync("/api/config", Cancel));
+        using var config = JsonDocument.Parse(await client.GetStringAsync($"{V1}/config", Cancel));
         return config.RootElement.GetProperty("connections").Clone();
     }
 
@@ -167,5 +167,5 @@ public sealed class ConnectionSettingsTests
     }
 
     private Task<HttpResponseMessage> PatchAsync(HttpClient client, Dictionary<string, JsonNode?> values) =>
-        client.PatchAsJsonAsync("/api/settings?level=server", new SettingChanges(values, null, null), Cancel);
+        client.PatchAsJsonAsync($"{V1}/settings?level=server", new SettingChanges(values, null, null), Cancel);
 }

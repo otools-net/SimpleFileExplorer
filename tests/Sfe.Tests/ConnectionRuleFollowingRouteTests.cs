@@ -133,7 +133,7 @@ public sealed class ConnectionRuleFollowingRouteTests
         var request = new TransferRequest("move", new TransferSide(_world.Id, ["Docs"]), new TransferTarget(null, ""));
 
         using var started = await Bob.PostAsJsonAsync(
-            "/api/files/jobs/transfer",
+            $"{V1}/files/jobs/transfer",
             request,
             RuledConnection.Json,
             Cancel
@@ -219,7 +219,7 @@ public sealed class ConnectionRuleFollowingRouteTests
         var until = DateTime.UtcNow.AddSeconds(30);
         while (true)
         {
-            var job = (await Bob.GetFromJsonAsync<FileJobView>($"/api/files/jobs/{id}", RuledConnection.Json, Cancel))!;
+            var job = (await Bob.GetFromJsonAsync<FileJobView>($"{V1}/files/jobs/{id}", RuledConnection.Json, Cancel))!;
             if (job.State is FileJobState.Completed or FileJobState.Cancelled)
                 return job;
             Assert.IsLessThan(until, DateTime.UtcNow, $"Job {id} is {job.State}");

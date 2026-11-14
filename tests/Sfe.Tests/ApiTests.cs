@@ -31,6 +31,8 @@ public sealed class ApiTests
 
     public TestContext TestContext { get; set; } = null!;
 
+    private CancellationToken Token => TestContext.CancellationToken;
+
     [TestInitialize]
     public async Task InitializeAsync()
     {
@@ -42,7 +44,7 @@ public sealed class ApiTests
                 builder.UseSetting(key, value);
         });
         // Signed in as the server administrator the setup creates: every right.
-        _client = await ApiClients.SetUpAsync(_factory, TestContext.CancellationToken);
+        _client = await ApiClients.SetUpAsync(_factory, Token);
     }
 
     [TestCleanup]
@@ -56,7 +58,7 @@ public sealed class ApiTests
     [TestMethod]
     public async Task ConfigDescribesTheLibrary()
     {
-        var config = await GetAsync<ClientConfig>("/api/config");
+        var config = await GetAsync<ClientConfig>($"{V1}/config");
 
         Assert.AreEqual("Root", config.RootName);
         Assert.IsNull(config.DataServer);
@@ -73,111 +75,78 @@ public sealed class ApiTests
     [TestMethod]
     public async Task SearchExplanationCanBeTurnedOff()
     {
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         Assert.IsTrue(settings.Values.Search.Explain);
 
         settings.Values.Search.Explain = false;
-        using var saved = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
-        Assert.IsFalse((await GetAsync<ClientConfig>("/api/config")).SearchExplain);
-        Assert.IsFalse((await GetAsync<SettingsView>("/api/settings")).Values.Search.Explain);
+        Assert.IsFalse((await GetAsync<ClientConfig>($"{V1}/config")).SearchExplain);
+        Assert.IsFalse((await GetAsync<SettingsView>($"{V1}/settings")).Values.Search.Explain);
     }
 
     [TestMethod]
     public async Task VideoLoopCanBeTurnedOnByDefault()
     {
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         Assert.IsFalse(settings.Values.Player.Loop);
-        Assert.IsFalse((await GetAsync<ClientConfig>("/api/config")).Loop);
+        Assert.IsFalse((await GetAsync<ClientConfig>($"{V1}/config")).Loop);
 
         settings.Values.Player.Loop = true;
-        using var saved = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
-        Assert.IsTrue((await GetAsync<ClientConfig>("/api/config")).Loop);
-        Assert.IsTrue((await GetAsync<SettingsView>("/api/settings")).Values.Player.Loop);
+        Assert.IsTrue((await GetAsync<ClientConfig>($"{V1}/config")).Loop);
+        Assert.IsTrue((await GetAsync<SettingsView>($"{V1}/settings")).Values.Player.Loop);
     }
 
     [TestMethod]
     public async Task SearchHistorySizeIsSentToTheClientAndChecked()
     {
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         Assert.AreEqual(10, settings.Values.Search.HistorySize);
-        Assert.AreEqual(10, (await GetAsync<ClientConfig>("/api/config")).SearchHistory);
+        Assert.AreEqual(10, (await GetAsync<ClientConfig>($"{V1}/config")).SearchHistory);
 
         settings.Values.Search.HistorySize = 0;
-        using var off = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
-        var config = await GetAsync<ClientConfig>("/api/config");
+        using var off = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
+        var config = await GetAsync<ClientConfig>($"{V1}/config");
         settings.Values.Search.HistorySize = SettingsService.MaxSearchHistory + 1;
-        using var tooMany = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var tooMany = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, off.StatusCode);
         Assert.AreEqual(0, config.SearchHistory);
         Assert.AreEqual(HttpStatusCode.BadRequest, tooMany.StatusCode);
-        StringAssert.Contains(
-            await tooMany.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            "search.historySize"
-        );
+        StringAssert.Contains(await tooMany.Content.ReadAsStringAsync(Token), "search.historySize");
     }
 
     [TestMethod]
     public async Task SingleViewOriginalsAreOffByDefaultAndCanBeTurnedOn()
     {
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         Assert.IsFalse(settings.Values.Thumbnails.SingleViewOriginals);
-        Assert.IsFalse((await GetAsync<ClientConfig>("/api/config")).SingleViewOriginals);
+        Assert.IsFalse((await GetAsync<ClientConfig>($"{V1}/config")).SingleViewOriginals);
 
         settings.Values.Thumbnails.SingleViewOriginals = true;
-        using var saved = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
-        Assert.IsTrue((await GetAsync<ClientConfig>("/api/config")).SingleViewOriginals);
-        Assert.IsTrue((await GetAsync<SettingsView>("/api/settings")).Values.Thumbnails.SingleViewOriginals);
+        Assert.IsTrue((await GetAsync<ClientConfig>($"{V1}/config")).SingleViewOriginals);
+        Assert.IsTrue((await GetAsync<SettingsView>($"{V1}/settings")).Values.Thumbnails.SingleViewOriginals);
     }
 
     [TestMethod]
     public async Task AnimatedHoverIsOnByDefaultAndCanBeTurnedOff()
     {
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         Assert.IsTrue(settings.Values.Thumbnails.AnimatedHover);
-        Assert.IsTrue((await GetAsync<ClientConfig>("/api/config")).AnimatedHover);
+        Assert.IsTrue((await GetAsync<ClientConfig>($"{V1}/config")).AnimatedHover);
 
         settings.Values.Thumbnails.AnimatedHover = false;
-        using var saved = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
-        Assert.IsFalse((await GetAsync<ClientConfig>("/api/config")).AnimatedHover);
+        Assert.IsFalse((await GetAsync<ClientConfig>($"{V1}/config")).AnimatedHover);
     }
 
     [TestMethod]
@@ -186,109 +155,78 @@ public sealed class ApiTests
         await File.WriteAllBytesAsync(
             _library.FullPath("Media/moving #1.gif"),
             ImageAnimationTests.Gif(frames: 2),
-            TestContext.CancellationToken
+            Token
         );
-        await File.WriteAllBytesAsync(
-            _library.FullPath("Media/still.gif"),
-            ImageAnimationTests.Gif(frames: 1),
-            TestContext.CancellationToken
-        );
+        await File.WriteAllBytesAsync(_library.FullPath("Media/still.gif"), ImageAnimationTests.Gif(frames: 1), Token);
 
-        Assert.IsTrue((await GetAsync<ImageAnimationInfo>("/api/files/animated/Media/moving%20%231.gif")).Animated);
-        Assert.IsFalse((await GetAsync<ImageAnimationInfo>("/api/files/animated/Media/still.gif")).Animated);
-        Assert.IsFalse((await GetAsync<ImageAnimationInfo>("/api/files/animated/Media/photo.jpg")).Animated);
+        Assert.IsTrue((await GetAsync<ImageAnimationInfo>($"{V1}/files/animated/Media/moving%20%231.gif")).Animated);
+        Assert.IsFalse((await GetAsync<ImageAnimationInfo>($"{V1}/files/animated/Media/still.gif")).Animated);
+        Assert.IsFalse((await GetAsync<ImageAnimationInfo>($"{V1}/files/animated/Media/photo.jpg")).Animated);
     }
 
     [TestMethod]
     public async Task ExternalPlayerCanBeChangedOrRemoved()
     {
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         settings.Values.Player.ExternalName = "PotPlayer";
         settings.Values.Player.ExternalUrl = "potplayer://";
-        using (
-            var saved = await _client.PutAsJsonAsync(
-                "/api/settings",
-                settings.Values,
-                Json,
-                TestContext.CancellationToken
-            )
-        )
+        using (var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
         }
 
         Assert.AreEqual(
             new ExternalPlayer("PotPlayer", "potplayer://"),
-            (await GetAsync<ClientConfig>("/api/config")).ExternalPlayer
+            (await GetAsync<ClientConfig>($"{V1}/config")).ExternalPlayer
         );
 
         settings.Values.Player.ExternalUrl = "";
-        using (
-            var saved = await _client.PutAsJsonAsync(
-                "/api/settings",
-                settings.Values,
-                Json,
-                TestContext.CancellationToken
-            )
-        )
+        using (var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
         }
 
-        Assert.IsNull((await GetAsync<ClientConfig>("/api/config")).ExternalPlayer);
+        Assert.IsNull((await GetAsync<ClientConfig>($"{V1}/config")).ExternalPlayer);
     }
 
     [TestMethod]
     public async Task RootPathIsOnlySentWhenCopyingPathsIsOn()
     {
-        Assert.IsNull((await GetAsync<ClientConfig>("/api/config")).RootPath);
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        Assert.IsNull((await GetAsync<ClientConfig>($"{V1}/config")).RootPath);
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         Assert.IsFalse(settings.Values.Browse.CopyPaths);
 
         settings.Values.Browse.CopyPaths = true;
-        using var saved = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
         // The client appends the root-relative paths to it, with the separator it ends with.
         Assert.AreEqual(
             Path.TrimEndingDirectorySeparator(Path.GetFullPath(_library.Root)) + Path.DirectorySeparatorChar,
-            (await GetAsync<ClientConfig>("/api/config")).RootPath
+            (await GetAsync<ClientConfig>($"{V1}/config")).RootPath
         );
-        Assert.IsTrue((await GetAsync<SettingsView>("/api/settings")).Values.Browse.CopyPaths);
+        Assert.IsTrue((await GetAsync<SettingsView>($"{V1}/settings")).Values.Browse.CopyPaths);
     }
 
     [TestMethod]
     public async Task DefaultThemeCanBeChanged()
     {
-        Assert.AreEqual(Theme.System, (await GetAsync<ClientConfig>("/api/config")).Theme);
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        Assert.AreEqual(Theme.System, (await GetAsync<ClientConfig>($"{V1}/config")).Theme);
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
 
         settings.Values.Appearance.Theme = Theme.Light;
-        using var saved = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
         // The client compares the names: the API sends them in camelCase.
-        using var config = await _client.GetAsync("/api/config", TestContext.CancellationToken);
-        StringAssert.Contains(
-            await config.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            "\"theme\":\"light\""
-        );
+        using var config = await _client.GetAsync($"{V1}/config", Token);
+        StringAssert.Contains(await config.Content.ReadAsStringAsync(Token), "\"theme\":\"light\"");
     }
 
     [TestMethod]
     public async Task BrowseListsFoldersFirstInNaturalOrder()
     {
-        var root = await GetAsync<DirectoryListing>("/api/browse");
+        var root = await GetAsync<DirectoryListing>($"{V1}/browse");
 
         Assert.AreEqual("", root.Path);
         Assert.IsNull(root.ParentPath);
@@ -298,7 +236,7 @@ public sealed class ApiTests
             root.Items.Select(i => i.Name).ToArray()
         );
 
-        var media = await GetAsync<DirectoryListing>("/api/browse?path=Media");
+        var media = await GetAsync<DirectoryListing>($"{V1}/browse?path=Media");
         CollectionAssert.AreEqual(
             new[] { "Episode 2.mkv", "Episode 10.mkv", "Holiday 2020.mp4", "photo.jpg" },
             media.Items.Select(i => i.Name).ToArray()
@@ -312,7 +250,7 @@ public sealed class ApiTests
     [TestMethod]
     public async Task BrowseSortsAndPages()
     {
-        var bySize = await GetAsync<DirectoryListing>("/api/browse?path=Media&sort=size&desc=true&offset=1&limit=2");
+        var bySize = await GetAsync<DirectoryListing>($"{V1}/browse?path=Media&sort=size&desc=true&offset=1&limit=2");
 
         Assert.AreEqual(4, bySize.Total);
         CollectionAssert.AreEqual(
@@ -324,10 +262,10 @@ public sealed class ApiTests
     [TestMethod]
     public async Task SiblingsFollowTheParentsOrder()
     {
-        var media = await GetAsync<FolderSiblings>("/api/browse/siblings?path=Media");
-        var first = await GetAsync<FolderSiblings>("/api/browse/siblings?path=ChildDir");
-        var reversed = await GetAsync<FolderSiblings>("/api/browse/siblings?path=Media&sort=name&desc=true");
-        var root = await GetAsync<FolderSiblings>("/api/browse/siblings");
+        var media = await GetAsync<FolderSiblings>($"{V1}/browse/siblings?path=Media");
+        var first = await GetAsync<FolderSiblings>($"{V1}/browse/siblings?path=ChildDir");
+        var reversed = await GetAsync<FolderSiblings>($"{V1}/browse/siblings?path=Media&sort=name&desc=true");
+        var root = await GetAsync<FolderSiblings>($"{V1}/browse/siblings");
 
         Assert.AreEqual("ChildDir", media.Previous?.Path);
         Assert.AreEqual("RepeatedDir", media.Next?.Path);
@@ -348,7 +286,7 @@ public sealed class ApiTests
         foreach (var name in new[] { "p10.jpg", "p2.png", "p1.jpg", "p3.webp", "p20.gif", "notes.txt", "song.mp3" })
             _library.AddFile($"Pictures/{name}", 10);
         _library.AddFile("Pictures/Inner/p0.jpg", 10);
-        var thumbnails = (await GetAsync<ClientConfig>("/api/config")).Features.Thumbnails;
+        var thumbnails = (await GetAsync<ClientConfig>($"{V1}/config")).Features.Thumbnails;
 
         var covers = await PostCoversAsync("Pictures", "Media", "ChildDir", "..", "Missing");
 
@@ -375,36 +313,28 @@ public sealed class ApiTests
         );
 
         // The number of pictures is a setting; 0 turns them off.
-        Assert.AreEqual(4, (await GetAsync<ClientConfig>("/api/config")).FolderPictures);
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        Assert.AreEqual(4, (await GetAsync<ClientConfig>($"{V1}/config")).FolderPictures);
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         settings.Values.Browse.FolderPictures = 2;
-        (await _client.PutAsJsonAsync("/api/settings", settings.Values, Json, TestContext.CancellationToken)).Dispose();
+        (await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token)).Dispose();
         var two = await PostCoversAsync("Pictures");
         settings.Values.Browse.FolderPictures = 0;
-        (await _client.PutAsJsonAsync("/api/settings", settings.Values, Json, TestContext.CancellationToken)).Dispose();
+        (await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token)).Dispose();
         var off = await PostCoversAsync("Pictures");
         settings.Values.Browse.FolderPictures = LibraryBrowser.MaxFolderPictures + 1;
-        using var invalid = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var invalid = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
 
         CollectionAssert.AreEqual(new[] { "a.jpg", "p1.jpg" }, two[0].Items.Select(i => i.Name).ToArray());
         Assert.IsEmpty(off[0].Items);
-        Assert.AreEqual(0, (await GetAsync<ClientConfig>("/api/config")).FolderPictures);
+        Assert.AreEqual(0, (await GetAsync<ClientConfig>($"{V1}/config")).FolderPictures);
         Assert.AreEqual(HttpStatusCode.BadRequest, invalid.StatusCode);
-        StringAssert.Contains(
-            await invalid.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            "browse.folderPictures"
-        );
+        StringAssert.Contains(await invalid.Content.ReadAsStringAsync(Token), "browse.folderPictures");
 
         using var tooMany = await _client.PostAsJsonAsync(
-            "/api/browse/covers",
+            $"{V1}/browse/covers",
             new FolderCoversRequest(Enumerable.Repeat("Media", LibraryBrowser.MaxCoverPaths + 1).ToList()),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         Assert.AreEqual(HttpStatusCode.BadRequest, tooMany.StatusCode);
     }
@@ -412,32 +342,32 @@ public sealed class ApiTests
     private async Task<List<FolderCover>> PostCoversAsync(params string[] paths)
     {
         using var response = await _client.PostAsJsonAsync(
-            "/api/browse/covers",
+            $"{V1}/browse/covers",
             new FolderCoversRequest(paths),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<List<FolderCover>>(Json, TestContext.CancellationToken))!;
+        return (await response.Content.ReadFromJsonAsync<List<FolderCover>>(Json, Token))!;
     }
 
     [TestMethod]
-    [DataRow("/api/browse/siblings?path=..")]
-    [DataRow("/api/browse/siblings?path=Missing")]
-    [DataRow("/api/browse?path=..")]
-    [DataRow("/api/browse?path=C:/Windows")]
-    [DataRow("/api/browse?path=Missing")]
-    [DataRow("/api/files/raw/..%2F..%2Fwin.ini")]
-    [DataRow("/api/files/raw/Missing.txt")]
-    [DataRow("/api/files/animated/Missing.gif")]
-    [DataRow("/api/files/animated/..%2F..%2Fwin.ini")]
-    [DataRow("/api/thumbnails/RFile1.txt")]
-    [DataRow("/api/trickplay/files/Media/Holiday%202020.mp4")]
-    [DataRow("/api/trickplay/files/Media/Holiday%202020.mp4?sheet=0")]
-    [DataRow("/api/unknown")]
+    [DataRow($"{V1}/browse/siblings?path=..")]
+    [DataRow($"{V1}/browse/siblings?path=Missing")]
+    [DataRow($"{V1}/browse?path=..")]
+    [DataRow($"{V1}/browse?path=C:/Windows")]
+    [DataRow($"{V1}/browse?path=Missing")]
+    [DataRow($"{V1}/files/raw/..%2F..%2Fwin.ini")]
+    [DataRow($"{V1}/files/raw/Missing.txt")]
+    [DataRow($"{V1}/files/animated/Missing.gif")]
+    [DataRow($"{V1}/files/animated/..%2F..%2Fwin.ini")]
+    [DataRow($"{V1}/thumbnails/RFile1.txt")]
+    [DataRow($"{V1}/trickplay/files/Media/Holiday%202020.mp4")]
+    [DataRow($"{V1}/trickplay/files/Media/Holiday%202020.mp4?sheet=0")]
+    [DataRow($"{V1}/unknown")]
     public async Task InvalidOrMissingPathsReturnNotFound(string url)
     {
-        using var response = await _client.GetAsync(url, TestContext.CancellationToken);
+        using var response = await _client.GetAsync(url, Token);
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -445,8 +375,8 @@ public sealed class ApiTests
     [TestMethod]
     public async Task TrickplayIsOffUntilEnabled()
     {
-        var status = await GetAsync<TrickplayStatus>("/api/trickplay");
-        using var check = await _client.PostAsync("/api/trickplay", null, TestContext.CancellationToken);
+        var status = await GetAsync<TrickplayStatus>($"{V1}/trickplay");
+        using var check = await _client.PostAsync($"{V1}/trickplay", null, Token);
 
         Assert.AreEqual(TrickplayState.Disabled, status.State);
         Assert.AreEqual(HttpStatusCode.Conflict, check.StatusCode);
@@ -455,19 +385,19 @@ public sealed class ApiTests
     [TestMethod]
     public async Task TrickplayActivityAndStatesAnswerWhileOff()
     {
-        var activity = await GetAsync<TrickplayActivity>("/api/trickplay/activity?limit=10");
+        var activity = await GetAsync<TrickplayActivity>($"{V1}/trickplay/activity?limit=10");
         using var states = await _client.PostAsJsonAsync(
-            "/api/trickplay/states",
+            $"{V1}/trickplay/states",
             new TrickplayStatesRequest(["Media/Holiday 2020.mp4"]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var body = await states.Content.ReadFromJsonAsync<TrickplayStates>(Json, TestContext.CancellationToken);
+        var body = await states.Content.ReadFromJsonAsync<TrickplayStates>(Json, Token);
         using var tooMany = await _client.PostAsJsonAsync(
-            "/api/trickplay/states",
+            $"{V1}/trickplay/states",
             new TrickplayStatesRequest([.. Enumerable.Repeat("a.mp4", TrickplayService.MaxStatePaths + 1)]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
 
         Assert.AreEqual(TrickplayState.Disabled, activity.Status.State);
@@ -483,23 +413,20 @@ public sealed class ApiTests
     [TestMethod]
     public async Task RawFilesSupportRangeRequests()
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/files/raw/Media/Holiday%202020.mp4");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{V1}/files/raw/Media/Holiday%202020.mp4");
         request.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, 99);
 
-        using var response = await _client.SendAsync(request, TestContext.CancellationToken);
+        using var response = await _client.SendAsync(request, Token);
 
         Assert.AreEqual(HttpStatusCode.PartialContent, response.StatusCode);
         Assert.AreEqual("video/mp4", response.Content.Headers.ContentType?.MediaType);
-        Assert.HasCount(100, await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken));
+        Assert.HasCount(100, await response.Content.ReadAsByteArrayAsync(Token));
     }
 
     [TestMethod]
     public async Task RawFilesHandleSpecialCharacters()
     {
-        using var response = await _client.GetAsync(
-            "/api/files/raw/100%25_done%5B1%5D.txt?download=true",
-            TestContext.CancellationToken
-        );
+        using var response = await _client.GetAsync($"{V1}/files/raw/100%25_done%5B1%5D.txt?download=true", Token);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual("100%_done[1].txt", response.Content.Headers.ContentDisposition?.FileNameStar);
@@ -508,8 +435,8 @@ public sealed class ApiTests
     [TestMethod]
     public async Task ImagesAreNotCachedByTheBrowser()
     {
-        using var image = await _client.GetAsync("/api/files/raw/Media/photo.jpg", TestContext.CancellationToken);
-        using var video = await _client.GetAsync("/api/files/raw/Media/Episode%202.mkv", TestContext.CancellationToken);
+        using var image = await _client.GetAsync($"{V1}/files/raw/Media/photo.jpg", Token);
+        using var video = await _client.GetAsync($"{V1}/files/raw/Media/Episode%202.mkv", Token);
 
         Assert.IsTrue(image.Headers.CacheControl?.NoStore);
         Assert.IsNull(video.Headers.CacheControl);
@@ -525,7 +452,7 @@ public sealed class ApiTests
     {
         File.WriteAllText(_library.FullPath(name), "<script>fetch('api/access/users')</script>");
 
-        using var response = await _client.GetAsync($"/api/files/raw/{name}", TestContext.CancellationToken);
+        using var response = await _client.GetAsync($"{V1}/files/raw/{name}", Token);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual(type, response.Content.Headers.ContentType?.MediaType);
@@ -541,17 +468,11 @@ public sealed class ApiTests
     public async Task SharedLinksOfPagesAreOnlyDownloaded()
     {
         File.WriteAllText(_library.FullPath("evil.html"), "<script>alert(1)</script>");
-        using var created = await _client.PostAsJsonAsync(
-            "/api/files/links",
-            new FileLinkRequest("evil.html"),
-            TestContext.CancellationToken
-        );
-        var link = (
-            await created.Content.ReadFromJsonAsync<Sfe.Api.Security.FileLink>(Json, TestContext.CancellationToken)
-        )!;
+        using var created = await _client.PostAsJsonAsync($"{V1}/files/links", new FileLinkRequest("evil.html"), Token);
+        var link = (await created.Content.ReadFromJsonAsync<Sfe.Api.Security.FileLink>(Json, Token))!;
 
         using var visitor = ApiClients.Create(_factory);
-        using var response = await visitor.GetAsync("/" + link.Url, TestContext.CancellationToken);
+        using var response = await visitor.GetAsync("/" + link.Url, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual("attachment", response.Content.Headers.ContentDisposition?.DispositionType);
@@ -576,28 +497,16 @@ public sealed class ApiTests
                 .First();
             File.WriteAllText(Path.Combine(_library.BasePath, "settings.json"), "{}");
 
-            using var keyFile = await _client.GetAsync(
-                $"/api/files/raw/escape/keys/{key}",
-                TestContext.CancellationToken
-            );
-            using var database = await _client.GetAsync(
-                "/api/files/raw/escape/index.db",
-                TestContext.CancellationToken
-            );
-            using var settings = await _client.GetAsync(
-                "/api/files/raw/escape/settings.json",
-                TestContext.CancellationToken
-            );
+            using var keyFile = await _client.GetAsync($"{V1}/files/raw/escape/keys/{key}", Token);
+            using var database = await _client.GetAsync($"{V1}/files/raw/escape/index.db", Token);
+            using var settings = await _client.GetAsync($"{V1}/files/raw/escape/settings.json", Token);
             using var shared = await _client.PostAsJsonAsync(
-                "/api/files/links",
+                $"{V1}/files/links",
                 new FileLinkRequest("escape/index.db"),
-                TestContext.CancellationToken
+                Token
             );
             // Links still work for the library's own content.
-            using var media = await _client.GetAsync(
-                "/api/files/raw/escape/Root/RFile1.txt",
-                TestContext.CancellationToken
-            );
+            using var media = await _client.GetAsync($"{V1}/files/raw/escape/Root/RFile1.txt", Token);
 
             Assert.AreEqual(HttpStatusCode.NotFound, keyFile.StatusCode);
             Assert.AreEqual(HttpStatusCode.NotFound, database.StatusCode);
@@ -640,12 +549,12 @@ public sealed class ApiTests
     }
 
     [TestMethod]
-    [DataRow("/api/files/raw/Media/photo.jpg")]
-    [DataRow("/api/files/raw/Media/Episode%202.mkv")]
-    [DataRow("/api/files/raw/RFile1.txt")]
+    [DataRow($"{V1}/files/raw/Media/photo.jpg")]
+    [DataRow($"{V1}/files/raw/Media/Episode%202.mkv")]
+    [DataRow($"{V1}/files/raw/RFile1.txt")]
     public async Task MediaAndTextStillOpenInTheBrowser(string url)
     {
-        using var response = await _client.GetAsync(url, TestContext.CancellationToken);
+        using var response = await _client.GetAsync(url, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.IsNull(response.Content.Headers.ContentDisposition);
@@ -657,14 +566,14 @@ public sealed class ApiTests
 
     [TestMethod]
     [DataRow("/")]
-    [DataRow("/api/config")]
-    [DataRow("/api/missing")]
+    [DataRow($"{V1}/config")]
+    [DataRow($"{V1}/missing")]
     public async Task EveryAnswerCarriesTheSecurityHeaders(string url)
     {
         using var visitor = ApiClients.Create(_factory);
         foreach (var client in new[] { _client, visitor })
         {
-            using var response = await client.GetAsync(url, TestContext.CancellationToken);
+            using var response = await client.GetAsync(url, Token);
 
             Assert.AreEqual("nosniff", string.Join(',', response.Headers.GetValues("X-Content-Type-Options")), url);
             Assert.AreEqual("DENY", string.Join(',', response.Headers.GetValues("X-Frame-Options")), url);
@@ -681,8 +590,8 @@ public sealed class ApiTests
     public async Task TheWebClientHasNoInlineScripts()
     {
         // The app's policy runs only the app's own script files: an inline script would not run.
-        using var response = await _client.GetAsync("/", TestContext.CancellationToken);
-        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+        using var response = await _client.GetAsync("/", Token);
+        var html = await response.Content.ReadAsStringAsync(Token);
 
         Assert.DoesNotMatchRegex(
             new System.Text.RegularExpressions.Regex(
@@ -703,16 +612,12 @@ public sealed class ApiTests
     [TestMethod]
     public async Task SearchPagesFollowTheCursor()
     {
-        using var start = await _client.PostAsJsonAsync(
-            "/api/scan",
-            new ScanRequest(""),
-            TestContext.CancellationToken
-        );
+        using var start = await _client.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token);
         await WaitForScanAsync();
 
-        var first = await GetAsync<SearchResults>("/api/search?q=File&limit=3");
+        var first = await GetAsync<SearchResults>($"{V1}/search?q=File&limit=3");
         var second = await GetAsync<SearchResults>(
-            $"/api/search?q=File&limit=3&after={Uri.EscapeDataString(first.Next!)}"
+            $"{V1}/search?q=File&limit=3&after={Uri.EscapeDataString(first.Next!)}"
         );
 
         Assert.IsTrue(first.HasMore);
@@ -722,16 +627,12 @@ public sealed class ApiTests
     [TestMethod]
     public async Task SearchSortsByTheRequestedField()
     {
-        using var start = await _client.PostAsJsonAsync(
-            "/api/scan",
-            new ScanRequest(""),
-            TestContext.CancellationToken
-        );
+        using var start = await _client.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token);
         await WaitForScanAsync();
 
-        var first = await GetAsync<SearchResults>("/api/search?q=&limit=3&sort=size&desc=true");
+        var first = await GetAsync<SearchResults>($"{V1}/search?q=&limit=3&sort=size&desc=true");
         var second = await GetAsync<SearchResults>(
-            $"/api/search?q=&limit=3&sort=size&desc=true&after={Uri.EscapeDataString(first.Next!)}"
+            $"{V1}/search?q=&limit=3&sort=size&desc=true&after={Uri.EscapeDataString(first.Next!)}"
         );
 
         var sizes = first.Items.Concat(second.Items).Select(i => i.Size!.Value).ToArray();
@@ -741,14 +642,14 @@ public sealed class ApiTests
     [TestMethod]
     public async Task NextBrowsePagesSeeFolderChanges()
     {
-        var first = await GetAsync<DirectoryListing>("/api/browse?path=Media&limit=2");
-        var second = await GetAsync<DirectoryListing>("/api/browse?path=Media&offset=2&limit=10");
+        var first = await GetAsync<DirectoryListing>($"{V1}/browse?path=Media&limit=2");
+        var second = await GetAsync<DirectoryListing>($"{V1}/browse?path=Media&offset=2&limit=10");
         Assert.AreEqual(first.Total, second.Total);
         Assert.IsEmpty(first.Items.Select(i => i.Path).Intersect(second.Items.Select(i => i.Path)));
 
         // Adding a file changes the folder: the cached listing of the first page is not reused.
         _library.AddFile("Media/zz new.txt", 1);
-        var third = await GetAsync<DirectoryListing>("/api/browse?path=Media&offset=2&limit=10");
+        var third = await GetAsync<DirectoryListing>($"{V1}/browse?path=Media&offset=2&limit=10");
         Assert.AreEqual(first.Total + 1, third.Total);
         Assert.AreEqual("Media/zz new.txt", third.Items[^1].Path);
     }
@@ -756,11 +657,7 @@ public sealed class ApiTests
     [TestMethod]
     public async Task ScanThenSearch()
     {
-        using var start = await _client.PostAsJsonAsync(
-            "/api/scan",
-            new ScanRequest(""),
-            TestContext.CancellationToken
-        );
+        using var start = await _client.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token);
         Assert.AreEqual(HttpStatusCode.Accepted, start.StatusCode);
 
         var status = await WaitForScanAsync();
@@ -769,7 +666,7 @@ public sealed class ApiTests
         Assert.AreEqual(0, status.Errors);
         Assert.AreEqual(0, status.DirectoriesQueued);
 
-        var results = await GetAsync<SearchResults>("/api/search?q=" + Uri.EscapeDataString("episode e:mkv"));
+        var results = await GetAsync<SearchResults>($"{V1}/search?q=" + Uri.EscapeDataString("episode e:mkv"));
         CollectionAssert.AreEquivalent(
             new[] { "Media/Episode 2.mkv", "Media/Episode 10.mkv" },
             results.Items.Select(i => i.Path).ToArray()
@@ -813,138 +710,110 @@ public sealed class ApiTests
             0,
             0,
         ];
-        await File.WriteAllBytesAsync(_library.FullPath("Media/screen.png"), png, TestContext.CancellationToken);
-        using (
-            var start = await _client.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken)
-        )
+        await File.WriteAllBytesAsync(_library.FullPath("Media/screen.png"), png, Token);
+        using (var start = await _client.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token))
         {
             Assert.AreEqual(HttpStatusCode.Accepted, start.StatusCode);
         }
 
         Assert.AreEqual(ScanState.Completed, (await WaitForScanAsync()).State);
 
-        var listed = (await GetAsync<DirectoryListing>("/api/browse?path=Media")).Items.Single(i =>
+        var listed = (await GetAsync<DirectoryListing>($"{V1}/browse?path=Media")).Items.Single(i =>
             i.Name == "screen.png"
         );
         var found = (
-            await GetAsync<SearchResults>("/api/search?q=" + Uri.EscapeDataString("r:>=1280x720"))
+            await GetAsync<SearchResults>($"{V1}/search?q=" + Uri.EscapeDataString("r:>=1280x720"))
         ).Items.Single();
 
         Assert.AreEqual((1280, 720), (listed.Width, listed.Height));
         Assert.AreEqual(("Media/screen.png", 1280, 720), (found.Path, found.Width, found.Height));
-        Assert.IsEmpty((await GetAsync<SearchResults>("/api/search?q=" + Uri.EscapeDataString("w:>1280"))).Items);
+        Assert.IsEmpty((await GetAsync<SearchResults>($"{V1}/search?q=" + Uri.EscapeDataString("w:>1280"))).Items);
     }
 
     [TestMethod]
     public async Task ResolutionsAreShownAndReadUnlessTurnedOff()
     {
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         Assert.IsTrue(settings.Values.Browse.ShowResolution);
         Assert.IsTrue(settings.Values.Scan.ReadResolution);
-        Assert.IsTrue((await GetAsync<ClientConfig>("/api/config")).ShowResolution);
+        Assert.IsTrue((await GetAsync<ClientConfig>($"{V1}/config")).ShowResolution);
 
         settings.Values.Browse.ShowResolution = false;
         settings.Values.Scan.ReadResolution = false;
-        using var saved = await _client.PutAsJsonAsync(
-            "/api/settings",
-            settings.Values,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token);
 
         Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
-        Assert.IsFalse((await GetAsync<ClientConfig>("/api/config")).ShowResolution);
-        Assert.IsFalse((await GetAsync<SettingsView>("/api/settings")).Values.Scan.ReadResolution);
+        Assert.IsFalse((await GetAsync<ClientConfig>($"{V1}/config")).ShowResolution);
+        Assert.IsFalse((await GetAsync<SettingsView>($"{V1}/settings")).Values.Scan.ReadResolution);
     }
 
     [TestMethod]
     public async Task ResolutionMarksSendTheirThresholdsOnlyWhenOn()
     {
-        var settings = await GetAsync<SettingsView>("/api/settings");
+        var settings = await GetAsync<SettingsView>($"{V1}/settings");
         Assert.IsFalse(settings.Values.Browse.ResolutionMark);
         Assert.AreEqual(
             (1500, 720),
             (settings.Values.Browse.ImageHighResolutionPixels, settings.Values.Browse.VideoHighResolutionPixels)
         );
-        Assert.IsNull((await GetAsync<ClientConfig>("/api/config")).ResolutionMark);
+        Assert.IsNull((await GetAsync<ClientConfig>($"{V1}/config")).ResolutionMark);
 
         settings.Values.Browse.ResolutionMark = true;
         settings.Values.Browse.VideoHighResolutionPixels = 0;
-        using (
-            var refused = await _client.PutAsJsonAsync(
-                "/api/settings",
-                settings.Values,
-                Json,
-                TestContext.CancellationToken
-            )
-        )
+        using (var refused = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token))
         {
             Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
         }
 
         settings.Values.Browse.ImageHighResolutionPixels = 2000;
         settings.Values.Browse.VideoHighResolutionPixels = 1080;
-        using (
-            var saved = await _client.PutAsJsonAsync(
-                "/api/settings",
-                settings.Values,
-                Json,
-                TestContext.CancellationToken
-            )
-        )
+        using (var saved = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
         }
 
         Assert.AreEqual(
             new ResolutionThresholds(2000, 1080),
-            (await GetAsync<ClientConfig>("/api/config")).ResolutionMark
+            (await GetAsync<ClientConfig>($"{V1}/config")).ResolutionMark
         );
 
         settings.Values.Browse.ResolutionMark = false;
-        using (
-            var off = await _client.PutAsJsonAsync(
-                "/api/settings",
-                settings.Values,
-                Json,
-                TestContext.CancellationToken
-            )
-        )
+        using (var off = await _client.PutAsJsonAsync($"{V1}/settings", settings.Values, Json, Token))
         {
             Assert.AreEqual(HttpStatusCode.OK, off.StatusCode);
         }
 
-        Assert.IsNull((await GetAsync<ClientConfig>("/api/config")).ResolutionMark);
-        Assert.AreEqual(1080, (await GetAsync<SettingsView>("/api/settings")).Values.Browse.VideoHighResolutionPixels);
+        Assert.IsNull((await GetAsync<ClientConfig>($"{V1}/config")).ResolutionMark);
+        Assert.AreEqual(1080, (await GetAsync<SettingsView>($"{V1}/settings")).Values.Browse.VideoHighResolutionPixels);
     }
 
     [TestMethod]
     public async Task CreateTagThenTagAFileAndFindIt()
     {
         using var created = await _client.PostAsJsonAsync(
-            "/api/tags",
+            $"{V1}/tags",
             new TagInput("Vacation", Color: "teal", Aliases: ["Holiday trip"]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
-        var tag = (await created.Content.ReadFromJsonAsync<TagDetails>(Json, TestContext.CancellationToken))!;
+        var tag = (await created.Content.ReadFromJsonAsync<TagDetails>(Json, Token))!;
 
         using var tagged = await _client.PostAsJsonAsync(
-            "/api/file-tags",
+            $"{V1}/file-tags",
             new FileTagChange(["Media/Holiday 2020.mp4"], Add: [tag.Id]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         Assert.AreEqual(HttpStatusCode.OK, tagged.StatusCode);
 
         var fileTags = await GetAsync<FileTags>(
-            "/api/file-tags?path=" + Uri.EscapeDataString("Media/Holiday 2020.mp4")
+            $"{V1}/file-tags?path=" + Uri.EscapeDataString("Media/Holiday 2020.mp4")
         );
-        var listing = await GetAsync<DirectoryListing>("/api/browse?path=Media");
-        var results = await GetAsync<SearchResults>("/api/search?q=" + Uri.EscapeDataString("t:\"holiday trip\""));
-        var found = await GetAsync<TagSearchResults>("/api/tags?q=vac");
-        var config = await GetAsync<ClientConfig>("/api/config");
+        var listing = await GetAsync<DirectoryListing>($"{V1}/browse?path=Media");
+        var results = await GetAsync<SearchResults>($"{V1}/search?q=" + Uri.EscapeDataString("t:\"holiday trip\""));
+        var found = await GetAsync<TagSearchResults>($"{V1}/tags?q=vac");
+        var config = await GetAsync<ClientConfig>($"{V1}/config");
 
         Assert.AreEqual("Vacation", fileTags.Tags.Single().Name);
         Assert.AreEqual("teal", listing.Items.Single(i => i.Name == "Holiday 2020.mp4").Tags!.Single().Color);
@@ -958,39 +827,33 @@ public sealed class ApiTests
     public async Task TagsTheFilesOfAFolderTreeAndOfASearch()
     {
         using var folder = await _client.PostAsJsonAsync(
-            "/api/file-tags/scope",
+            $"{V1}/file-tags/scope",
             new ScopeTagChange("RepeatedDir", Recursive: true, Add: [BuiltInTags.Favorite]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var tree = await GetAsync<ScopeTags>("/api/file-tags/scope?path=RepeatedDir&recursive=true");
-        var own = await GetAsync<ScopeTags>("/api/file-tags/scope?path=RepeatedDir");
+        var tree = await GetAsync<ScopeTags>($"{V1}/file-tags/scope?path=RepeatedDir&recursive=true");
+        var own = await GetAsync<ScopeTags>($"{V1}/file-tags/scope?path=RepeatedDir");
         using var search = await _client.PostAsJsonAsync(
-            "/api/file-tags/scope",
+            $"{V1}/file-tags/scope",
             new ScopeTagChange("RepeatedDir", Query: "rdfile1", Remove: [BuiltInTags.Favorite]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var found = await GetAsync<ScopeTags>("/api/file-tags/scope?path=&q=t%3Afavorite");
-        using var missing = await _client.GetAsync("/api/file-tags/scope?path=Nowhere", TestContext.CancellationToken);
+        var found = await GetAsync<ScopeTags>($"{V1}/file-tags/scope?path=&q=t%3Afavorite");
+        using var missing = await _client.GetAsync($"{V1}/file-tags/scope?path=Nowhere", Token);
         using var noTag = await _client.PostAsJsonAsync(
-            "/api/file-tags/scope",
+            $"{V1}/file-tags/scope",
             new ScopeTagChange("Media"),
             Json,
-            TestContext.CancellationToken
+            Token
         );
 
         Assert.AreEqual(HttpStatusCode.OK, folder.StatusCode);
-        Assert.AreEqual(
-            6,
-            (await folder.Content.ReadFromJsonAsync<ScopeTagChangeResult>(Json, TestContext.CancellationToken))!.Added
-        );
+        Assert.AreEqual(6, (await folder.Content.ReadFromJsonAsync<ScopeTagChangeResult>(Json, Token))!.Added);
         Assert.AreEqual((6, 6), (tree.Files, tree.Tags.Single().FileCount));
         Assert.AreEqual(2, own.Files);
-        Assert.AreEqual(
-            2,
-            (await search.Content.ReadFromJsonAsync<ScopeTagChangeResult>(Json, TestContext.CancellationToken))!.Removed
-        );
+        Assert.AreEqual(2, (await search.Content.ReadFromJsonAsync<ScopeTagChangeResult>(Json, Token))!.Removed);
         Assert.AreEqual(new TagScope("", Query: "t:favorite"), found.Scope);
         Assert.AreEqual(4, found.Files);
         Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode);
@@ -1000,38 +863,25 @@ public sealed class ApiTests
     [TestMethod]
     public async Task SettingsChangeTheClientConfigRightAway()
     {
-        var view = await GetAsync<SettingsView>("/api/settings");
+        var view = await GetAsync<SettingsView>($"{V1}/settings");
         var configured = view.Values.Browse.DefaultPageSize;
         view.Values.Browse.DefaultPageSize = 25;
         view.Values.Search.DefaultPageSize = 40;
         view.Values.Thumbnails.LargeImageKilobytes = 2048;
 
-        using var saved = await _client.PutAsJsonAsync(
-            "/api/settings",
-            view.Values,
-            Json,
-            TestContext.CancellationToken
-        );
-        var config = await GetAsync<ClientConfig>("/api/config");
+        using var saved = await _client.PutAsJsonAsync($"{V1}/settings", view.Values, Json, Token);
+        var config = await GetAsync<ClientConfig>($"{V1}/config");
         view.Values.Browse.MaxPageSize = 0;
-        using var invalid = await _client.PutAsJsonAsync(
-            "/api/settings",
-            view.Values,
-            Json,
-            TestContext.CancellationToken
-        );
-        using var reset = await _client.DeleteAsync("/api/settings", TestContext.CancellationToken);
-        var afterReset = await GetAsync<ClientConfig>("/api/config");
+        using var invalid = await _client.PutAsJsonAsync($"{V1}/settings", view.Values, Json, Token);
+        using var reset = await _client.DeleteAsync($"{V1}/settings", Token);
+        var afterReset = await GetAsync<ClientConfig>($"{V1}/config");
 
         Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode);
         Assert.AreEqual(25, config.PageSize);
         Assert.AreEqual(40, config.SearchPageSize);
         Assert.AreEqual(2048 * 1024L, config.LargeImageSize);
         Assert.AreEqual(HttpStatusCode.BadRequest, invalid.StatusCode);
-        StringAssert.Contains(
-            await invalid.Content.ReadAsStringAsync(TestContext.CancellationToken),
-            "browse.maxPageSize"
-        );
+        StringAssert.Contains(await invalid.Content.ReadAsStringAsync(Token), "browse.maxPageSize");
         Assert.AreEqual(HttpStatusCode.OK, reset.StatusCode);
         Assert.AreEqual(configured, afterReset.PageSize);
     }
@@ -1039,24 +889,16 @@ public sealed class ApiTests
     [TestMethod]
     public async Task TagEndpointsReportProblems()
     {
-        using var invalid = await _client.PostAsJsonAsync(
-            "/api/tags",
-            new TagInput(" "),
-            Json,
-            TestContext.CancellationToken
-        );
-        using var builtIn = await _client.DeleteAsync(
-            $"/api/tags/{BuiltInTags.Favorite}",
-            TestContext.CancellationToken
-        );
-        using var missing = await _client.GetAsync("/api/tags/9999", TestContext.CancellationToken);
+        using var invalid = await _client.PostAsJsonAsync($"{V1}/tags", new TagInput(" "), Json, Token);
+        using var builtIn = await _client.DeleteAsync($"{V1}/tags/{BuiltInTags.Favorite}", Token);
+        using var missing = await _client.GetAsync($"{V1}/tags/9999", Token);
         using var outside = await _client.PostAsJsonAsync(
-            "/api/file-tags",
+            $"{V1}/file-tags",
             new FileTagChange(["../index.db"], Add: [BuiltInTags.Favorite]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        using var noFile = await _client.GetAsync("/api/file-tags?path=Media", TestContext.CancellationToken);
+        using var noFile = await _client.GetAsync($"{V1}/file-tags?path=Media", Token);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, invalid.StatusCode);
         Assert.AreEqual(HttpStatusCode.Conflict, builtIn.StatusCode);
@@ -1070,29 +912,29 @@ public sealed class ApiTests
     {
         // What the tag manager and editor dialogs do, through HTTP.
         using var created = await _client.PostAsJsonAsync(
-            "/api/tags",
+            $"{V1}/tags",
             new TagInput("Kitty", Aliases: ["Cat"]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var tag = (await created.Content.ReadFromJsonAsync<TagDetails>(Json, TestContext.CancellationToken))!;
+        var tag = (await created.Content.ReadFromJsonAsync<TagDetails>(Json, Token))!;
         Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
-        Assert.AreEqual($"/api/v1/tags/{tag.Id}", created.Headers.Location!.OriginalString);
+        Assert.AreEqual($"{V1}/tags/{tag.Id}", created.Headers.Location!.OriginalString);
 
         using var updated = await _client.PutAsJsonAsync(
-            $"/api/tags/{tag.Id}",
+            $"{V1}/tags/{tag.Id}",
             new TagInput("Cat", Color: "orange", ParentIds: [BuiltInTags.Meta], DisambiguationId: BuiltInTags.Meta),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var edited = (await updated.Content.ReadFromJsonAsync<TagDetails>(Json, TestContext.CancellationToken))!;
+        var edited = (await updated.Content.ReadFromJsonAsync<TagDetails>(Json, Token))!;
         Assert.AreEqual(HttpStatusCode.OK, updated.StatusCode);
         Assert.AreEqual("Cat (Meta Tags)", edited.DisplayName);
         Assert.IsEmpty(edited.Aliases);
 
-        using var deleted = await _client.DeleteAsync($"/api/tags/{tag.Id}", TestContext.CancellationToken);
-        using var again = await _client.DeleteAsync($"/api/tags/{tag.Id}", TestContext.CancellationToken);
-        using var gone = await _client.GetAsync($"/api/tags/{tag.Id}", TestContext.CancellationToken);
+        using var deleted = await _client.DeleteAsync($"{V1}/tags/{tag.Id}", Token);
+        using var again = await _client.DeleteAsync($"{V1}/tags/{tag.Id}", Token);
+        using var gone = await _client.GetAsync($"{V1}/tags/{tag.Id}", Token);
         Assert.AreEqual(HttpStatusCode.NoContent, deleted.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, again.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, gone.StatusCode);
@@ -1103,52 +945,34 @@ public sealed class ApiTests
     {
         var a = (
             await (
-                await _client.PostAsJsonAsync("/api/tags", new TagInput("A"), Json, TestContext.CancellationToken)
-            ).Content.ReadFromJsonAsync<TagDetails>(Json, TestContext.CancellationToken)
+                await _client.PostAsJsonAsync($"{V1}/tags", new TagInput("A"), Json, Token)
+            ).Content.ReadFromJsonAsync<TagDetails>(Json, Token)
         )!;
         var b = (
             await (
-                await _client.PostAsJsonAsync(
-                    "/api/tags",
-                    new TagInput("B", ParentIds: [a.Id]),
-                    Json,
-                    TestContext.CancellationToken
-                )
-            ).Content.ReadFromJsonAsync<TagDetails>(Json, TestContext.CancellationToken)
+                await _client.PostAsJsonAsync($"{V1}/tags", new TagInput("B", ParentIds: [a.Id]), Json, Token)
+            ).Content.ReadFromJsonAsync<TagDetails>(Json, Token)
         )!;
 
         using var loop = await _client.PutAsJsonAsync(
-            $"/api/tags/{a.Id}",
+            $"{V1}/tags/{a.Id}",
             new TagInput("A", ParentIds: [b.Id]),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        using var color = await _client.PostAsJsonAsync(
-            "/api/tags",
-            new TagInput("C", Color: "plaid"),
-            Json,
-            TestContext.CancellationToken
-        );
-        using var missing = await _client.PutAsJsonAsync(
-            "/api/tags/9999",
-            new TagInput("Ghost"),
-            Json,
-            TestContext.CancellationToken
-        );
+        using var color = await _client.PostAsJsonAsync($"{V1}/tags", new TagInput("C", Color: "plaid"), Json, Token);
+        using var missing = await _client.PutAsJsonAsync($"{V1}/tags/9999", new TagInput("Ghost"), Json, Token);
         using var noBody = await _client.PostAsync(
-            "/api/tags",
+            $"{V1}/tags",
             new StringContent("", System.Text.Encoding.UTF8, "application/json"),
-            TestContext.CancellationToken
+            Token
         );
 
         Assert.AreEqual(HttpStatusCode.BadRequest, loop.StatusCode);
         // The client shows the first message of `errors` (api.service.ts).
-        Assert.Contains("parentIds", await loop.Content.ReadAsStringAsync(TestContext.CancellationToken));
-        Assert.Contains(
-            "“B” already inherits from this tag",
-            await loop.Content.ReadAsStringAsync(TestContext.CancellationToken)
-        );
-        Assert.Contains("\"color\"", await color.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.Contains("parentIds", await loop.Content.ReadAsStringAsync(Token));
+        Assert.Contains("“B” already inherits from this tag", await loop.Content.ReadAsStringAsync(Token));
+        Assert.Contains("\"color\"", await color.Content.ReadAsStringAsync(Token));
         Assert.AreEqual(HttpStatusCode.NotFound, missing.StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, noBody.StatusCode);
     }
@@ -1158,27 +982,20 @@ public sealed class ApiTests
     {
         for (var i = 0; i < 3; i++)
         {
-            using (
-                await _client.PostAsJsonAsync(
-                    "/api/tags",
-                    new TagInput($"Tag {i}"),
-                    Json,
-                    TestContext.CancellationToken
-                )
-            ) { }
+            using (await _client.PostAsJsonAsync($"{V1}/tags", new TagInput($"Tag {i}"), Json, Token)) { }
         }
 
-        var zero = await GetAsync<TagSearchResults>("/api/tags?limit=0");
-        var negative = await GetAsync<TagSearchResults>("/api/tags?limit=-5");
-        var huge = await GetAsync<TagSearchResults>("/api/tags?limit=1000000");
-        var byDefault = await GetAsync<TagSearchResults>("/api/tags?q=tag");
+        var zero = await GetAsync<TagSearchResults>($"{V1}/tags?limit=0");
+        var negative = await GetAsync<TagSearchResults>($"{V1}/tags?limit=-5");
+        var huge = await GetAsync<TagSearchResults>($"{V1}/tags?limit=1000000");
+        var byDefault = await GetAsync<TagSearchResults>($"{V1}/tags?q=tag");
 
         Assert.HasCount(1, zero.Matches);
         Assert.HasCount(1, negative.Matches);
         Assert.HasCount(6, huge.Matches);
         // The three, and the built-in "Meta Tags".
         Assert.HasCount(4, byDefault.Matches);
-        using var notANumber = await _client.GetAsync("/api/tags?limit=lots", TestContext.CancellationToken);
+        using var notANumber = await _client.GetAsync($"{V1}/tags?limit=lots", Token);
         Assert.AreEqual(HttpStatusCode.BadRequest, notANumber.StatusCode);
     }
 
@@ -1187,32 +1004,32 @@ public sealed class ApiTests
     {
         using (
             await _client.PostAsJsonAsync(
-                "/api/file-tags",
+                $"{V1}/file-tags",
                 new FileTagChange(["Media/photo.jpg"], Add: [BuiltInTags.Favorite]),
                 Json,
-                TestContext.CancellationToken
+                Token
             )
         ) { }
 
         using var viewed = await _client.PostAsJsonAsync(
-            "/api/file-tags/viewed",
+            $"{V1}/file-tags/viewed",
             new ViewedFile("Media/photo.jpg"),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         using var notAFile = await _client.PostAsJsonAsync(
-            "/api/file-tags/viewed",
+            $"{V1}/file-tags/viewed",
             new ViewedFile("Media"),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         using var outside = await _client.PostAsJsonAsync(
-            "/api/file-tags/viewed",
+            $"{V1}/file-tags/viewed",
             new ViewedFile("../index.db"),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var sidebar = await GetAsync<TagSidebar>("/api/tags/sidebar");
+        var sidebar = await GetAsync<TagSidebar>($"{V1}/tags/sidebar");
 
         Assert.AreEqual(HttpStatusCode.NoContent, viewed.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, notAFile.StatusCode);
@@ -1221,27 +1038,25 @@ public sealed class ApiTests
         Assert.AreEqual("Favorite", sidebar.Viewed.Single().Tag.Name);
         Assert.AreEqual("Favorite", sidebar.Popular.Single().Tag.Name);
 
-        using var cleared = await _client.DeleteAsync("/api/tags/history", TestContext.CancellationToken);
+        using var cleared = await _client.DeleteAsync($"{V1}/tags/history", Token);
         Assert.AreEqual(HttpStatusCode.NoContent, cleared.StatusCode);
-        Assert.IsEmpty((await GetAsync<TagSidebar>("/api/tags/sidebar")).Viewed);
+        Assert.IsEmpty((await GetAsync<TagSidebar>($"{V1}/tags/sidebar")).Viewed);
     }
 
     [TestMethod]
     public async Task TaggingASelectionAnswersWithEveryFilesTags()
     {
         using var response = await _client.PostAsJsonAsync(
-            "/api/file-tags",
+            $"{V1}/file-tags",
             new FileTagChange(
                 ["Media/photo.jpg", "RFile1.txt", "Media/photo.jpg"],
                 Add: [BuiltInTags.Favorite, BuiltInTags.Archived],
                 Remove: [BuiltInTags.Archived]
             ),
             Json,
-            TestContext.CancellationToken
+            Token
         );
-        var result = (
-            await response.Content.ReadFromJsonAsync<FileTagChangeResult>(Json, TestContext.CancellationToken)
-        )!;
+        var result = (await response.Content.ReadFromJsonAsync<FileTagChangeResult>(Json, Token))!;
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         CollectionAssert.AreEqual(
@@ -1252,16 +1067,16 @@ public sealed class ApiTests
         Assert.IsTrue(result.Files.All(f => f.Groups.Single().Category!.Name == "Meta Tags"));
 
         using var tooMany = await _client.PostAsJsonAsync(
-            "/api/file-tags",
+            $"{V1}/file-tags",
             new FileTagChange(
                 Enumerable.Repeat("RFile1.txt", TagService.MaxFilesPerChange + 1).ToArray(),
                 Add: [BuiltInTags.Favorite]
             ),
             Json,
-            TestContext.CancellationToken
+            Token
         );
         Assert.AreEqual(HttpStatusCode.BadRequest, tooMany.StatusCode);
-        Assert.Contains("\"paths\"", await tooMany.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.Contains("\"paths\"", await tooMany.Content.ReadAsStringAsync(Token));
     }
 
     [TestMethod]
@@ -1286,7 +1101,7 @@ public sealed class ApiTests
             Assert.Inconclusive($"Sources not found at {schema}.");
         var fields = System
             .Text.RegularExpressions.Regex.Matches(
-                await File.ReadAllTextAsync(schema, TestContext.CancellationToken),
+                await File.ReadAllTextAsync(schema, Token),
                 // Prettier lays an entry out on one line or one property per line, a label in either quotes.
                 @"\{\s*key: '(?<key>[\w.]+)',\s*label: (?:'[^']*'|""[^""]*""),\s*"
                     + @"type: '(?<type>\w+)'(?<numeric>,\s*numeric: true)?"
@@ -1297,9 +1112,7 @@ public sealed class ApiTests
             )
             .Where(f => f.Type != "preset")
             .ToList();
-        using var settings = JsonDocument.Parse(
-            await _client.GetStringAsync("/api/settings", TestContext.CancellationToken)
-        );
+        using var settings = JsonDocument.Parse(await _client.GetStringAsync($"{V1}/settings", Token));
         var values = settings.RootElement.GetProperty("values");
 
         Assert.IsGreaterThan(30, fields.Count, "The schema's fields were not found: the pattern may need updating.");
@@ -1339,11 +1152,7 @@ public sealed class ApiTests
     [TestMethod]
     public async Task ScanRejectsPathsOutsideTheLibrary()
     {
-        using var response = await _client.PostAsJsonAsync(
-            "/api/scan",
-            new ScanRequest("../.."),
-            TestContext.CancellationToken
-        );
+        using var response = await _client.PostAsJsonAsync($"{V1}/scan", new ScanRequest("../.."), Token);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -1351,7 +1160,7 @@ public sealed class ApiTests
     [TestMethod]
     public async Task ServesTheWebClientAndOpenApi()
     {
-        var html = await _client.GetStringAsync("/", TestContext.CancellationToken);
+        var html = await _client.GetStringAsync("/", Token);
         StringAssert.Contains(html, "<sfe-root");
 
         // The client's other pages, opened or reloaded at their own address.
@@ -1359,17 +1168,18 @@ public sealed class ApiTests
             var page in new[] { "/admin?section=tasks&page=history", "/config?section=tags", "/player?path=a.mkv" }
         )
         {
-            StringAssert.Contains(await _client.GetStringAsync(page, TestContext.CancellationToken), "<sfe-root", page);
+            StringAssert.Contains(await _client.GetStringAsync(page, Token), "<sfe-root", page);
         }
 
-        var openApi = await _client.GetStringAsync("/openapi/v1.json", TestContext.CancellationToken);
-        StringAssert.Contains(openApi, "/api/v1/search");
+        var openApi = await _client.GetStringAsync("/openapi/v1.json", Token);
+        StringAssert.Contains(openApi, $"{V1}/search");
     }
 
     [TestMethod]
     public async Task ApiDocsNeverCallExternalServices()
     {
-        var html = await _client.GetStringAsync("/api/docs/index.html", TestContext.CancellationToken);
+        // Swagger UI's pages are outside the API's versions (ApiRoutes.Docs).
+        var html = await _client.GetStringAsync("/api/docs/index.html", Token);
 
         // Every script, style and icon of the Swagger UI page is relative, i.e. served by the app itself.
         var assets = System
@@ -1380,15 +1190,12 @@ public sealed class ApiTests
         foreach (var asset in assets)
         {
             Assert.DoesNotContain("//", asset, $"{asset} is not served by the application.");
-            using var response = await _client.GetAsync(
-                "/api/docs/" + asset.TrimStart('.', '/'),
-                TestContext.CancellationToken
-            );
+            using var response = await _client.GetAsync("/api/docs/" + asset.TrimStart('.', '/'), Token);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, asset);
         }
 
         // No validator URL: Swagger UI would send the OpenAPI document to validator.swagger.io for its badge.
-        var script = await _client.GetStringAsync("/api/docs/index.js", TestContext.CancellationToken);
+        var script = await _client.GetStringAsync("/api/docs/index.js", Token);
         StringAssert.Contains(script, "\"url\":\"../../openapi/v1.json\"");
         Assert.DoesNotContain("\"validatorUrl\":\"", script);
     }
@@ -1397,44 +1204,37 @@ public sealed class ApiTests
     public async Task FileTrackingRoutesListDuplicatesAndRelinkMissingFiles()
     {
         File.Copy(_library.FullPath("Media/photo.jpg"), _library.FullPath("photo copy.jpg"));
-        using var created = await _client.PostAsJsonAsync(
-            "/api/tags",
-            new TagInput("Kept"),
-            Json,
-            TestContext.CancellationToken
-        );
-        var tag = (await created.Content.ReadFromJsonAsync<TagDetails>(Json, TestContext.CancellationToken))!;
-        using (
-            var start = await _client.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken)
-        )
+        using var created = await _client.PostAsJsonAsync($"{V1}/tags", new TagInput("Kept"), Json, Token);
+        var tag = (await created.Content.ReadFromJsonAsync<TagDetails>(Json, Token))!;
+        using (var start = await _client.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token))
         {
             await WaitForScanAsync();
         }
 
         using (
             await _client.PostAsJsonAsync(
-                "/api/file-tags",
+                $"{V1}/file-tags",
                 new FileTagChange(["Media/Episode 2.mkv"], Add: [tag.Id]),
                 Json,
-                TestContext.CancellationToken
+                Token
             )
         ) { }
 
-        var duplicates = await GetAsync<DuplicateResults>("/api/duplicates");
+        var duplicates = await GetAsync<DuplicateResults>($"{V1}/duplicates");
         var group = Assert.ContainsSingle(duplicates.Groups);
         CollectionAssert.AreEquivalent(
             new[] { "Media/photo.jpg", "photo copy.jpg" },
             group.Files.Select(f => f.Path).ToArray()
         );
-        using (var invalid = await _client.GetAsync("/api/duplicates?path=../..", TestContext.CancellationToken))
+        using (var invalid = await _client.GetAsync($"{V1}/duplicates?path=../..", Token))
             Assert.AreEqual(HttpStatusCode.BadRequest, invalid.StatusCode);
 
         Assert.IsTrue(duplicates.CanRemove);
         using (
             var same = await _client.PostAsJsonAsync(
-                "/api/duplicates/remove",
+                $"{V1}/duplicates/remove",
                 new RemoveDuplicateRequest("photo copy.jpg", "photo copy.jpg"),
-                TestContext.CancellationToken
+                Token
             )
         )
         {
@@ -1443,16 +1243,14 @@ public sealed class ApiTests
 
         using (
             var removed = await _client.PostAsJsonAsync(
-                "/api/duplicates/remove",
+                $"{V1}/duplicates/remove",
                 new RemoveDuplicateRequest("photo copy.jpg", "Media/photo.jpg"),
-                TestContext.CancellationToken
+                Token
             )
         )
         {
             Assert.AreEqual(HttpStatusCode.OK, removed.StatusCode);
-            var body = (
-                await removed.Content.ReadFromJsonAsync<RemovedDuplicate>(Json, TestContext.CancellationToken)
-            )!;
+            var body = (await removed.Content.ReadFromJsonAsync<RemovedDuplicate>(Json, Token))!;
             Assert.AreEqual("Media/photo.jpg", body.Kept.Path);
             Assert.IsNotNull(body.TrashId, "Moved to the trash");
         }
@@ -1460,22 +1258,20 @@ public sealed class ApiTests
 
         // Deleted: kept as missing, then relinked by hand to another file.
         File.Delete(_library.FullPath("Media/Episode 2.mkv"));
-        using (
-            var start = await _client.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken)
-        )
+        using (var start = await _client.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token))
         {
             Assert.AreEqual(1, (await WaitForScanAsync()).Missing);
         }
 
-        var missing = await GetAsync<MissingFileResults>("/api/missing-files");
+        var missing = await GetAsync<MissingFileResults>($"{V1}/missing-files");
         var item = Assert.ContainsSingle(missing.Items);
         Assert.AreEqual(1, missing.Total);
 
         using (
             var bad = await _client.PostAsJsonAsync(
-                $"/api/missing-files/{item.Id}/relink",
+                $"{V1}/missing-files/{item.Id}/relink",
                 new RelinkRequest("Nope.mkv"),
-                TestContext.CancellationToken
+                Token
             )
         )
         {
@@ -1484,24 +1280,21 @@ public sealed class ApiTests
 
         using (
             var relinked = await _client.PostAsJsonAsync(
-                $"/api/missing-files/{item.Id}/relink",
+                $"{V1}/missing-files/{item.Id}/relink",
                 new RelinkRequest("Media/Episode 10.mkv"),
-                TestContext.CancellationToken
+                Token
             )
         )
         {
             Assert.AreEqual(HttpStatusCode.NoContent, relinked.StatusCode);
         }
 
-        var tags = await GetAsync<FileTags>("/api/file-tags?path=Media/Episode%2010.mkv");
+        var tags = await GetAsync<FileTags>($"{V1}/file-tags?path=Media/Episode%2010.mkv");
         Assert.AreEqual(tag.Id, Assert.ContainsSingle(tags.Tags).Id);
-        using (var gone = await _client.DeleteAsync($"/api/missing-files/{item.Id}", TestContext.CancellationToken))
+        using (var gone = await _client.DeleteAsync($"{V1}/missing-files/{item.Id}", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, gone.StatusCode);
-        using var pass = await _client.PostAsync("/api/missing-files/relink", null, TestContext.CancellationToken);
-        Assert.AreEqual(
-            0,
-            (await pass.Content.ReadFromJsonAsync<RelinkPassResult>(Json, TestContext.CancellationToken))!.Remaining
-        );
+        using var pass = await _client.PostAsync($"{V1}/missing-files/relink", null, Token);
+        Assert.AreEqual(0, (await pass.Content.ReadFromJsonAsync<RelinkPassResult>(Json, Token))!.Remaining);
     }
 
     [TestMethod]
@@ -1593,40 +1386,38 @@ public sealed class ApiTests
     [TestMethod]
     public async Task TasksCanBeStartedAndAreRecorded()
     {
-        var overview = await GetAsync<TaskOverview>("/api/tasks");
+        var overview = await GetAsync<TaskOverview>($"{V1}/tasks");
         Assert.HasCount(Enum.GetValues<BackgroundTaskKind>().Count(BackgroundTasks.IsListed), overview.Tasks);
         Assert.AreEqual(30, overview.LogRetentionDays);
         Assert.IsFalse(overview.Tasks.Single(t => t.Task == BackgroundTaskKind.Thumbnails).CanSchedule);
 
-        using (var cancel = await _client.PostAsync("/api/tasks/scan/cancel", null, TestContext.CancellationToken))
+        using (var cancel = await _client.PostAsync($"{V1}/tasks/scan/cancel", null, Token))
             Assert.AreEqual(HttpStatusCode.Conflict, cancel.StatusCode);
-        using (var unknown = await _client.PostAsync("/api/tasks/1/start", null, TestContext.CancellationToken))
+        using (var unknown = await _client.PostAsync($"{V1}/tasks/1/start", null, Token))
             Assert.AreEqual(HttpStatusCode.NotFound, unknown.StatusCode);
 
-        using (
-            var start = await _client.PostAsync("/api/tasks/scan/start?path=Media", null, TestContext.CancellationToken)
-        )
+        using (var start = await _client.PostAsync($"{V1}/tasks/scan/start?path=Media", null, Token))
         {
             Assert.AreEqual(HttpStatusCode.Accepted, start.StatusCode);
         }
 
         Assert.AreEqual(ScanState.Completed, (await WaitForScanAsync()).State);
 
-        var runs = await GetAsync<TaskRunPage>("/api/tasks/runs?task=scan");
+        var runs = await GetAsync<TaskRunPage>($"{V1}/tasks/runs?task=scan");
         var run = runs.Runs.Single();
         Assert.AreEqual(TaskOutcome.Completed, run.Outcome);
         Assert.AreEqual("Media", run.Path);
-        var details = await GetAsync<TaskRunDetails>($"/api/tasks/runs/{run.Id}");
+        var details = await GetAsync<TaskRunDetails>($"{V1}/tasks/runs/{run.Id}");
         Assert.IsNotEmpty(details.Log);
 
-        var last = (await GetAsync<TaskOverview>("/api/tasks"))
+        var last = (await GetAsync<TaskOverview>($"{V1}/tasks"))
             .Tasks.Single(t => t.Task == BackgroundTaskKind.Scan)
             .LastRun;
         Assert.AreEqual(run.Id, last?.Id);
 
-        using (var clear = await _client.DeleteAsync("/api/tasks/runs", TestContext.CancellationToken))
+        using (var clear = await _client.DeleteAsync($"{V1}/tasks/runs", Token))
             Assert.AreEqual(HttpStatusCode.NoContent, clear.StatusCode);
-        Assert.IsEmpty((await GetAsync<TaskRunPage>("/api/tasks/runs")).Runs);
+        Assert.IsEmpty((await GetAsync<TaskRunPage>($"{V1}/tasks/runs")).Runs);
     }
 
     [TestMethod]
@@ -1643,15 +1434,8 @@ public sealed class ApiTests
             true
         );
 
-        using var preview = await _client.PostAsJsonAsync(
-            "/api/tasks/schedules/preview",
-            input,
-            Json,
-            TestContext.CancellationToken
-        );
-        var runs = (
-            await preview.Content.ReadFromJsonAsync<SchedulePreview>(Json, TestContext.CancellationToken)
-        )!.Runs;
+        using var preview = await _client.PostAsJsonAsync($"{V1}/tasks/schedules/preview", input, Json, Token);
+        var runs = (await preview.Content.ReadFromJsonAsync<SchedulePreview>(Json, Token))!.Runs;
         Assert.HasCount(TaskScheduleService.PreviewCount, runs);
         // A day apart on the server's clock (23 or 25 hours across a change to or from summer time).
         Assert.AreEqual(
@@ -1660,27 +1444,20 @@ public sealed class ApiTests
                 - TimeZoneInfo.ConvertTime(runs[0], TimeZoneInfo.Local).DateTime
         );
 
-        using var created = await _client.PostAsJsonAsync(
-            "/api/tasks/schedules",
-            input,
-            Json,
-            TestContext.CancellationToken
-        );
+        using var created = await _client.PostAsJsonAsync($"{V1}/tasks/schedules", input, Json, Token);
         Assert.AreEqual(HttpStatusCode.Created, created.StatusCode);
-        var schedule = (
-            await created.Content.ReadFromJsonAsync<TaskScheduleView>(Json, TestContext.CancellationToken)
-        )!;
+        var schedule = (await created.Content.ReadFromJsonAsync<TaskScheduleView>(Json, Token))!;
         Assert.AreEqual(runs[0], schedule.NextRun);
 
         using (
             var invalid = await _client.PutAsJsonAsync(
-                $"/api/tasks/schedules/{schedule.Id}",
+                $"{V1}/tasks/schedules/{schedule.Id}",
                 input with
                 {
                     Days = 0,
                 },
                 Json,
-                TestContext.CancellationToken
+                Token
             )
         )
         {
@@ -1689,81 +1466,67 @@ public sealed class ApiTests
 
         using (
             var off = await _client.PutAsJsonAsync(
-                $"/api/tasks/schedules/{schedule.Id}",
+                $"{V1}/tasks/schedules/{schedule.Id}",
                 input with
                 {
                     Enabled = false,
                 },
                 Json,
-                TestContext.CancellationToken
+                Token
             )
         )
         {
-            Assert.IsNull(
-                (await off.Content.ReadFromJsonAsync<TaskScheduleView>(Json, TestContext.CancellationToken))!.NextRun
-            );
+            Assert.IsNull((await off.Content.ReadFromJsonAsync<TaskScheduleView>(Json, Token))!.NextRun);
         }
 
-        Assert.AreEqual(schedule.Id, (await GetAsync<TaskOverview>("/api/tasks")).Schedules.Single().Id);
-        using (
-            var deleted = await _client.DeleteAsync(
-                $"/api/tasks/schedules/{schedule.Id}",
-                TestContext.CancellationToken
-            )
-        )
+        Assert.AreEqual(schedule.Id, (await GetAsync<TaskOverview>($"{V1}/tasks")).Schedules.Single().Id);
+        using (var deleted = await _client.DeleteAsync($"{V1}/tasks/schedules/{schedule.Id}", Token))
         {
             Assert.AreEqual(HttpStatusCode.NoContent, deleted.StatusCode);
         }
 
-        Assert.IsEmpty((await GetAsync<TaskOverview>("/api/tasks")).Schedules);
+        Assert.IsEmpty((await GetAsync<TaskOverview>($"{V1}/tasks")).Schedules);
     }
 
     [TestMethod]
     public async Task RemovedFolderCanBeExcludedFromScans()
     {
-        using (
-            var start = await _client.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken)
-        )
+        using (var start = await _client.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token))
         {
             await WaitForScanAsync();
         }
 
-        var folder = await GetAsync<IndexedFolder>("/api/index/folder?path=Media");
+        var folder = await GetAsync<IndexedFolder>($"{V1}/index/folder?path=Media");
         Assert.IsTrue(folder.Indexed);
         Assert.IsFalse(folder.Excluded);
         Assert.IsGreaterThan(0, folder.Files);
 
-        using var removed = await _client.DeleteAsync(
-            "/api/index/folder?path=Media&exclude=true",
-            TestContext.CancellationToken
-        );
-        var result = (await removed.Content.ReadFromJsonAsync<RemovedFromIndex>(Json, TestContext.CancellationToken))!;
+        using var removed = await _client.DeleteAsync($"{V1}/index/folder?path=Media&exclude=true", Token);
+        var result = (await removed.Content.ReadFromJsonAsync<RemovedFromIndex>(Json, Token))!;
         Assert.AreEqual(folder.Files, result.Files);
         Assert.IsTrue(result.Excluded);
         // A setting of the library: its folders mean nothing to the server or another library.
         CollectionAssert.Contains(
-            (await GetAsync<SettingsView>("/api/settings?level=tenant")).Values.Scan.ExcludedFolders,
+            (await GetAsync<SettingsView>($"{V1}/settings?level=tenant")).Values.Scan.ExcludedFolders,
             "Media"
         );
         CollectionAssert.DoesNotContain(
-            (await GetAsync<SettingsView>("/api/settings?level=server")).Values.Scan.ExcludedFolders,
+            (await GetAsync<SettingsView>($"{V1}/settings?level=server")).Values.Scan.ExcludedFolders,
             "Media"
         );
 
         // A scan of the whole library leaves it out.
-        using (
-            var start = await _client.PostAsJsonAsync("/api/scan", new ScanRequest(""), TestContext.CancellationToken)
-        )
+        using (var start = await _client.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Token))
         {
             await WaitForScanAsync();
         }
 
-        var after = await GetAsync<IndexedFolder>("/api/index/folder?path=Media");
+        var after = await GetAsync<IndexedFolder>($"{V1}/index/folder?path=Media");
         Assert.IsFalse(after.Indexed);
         Assert.AreEqual(0, after.Files);
         Assert.IsTrue(after.Excluded);
 
-        using var outside = await _client.DeleteAsync("/api/index/folder?path=../..", TestContext.CancellationToken);
+        using var outside = await _client.DeleteAsync($"{V1}/index/folder?path=../..", Token);
         Assert.AreEqual(HttpStatusCode.BadRequest, outside.StatusCode);
     }
 
@@ -1773,16 +1536,15 @@ public sealed class ApiTests
     {
         for (var attempt = 0; attempt < 200; attempt++)
         {
-            var status = await GetAsync<ScanStatus>("/api/scan");
+            var status = await GetAsync<ScanStatus>($"{V1}/scan");
             if (status.State != ScanState.Running)
                 return status;
-            await Task.Delay(50, TestContext.CancellationToken);
+            await Task.Delay(50, Token);
         }
 
         throw new AssertFailedException("Scan did not finish in time.");
     }
 
     private async Task<T> GetAsync<T>(string url) =>
-        await _client.GetFromJsonAsync<T>(url, Json, TestContext.CancellationToken)
-        ?? throw new AssertFailedException($"{url} returned null.");
+        await _client.GetFromJsonAsync<T>(url, Json, Token) ?? throw new AssertFailedException($"{url} returned null.");
 }

@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
+using Sfe.Api;
 using Sfe.Api.Endpoints;
 using Sfe.Core.Access;
 using Sfe.Core.Connections;
@@ -22,7 +23,7 @@ namespace Sfe.Tests;
 [TestClass]
 public sealed class ConnectionProviderRouteTests
 {
-    private const string Dropbox = "/api/connections/providers/dropbox";
+    private const string Dropbox = $"{V1}/connections/providers/dropbox";
 
     private TestLibrary _library = null!;
 
@@ -56,13 +57,14 @@ public sealed class ConnectionProviderRouteTests
         var before = await admin.GetFromJsonAsync<ProviderSetupView>(Dropbox, Cancel);
         Assert.IsFalse(before!.Offered);
         Assert.AreEqual(ProviderSetupView.NoSecret, before.AppSecret);
-        StringAssert.EndsWith(before.ReturnAddress, "/api" + ConnectionProviderEndpoints.CallbackPath);
+        // The return address registered at the provider: unversioned for good.
+        StringAssert.EndsWith(before.ReturnAddress, ApiRoutes.OAuthCallback);
         Assert.IsNull(
-            (await admin.GetFromJsonAsync<ProviderSetupView>("/api/connections/providers/fake", Cancel))!.AppSecret
+            (await admin.GetFromJsonAsync<ProviderSetupView>($"{V1}/connections/providers/fake", Cancel))!.AppSecret
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            (await admin.GetAsync("/api/connections/providers/nope", Cancel)).StatusCode
+            (await admin.GetAsync($"{V1}/connections/providers/nope", Cancel)).StatusCode
         );
 
         using var wrong = await PatchAsync(admin, new() { ["connections.dropbox.appKey"] = "not a key!" });
@@ -72,7 +74,7 @@ public sealed class ConnectionProviderRouteTests
         StringAssert.Contains(await wrong.Content.ReadAsStringAsync(Cancel), "connections.dropbox.appKey");
         Assert.AreEqual(HttpStatusCode.OK, saved.StatusCode, await saved.Content.ReadAsStringAsync(Cancel));
         Assert.IsTrue((await admin.GetFromJsonAsync<ProviderSetupView>(Dropbox, Cancel))!.Offered);
-        using var config = JsonDocument.Parse(await admin.GetStringAsync("/api/config", Cancel));
+        using var config = JsonDocument.Parse(await admin.GetStringAsync($"{V1}/config", Cancel));
         CollectionAssert.Contains(
             config
                 .RootElement.GetProperty("connections")
@@ -94,7 +96,7 @@ public sealed class ConnectionProviderRouteTests
 
         using var empty = await admin.PutAsJsonAsync($"{Dropbox}/secret", new AppSecretInput(" "), Cancel);
         using var fake = await admin.PutAsJsonAsync(
-            "/api/connections/providers/fake/secret",
+            $"{V1}/connections/providers/fake/secret",
             new AppSecretInput("x"),
             Cancel
         );
@@ -105,7 +107,7 @@ public sealed class ConnectionProviderRouteTests
         Assert.AreEqual(HttpStatusCode.NoContent, set.StatusCode);
         var status = await admin.GetStringAsync(Dropbox, Cancel);
         StringAssert.Contains(status, $"\"{ProviderSetupView.SecretOnPage}\"");
-        foreach (var answer in new[] { status, await admin.GetStringAsync("/api/settings?level=server", Cancel) })
+        foreach (var answer in new[] { status, await admin.GetStringAsync($"{V1}/settings?level=server", Cancel) })
             Assert.DoesNotContain(secret, answer);
         Assert.IsFalse(File.Exists(_library.SettingsPath) && File.ReadAllText(_library.SettingsPath).Contains(secret));
         var secrets = factory.Services.GetRequiredService<ProviderSecrets>();
@@ -137,7 +139,7 @@ public sealed class ConnectionProviderRouteTests
         await using var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, Cancel);
 
-        using var fake = await admin.PostAsync("/api/connections/providers/fake/test", null, Cancel);
+        using var fake = await admin.PostAsync($"{V1}/connections/providers/fake/test", null, Cancel);
         using var dropbox = await admin.PostAsync($"{Dropbox}/test", null, Cancel);
 
         Assert.IsTrue((await fake.Content.ReadFromJsonAsync<ProviderTest>(Cancel))!.Ok);
@@ -164,5 +166,5 @@ public sealed class ConnectionProviderRouteTests
     }
 
     private Task<HttpResponseMessage> PatchAsync(HttpClient client, Dictionary<string, JsonNode?> values) =>
-        client.PatchAsJsonAsync("/api/settings?level=server", new SettingChanges(values, null, null), Cancel);
+        client.PatchAsJsonAsync($"{V1}/settings?level=server", new SettingChanges(values, null, null), Cancel);
 }

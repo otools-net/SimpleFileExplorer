@@ -32,7 +32,7 @@ function start() {
 
 async function ready() {
     for (let i = 0; i < 120; i++) {
-        try { await fetch(url + 'api/migration'); return; } catch { await sleep(500); }
+        try { await fetch(url + 'api/v1/migration'); return; } catch { await sleep(500); }
     }
 }
 
@@ -52,7 +52,7 @@ try {
     await ready();
     const b = await launch({ width: 1280, height: 800 });
     await b.goto(url + 'login', 1500);
-    await b.eval(`fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
+    await b.eval(`fetch('api/v1/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
     await b.goto(url + '?path=Photos', 4000);
     let s = JSON.parse(await b.eval(state));
     check('server up: no warning', s.label === 'More' && s.mark !== '!', JSON.stringify(s));

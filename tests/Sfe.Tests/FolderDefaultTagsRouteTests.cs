@@ -104,7 +104,7 @@ public sealed class FolderDefaultTagsRouteTests
         );
         var got = (
             await _alice.GetFromJsonAsync<FolderDefaults>(
-                "/api/folder-default-tags?path=RepeatedDir/ChildDir",
+                $"{V1}/folder-default-tags?path=RepeatedDir/ChildDir",
                 Json,
                 Token
             )
@@ -132,7 +132,7 @@ public sealed class FolderDefaultTagsRouteTests
     {
         using (
             var hidden = await _ada.PutAsJsonAsync(
-                "/api/folder-default-tags",
+                $"{V1}/folder-default-tags",
                 new FolderDefaultTagsChange("SpecialDir", Add: [BuiltInTags.Favorite]),
                 Token
             )
@@ -141,11 +141,11 @@ public sealed class FolderDefaultTagsRouteTests
             Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
         }
 
-        using (var hidden = await _ada.GetAsync("/api/folder-default-tags?path=SpecialDir", Token))
+        using (var hidden = await _ada.GetAsync($"{V1}/folder-default-tags?path=SpecialDir", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, hidden.StatusCode);
         using (
             var missing = await _admin.PutAsJsonAsync(
-                "/api/folder-default-tags",
+                $"{V1}/folder-default-tags",
                 new FolderDefaultTagsChange("Nowhere", Add: [BuiltInTags.Favorite]),
                 Token
             )
@@ -156,7 +156,7 @@ public sealed class FolderDefaultTagsRouteTests
 
         using (
             var file = await _admin.PutAsJsonAsync(
-                "/api/folder-default-tags",
+                $"{V1}/folder-default-tags",
                 new FolderDefaultTagsChange("RFile1.txt", Add: [BuiltInTags.Favorite]),
                 Token
             )
@@ -167,7 +167,7 @@ public sealed class FolderDefaultTagsRouteTests
 
         using (
             var empty = await _admin.PutAsJsonAsync(
-                "/api/folder-default-tags",
+                $"{V1}/folder-default-tags",
                 new FolderDefaultTagsChange("Media"),
                 Token
             )
@@ -178,7 +178,7 @@ public sealed class FolderDefaultTagsRouteTests
 
         using (
             var unknown = await _admin.PutAsJsonAsync(
-                "/api/folder-default-tags",
+                $"{V1}/folder-default-tags",
                 new FolderDefaultTagsChange("Media", Add: [9999]),
                 Token
             )
@@ -190,7 +190,7 @@ public sealed class FolderDefaultTagsRouteTests
         using var visitor = ApiClients.Create(_factory);
         using (
             var anonymous = await visitor.PutAsJsonAsync(
-                "/api/folder-default-tags",
+                $"{V1}/folder-default-tags",
                 new FolderDefaultTagsChange("Media", Add: [BuiltInTags.Favorite]),
                 Token
             )
@@ -200,7 +200,9 @@ public sealed class FolderDefaultTagsRouteTests
         }
 
         Assert.IsTrue(
-            (await _admin.GetFromJsonAsync<FolderDefaults>("/api/folder-default-tags?path=Media", Json, Token))!.IsEmpty
+            (
+                await _admin.GetFromJsonAsync<FolderDefaults>($"{V1}/folder-default-tags?path=Media", Json, Token)
+            )!.IsEmpty
         );
     }
 
@@ -219,7 +221,7 @@ public sealed class FolderDefaultTagsRouteTests
 
     private async Task<FolderDefaultTagsResult> PutAsync(HttpClient client, FolderDefaultTagsChange change)
     {
-        using var response = await client.PutAsJsonAsync("/api/folder-default-tags", change, Token);
+        using var response = await client.PutAsJsonAsync($"{V1}/folder-default-tags", change, Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<FolderDefaultTagsResult>(Json, Token))!;
     }
@@ -227,7 +229,7 @@ public sealed class FolderDefaultTagsRouteTests
     private async Task<DirectoryListing> BrowseAsync(HttpClient client, string path) =>
         (
             await client.GetFromJsonAsync<DirectoryListing>(
-                $"/api/browse?path={Uri.EscapeDataString(path)}",
+                $"{V1}/browse?path={Uri.EscapeDataString(path)}",
                 Json,
                 Token
             )

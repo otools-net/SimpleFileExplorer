@@ -47,9 +47,9 @@ export function atPlace(config: ClientConfig, place: ConnectionPlace | null): Cl
 }
 
 /**
- * The routes of uploads into a connection's files (`api/connections/{id}/files/uploads…`), or into the library's
- * (`api/files/uploads…`): the same paths below, bodies and answers.
+ * The routes (below `API_BASE`) of uploads into a connection's files (`connections/{id}/files/uploads…`), or into
+ * the library's (`files/uploads…`): the same paths below, bodies and answers.
  */
 export function uploadsRoute(connection?: number | null): string {
-    return connection ? `api/connections/${connection}/files/uploads` : 'api/files/uploads';
+    return connection ? `connections/${connection}/files/uploads` : 'files/uploads';
 }

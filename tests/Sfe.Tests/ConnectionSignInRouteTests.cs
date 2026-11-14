@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Sfe.Api;
 using Sfe.Api.Endpoints;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
@@ -23,7 +24,7 @@ namespace Sfe.Tests;
 [TestClass]
 public sealed class ConnectionSignInRouteTests
 {
-    private const string Authorize = "/api/connections/authorize";
+    private const string Authorize = $"{V1}/connections/authorize";
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
@@ -60,7 +61,8 @@ public sealed class ConnectionSignInRouteTests
         var admin = await ApiClients.SetUpAsync(factory, Cancel);
 
         var begun = await BeginAsync(admin, ConnectionLevel.Account, SignInKind.OAuthRedirect);
-        StringAssert.Contains(begun.Address, Uri.EscapeDataString("/api" + ConnectionProviderEndpoints.CallbackPath));
+        // The return address registered at the provider: unversioned for good.
+        StringAssert.Contains(begun.Address, Uri.EscapeDataString(ApiRoutes.OAuthCallback));
 
         var landed = await CallbackAsync(admin, $"code=good:dave&state={Uri.EscapeDataString(begun.State!)}");
         var made = await SingleConnectionAsync(factory);
@@ -106,10 +108,7 @@ public sealed class ConnectionSignInRouteTests
         var state = Uri.EscapeDataString(begun.State!);
 
         using var signedOut = ApiClients.Create(factory);
-        using var anonymous = await signedOut.GetAsync(
-            $"/api{ConnectionProviderEndpoints.CallbackPath}?code=good:x&state={state}",
-            Cancel
-        );
+        using var anonymous = await signedOut.GetAsync($"{ApiRoutes.OAuthCallback}?code=good:x&state={state}", Cancel);
         var refused = await CallbackAsync(admin, $"error=access_denied&state={state}");
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, anonymous.StatusCode);
@@ -149,7 +148,7 @@ public sealed class ConnectionSignInRouteTests
         var begun = await BeginAsync(admin, ConnectionLevel.Account, SignInKind.OAuthRedirect);
         await CallbackAsync(admin, $"code=good:dave&state={Uri.EscapeDataString(begun.State!)}");
         var made = await SingleConnectionAsync(factory);
-        var reauthorize = $"/api/connections/{made.Id}/reauthorize";
+        var reauthorize = $"{V1}/connections/{made.Id}/reauthorize";
         var again = new SignInAgain(SignInKind.OAuthRedirect);
 
         // Another account's connection, even for a library administrator: not found.
@@ -224,14 +223,11 @@ public sealed class ConnectionSignInRouteTests
 
     /// <summary>
     /// The provider's redirect, as a browser makes it (a navigation: no <see cref="RequestGuard.Header"/>); answers
-    /// where it ended in the client (path and query).
+    /// where it ended in the client (path and query). Unversioned for good: the address registered at the provider.
     /// </summary>
     private async Task<string> CallbackAsync(HttpClient client, string query)
     {
-        using var request = new HttpRequestMessage(
-            HttpMethod.Get,
-            $"/api{ConnectionProviderEndpoints.CallbackPath}?{query}"
-        );
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{ApiRoutes.OAuthCallback}?{query}");
         client.DefaultRequestHeaders.Remove(RequestGuard.Header);
         try
         {

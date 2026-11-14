@@ -95,14 +95,14 @@ public sealed class ConnectionRouteTests
         Assert.IsEmpty(alice.Managed);
         Assert.IsEmpty(alice.Usable);
         // Bob has none of the rights.
-        Assert.AreEqual(HttpStatusCode.Forbidden, (await _bob.GetAsync("/api/connections", Cancel)).StatusCode);
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await _bob.GetAsync($"{V1}/connections", Cancel)).StatusCode);
     }
 
     [TestMethod]
     public async Task AnotherAccountsConnectionIsNotFoundAndOnlyRemovedByTheServersAdministrators()
     {
         var bobs = await MakeAsync(new(FakeProvider.FakeKind, "Bob's", ConnectionLevel.Account, OwnerId: _bobId));
-        var path = $"/api/connections/{bobs.Id}";
+        var path = $"{V1}/connections/{bobs.Id}";
 
         using var rename = await _admin.PatchAsJsonAsync(path, new ConnectionChange(Name: "Mine now"), Json, Cancel);
         using var aliceRemove = await _alice.DeleteAsync(path, Cancel);
@@ -118,7 +118,7 @@ public sealed class ConnectionRouteTests
     public async Task AServerConnectionIsOfferedThenGivenToTheLibrarysGroups()
     {
         var server = await MakeAsync(new(FakeProvider.FakeKind, "Shared", ConnectionLevel.Server));
-        var path = $"/api/connections/{server.Id}";
+        var path = $"{V1}/connections/{server.Id}";
 
         using var notOffered = await _alice.PutAsJsonAsync($"{path}/groups", Groups(_users), Json, Cancel);
         using var aliceOffers = await _alice.PutAsJsonAsync($"{path}/libraries", All(), Json, Cancel);
@@ -144,7 +144,7 @@ public sealed class ConnectionRouteTests
     public async Task ItsManagerRenamesAndSwitchesIt()
     {
         var own = await MakeAsync(new(FakeProvider.FakeKind, "Admin's", ConnectionLevel.Account, OwnerId: _adminId));
-        var path = $"/api/connections/{own.Id}";
+        var path = $"{V1}/connections/{own.Id}";
 
         using var empty = await _admin.PatchAsJsonAsync(path, new ConnectionChange(Name: " "), Json, Cancel);
         using var changed = await _admin.PatchAsJsonAsync(
@@ -170,7 +170,7 @@ public sealed class ConnectionRouteTests
     }
 
     private async Task<ConnectionsView> ListAsync(HttpClient client) =>
-        (await client.GetFromJsonAsync<ConnectionsView>("/api/connections", Json, Cancel))!;
+        (await client.GetFromJsonAsync<ConnectionsView>($"{V1}/connections", Json, Cancel))!;
 
     private static ConnectionLibrariesInput All() => new(true, []);
 

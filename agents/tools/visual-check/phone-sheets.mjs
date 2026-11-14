@@ -27,11 +27,11 @@ const app = spawn('dotnet', [path.join(work, 'build/bin/Sfe.Api/debug/Sfe.Api.dl
 });
 try {
     for (let i = 0; i < 120; i++) {
-        try { await fetch(url + 'api/migration'); break; } catch { await sleep(500); }
+        try { await fetch(url + 'api/v1/migration'); break; } catch { await sleep(500); }
     }
     const b = await launch({ width: 390, height: 700, scrollbars: true });
     await b.goto(url + 'login', 1500);
-    await b.eval(`fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
+    await b.eval(`fetch('api/v1/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
     await b.eval(`localStorage.setItem('sfe.view', 'list'); 1`);
     await b.goto(url + '?path=Photos%2F2024%20Beach%20trip', 4000);
     await b.eval('window.scrollTo(0, 300); 1');

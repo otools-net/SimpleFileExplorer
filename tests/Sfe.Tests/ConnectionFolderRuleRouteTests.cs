@@ -214,7 +214,7 @@ public sealed class ConnectionFolderRuleRouteTests
         return made.Value!;
     }
 
-    private static string Base(int id) => $"/api/connections/{id}";
+    private static string Base(int id) => $"{V1}/connections/{id}";
 
     private string Folders(string path) => $"{Base(_id)}/folders?path={Uri.EscapeDataString(path)}";
 

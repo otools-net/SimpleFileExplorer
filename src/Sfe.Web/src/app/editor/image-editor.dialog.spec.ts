@@ -89,7 +89,7 @@ describe('ImageEditorDialog', () => {
         await open();
 
         expect(dialog().open).toBe(true);
-        expect(loader).toHaveBeenCalledWith('api/files/raw/Media/photo.jpg');
+        expect(loader).toHaveBeenCalledWith('api/v1/files/raw/Media/photo.jpg');
         expect(element.querySelector('.editor-canvas canvas')).not.toBeNull();
         expect(subtitle()).toBe('4000 × 3000');
         expect(frame()).toEqual([0, 0, 4000, 3000]);

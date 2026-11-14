@@ -222,9 +222,9 @@ public sealed class ConnectionWriteRouteTests
         using var rename = await PostAsync("rename", new RenameRequest("a.txt", "x.txt"));
         using var delete = await PostAsync("delete", new DeleteRequest(["a.txt"]));
         using var move = await PostAsync("transfer", new ConnectionTransferRequest("move", ["a.txt"], "Trips"));
-        using var browse = await _admin.GetAsync($"/api/connections/{_id}/browse", Cancel);
+        using var browse = await _admin.GetAsync($"{V1}/connections/{_id}/browse", Cancel);
         using var other = await _admin.PostAsJsonAsync(
-            $"/api/connections/{bobs}/files/folders",
+            $"{V1}/connections/{bobs}/files/folders",
             new CreateFolderRequest("", "New"),
             Cancel
         );
@@ -257,7 +257,7 @@ public sealed class ConnectionWriteRouteTests
     }
 
     private Task<HttpResponseMessage> PostAsync<T>(string route, T body) =>
-        _admin.PostAsJsonAsync($"/api/connections/{_id}/files/{route}", body, Json, Cancel);
+        _admin.PostAsJsonAsync($"{V1}/connections/{_id}/files/{route}", body, Json, Cancel);
 
     private async Task<IReadOnlyList<ConnectionTransferItem>> TransferAsync(ConnectionTransferRequest request)
     {
@@ -268,7 +268,7 @@ public sealed class ConnectionWriteRouteTests
 
     private async Task<string[]> NamesAsync(string path)
     {
-        var url = $"/api/connections/{_id}/browse?path={Uri.EscapeDataString(path)}";
+        var url = $"{V1}/connections/{_id}/browse?path={Uri.EscapeDataString(path)}";
         var listing = (await _admin.GetFromJsonAsync<ConnectionListing>(url, Json, Cancel))!;
         return [.. listing.Listing.Items.Select(i => i.Name)];
     }

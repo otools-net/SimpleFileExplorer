@@ -51,7 +51,7 @@ const buttonNamed = (root: HTMLElement, label: string) =>
     [...root.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent!.trim() === label);
 
 describe('log filters', () => {
-    it('make the query of api/logs, the "to" day included', () => {
+    it('make the query of api/v1/logs, the "to" day included', () => {
         const query = toQuery(
             {
                 text: '  scan ',

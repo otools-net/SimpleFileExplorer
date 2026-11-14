@@ -140,11 +140,11 @@ describe('Upload routes', () => {
     it("reach the connection's routes, the same paths below them", () => {
         callAll(7);
         expect(requested()).toEqual([
-            'POST api/connections/7/files/uploads/check',
-            'POST api/connections/7/files/uploads',
-            `PUT api/connections/7/files/uploads/${ID}`,
-            `POST api/connections/7/files/uploads/${ID}/finish`,
-            `DELETE api/connections/7/files/uploads/${ID}`,
+            'POST api/v1/connections/7/files/uploads/check',
+            'POST api/v1/connections/7/files/uploads',
+            `PUT api/v1/connections/7/files/uploads/${ID}`,
+            `POST api/v1/connections/7/files/uploads/${ID}/finish`,
+            `DELETE api/v1/connections/7/files/uploads/${ID}`,
         ]);
     });
 
@@ -152,12 +152,12 @@ describe('Upload routes', () => {
         callAll(null);
         void api.uploads();
         expect(requested()).toEqual([
-            'POST api/files/uploads/check',
-            'POST api/files/uploads',
-            `PUT api/files/uploads/${ID}`,
-            `POST api/files/uploads/${ID}/finish`,
-            `DELETE api/files/uploads/${ID}`,
-            'GET api/files/uploads',
+            'POST api/v1/files/uploads/check',
+            'POST api/v1/files/uploads',
+            `PUT api/v1/files/uploads/${ID}`,
+            `POST api/v1/files/uploads/${ID}/finish`,
+            `DELETE api/v1/files/uploads/${ID}`,
+            'GET api/v1/files/uploads',
         ]);
     });
 });

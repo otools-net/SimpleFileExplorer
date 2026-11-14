@@ -54,7 +54,7 @@ public sealed class AppPolicyTests
         );
         using var visitor = ApiClients.Create(factory);
 
-        using var page = await visitor.GetAsync("/api/session", TestContext.CancellationToken);
+        using var page = await visitor.GetAsync($"{V1}/session", TestContext.CancellationToken);
 
         Assert.AreEqual(
             SecurityHeaders.AppPolicyFor("http://nas:8080/files"),

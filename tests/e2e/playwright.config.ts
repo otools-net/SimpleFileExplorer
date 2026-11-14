@@ -71,7 +71,7 @@ export default defineConfig<Options>({
     webServer: {
         command: 'node scripts/server.mjs',
         cwd: here,
-        url: `${baseURL}api/migration`,
+        url: `${baseURL}api/v1/migration`,
         // The first run builds the app (client included): minutes.
         timeout: 15 * 60_000,
         reuseExistingServer: false,

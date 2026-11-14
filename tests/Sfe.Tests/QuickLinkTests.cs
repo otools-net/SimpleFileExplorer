@@ -21,7 +21,7 @@ public sealed class QuickLinkTests
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
-    private const string Url = "/api/me/quick-links";
+    private const string Url = $"{V1}/me/quick-links";
 
     private TestLibrary _library = null!;
     private readonly List<IDisposable> _disposables = [];
@@ -189,12 +189,12 @@ public sealed class QuickLinkTests
     {
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        var users = (await GetAsync<List<GroupInfo>>(admin, "/api/access/groups")).Single(g =>
+        var users = (await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups")).Single(g =>
             g.BuiltIn == BuiltInGroup.Users
         );
         using (
             var created = await admin.PostAsJsonAsync(
-                "/api/access/users",
+                $"{V1}/access/users",
                 new UserInput("alice", Password: "alice-password", GroupIds: [users.Id]),
                 Json,
                 TestContext.CancellationToken
@@ -221,7 +221,7 @@ public sealed class QuickLinkTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         using (
             var open = await admin.PutAsJsonAsync(
-                "/api/access/tenant/guest-access",
+                $"{V1}/access/tenant/guest-access",
                 new { guestAccess = true },
                 TestContext.CancellationToken
             )
@@ -286,7 +286,7 @@ public sealed class QuickLinkTests
         );
         _disposables.Add(admin);
         var links = await AddAsync(admin, ["Media"]);
-        var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
+        var groups = await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups");
 
         CollectionAssert.AreEqual(new[] { "Media" }, links.Select(l => l.Path).ToArray());
         Assert.Contains(Rights.QuickLinks, groups.Single(g => g.BuiltIn == BuiltInGroup.Users).Rights);

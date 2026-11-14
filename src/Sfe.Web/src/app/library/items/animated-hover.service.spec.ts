@@ -44,7 +44,7 @@ describe('AnimatedHoverService', () => {
 
         expect(api.imageAnimation).toHaveBeenCalledWith('fun.gif');
         const original = card.querySelector<HTMLImageElement>('.preview img.animated-hover')!;
-        expect(original.getAttribute('src')).toBe('api/files/raw/fun.gif');
+        expect(original.getAttribute('src')).toBe('api/v1/files/raw/fun.gif');
         expect(original.hidden).toBe(true);
         expect(card.querySelector('.animated-hover-loading')).not.toBeNull();
 

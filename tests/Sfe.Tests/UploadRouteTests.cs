@@ -131,7 +131,7 @@ public sealed class UploadRouteTests
         using (var second = await ChunkAsync(_alice, upload.Id, 20_000, content[20_000..]))
             Assert.AreEqual(HttpStatusCode.OK, second.StatusCode);
         using var finished = await _alice.PostAsJsonAsync(
-            $"/api/files/uploads/{upload.Id}/finish",
+            $"{V1}/files/uploads/{upload.Id}/finish",
             new UploadFinish(),
             Json,
             Token
@@ -153,7 +153,7 @@ public sealed class UploadRouteTests
     {
         using (
             var readOnly = await _alice.PostAsJsonAsync(
-                "/api/files/uploads",
+                $"{V1}/files/uploads",
                 new UploadStart("Media", "a.jpg", 1),
                 Json,
                 Token
@@ -165,7 +165,7 @@ public sealed class UploadRouteTests
 
         using (
             var hidden = await _alice.PostAsJsonAsync(
-                "/api/files/uploads",
+                $"{V1}/files/uploads",
                 new UploadStart("SpecialDir", "a.jpg", 1),
                 Json,
                 Token
@@ -177,7 +177,7 @@ public sealed class UploadRouteTests
 
         using (
             var noRight = await _carol.PostAsJsonAsync(
-                "/api/files/uploads",
+                $"{V1}/files/uploads",
                 new UploadStart("ChildDir", "a.jpg", 1),
                 Json,
                 Token
@@ -189,7 +189,7 @@ public sealed class UploadRouteTests
 
         using (
             var escape = await _alice.PostAsJsonAsync(
-                "/api/files/uploads",
+                $"{V1}/files/uploads",
                 new UploadStart("ChildDir", "../../a.jpg", 1),
                 Json,
                 Token
@@ -201,7 +201,7 @@ public sealed class UploadRouteTests
 
         using (
             var intoHidden = await _alice.PostAsJsonAsync(
-                "/api/files/uploads",
+                $"{V1}/files/uploads",
                 new UploadStart("", "SpecialDir/a.jpg", 1),
                 Json,
                 Token
@@ -222,7 +222,7 @@ public sealed class UploadRouteTests
     public async Task TheCheckTellsWhichNamesAreTakenEvenHiddenOnes()
     {
         using var response = await _alice.PostAsJsonAsync(
-            "/api/files/uploads/check",
+            $"{V1}/files/uploads/check",
             new UploadCheckRequest("", ["RFile1.txt", "new.txt", "SpecialDir", "ChildDir/AFile1.txt", "../RFile1.txt"]),
             Json,
             Token
@@ -242,20 +242,20 @@ public sealed class UploadRouteTests
     {
         var upload = await StartAsync(_alice, new UploadStart("ChildDir", "big.mp4", 100));
 
-        var mine = await _alice.GetFromJsonAsync<UploadInfo[]>("/api/files/uploads", Json, Token);
+        var mine = await _alice.GetFromJsonAsync<UploadInfo[]>($"{V1}/files/uploads", Json, Token);
         Assert.AreEqual(upload.Id, mine!.Single().Id);
-        using (var notAll = await _alice.GetAsync("/api/files/uploads?all=true", Token))
+        using (var notAll = await _alice.GetAsync($"{V1}/files/uploads?all=true", Token))
             Assert.AreEqual(HttpStatusCode.Forbidden, notAll.StatusCode);
-        Assert.IsEmpty((await _admin.GetFromJsonAsync<UploadInfo[]>("/api/files/uploads", Json, Token))!);
-        var all = await _admin.GetFromJsonAsync<UploadInfo[]>("/api/files/uploads?all=true", Json, Token);
+        Assert.IsEmpty((await _admin.GetFromJsonAsync<UploadInfo[]>($"{V1}/files/uploads", Json, Token))!);
+        var all = await _admin.GetFromJsonAsync<UploadInfo[]>($"{V1}/files/uploads?all=true", Json, Token);
         Assert.AreEqual("alice", all!.Single().OwnerName);
         using (var foreign = await ChunkAsync(_admin, upload.Id, 0, [1, 2]))
             Assert.AreEqual(HttpStatusCode.NotFound, foreign.StatusCode, "Nobody else sends into it");
 
-        using (var cancelled = await _admin.DeleteAsync($"/api/files/uploads/{upload.Id}", Token))
+        using (var cancelled = await _admin.DeleteAsync($"{V1}/files/uploads/{upload.Id}", Token))
             Assert.AreEqual(HttpStatusCode.NoContent, cancelled.StatusCode);
-        Assert.IsEmpty((await _alice.GetFromJsonAsync<UploadInfo[]>("/api/files/uploads", Json, Token))!);
-        using (var gone = await _alice.GetAsync($"/api/files/uploads/{upload.Id}", Token))
+        Assert.IsEmpty((await _alice.GetFromJsonAsync<UploadInfo[]>($"{V1}/files/uploads", Json, Token))!);
+        using (var gone = await _alice.GetAsync($"{V1}/files/uploads/{upload.Id}", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, gone.StatusCode);
     }
 
@@ -268,7 +268,7 @@ public sealed class UploadRouteTests
 
         using (
             var asked = await _alice.PostAsJsonAsync(
-                $"/api/files/uploads/{upload.Id}/finish",
+                $"{V1}/files/uploads/{upload.Id}/finish",
                 new UploadFinish(),
                 Json,
                 Token
@@ -280,7 +280,7 @@ public sealed class UploadRouteTests
         }
         using (
             var replace = await _alice.PostAsJsonAsync(
-                $"/api/files/uploads/{upload.Id}/finish",
+                $"{V1}/files/uploads/{upload.Id}/finish",
                 new UploadFinish(ConflictChoice.Replace),
                 Json,
                 Token
@@ -291,7 +291,7 @@ public sealed class UploadRouteTests
         }
 
         using var kept = await _alice.PostAsJsonAsync(
-            $"/api/files/uploads/{upload.Id}/finish",
+            $"{V1}/files/uploads/{upload.Id}/finish",
             new UploadFinish(ConflictChoice.KeepBoth),
             Json,
             Token
@@ -314,13 +314,13 @@ public sealed class UploadRouteTests
         );
         Assert.AreEqual(
             0,
-            (await _alice.GetFromJsonAsync<UploadInfo>($"/api/files/uploads/{upload.Id}", Json, Token))!.Received
+            (await _alice.GetFromJsonAsync<UploadInfo>($"{V1}/files/uploads/{upload.Id}", Json, Token))!.Received
         );
     }
 
     private async Task<UploadInfo> StartAsync(HttpClient client, UploadStart start)
     {
-        using var response = await client.PostAsJsonAsync("/api/files/uploads", start, Json, Token);
+        using var response = await client.PostAsJsonAsync($"{V1}/files/uploads", start, Json, Token);
         Assert.AreEqual(HttpStatusCode.Created, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
         return (await response.Content.ReadFromJsonAsync<UploadInfo>(Json, Token))!;
     }
@@ -329,6 +329,6 @@ public sealed class UploadRouteTests
     {
         var content = new ByteArrayContent(bytes);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-        return client.PutAsync($"/api/files/uploads/{id}?offset={offset}", content, Token);
+        return client.PutAsync($"{V1}/files/uploads/{id}?offset={offset}", content, Token);
     }
 }

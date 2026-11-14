@@ -74,15 +74,15 @@ public sealed class MigrationTests
         var factory = Factory();
         var visitor = ApiClients.Create(factory);
         var info = await MigrationAsync(visitor);
-        using var config = await visitor.GetAsync("/api/config", TestContext.CancellationToken);
-        using var setup = await visitor.GetAsync("/api/setup", TestContext.CancellationToken);
+        using var config = await visitor.GetAsync($"{V1}/config", TestContext.CancellationToken);
+        using var setup = await visitor.GetAsync($"{V1}/setup", TestContext.CancellationToken);
         using var signIn = await visitor.PostAsJsonAsync(
-            "/api/session/login",
+            $"{V1}/session/login",
             new { userName = ApiClients.AdminName, password = ApiClients.AdminPassword },
             TestContext.CancellationToken
         );
         using var wrong = await visitor.PostAsJsonAsync(
-            "/api/migration",
+            $"{V1}/migration",
             new MigrationInput("not-the-setup-code"),
             TestContext.CancellationToken
         );
@@ -131,7 +131,7 @@ public sealed class MigrationTests
             )
         ).Trim();
         using var started = await visitor.PostAsJsonAsync(
-            "/api/migration",
+            $"{V1}/migration",
             new MigrationInput(code),
             TestContext.CancellationToken
         );
@@ -166,9 +166,9 @@ public sealed class MigrationTests
             ApiClients.AdminPassword,
             TestContext.CancellationToken
         );
-        using var config = await admin.GetAsync("/api/config", TestContext.CancellationToken);
+        using var config = await admin.GetAsync($"{V1}/config", TestContext.CancellationToken);
         using var again = await admin.PostAsJsonAsync(
-            "/api/migration",
+            $"{V1}/migration",
             new MigrationInput(TestLibrary.SetupCode),
             TestContext.CancellationToken
         );
@@ -223,7 +223,7 @@ public sealed class MigrationTests
             ApiClients.AdminPassword,
             TestContext.CancellationToken
         );
-        using var thumbnail = await admin.GetAsync("/api/thumbnails/Media/photo.jpg", TestContext.CancellationToken);
+        using var thumbnail = await admin.GetAsync($"{V1}/thumbnails/Media/photo.jpg", TestContext.CancellationToken);
 
         Assert.AreEqual(MigrationStatus.None, done.Status);
         Assert.IsTrue(
@@ -251,11 +251,11 @@ public sealed class MigrationTests
         var client = ApiClients.Create(factory);
         var info = await MigrationAsync(client);
         using var start = await client.PostAsJsonAsync(
-            "/api/migration",
+            $"{V1}/migration",
             new MigrationInput(TestLibrary.SetupCode),
             TestContext.CancellationToken
         );
-        using var config = await client.GetAsync("/api/config", TestContext.CancellationToken);
+        using var config = await client.GetAsync($"{V1}/config", TestContext.CancellationToken);
 
         Assert.AreEqual(MigrationStatus.Newer, info.Status);
         Assert.IsEmpty(info.Changes);
@@ -277,12 +277,12 @@ public sealed class MigrationTests
         var client = ApiClients.Create(Factory());
 
         using var refused = await client.PostAsJsonAsync(
-            "/api/migration/backup",
+            $"{V1}/migration/backup",
             new MigrationInput("wrong-code-0000"),
             TestContext.CancellationToken
         );
         using var made = await client.PostAsJsonAsync(
-            "/api/migration/backup",
+            $"{V1}/migration/backup",
             new MigrationInput(TestLibrary.SetupCode),
             TestContext.CancellationToken
         );
@@ -308,7 +308,7 @@ public sealed class MigrationTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
         using (
             var created = await admin.PostAsJsonAsync(
-                "/api/tenants",
+                $"{V1}/tenants",
                 new TenantInput("Other", Slug: "other", Root: _library.FullPath("Media")),
                 Json,
                 TestContext.CancellationToken
@@ -333,13 +333,13 @@ public sealed class MigrationTests
             TestContext.CancellationToken
         );
 
-        using var backup = await admin.GetAsync("/api/system/backup", TestContext.CancellationToken);
+        using var backup = await admin.GetAsync($"{V1}/system/backup", TestContext.CancellationToken);
         var zip = await backup.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);
         using var visitor = await ApiClients
             .Create(factory)
-            .GetAsync("/api/system/backup", TestContext.CancellationToken);
+            .GetAsync($"{V1}/system/backup", TestContext.CancellationToken);
         using var migrationBackup = await admin.PostAsJsonAsync(
-            "/api/migration/backup",
+            $"{V1}/migration/backup",
             new MigrationInput(TestLibrary.SetupCode),
             TestContext.CancellationToken
         );
@@ -578,7 +578,7 @@ public sealed class MigrationTests
     /// <param name="code">The setup code, sent as the update page does once it is typed; none: any visitor.</param>
     private async Task<MigrationInfo> MigrationAsync(HttpClient client, string? code = null)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/migration");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{V1}/migration");
         if (code is not null)
             request.Headers.Add(MigrationEndpoints.SetupCodeHeader, code);
         using var response = await client.SendAsync(request, TestContext.CancellationToken);

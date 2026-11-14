@@ -41,14 +41,14 @@ const check = (name, ok, detail = '') => {
     console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}${detail ? ` (${detail})` : ''}`);
 };
 
-const signIn = `fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`;
-const who = `fetch('api/session', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(s => s.user?.userName ?? null)`;
+const signIn = `fetch('api/v1/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`;
+const who = `fetch('api/v1/session', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(s => s.user?.userName ?? null)`;
 
 const apps = ports.map(start);
 try {
     for (const port of ports)
         for (let i = 0; i < 120; i++) {
-            try { await fetch(`http://localhost:${port}/api/migration`); break; } catch { await sleep(500); }
+            try { await fetch(`http://localhost:${port}/api/v1/migration`); break; } catch { await sleep(500); }
         }
     const b = await launch({ width: 1000, height: 700 });
     const [one, two] = ports.map(port => `http://localhost:${port}/`);
@@ -63,7 +63,7 @@ try {
     check('instance 2: still signed in', await b.eval(who) === 'admin');
 
     // Signing out of one leaves the other signed in.
-    await b.eval(`fetch('api/session/logout', { method: 'POST', headers: { 'X-SFE-Request': '1' } }).then(r => r.status)`);
+    await b.eval(`fetch('api/v1/session/logout', { method: 'POST', headers: { 'X-SFE-Request': '1' } }).then(r => r.status)`);
     check('instance 2: signed out', await b.eval(who) === null);
     await b.goto(one + 'login', 1500);
     check('instance 1: still signed in after signing out of instance 2', await b.eval(who) === 'admin');

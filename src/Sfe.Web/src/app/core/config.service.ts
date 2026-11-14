@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { Api } from './api.service';
+import { Api, API_BASE } from './api.service';
 import { formatDuration, formatResolution } from './format';
 import { ClientConfig, StreamProbe } from './config.models';
 import { atPlace } from './connection-place';
@@ -86,13 +86,13 @@ export function markSaved(path: string, modified: string): void {
  */
 export function withVersion(url: string, item: { path: string }): string {
     const time = savedTimes.get(item.path);
-    return time === undefined || !url.startsWith('api/') ? url : `${url}${url.includes('?') ? '&' : '?'}v=${time}`;
+    return time === undefined || !url.startsWith(API_BASE) ? url : `${url}${url.includes('?') ? '&' : '?'}v=${time}`;
 }
 
-/** `place`: the connection shown, whose files have addresses of their own (`api/connections/{id}/…`). */
+/** `place`: the connection shown, whose files have addresses of their own (`api/v1/connections/{id}/…`). */
 export function createUrls(config: ClientConfig, place: ConnectionPlace | null = null): Urls {
     const dataServer = config.dataServer;
-    const base = place ? `api/connections/${place.id}/` : 'api/';
+    const base = place ? `${API_BASE}connections/${place.id}/` : API_BASE;
     const raw = (path: string) => `${base}files/raw/${encodePath(path)}`;
     const file = (path: string) => (dataServer ? dataServerUrl(dataServer, path) : raw(path));
     // The pages of their own carry the connection with the path.
@@ -102,7 +102,8 @@ export function createUrls(config: ClientConfig, place: ConnectionPlace | null =
         download: (path) => `${raw(path)}?download=true`,
         original: raw,
         thumbnail: (path) => `${base}thumbnails/${encodePath(path)}`,
-        trickplaySheet: (path, index, version) => `api/trickplay/files/${encodePath(path)}?sheet=${index}&v=${version}`,
+        trickplaySheet: (path, index, version) =>
+            `${API_BASE}trickplay/files/${encodePath(path)}?sheet=${index}&v=${version}`,
         player: (path, start = 0) => {
             const query = new URLSearchParams(page(path));
             if (start >= 1) query.set('t', String(Math.floor(start)));
@@ -121,7 +122,7 @@ export function createUrls(config: ClientConfig, place: ConnectionPlace | null =
         externalName: config.externalPlayer?.name ?? null,
         stream: (path, start, id) => {
             const query = new URLSearchParams({ path, t: String(Math.max(0, Math.round(start * 1000) / 1000)), id });
-            return `api/streaming/play?${query}`;
+            return `${API_BASE}streaming/play?${query}`;
         },
     };
 }

@@ -598,20 +598,20 @@ describe('SystemSectionComponent', () => {
         expect(element.querySelector('.system-facts code')!.textContent).toBe('abc1234');
         expect(element.querySelector<HTMLAnchorElement>('a[href="api/docs"]')).not.toBeNull();
         // Backups are on Maintenance.
-        expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
+        expect(element.querySelector('a[href="api/v1/system/backup"]')).toBeNull();
     });
 
     it('offers a backup of the databases and configuration files to those with the right', async () => {
         await setUp();
         await open('/admin?section=system&page=maintenance');
-        const link = element.querySelector<HTMLAnchorElement>('a[href="api/system/backup"]');
+        const link = element.querySelector<HTMLAnchorElement>('a[href="api/v1/system/backup"]');
         expect(link?.hasAttribute('download')).toBe(true);
         expect(link?.title).toContain('backup');
 
         TestBed.resetTestingModule();
         await setUp({ rights: [Rights.apiDocs] });
         await open('/admin?section=system&page=maintenance');
-        expect(element.querySelector('a[href="api/system/backup"]')).toBeNull();
+        expect(element.querySelector('a[href="api/v1/system/backup"]')).toBeNull();
     });
 });
 

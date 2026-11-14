@@ -92,21 +92,21 @@ public sealed class PropertyRouteTests
     [TestMethod]
     public async Task AFilesPropertiesSayWhetherAChecksumIsOffered()
     {
-        var alice = await GetAsync<ItemProperties>(_alice, "/api/files/properties?path=Media/photo.jpg");
-        var carol = await GetAsync<ItemProperties>(_carol, "/api/files/properties?path=Media/photo.jpg");
+        var alice = await GetAsync<ItemProperties>(_alice, $"{V1}/files/properties?path=Media/photo.jpg");
+        var carol = await GetAsync<ItemProperties>(_carol, $"{V1}/files/properties?path=Media/photo.jpg");
 
         Assert.AreEqual("photo.jpg", alice.Item.Name);
         Assert.AreEqual(3 * 1024, alice.Details.Size);
         Assert.IsTrue(alice.CanChecksum);
         Assert.IsFalse(carol.CanChecksum, "Carol may not download");
         using var refused = await _carol.PostAsJsonAsync(
-            "/api/files/properties/checksum",
+            $"{V1}/files/properties/checksum",
             new ChecksumRequest("Media/photo.jpg"),
             Json,
             Token
         );
         Assert.AreEqual(HttpStatusCode.Forbidden, refused.StatusCode);
-        Assert.AreEqual("Root", (await GetAsync<ItemProperties>(_alice, "/api/files/properties?path=")).Item.Name);
+        Assert.AreEqual("Root", (await GetAsync<ItemProperties>(_alice, $"{V1}/files/properties?path=")).Item.Name);
     }
 
     [TestMethod]
@@ -117,13 +117,13 @@ public sealed class PropertyRouteTests
         foreach (var path in new[] { "SpecialDir", "SpecialDir/SDEspañol", ".sfe", "Nothing", "../Root" })
         {
             using var response = await _alice.GetAsync(
-                $"/api/files/properties?path={Uri.EscapeDataString(path)}",
+                $"{V1}/files/properties?path={Uri.EscapeDataString(path)}",
                 Token
             );
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, path);
         }
         using var count = await _alice.PostAsJsonAsync(
-            "/api/files/properties/count",
+            $"{V1}/files/properties/count",
             new CountRequest("SpecialDir"),
             Json,
             Token
@@ -134,16 +134,16 @@ public sealed class PropertyRouteTests
     [TestMethod]
     public async Task TotalsAndCountsLeaveOutWhatTheCallerDoesNotSee()
     {
-        using (var scan = await _admin.PostAsJsonAsync("/api/scan", new ScanRequest(""), Json, Token))
+        using (var scan = await _admin.PostAsJsonAsync($"{V1}/scan", new ScanRequest(""), Json, Token))
             Assert.IsTrue(scan.IsSuccessStatusCode);
-        for (var attempt = 0; (await GetAsync<ScanStatus>(_admin, "/api/scan")).State == ScanState.Running; attempt++)
+        for (var attempt = 0; (await GetAsync<ScanStatus>(_admin, $"{V1}/scan")).State == ScanState.Running; attempt++)
         {
             Assert.IsLessThan(200, attempt, "The scan did not finish in time");
             await Task.Delay(50, Token);
         }
 
-        var all = await GetAsync<FolderTotals>(_admin, "/api/files/properties/totals?path=");
-        var seen = await GetAsync<FolderTotals>(_alice, "/api/files/properties/totals?path=");
+        var all = await GetAsync<FolderTotals>(_admin, $"{V1}/files/properties/totals?path=");
+        var seen = await GetAsync<FolderTotals>(_alice, $"{V1}/files/properties/totals?path=");
         var counted = await CountAsync(_alice, "");
 
         Assert.AreEqual(21, all.Files);
@@ -157,7 +157,7 @@ public sealed class PropertyRouteTests
     public async Task AJobIsItsStartersOnly()
     {
         using var started = await _alice.PostAsJsonAsync(
-            "/api/files/properties/checksum",
+            $"{V1}/files/properties/checksum",
             new ChecksumRequest("Media/photo.jpg", ChecksumAlgorithm.Md5),
             Json,
             Token
@@ -165,9 +165,9 @@ public sealed class PropertyRouteTests
         Assert.AreEqual(HttpStatusCode.OK, started.StatusCode, await started.Content.ReadAsStringAsync(Token));
         var job = (await started.Content.ReadFromJsonAsync<PropertyJobView>(Json, Token))!;
 
-        using (var other = await _admin.GetAsync($"/api/files/properties/jobs/{job.Id}", Token))
+        using (var other = await _admin.GetAsync($"{V1}/files/properties/jobs/{job.Id}", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, other.StatusCode);
-        using (var stop = await _admin.DeleteAsync($"/api/files/properties/jobs/{job.Id}", Token))
+        using (var stop = await _admin.DeleteAsync($"{V1}/files/properties/jobs/{job.Id}", Token))
             Assert.AreEqual(HttpStatusCode.NotFound, stop.StatusCode);
         var done = await WaitAsync(_alice, job.Id);
         Assert.AreEqual(
@@ -183,7 +183,7 @@ public sealed class PropertyRouteTests
     private async Task<PropertyJobView> CountAsync(HttpClient client, string path)
     {
         using var started = await client.PostAsJsonAsync(
-            "/api/files/properties/count",
+            $"{V1}/files/properties/count",
             new CountRequest(path),
             Json,
             Token
@@ -196,7 +196,7 @@ public sealed class PropertyRouteTests
     {
         for (var attempt = 0; attempt < 400; attempt++)
         {
-            var job = await GetAsync<PropertyJobView>(client, $"/api/files/properties/jobs/{id}");
+            var job = await GetAsync<PropertyJobView>(client, $"{V1}/files/properties/jobs/{id}");
             if (job.Done)
                 return job;
             await Task.Delay(25, Token);

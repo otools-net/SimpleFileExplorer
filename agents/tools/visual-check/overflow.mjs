@@ -222,7 +222,7 @@ const app = spawn('dotnet', [path.join(work, 'build/bin/Sfe.Api/debug/Sfe.Api.dl
 let failed = false;
 try {
     for (let i = 0; i < 120; i++) {
-        try { await fetch(url + 'api/migration'); break; } catch { await sleep(500); }
+        try { await fetch(url + 'api/v1/migration'); break; } catch { await sleep(500); }
     }
     const chosen = process.argv.slice(3).length ? process.argv.slice(3) : Object.keys(scenes);
     for (const name of chosen) {
@@ -232,7 +232,7 @@ try {
         for (const [width, height] of sizes) {
             const b = await launch({ width, height, mobile: width < 1000, scrollbars: true });
             await b.goto(url + 'login', 1500);
-            await b.eval(`fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
+            await b.eval(`fetch('api/v1/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: 'admin', password: 'admin-password-1', remember: true }) }).then(r => r.status)`);
             await scene.open(b);
             const size = `${width}x${height}`;
             let withMore = null;

@@ -75,7 +75,7 @@ public sealed class LogTests
             $"q=probe&from={Uri.EscapeDataString(DateTimeOffset.UtcNow.AddMinutes(1).ToString("O"))}"
         );
         var start = await SearchAsync(admin, "q=SFE&levels=information");
-        using var badLevel = await admin.GetAsync("/api/logs?levels=loud", TestContext.CancellationToken);
+        using var badLevel = await admin.GetAsync($"{V1}/logs?levels=loud", TestContext.CancellationToken);
 
         CollectionAssert.AreEqual(
             new[] { "probe gamma", "probe beta 100%_done[1]", "probe alpha 1" },
@@ -112,7 +112,7 @@ public sealed class LogTests
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
 
         using var refused = await admin.PostAsJsonAsync(
-            "/api/files/jobs/compress",
+            $"{V1}/files/jobs/compress",
             new
             {
                 paths = new[] { "Media" },
@@ -128,7 +128,7 @@ public sealed class LogTests
         var entry = (await SearchAsync(admin, "q=" + Uri.EscapeDataString("answered 400"))).Entries.Single();
         Assert.AreEqual(LogEntryLevel.Warning, entry.Level);
         Assert.AreEqual(ProblemLog.Category, entry.Category);
-        StringAssert.Contains(entry.Message, "POST /api/v1/files/jobs/compress answered 400 to admin");
+        StringAssert.Contains(entry.Message, $"POST {V1}/files/jobs/compress answered 400 to admin");
         StringAssert.Contains(entry.Message, "level: A level is 0 (stored) to 9 (smallest).");
         Assert.IsEmpty((await SearchAsync(admin, "q=secret-zip-password")).Entries);
     }
@@ -168,7 +168,7 @@ public sealed class LogTests
     {
         var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, TestContext.CancellationToken);
-        var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
+        var groups = await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups");
         var tenantId = groups[0].TenantId;
         await CreateUserAsync(
             admin,
@@ -202,8 +202,8 @@ public sealed class LogTests
         var serverOnly = await SearchAsync(admin, "q=probe&tenant=0");
         var spaceOnly = await SearchAsync(admin, $"q=probe&tenant={tenantId}");
         var bySpaceAdmin = await SearchAsync(alice, "q=probe&tenant=0");
-        using var byMember = await bob.GetAsync("/api/logs", TestContext.CancellationToken);
-        using var byVisitor = await ApiClients.Create(factory).GetAsync("/api/logs", TestContext.CancellationToken);
+        using var byMember = await bob.GetAsync($"{V1}/logs", TestContext.CancellationToken);
+        using var byVisitor = await ApiClients.Create(factory).GetAsync($"{V1}/logs", TestContext.CancellationToken);
 
         CollectionAssert.AreEquivalent(
             new[] { "space probe", "server probe" },
@@ -268,14 +268,14 @@ public sealed class LogTests
         {
             (
                 await visitor.PostAsJsonAsync(
-                    "/api/session/login",
+                    $"{V1}/session/login",
                     new SignInRequest(ApiClients.AdminName, "wrong-password"),
                     TestContext.CancellationToken
                 )
             ).Dispose();
             (
                 await visitor.PostAsJsonAsync(
-                    "/api/migration",
+                    $"{V1}/migration",
                     new Sfe.Api.Endpoints.MigrationInput("not-the-code"),
                     TestContext.CancellationToken
                 )
@@ -320,7 +320,7 @@ public sealed class LogTests
         await FlushAsync(factory);
 
         var json = JsonNode.Parse(
-            await admin.GetStringAsync("/api/logs?q=probe+by+name", TestContext.CancellationToken)
+            await admin.GetStringAsync($"{V1}/logs?q=probe+by+name", TestContext.CancellationToken)
         )!;
 
         Assert.AreEqual("securityWarning", json["entries"]![0]!["level"]!.GetValue<string>());
@@ -424,7 +424,7 @@ public sealed class LogTests
         _disposables.Add(admin);
         await FlushAsync(updated);
         var waiting = await SearchAsync(admin, "q=waiting+probe");
-        var groups = await GetAsync<List<GroupInfo>>(admin, "/api/access/groups");
+        var groups = await GetAsync<List<GroupInfo>>(admin, $"{V1}/access/groups");
 
         Assert.IsFalse(tableBefore, "Nothing touched the database before the update");
         Assert.AreEqual("waiting probe", waiting.Entries.Single().Message);
@@ -447,7 +447,7 @@ public sealed class LogTests
 
     private async Task<LogSearchResult> SearchAsync(HttpClient client, string query)
     {
-        using var response = await client.GetAsync("/api/logs?" + query, TestContext.CancellationToken);
+        using var response = await client.GetAsync($"{V1}/logs?" + query, TestContext.CancellationToken);
         Assert.AreEqual(
             HttpStatusCode.OK,
             response.StatusCode,
@@ -462,7 +462,7 @@ public sealed class LogTests
         Dictionary<string, JsonNode?> values
     ) =>
         client.PatchAsJsonAsync(
-            $"/api/settings?level={level}",
+            $"{V1}/settings?level={level}",
             new SettingChanges(values),
             Json,
             TestContext.CancellationToken
@@ -482,7 +482,7 @@ public sealed class LogTests
     private async Task CreateUserAsync(HttpClient admin, UserInput input)
     {
         using var response = await admin.PostAsJsonAsync(
-            "/api/access/users",
+            $"{V1}/access/users",
             input,
             Json,
             TestContext.CancellationToken

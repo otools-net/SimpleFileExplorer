@@ -9,7 +9,7 @@ const enc = encodeURIComponent;
 async function session({ user = 'admin', password = 'admin-password-1', ...opts } = {}) {
     const b = await launch({ width: 1280, height: 800, ...opts });
     await b.goto(BASE + 'login', 1500);
-    if (user) await b.eval(`fetch('api/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: '${user}', password: '${password}', remember: true }) }).then(r => r.status)`);
+    if (user) await b.eval(`fetch('api/v1/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: '${user}', password: '${password}', remember: true }) }).then(r => r.status)`);
     b.open = async (url, wait = 3500) => {
         await b.goto(BASE + url, wait);
         await b.eval(`document.querySelector('button[title="Hide this panel"]')?.click(); 1`);
@@ -33,14 +33,14 @@ async function operations() {
     const post = (url, body) => `fetch('${url}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify(${JSON.stringify(body)}) }).then(r => r.status)`;
     const copy = { kind: 'copy', paths: ['Photos/Sunrise.jpg'], target: 'Inbox' };
     await b.open('?path=Inbox');
-    await b.eval(post('api/files/jobs', copy));
+    await b.eval(post('api/v1/files/jobs', copy));
     await sleep(1500);
-    await b.eval(post('api/files/jobs', copy));
+    await b.eval(post('api/v1/files/jobs', copy));
     await b.open('?path=Inbox', 3000);
     await b.shot(OUT + 'operations-panel.png');
     await b.clickTitle('Leave this one out');
     await sleep(1000);
-    await b.eval(post('api/files/delete', { paths: ['Inbox/Sunrise.jpg'], permanent: true }));
+    await b.eval(post('api/v1/files/delete', { paths: ['Inbox/Sunrise.jpg'], permanent: true }));
     await b.close();
 }
 
@@ -132,7 +132,7 @@ const scenes = {
      */
     async keepAliveMenu() {
         const b = await session();
-        const settings = values => `fetch('api/settings?level=tenant', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ values: ${JSON.stringify(values)} }) }).then(r => r.status)`;
+        const settings = values => `fetch('api/v1/settings?level=tenant', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ values: ${JSON.stringify(values)} }) }).then(r => r.status)`;
         await b.open('?path=Photos');
         await b.eval(settings({ 'keepAlive.mode': 'always', 'keepAlive.folders': ['Gone'] }));
         await sleep(2000);
@@ -394,7 +394,7 @@ const scenes = {
 
         // A zip with a password, made by SFE: a protected file clicked asks for it. Deleted after, for the other scenes.
         const zip = 'Documents/Private.zip';
-        await b.eval(api('POST', 'api/files/jobs/compress', {
+        await b.eval(api('POST', 'api/v1/files/jobs/compress', {
             paths: ['Documents/Trip diary.txt', 'Photos/2025 Mountains/Summit.jpg', 'Photos/2025 Mountains/Starry sky.jpg', 'Photos/2025 Mountains/Blue hour.jpg'],
             target: 'Documents', name: 'Private', level: 6, skipCompressed: true, password: 'blue-hour-at-the-hut',
         }));
@@ -405,7 +405,7 @@ const scenes = {
         if (!await b.eval(`Boolean(document.querySelector('[data-password-box]'))`))
             throw new Error('a protected file asked for no password');
         await b.shot(OUT + 'archive-password.png');
-        await b.eval(api('POST', 'api/files/delete', { paths: [zip], permanent: true }));
+        await b.eval(api('POST', 'api/v1/files/delete', { paths: [zip], permanent: true }));
         await b.close();
     },
     async video() {
@@ -586,8 +586,8 @@ const scenes = {
     async exclusions() {
         const b = await session();
         await b.goto(BASE, 1500);
-        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Inbox', scan: true }));
-        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Music', trickplay: true, thumbnails: true }));
+        await b.eval(api('PUT', 'api/v1/index/exclusions', { path: 'Inbox', scan: true }));
+        await b.eval(api('PUT', 'api/v1/index/exclusions', { path: 'Music', trickplay: true, thumbnails: true }));
         await b.open('');
         await b.shot(OUT + 'excluded-folders.png');
         await b.open('?path=Inbox');
@@ -598,8 +598,8 @@ const scenes = {
         await page.open(admin('scanning', 'exclusions'), 3000);
         await page.shot(OUT + 'admin-scanning-exclusions.png');
         await page.close();
-        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Inbox', scan: false }));
-        await b.eval(api('PUT', 'api/index/exclusions', { path: 'Music', trickplay: false, thumbnails: false }));
+        await b.eval(api('PUT', 'api/v1/index/exclusions', { path: 'Inbox', scan: false }));
+        await b.eval(api('PUT', 'api/v1/index/exclusions', { path: 'Music', trickplay: false, thumbnails: false }));
         await b.close();
     },
     async history() {
@@ -674,10 +674,10 @@ const scenes = {
         await b.open('');
         const toggle = on => b.eval(`(async () => {
             const h = { 'Content-Type': 'application/json', 'X-SFE-Request': '1' };
-            const view = await (await fetch('api/settings?level=tenant')).json();
+            const view = await (await fetch('api/v1/settings?level=tenant')).json();
             const values = view.values;
             values.browse.copyPaths = ${on}; values.browse.resolutionMark = ${on};
-            const r = await fetch('api/settings?level=tenant', { method: 'PUT', headers: h, body: JSON.stringify(values) });
+            const r = await fetch('api/v1/settings?level=tenant', { method: 'PUT', headers: h, body: JSON.stringify(values) });
             return r.status + ' ' + (r.ok ? '' : await r.text());
         })()`);
         console.log(await toggle(true));
@@ -767,15 +767,15 @@ const scenes = {
         await b.shot(OUT + 'upload-panel.png');
         await b.clickTitle("Don't upload this one");
         await sleep(1500);
-        await b.eval(call('POST', 'api/files/delete', { paths: ['Photos/Harbour at night.jpg', 'Photos/Old town.jpg'], permanent: true }));
+        await b.eval(call('POST', 'api/v1/files/delete', { paths: ['Photos/Harbour at night.jpg', 'Photos/Old town.jpg'], permanent: true }));
         // An upload cut off halfway, for the administration's list.
-        const started = await b.eval(call('POST', 'api/files/uploads', { target: 'Videos', name: 'Holiday 2025.webm', size: 48_000_000, modified: null }));
-        await b.eval(`fetch('api/files/uploads/${started.id}?offset=0', { method: 'PUT', headers: { 'Content-Type': 'application/octet-stream', 'X-SFE-Request': '1' }, body: new Uint8Array(8_388_608) }).then(r => r.status)`);
+        const started = await b.eval(call('POST', 'api/v1/files/uploads', { target: 'Videos', name: 'Holiday 2025.webm', size: 48_000_000, modified: null }));
+        await b.eval(`fetch('api/v1/files/uploads/${started.id}?offset=0', { method: 'PUT', headers: { 'Content-Type': 'application/octet-stream', 'X-SFE-Request': '1' }, body: new Uint8Array(8_388_608) }).then(r => r.status)`);
         await b.close();
         const a = await session({ height: 900 });
         await a.open(admin('files', 'uploads'), 3000);
         await a.shot(OUT + 'admin-files-uploads.png');
-        await a.eval(call('DELETE', `api/files/uploads/${started.id}`));
+        await a.eval(call('DELETE', `api/v1/files/uploads/${started.id}`));
         await a.close();
     },
     async files() {
@@ -905,7 +905,7 @@ const scenes = {
      */
     async connections() {
         const b = await session({ height: 900 });
-        const appKey = key => `fetch('api/settings?level=server', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ values: { 'connections.dropbox.appKey': ${JSON.stringify(key)} } }) }).then(r => r.status)`;
+        const appKey = key => `fetch('api/v1/settings?level=server', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ values: { 'connections.dropbox.appKey': ${JSON.stringify(key)} } }) }).then(r => r.status)`;
         const neutral = `(() => { for (const i of document.querySelectorAll('[data-return-address]')) i.value = 'https://files.example.org' + new URL(i.value).pathname; return 1; })()`;
         await b.goto(BASE, 1500);
         await b.eval(appKey('docsappkey123'));
@@ -937,7 +937,7 @@ const scenes = {
     async logs() {
         const b = await session({ height: 900 });
         // A wrong password, logged as a security warning (the session stays: a failed sign-in changes no cookie).
-        await b.eval(api('POST', 'api/session/login', { userName: 'sam', password: 'not-sams-password' }));
+        await b.eval(api('POST', 'api/v1/session/login', { userName: 'sam', password: 'not-sams-password' }));
         await sleep(2500);
         await b.open(admin('logs'), 2500);
         await mask(b);
@@ -985,7 +985,7 @@ const scenes = {
         await b.send('Network.enable');
         await b.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: 4000, uploadThroughput: -1 });
         await b.eval(`window.held = [['Videos/Holidays/Beach walk.webm', 0], ['Videos/Timelapses/Clouds.webm', 2]].map(([path, t], i) =>
-            fetch('api/streaming/play?' + new URLSearchParams({ path, t: String(t), id: 'doc' + i })).then(r => r.status)); 1`);
+            fetch('api/v1/streaming/play?' + new URLSearchParams({ path, t: String(t), id: 'doc' + i })).then(r => r.status)); 1`);
         await b.eval(`new Promise(resolve => setTimeout(() => resolve(1), 4500))`);
         await b.shot(OUT + 'admin-playback-streams.png');
         await b.close();

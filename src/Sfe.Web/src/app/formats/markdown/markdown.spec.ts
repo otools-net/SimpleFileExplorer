@@ -8,7 +8,7 @@ import {
 } from './markdown';
 
 const links: MarkdownLinks = {
-    file: (path) => `api/files/raw/${path}`,
+    file: (path) => `api/v1/files/raw/${path}`,
     view: (path) => `view?path=${path}`,
     folder: (path) => `./?path=${path}`,
     viewable: (path) => /\.(md|txt)$/i.test(path),
@@ -88,7 +88,7 @@ describe('markdown', () => {
             expect(anchor('guide').getAttribute('href')).toBe('view?path=Docs/Other guide.md');
             expect(anchor('guide').dataset['path']).toBe('Docs/Other guide.md');
             expect(anchor('notes').dataset['path']).toBe('Docs/Guide/notes.txt');
-            expect(anchor('archive').getAttribute('href')).toBe('api/files/raw/Docs/Guide/files/data.zip');
+            expect(anchor('archive').getAttribute('href')).toBe('api/v1/files/raw/Docs/Guide/files/data.zip');
             expect(anchor('archive').dataset['path']).toBeUndefined();
             expect(anchor('up').getAttribute('href')).toBe('./?path=Docs');
             expect(anchor('root').dataset['path']).toBe('Read me.md');
@@ -111,7 +111,7 @@ describe('markdown', () => {
         const images = [...root.querySelectorAll('img')];
 
         expect(images.find((image) => image.alt === 'map')!.getAttribute('src')).toBe(
-            'api/files/raw/Docs/Guide/img/map.png',
+            'api/v1/files/raw/Docs/Guide/img/map.png',
         );
         expect(externalImages).toBe(1);
         expect(root.innerHTML).not.toContain('<img src="https://tracker');

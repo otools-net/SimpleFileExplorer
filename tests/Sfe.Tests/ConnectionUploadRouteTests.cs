@@ -130,7 +130,7 @@ public sealed class ConnectionUploadRouteTests
         Assert.IsEmpty(await ListAsync(_alice));
         Assert.IsEmpty(_account.Uploads);
         var listing = await _alice.GetFromJsonAsync<ConnectionListing>(
-            $"/api/connections/{_id}/browse?path=Trips",
+            $"{V1}/connections/{_id}/browse?path=Trips",
             Json,
             Cancel
         );
@@ -279,7 +279,7 @@ public sealed class ConnectionUploadRouteTests
         Assert.IsFalse(_account.Exists("Photos/x.txt"));
     }
 
-    private string Base => $"/api/connections/{_id}/files/uploads";
+    private string Base => $"{V1}/connections/{_id}/files/uploads";
 
     private async Task<UploadInfo> StartAsync(UploadStart start)
     {

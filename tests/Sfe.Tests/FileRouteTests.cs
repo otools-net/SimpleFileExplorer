@@ -110,13 +110,13 @@ public sealed class FileRouteTests
     [TestMethod]
     public async Task FoldersAreCreatedAndRenamedAsListingsShowThem()
     {
-        var created = await OkAsync(_admin, "/api/files/folders", new CreateFolderRequest("ChildDir", "Holidays"));
+        var created = await OkAsync(_admin, $"{V1}/files/folders", new CreateFolderRequest("ChildDir", "Holidays"));
         var renamed = await OkAsync(
             _admin,
-            "/api/files/rename",
+            $"{V1}/files/rename",
             new RenameRequest("ChildDir/Holidays", "Holidays 2024")
         );
-        var file = await OkAsync(_admin, "/api/files/rename", new RenameRequest("ChildDir/AFile1.txt", "notes.txt"));
+        var file = await OkAsync(_admin, $"{V1}/files/rename", new RenameRequest("ChildDir/AFile1.txt", "notes.txt"));
 
         Assert.AreEqual("ChildDir/Holidays", created.Path);
         Assert.AreEqual(ItemKind.Directory, created.Kind);
@@ -125,7 +125,7 @@ public sealed class FileRouteTests
         Assert.AreEqual("notes.txt", file.Name);
         Assert.AreEqual("txt", file.Extension);
         Assert.IsTrue(File.Exists(_library.FullPath("ChildDir/notes.txt")));
-        var listing = await GetAsync<DirectoryListing>(_admin, "/api/browse?path=ChildDir");
+        var listing = await GetAsync<DirectoryListing>(_admin, $"{V1}/browse?path=ChildDir");
         CollectionAssert.IsSubsetOf(
             new[] { "Holidays 2024", "notes.txt" },
             listing.Items.Select(i => i.Name).ToList(),
@@ -138,57 +138,57 @@ public sealed class FileRouteTests
     {
         Assert.AreEqual(
             HttpStatusCode.OK,
-            await PostStatusAsync(_alice, "/api/files/folders", new CreateFolderRequest("ChildDir", "Mine"))
+            await PostStatusAsync(_alice, $"{V1}/files/folders", new CreateFolderRequest("ChildDir", "Mine"))
         );
         Assert.AreEqual(
             HttpStatusCode.OK,
-            await PostStatusAsync(_alice, "/api/files/rename", new RenameRequest("ChildDir/AFile2", "AFile2.bin"))
+            await PostStatusAsync(_alice, $"{V1}/files/rename", new RenameRequest("ChildDir/AFile2", "AFile2.bin"))
         );
         Assert.AreEqual(
             HttpStatusCode.Forbidden,
-            await PostStatusAsync(_alice, "/api/files/folders", new CreateFolderRequest("Media", "x")),
+            await PostStatusAsync(_alice, $"{V1}/files/folders", new CreateFolderRequest("Media", "x")),
             "Read-only folder"
         );
         Assert.AreEqual(
             HttpStatusCode.Forbidden,
-            await PostStatusAsync(_alice, "/api/files/rename", new RenameRequest("Media/photo.jpg", "x.jpg"))
+            await PostStatusAsync(_alice, $"{V1}/files/rename", new RenameRequest("Media/photo.jpg", "x.jpg"))
         );
         Assert.AreEqual(
             HttpStatusCode.Forbidden,
-            await PostStatusAsync(_alice, "/api/files/rename", new RenameRequest("Media", "Videos")),
+            await PostStatusAsync(_alice, $"{V1}/files/rename", new RenameRequest("Media", "Videos")),
             "Media itself is read-only"
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_alice, "/api/files/folders", new CreateFolderRequest("SpecialDir", "x")),
+            await PostStatusAsync(_alice, $"{V1}/files/folders", new CreateFolderRequest("SpecialDir", "x")),
             "Hidden folder"
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_alice, "/api/files/rename", new RenameRequest("SpecialDir/SDEspañol", "x"))
+            await PostStatusAsync(_alice, $"{V1}/files/rename", new RenameRequest("SpecialDir/SDEspañol", "x"))
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_alice, "/api/files/rename", new RenameRequest("SpecialDir", "Open"))
+            await PostStatusAsync(_alice, $"{V1}/files/rename", new RenameRequest("SpecialDir", "Open"))
         );
         Assert.AreEqual(
             HttpStatusCode.Forbidden,
-            await PostStatusAsync(_alice, "/api/files/rename", new RenameRequest("RepeatedDir", "Other")),
+            await PostStatusAsync(_alice, $"{V1}/files/rename", new RenameRequest("RepeatedDir", "Other")),
             "A folder holding one Alice doesn't see is not hers to rename"
         );
         Assert.AreEqual(
             HttpStatusCode.Forbidden,
-            await PostStatusAsync(_bob, "/api/files/folders", new CreateFolderRequest("ChildDir", "x")),
+            await PostStatusAsync(_bob, $"{V1}/files/folders", new CreateFolderRequest("ChildDir", "x")),
             "Without the right"
         );
         Assert.AreEqual(
             HttpStatusCode.Forbidden,
-            await PostStatusAsync(_bob, "/api/files/rename", new RenameRequest("RFile1.txt", "x.txt"))
+            await PostStatusAsync(_bob, $"{V1}/files/rename", new RenameRequest("RFile1.txt", "x.txt"))
         );
         using var visitor = ApiClients.Create(_factory);
         Assert.AreNotEqual(
             HttpStatusCode.OK,
-            await PostStatusAsync(visitor, "/api/files/folders", new CreateFolderRequest("ChildDir", "x"))
+            await PostStatusAsync(visitor, $"{V1}/files/folders", new CreateFolderRequest("ChildDir", "x"))
         );
 
         Assert.IsTrue(Directory.Exists(_library.FullPath("Media")));
@@ -212,8 +212,8 @@ public sealed class FileRouteTests
     [DataRow(".sfe")]
     public async Task NamesThatCantBeUsedAre400s(string name)
     {
-        using var create = await PostAsync(_admin, "/api/files/folders", new CreateFolderRequest("", name));
-        using var rename = await PostAsync(_admin, "/api/files/rename", new RenameRequest("RFile1.txt", name));
+        using var create = await PostAsync(_admin, $"{V1}/files/folders", new CreateFolderRequest("", name));
+        using var rename = await PostAsync(_admin, $"{V1}/files/rename", new RenameRequest("RFile1.txt", name));
 
         Assert.AreEqual(HttpStatusCode.BadRequest, create.StatusCode, await create.Content.ReadAsStringAsync(Token));
         Assert.AreEqual(HttpStatusCode.BadRequest, rename.StatusCode);
@@ -227,26 +227,26 @@ public sealed class FileRouteTests
     {
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_admin, "/api/files/folders", new CreateFolderRequest("..", "x"))
+            await PostStatusAsync(_admin, $"{V1}/files/folders", new CreateFolderRequest("..", "x"))
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_admin, "/api/files/folders", new CreateFolderRequest("../..", "x"))
+            await PostStatusAsync(_admin, $"{V1}/files/folders", new CreateFolderRequest("../..", "x"))
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_admin, "/api/files/rename", new RenameRequest("../index.db", "x.db"))
+            await PostStatusAsync(_admin, $"{V1}/files/rename", new RenameRequest("../index.db", "x.db"))
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_admin, "/api/files/rename", new RenameRequest("", "Root2")),
+            await PostStatusAsync(_admin, $"{V1}/files/rename", new RenameRequest("", "Root2")),
             "The root itself"
         );
         if (OperatingSystem.IsWindows())
         {
             Assert.AreEqual(
                 HttpStatusCode.NotFound,
-                await PostStatusAsync(_admin, "/api/files/folders", new CreateFolderRequest("C:", "x"))
+                await PostStatusAsync(_admin, $"{V1}/files/folders", new CreateFolderRequest("C:", "x"))
             );
         }
 
@@ -256,9 +256,13 @@ public sealed class FileRouteTests
     [TestMethod]
     public async Task ConflictsSayWhatIsInTheWayAndNothingMore()
     {
-        using var folder = await PostAsync(_admin, "/api/files/folders", new CreateFolderRequest("", "ChildDir"));
-        using var hidden = await PostAsync(_alice, "/api/files/folders", new CreateFolderRequest("", "SpecialDir"));
-        using var renamed = await PostAsync(_alice, "/api/files/rename", new RenameRequest("RFile1.txt", "SpecialDir"));
+        using var folder = await PostAsync(_admin, $"{V1}/files/folders", new CreateFolderRequest("", "ChildDir"));
+        using var hidden = await PostAsync(_alice, $"{V1}/files/folders", new CreateFolderRequest("", "SpecialDir"));
+        using var renamed = await PostAsync(
+            _alice,
+            $"{V1}/files/rename",
+            new RenameRequest("RFile1.txt", "SpecialDir")
+        );
 
         foreach (var response in new[] { folder, hidden, renamed })
         {
@@ -317,7 +321,7 @@ public sealed class FileRouteTests
             Token
         );
 
-        await OkAsync(_alice, "/api/files/rename", new RenameRequest("ChildDir", "Kids"));
+        await OkAsync(_alice, $"{V1}/files/rename", new RenameRequest("ChildDir", "Kids"));
 
         var rules = (await _rules.GetAsync(_tenant, Token)).Select(r => r.Path).ToList();
         CollectionAssert.IsSubsetOf(new[] { "Kids", "Kids/Private" }, rules);
@@ -333,7 +337,7 @@ public sealed class FileRouteTests
     {
         await RuleAsync("Gone", FolderLevel.Read);
 
-        using var response = await PostAsync(_admin, "/api/files/rename", new RenameRequest("RepeatedDir", "Gone"));
+        using var response = await PostAsync(_admin, $"{V1}/files/rename", new RenameRequest("RepeatedDir", "Gone"));
 
         Assert.AreEqual(HttpStatusCode.Conflict, response.StatusCode);
         Assert.AreEqual(
@@ -353,43 +357,43 @@ public sealed class FileRouteTests
         Directory.CreateDirectory(_library.FullPath(".sfe/trash"));
         _library.AddFile(".sfe/trash/deleted.txt", 10);
 
-        var root = await GetAsync<DirectoryListing>(_admin, "/api/browse");
+        var root = await GetAsync<DirectoryListing>(_admin, $"{V1}/browse");
 
         CollectionAssert.DoesNotContain(
             root.Items.Select(i => i.Name).ToList(),
             ".sfe",
             "Not even with hidden items shown"
         );
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_admin, "/api/browse?path=.sfe"));
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_admin, "/api/browse?path=.sfe/trash"));
-        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_admin, "/api/files/raw/.sfe/trash/deleted.txt"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_admin, $"{V1}/browse?path=.sfe"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_admin, $"{V1}/browse?path=.sfe/trash"));
+        Assert.AreEqual(HttpStatusCode.NotFound, await StatusAsync(_admin, $"{V1}/files/raw/.sfe/trash/deleted.txt"));
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await StatusAsync(_admin, "/api/files/raw/ChildDir/../.sfe/trash/deleted.txt")
+            await StatusAsync(_admin, $"{V1}/files/raw/ChildDir/../.sfe/trash/deleted.txt")
         );
         if (OperatingSystem.IsWindows())
         {
             Assert.AreEqual(
                 HttpStatusCode.NotFound,
-                await StatusAsync(_admin, "/api/files/raw/.SFE./trash/deleted.txt")
+                await StatusAsync(_admin, $"{V1}/files/raw/.SFE./trash/deleted.txt")
             );
         }
 
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_admin, "/api/files/folders", new CreateFolderRequest(".sfe", "x"))
+            await PostStatusAsync(_admin, $"{V1}/files/folders", new CreateFolderRequest(".sfe", "x"))
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_admin, "/api/files/rename", new RenameRequest(".sfe", "trash"))
+            await PostStatusAsync(_admin, $"{V1}/files/rename", new RenameRequest(".sfe", "trash"))
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_admin, "/api/files/rename", new RenameRequest(".sfe/trash/deleted.txt", "x.txt"))
+            await PostStatusAsync(_admin, $"{V1}/files/rename", new RenameRequest(".sfe/trash/deleted.txt", "x.txt"))
         );
         Assert.AreEqual(
             HttpStatusCode.BadRequest,
-            await PostStatusAsync(_admin, "/api/files/rename", new RenameRequest("ChildDir", ".sfe"))
+            await PostStatusAsync(_admin, $"{V1}/files/rename", new RenameRequest("ChildDir", ".sfe"))
         );
         Assert.IsTrue(File.Exists(_library.FullPath(".sfe/trash/deleted.txt")));
     }
@@ -405,11 +409,15 @@ public sealed class FileRouteTests
 
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_admin, "/api/files/folders", new CreateFolderRequest("ChildDir/Keys", "x"))
+            await PostStatusAsync(_admin, $"{V1}/files/folders", new CreateFolderRequest("ChildDir/Keys", "x"))
         );
         Assert.AreEqual(
             HttpStatusCode.NotFound,
-            await PostStatusAsync(_admin, "/api/files/rename", new RenameRequest("ChildDir/Keys/key.xml", "stolen.xml"))
+            await PostStatusAsync(
+                _admin,
+                $"{V1}/files/rename",
+                new RenameRequest("ChildDir/Keys/key.xml", "stolen.xml")
+            )
         );
 
         Assert.IsTrue(File.Exists(Path.Combine(keys, "key.xml")));

@@ -19,7 +19,7 @@ node agents/tools/battery-probe/probe.mjs --list               # the scenarios
   `<out>/battery-probe.json` (`--out`, default `<tmp>/sfe-battery-probe`) to compare runs before and after a fix.
 - Timers are counted by the line that set them and their delay (`setInterval 1000 ms new i (main-….js:8:38673)`):
   the bundle is minified, so look the column up in `src/Sfe.Api/wwwroot/main-….js` (`sed -n 8p … | cut -c…`).
-- `scan*` scenarios answer `api/scan` with a scan that runs forever (CDP `Fetch`), so the page polls as during a long
+- `scan*` scenarios answer `api/v1/scan` with a scan that runs forever (CDP `Fetch`), so the page polls as during a long
   scan.
 
 ## Limits
@@ -59,7 +59,7 @@ node agents/tools/battery-probe/probe.mjs --list               # the scenarios
 3. **Attach:** click **inspect** under the SFE tab in `chrome://inspect`. An attached DevTools can keep a background
    tab from being frozen: background numbers seen this way are an upper bound.
 4. **Idle (5 min):** Network tab, **Preserve log**, a folder of videos untouched (Developer options › **Stay awake**
-   keeps the screen on while charging). `api/files/changes` › **EventStream** shows a `ping` every 25 s; note what else
+   keeps the screen on while charging). `api/v1/files/changes` › **EventStream** shows a `ping` every 25 s; note what else
    comes back regularly. Right-click › **Save all as HAR**.
 5. **Background (10 min):** the same log, press Home, screen off, come back: what ran meanwhile is in the Waterfall.
 6. **CPU at rest:** ⋮ › More tools › **Performance monitor** (CPU, layouts/s, style recalcs/s: all near 0 when idle),
