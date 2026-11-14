@@ -17,6 +17,12 @@ public enum BackgroundTaskKind
 
     /// <summary>Deletes for good what has been in the trash too long (<see cref="Files.Trash"/>).</summary>
     TrashPurge,
+
+    /// <summary>
+    /// A move or copy between the library and a connection (<see cref="Transfers.TransferJobs"/>): one run of the
+    /// history per job; not in the task list, neither started, cancelled nor scheduled here (the file jobs' routes).
+    /// </summary>
+    Transfer,
 }
 
 public enum TaskState

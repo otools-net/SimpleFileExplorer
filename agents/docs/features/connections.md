@@ -147,6 +147,16 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   sides are connections) and fails the rest.
 - A library source of a move goes to SFE's trash (owner's default, plan phase 5); files arriving in the library are
   indexed with the folder's default tags; tags don't travel.
+- Retry (`POST api/files/jobs/{id}/retry`, `TransferRetries`): an ended job keeps, in memory for 24 h, its asked
+  items not done nor skipped (failed, or not reached after a cancel); the owner only (404 otherwise), 409
+  `job-running` / `nothing-to-retry`. Started once, as a **new** job (202 with its view), access checked again as at
+  start. `TransferStart.Retry`: a folder already at the target is gone into, a file there of the same size counts as
+  done for a copy; for a move (which then deletes its source) the content hashes must match too, else the conflict
+  question is asked; a file whose writing broke is written again from its start.
+- Each job is one task-history run (`BackgroundTaskKind.Transfer`, not in the task list nor schedulable):
+  `TransferSummary` (account, items, both places named by `TransferOpening.NameOf`, no e-mail), a log line per item.
+- `Files:Uploads:MaxFileSizeMegabytes` holds for files going into a connection (`TransferRun.CheckSize`, before
+  reading; the item fails, the others go).
 
 ## Properties
 

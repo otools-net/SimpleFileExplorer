@@ -1594,7 +1594,7 @@ public sealed class ApiTests
     public async Task TasksCanBeStartedAndAreRecorded()
     {
         var overview = await GetAsync<TaskOverview>("/api/tasks");
-        CollectionAssert.AreEqual(Enum.GetValues<BackgroundTaskKind>(), overview.Tasks.Select(t => t.Task).ToArray());
+        Assert.HasCount(Enum.GetValues<BackgroundTaskKind>().Count(BackgroundTasks.IsListed), overview.Tasks);
         Assert.AreEqual(30, overview.LogRetentionDays);
         Assert.IsFalse(overview.Tasks.Single(t => t.Task == BackgroundTaskKind.Thumbnails).CanSchedule);
 

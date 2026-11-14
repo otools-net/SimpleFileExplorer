@@ -45,7 +45,7 @@ export interface RelinkPassResult {
 }
 
 /** The background jobs of the "Background tasks" dialog. */
-export type TaskKind = 'scan' | 'trickplay' | 'similarVideos' | 'thumbnails' | 'trashPurge';
+export type TaskKind = 'scan' | 'trickplay' | 'similarVideos' | 'thumbnails' | 'trashPurge' | 'transfer';
 
 export type TaskState = 'idle' | 'running' | 'disabled' | 'unavailable';
 

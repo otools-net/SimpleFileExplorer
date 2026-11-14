@@ -37,6 +37,15 @@
         <header class="operation-head">
             <svg [sfeIcon]="job.kind"></svg>
             <span class="operation-title">{{ title(job) }}</span>
+            @if (canRetry(job)) {
+                <button
+                    type="button"
+                    class="button small"
+                    data-retry
+                    title="Copy or move again the items that failed"
+                    (click)="retry(job)"
+                >Retry</button>
+            }
             @if (isDone(job)) {
                 <button
                     type="button"

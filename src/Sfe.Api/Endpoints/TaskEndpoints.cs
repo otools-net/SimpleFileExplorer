@@ -141,7 +141,7 @@ public static class TaskEndpoints
     )
     {
         var (tasks, _, paths, current) = services;
-        if (!TryParseTask(task, out var kind))
+        if (!TryParseTask(task, out var kind) || !BackgroundTasks.IsListed(kind))
             return TypedResults.NotFound();
         // A task on a folder (a scan) runs only where the subject may scan.
         if (
@@ -167,7 +167,7 @@ public static class TaskEndpoints
         CancellationToken cancellationToken
     )
     {
-        if (!TryParseTask(task, out var kind))
+        if (!TryParseTask(task, out var kind) || !BackgroundTasks.IsListed(kind))
             return TypedResults.NotFound();
         var cancelled = tasks.Cancel(kind);
         var info = await DescribeAsync(tasks, kind, cancellationToken);

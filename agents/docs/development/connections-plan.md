@@ -310,15 +310,21 @@ in `FolderRules`:
   (`TransferCalls`: waits out the provider, retries, one write at a time per connection), `TransferJobs` per library
   on the `JobBoard` (`TransferRun` walks folders page by page, asks conflicts as library jobs do, `TransferStream`
   sends parts and follows the provider's offset, a failed part retried twice, sizes and content hashes verified,
-  a move deletes each source once verified); `POST api/files/jobs/transfer`. Still to do: a retry route for failed
-  items (24 h resume points), a task-history run per job, `MaxFileSizeMegabytes` into a connection
+  a move deletes each source once verified); `POST api/files/jobs/transfer`; `POST api/files/jobs/{id}/retry` (failed
+  items kept 24 h in memory, started again as a new job; a broken file restarts from its start, no resume point),
+  one task-history run per job (`BackgroundTaskKind.Transfer`), `MaxFileSizeMegabytes` into a connection
 - [x] Clipboard, drops and Move/Copy dialogs accept a location on both sides; operations panel and task history. As
   built: clipboard and drag data carry the place (`drag-items.ts`, `file-clipboard.ts`); `PlaceTransfers` routes same
   place to the old routes and between places to the transfer route; the folder picker has a "Places" level (the
   library and the connections one writes to); sidebar connections take drops; the panel names both places; copies
   out of a connection one only reads are offered (`atPlace` keeps `files.copy`), pasting into it never. Task history:
   with the retry route, above
-- [ ] Free space checked at the destination when it tells; a move verifies before deleting
+- [x] Free space checked at the destination when it tells; a move verifies before deleting. As built: free space
+  before each file on both sides (the library's minimum kept, a connection's `SpaceAsync` when it tells), the space's
+  `MaxFileSizeMegabytes` into a connection; sizes and content hashes verified before a move deletes its source;
+  retry of failed items (`POST api/files/jobs/{id}/retry`, a new job, 24 h, once; files whose writing broke start
+  again; a file already there counts as done for a copy by size, for a move only by size and content hash); one
+  task-history run per transfer (`BackgroundTaskKind.Transfer`, history only)
 
 Design (fourth session, a Plan agent's study; defaults taken where the owner hasn't answered, marked *default*):
 

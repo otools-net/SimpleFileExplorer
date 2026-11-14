@@ -21,6 +21,16 @@ export function jobPlaces(job: FileJobView): TransferPlaces {
     return { from: job.fromConnection ?? null, to: job.toConnection ?? null };
 }
 
+/** An ended transfer between places with failed items (skipped ones aside): `api/files/jobs/{id}/retry` takes it. */
+export function canRetryTransfer(job: FileJobView): boolean {
+    const { from, to } = jobPlaces(job);
+    return (
+        (from !== null || to !== null) &&
+        (job.state === 'completed' || job.state === 'cancelled') &&
+        job.results.some((result) => result.status !== 'done' && result.status !== 'skipped')
+    );
+}
+
 /**
  * Moves and copies on a connection (agents/docs/features/connections.md): its provider does them at once, so there is
  * no job, no folder rules and no tags to ask about. Names taken in the target are asked about (keep both, replace) and

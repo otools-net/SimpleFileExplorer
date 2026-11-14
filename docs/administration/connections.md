@@ -105,3 +105,7 @@ Copy or move files and folders between the library and a connection like between
   file leaves its place only once its copy is checked, into SFE's trash (library) or Dropbox's deleted files.
 - Tags stay with the library: files moved out lose them, files arriving get the folder's default tags.
 - From a connection you only read, files can be copied into the library, never pasted into it.
+- When some items failed (Dropbox unreachable, a file larger than the space allows, a name refused), **Retry** in the
+  operations panel starts them again, for a day after the transfer ended. A file the failed transfer already wrote is
+  taken as done when a copy finds it the same size; a move asks instead unless its content is proven the same.
+- Each transfer is a run of **Administration › Tasks › History**, with a line per item.

@@ -36,7 +36,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   and drop, including onto a connection in the sidebar, or Move to / Copy to, whose folder picker lists the
   connections), as a job of the operations panel: each part sent on as it is read, sizes and content hashes
   checked, a moved library file going to the trash only once its copy is verified; copies out of a connection you
-  only read work too.
+  only read work too. A transfer whose items failed shows **Retry** in the operations panel (for a day), and each
+  transfer is a run of the task history (Administration › Tasks).
 - **API: a connection's files**: `GET api/v1/connections/{id}/browse` (a folder in the listing's shape, with what
   the provider can do), `files/raw/{path}` (one HTTP range when the provider reads parts), `thumbnails/{path}` and
   `POST …/archive` (a zip, then its one-time link), `POST …/files/folders`, `rename`, `delete` and `transfer` (move

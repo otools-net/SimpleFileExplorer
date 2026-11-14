@@ -17,6 +17,7 @@ internal sealed class TransferOpening
     private readonly string _right;
     private readonly CancellationToken _cancellationToken;
     private readonly Dictionary<int, ProviderCapabilities> _capabilities = [];
+    private readonly Dictionary<int, string> _names = [];
 
     public TransferOpening(
         ConnectionFileServices files,
@@ -43,8 +44,13 @@ internal sealed class TransferOpening
         if (open is null)
             return answer;
         _capabilities[id] = open.Capabilities;
+        var usable = open.Connection;
+        _names[id] = $"connection {id} “{usable.Name}” ({usable.Kind}, {ConnectionLevels.Name(usable.Level)})";
         return null;
     }
+
+    /// <summary>How the log and the task history name a checked connection (not its account); null: library.</summary>
+    public string? NameOf(int? connection) => connection is { } id ? _names.GetValueOrDefault(id) : null;
 
     /// <summary>The side the job keeps (it disposes it), or the answer when the connection can't be opened.</summary>
     public async Task<(ITransferEndpoint? Side, IResult? Answer)> OpenAsync(

@@ -12,6 +12,8 @@ wording). Schedules: [schedules.md](schedules.md).
 - Logs: `TaskLogProvider` (an `ILoggerProvider`, filter `Sfe` ≥ Debug) copies entries of the async flow whose
   `AsyncLocal` `Begin` set — call `Begin` from the run's own method (an awaited async method restores the caller's
   value on return); tasks/threads it starts inherit it. Long logs keep the first and last 1000 lines.
+- `Transfer` runs (one per transfer job, [connections](connections.md)) are only in the history: `BackgroundTasks.
+  IsListed` keeps them out of the list, start and cancel routes (404), `CanSchedule` out of schedules.
 - A new job: give it a trigger + `Begin`/`CompleteAsync` and a case in `BackgroundTasks`.
 - Bodyless start routes take inputs from the query (`POST api/tasks/{task}/start?path=`,
   [api-routes.md](../development/api-routes.md)).

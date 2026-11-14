@@ -21,12 +21,21 @@ public sealed class BackgroundTasks(
 )
 {
     /// <summary>The tasks schedules can start.</summary>
-    public static bool CanSchedule(BackgroundTaskKind task) => task is not BackgroundTaskKind.Thumbnails;
+    public static bool CanSchedule(BackgroundTaskKind task) =>
+        task is not (BackgroundTaskKind.Thumbnails or BackgroundTaskKind.Transfer);
+
+    /// <summary>The tasks of the list; transfers are only in the history (their jobs are the file jobs').</summary>
+    public static bool IsListed(BackgroundTaskKind task) => task is not BackgroundTaskKind.Transfer;
 
     public async Task<IReadOnlyList<TaskInfo>> DescribeAsync(CancellationToken cancellationToken = default)
     {
         var last = await history.LastRunsAsync(cancellationToken);
-        return [.. Enum.GetValues<BackgroundTaskKind>().Select(kind => Describe(kind, last.GetValueOrDefault(kind)))];
+        return
+        [
+            .. Enum.GetValues<BackgroundTaskKind>()
+                .Where(IsListed)
+                .Select(kind => Describe(kind, last.GetValueOrDefault(kind))),
+        ];
     }
 
     private TaskInfo Describe(BackgroundTaskKind kind, TaskRunSummary? last) =>
@@ -243,6 +252,7 @@ public sealed class BackgroundTasks(
             BackgroundTaskKind.Trickplay => trickplay.Cancel(),
             BackgroundTaskKind.SimilarVideos => similarVideos.Cancel(),
             BackgroundTaskKind.TrashPurge => trash.CancelPurge(),
+            BackgroundTaskKind.Transfer => false,
             _ => thumbnails.CancelAll(),
         };
 }

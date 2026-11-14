@@ -73,6 +73,8 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
             return new FileJobItem(path, null, FileOperationStatus.NotFound, "It was not found.");
 
         var (name, leftOut) = await NameAsync(path, entry, folder, token);
+        if (leftOut is { Status: FileOperationStatus.Done })
+            return await AlreadyThereAsync(path, entry, leftOut.NewPath!, token);
         if (leftOut is not null)
             return leftOut;
         var placed = entry.IsFolder
@@ -82,6 +84,19 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
         if (result.Status == FileOperationStatus.Done)
             Log(entry.Path, placed!);
         return result;
+    }
+
+    /// <summary>An asked file a retry finds at the target, written before: (a move) its source taken away.</summary>
+    private async Task<FileJobItem> AlreadyThereAsync(
+        string path,
+        TransferEntry file,
+        string placed,
+        CancellationToken token
+    )
+    {
+        if (Move)
+            await RemoveSourceAsync(file, token);
+        return _tally.Result(path, placed);
     }
 
     /// <summary>An asked file: written, then (a move) taken away from the source.</summary>
@@ -128,11 +143,20 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
     )
     {
         var (name, leftOut) = await NameAsync(child.Path, child, into, token);
-        if (leftOut is not null)
+        if (leftOut is { Status: FileOperationStatus.Done })
+            AlreadyThere(child, moved);
+        else if (leftOut is not null)
             _tally.LeftOut(leftOut);
         else if (child.IsFolder)
             await FolderAsync(child, into, name!, token);
         else if (await FileAsync(child, into, name!, token) is not null && Move)
+            moved.Add(child);
+    }
+
+    /// <summary>A file below an item a retry finds at the target, written before: (a move) taken away later.</summary>
+    private void AlreadyThere(TransferEntry child, List<TransferEntry> moved)
+    {
+        if (Move)
             moved.Add(child);
     }
 
@@ -144,11 +168,24 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
             _tally.Skip($"“{file.Name}” was left out: it has no content to transfer (an online document).");
             return null;
         }
+        CheckSize(file);
         job.BytesTotal += file.Size ?? 0;
         await CheckRoomAsync(file, into, token);
         var written = await _writer.WriteAsync(file, into, name, token);
         await Target.AfterWriteAsync(written, token);
         return written;
+    }
+
+    /// <summary>A file going into a connection is no larger than the space allows (refused before reading).</summary>
+    private void CheckSize(TransferEntry file)
+    {
+        if (start.MaxFileMegabytes is { } max && file.Size > max * 1024L * 1024)
+        {
+            throw new RemoteStorageException(
+                RemoteErrorKind.TooLarge,
+                $"“{file.Name}” is larger than the {max:N0} MB a file may have here."
+            );
+        }
     }
 
     /// <summary>The target's free space, when it tells, takes the file.</summary>
@@ -177,6 +214,10 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
     {
         if (await Target.GetAsync(LibraryClashes.Join(into, entry.Name), token) is not { } existing)
             return (entry.Name, null);
+        if (start.Retry && WrittenBefore(entry, existing))
+            return entry.IsFolder
+                ? (entry.Name, null)
+                : (null, new FileJobItem(path, existing.Path, FileOperationStatus.Done));
         var conflict = new FileJobConflict(Side(entry), Side(existing), CanReplace: true);
         return await job.ChooseAsync(conflict, token) switch
         {
@@ -235,7 +276,7 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
         }
     }
 
-    /// <summary>A failure of either side; an ended sign-in marks its connection and stops the job's next items.</summary>
+    /// <summary>A failure of either side; an ended sign-in marks its connection and stops the next items.</summary>
     private async Task FailedAsync(RemoteStorageException failure, CancellationToken token)
     {
         if (failure.Kind != RemoteErrorKind.CredentialsEnded)
@@ -288,13 +329,26 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
             Who,
             Move ? "moved" : "copied",
             path,
-            PlaceName(start.FromConnection),
-            $"{PlaceName(start.To.ConnectionId)}: {placed}"
+            start.SourceText,
+            $"{start.TargetText}: {placed}"
         );
 
     private string Who => start.Actor.Name;
 
-    private static string PlaceName(int? connection) => connection is { } id ? $"connection {id}" : "the library";
+    /// <summary>
+    /// A retry's check that <paramref name="existing"/> is what the failed job wrote: a folder it went into; for a
+    /// copy, a file of the same size; for a move, which then deletes its source, the same size AND content hash (a
+    /// size alone proves nothing): without hashes the file goes through the conflict question like any other.
+    /// </summary>
+    private bool WrittenBefore(TransferEntry entry, TransferEntry existing) =>
+        entry.IsFolder
+            ? existing.IsFolder
+            : !existing.IsFolder
+                && entry.Size is { } size
+                && existing.Size == size
+                && (!Move || entry.Hash is { Length: > 0 } hash && string.Equals(existing.Hash, hash, Ordinal));
+
+    private const StringComparison Ordinal = StringComparison.OrdinalIgnoreCase;
 
     /// <summary>A path of the side: the library's rules or a connection's.</summary>
     private static string? Normalize(string path, int? connection) =>

@@ -251,7 +251,7 @@ export class FileTransfers {
         return this.follow(() => this.api.startFileJob(request), request.kind);
     }
 
-    private async follow(started: () => Promise<FileJobView>, kind: FileJobKind): Promise<FileJobView | null> {
+    async follow(started: () => Promise<FileJobView>, kind: FileJobKind | 'retry'): Promise<FileJobView | null> {
         let job: FileJobView;
         try {
             job = await started();

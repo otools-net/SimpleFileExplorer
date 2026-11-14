@@ -309,7 +309,7 @@ public sealed class TransferJobsTests
     }
 
     /// <summary>Everything allowed; the work folder protected.</summary>
-    private sealed class FakeAccess : IFileJobAccess
+    internal sealed class FakeAccess : IFileJobAccess
     {
         public Task<bool> MayAsync(string path, string right) => Task.FromResult(true);
 

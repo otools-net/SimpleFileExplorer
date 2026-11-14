@@ -414,9 +414,7 @@ export class Api {
 
     /** A link to `path` working without signing in, for a while: for external players. */
     fileLink = (path: string) => this.post<FileLink>('api/files/links', { path });
-    /**
-     * A link playing the Flash movie `path` in the player's frame, opening the files of its folder to it, read only.
-     */
+    /** A link playing the Flash movie `path` in the player's frame, opening its folder's files to it, read only. */
     flashLink = (path: string) => this.post<FileLink>('api/files/flash-links', { path });
     /** Creates the folder `name` in the folder `path`. Resolves with the conflict (409: name taken, scan running). */
     createFolder = (path: string, name: string) => this.post<FileOperationResult>('api/files/folders', { path, name });
@@ -448,6 +446,7 @@ export class Api {
     answerFileJob = (id: number, choice: ConflictChoice, forAll: boolean) =>
         this.post<void>(`api/files/jobs/${id}/answer`, { choice, forAll });
     cancelFileJob = (id: number) => this.post<void>(`api/files/jobs/${id}/cancel`);
+    retryFileJob = (id: number) => this.post<FileJobView>(`api/files/jobs/${id}/retry`);
     /** Which of `names` (paths below `target` for a folder upload) are taken; `connection`: in its files. */
     checkUploads = (target: string, names: string[], connection?: number | null) =>
         this.post<UploadCheck>(`${uploadsRoute(connection)}/check`, { target, names });

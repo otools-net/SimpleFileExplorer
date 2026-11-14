@@ -148,6 +148,66 @@ public sealed class TransferRouteTests
         Assert.AreEqual("old", _account.TextOf("Photos/RFile1.txt"));
     }
 
+    [TestMethod]
+    public async Task OnlyItsOwnerRetriesATransferOnceItEnded()
+    {
+        _account.WithFile("Photos/RFile1.txt", "old");
+        var job = await StartAsync(Copy(null, ["RFile1.txt", "ChildDir"], _id, ""));
+        await WaitForAsync(job.Id, j => j.State == FileJobState.Waiting);
+        using var running = await RetryAsync(_admin, job.Id);
+        await LetUsersCopyAsync();
+        using var bob = await ApiClients.SignInAsync(_factory, "bob", "bob-password-1", Cancel);
+        using var others = await RetryAsync(bob, job.Id);
+        using var unknown = await RetryAsync(_admin, job.Id + 100);
+        using var cancel = await _admin.PostAsync($"/api/files/jobs/{job.Id}/cancel", null, Cancel);
+        await FinishedAsync(job.Id);
+        using var retried = await RetryAsync(_admin, job.Id);
+        var again = (await retried.Content.ReadFromJsonAsync<FileJobView>(Json, Cancel))!;
+        await WaitForAsync(again.Id, j => j.State == FileJobState.Waiting);
+        using var answer = await _admin.PostAsJsonAsync(
+            $"/api/files/jobs/{again.Id}/answer",
+            new JobAnswer(ConflictChoice.Skip),
+            Json,
+            Cancel
+        );
+        var done = await FinishedAsync(again.Id);
+        using var twice = await RetryAsync(_admin, job.Id);
+        using var nothing = await RetryAsync(_admin, again.Id);
+
+        Assert.AreEqual(HttpStatusCode.Conflict, running.StatusCode);
+        StringAssert.Contains(await running.Content.ReadAsStringAsync(Cancel), TransferEndpoints.JobRunningType);
+        Assert.AreEqual(HttpStatusCode.NotFound, others.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, unknown.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Accepted, retried.StatusCode);
+        Assert.AreNotEqual(job.Id, again.Id, "A new job");
+        StringAssert.EndsWith(retried.Headers.Location!.ToString(), $"files/jobs/{again.Id}");
+        Assert.AreEqual((2, (int?)_id), (again.Total, again.ToConnection));
+        Assert.AreEqual(FileOperationStatus.Done, done.Results.Single(r => r.Path == "ChildDir").Status);
+        Assert.IsTrue(_account.Exists("Photos/ChildDir/AFile2"));
+        foreach (var refused in new[] { twice, nothing })
+        {
+            Assert.AreEqual(HttpStatusCode.Conflict, refused.StatusCode);
+            StringAssert.Contains(
+                await refused.Content.ReadAsStringAsync(Cancel),
+                TransferEndpoints.NothingToRetryType
+            );
+        }
+    }
+
+    /// <summary>Bob may copy (and use connections): what keeps him from another's job is its owner.</summary>
+    private async Task LetUsersCopyAsync()
+    {
+        var accounts = _factory.Services.GetRequiredService<AccessService>();
+        var tenant = (await accounts.GetTenantsAsync(Cancel)).Single().Id;
+        var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Cancel))!;
+        var input = new GroupInput(users.Name, Rights: [.. users.Rights, Rights.CopyFiles], MemberIds: users.MemberIds);
+        var updated = await accounts.UpdateGroupAsync(tenant, users.Id, input, cancellationToken: Cancel);
+        Assert.AreEqual(AccessStatus.Ok, updated.Status);
+    }
+
+    private Task<HttpResponseMessage> RetryAsync(HttpClient client, int id) =>
+        client.PostAsync($"/api/files/jobs/{id}/retry", null, Cancel);
+
     private static TransferRequest Copy(int? from, IReadOnlyList<string> paths, int? to, string target) =>
         new("copy", new TransferSide(from, paths), new TransferTarget(to, target));
 

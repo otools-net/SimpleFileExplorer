@@ -49,7 +49,7 @@ internal sealed class TransferStream(JobRun job, ITransferEndpoint source, Trans
 
     public async ValueTask DisposeAsync() => await CloseReaderAsync();
 
-    /// <summary>The next part: read at the write's offset and sent; a failure the part survives is tried again.</summary>
+    /// <summary>The next part: read at the write's offset and sent; a failure it survives is tried again.</summary>
     private async Task PartAsync(ITransferWrite write, Memory<byte> buffer, CancellationToken token)
     {
         var offset = write.Offset;
@@ -116,7 +116,9 @@ internal sealed class TransferStream(JobRun job, ITransferEndpoint source, Trans
         }
     }
 
-    /// <summary>A part at <paramref name="offset"/> may be tried again: fewer than <see cref="PartTries"/> failures.</summary>
+    /// <summary>
+    /// A part at <paramref name="offset"/> may be tried again: fewer than <see cref="PartTries"/> failures.
+    /// </summary>
     private bool MayTryAgain(long offset)
     {
         if (offset != _failedAt)

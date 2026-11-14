@@ -25,7 +25,8 @@ import { UploadsPanelComponent } from './uploads-panel.component';
 import { droppedFiles, UploadQueue } from './uploads';
 import { uploadConnection } from './upload-places';
 import { dragItemsData, parseDragItems } from './drag-items';
-import { PlaceTransfers } from './place-transfers';
+import { canRetryTransfer, PlaceTransfers } from './place-transfers';
+import { Api } from '../core/api.service';
 
 /** Drop targets: listed folders and the folders of the location bar (`data-drop` holding their path). */
 const DROP_TARGET = '[data-drop]';
@@ -60,9 +61,11 @@ export class OperationsPanelComponent implements OnInit {
     private readonly config = inject(ConfigService);
     private readonly folders = inject(FolderMenu);
     private readonly places = inject(PlaceTransfers);
+    private readonly api = inject(Api);
 
     protected readonly forAll = signal(false);
     protected readonly baseName = baseName;
+    protected readonly canRetry = canRetryTransfer;
     /** When each job's bytes were first seen moving, and how many then: its speed since. */
     private readonly moving = new Map<number, { at: number; bytes: number }>();
     /** The folder under the pointer during a drag. */
@@ -231,6 +234,12 @@ export class OperationsPanelComponent implements OnInit {
             (result) =>
                 result.status !== 'done' || ((job.kind === 'extract' || job.kind === 'compress') && result.message),
         );
+    }
+
+    /** Runs a transfer's failed items again, following the job answered (a new one takes the old one's place). */
+    protected async retry(job: FileJobView): Promise<void> {
+        const view = await this.transfers.follow(() => this.api.retryFileJob(job.id), 'retry');
+        if (view && view.id !== job.id) this.transfers.dismiss(job);
     }
 
     protected answer(job: FileJobView, choice: 'replace' | 'skip' | 'keepBoth'): void {

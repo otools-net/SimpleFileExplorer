@@ -12,6 +12,7 @@ export const TASK_NAMES: Record<TaskKind, string> = {
     similarVideos: 'Similar videos',
     thumbnails: 'Thumbnails',
     trashPurge: 'Trash purge',
+    transfer: 'Transfer',
 };
 
 export const TASK_PURPOSES: Record<TaskKind, string> = {
@@ -22,6 +23,7 @@ export const TASK_PURPOSES: Record<TaskKind, string> = {
     trashPurge:
         'Deletes for good what has been in the trash longer than its settings say. ' +
         'Also runs by itself when the trash is used.',
+    transfer: 'Copies and moves between the library and connections.',
 };
 
 export const TASK_ICONS: Record<TaskKind, string> = {
@@ -30,6 +32,7 @@ export const TASK_ICONS: Record<TaskKind, string> = {
     similarVideos: 'copy',
     thumbnails: 'image',
     trashPurge: 'trash',
+    transfer: 'copy',
 };
 
 /** The tasks a schedule can start, in the order of the form's list. */
