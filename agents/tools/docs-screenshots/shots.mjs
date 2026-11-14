@@ -977,6 +977,41 @@ const scenes = {
         await b.shot(OUT + 'admin-system-startup.png');
         await b.close();
     },
+    /**
+     * Access tokens of the administrator (the server is in Local mode: only administrators sign in), two used with a
+     * Bearer request, one revoked; the dialog showing a new token's secret (made by this scratch server), My account ›
+     * Access tokens and the administration's list of every account's tokens. Run on a fresh seed: a rerun on the
+     * same database (--shots-only) lists them twice.
+     */
+    async tokens() {
+        const json = (method, url, data) => `fetch('${url}', { method: '${method}', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify(${JSON.stringify(data)}) }).then(r => r.json())`;
+        const use = secret => `fetch('api/v1/browse?path=Photos&limit=1', { credentials: 'omit', headers: { Authorization: 'Bearer ' + ${JSON.stringify(secret)} } }).then(r => r.status)`;
+        const days = n => new Date(Date.now() + n * 86_400_000).toISOString();
+        const b = await session({ height: 900 });
+        await b.goto(BASE, 1500);
+        const frame = await b.eval(json('POST', 'api/v1/me/tokens', { name: 'Photo frame', expires: days(90), rights: ['library.browse', 'files.view'] }));
+        const backup = await b.eval(json('POST', 'api/v1/me/tokens', { name: 'Nightly backup', expires: days(365) }));
+        const old = await b.eval(json('POST', 'api/v1/me/tokens', { name: 'Old sync script', expires: days(30) }));
+        for (const token of [frame, backup])
+            console.log(`token used: ${await b.eval(use(token.secret))}`);
+        await b.eval(api('DELETE', `api/v1/me/tokens/${old.token.id}`));
+        // A new one made in the dialog: its secret, shown once.
+        await b.open(admin('account', 'tokens'), 3000);
+        await b.clickTitle('Make a token for a program');
+        await b.realClick('#token-name');
+        await b.type('Music player');
+        await sleep(300);
+        await b.clickTitle('Make the token');
+        await b.waitFor('#token-secret');
+        await sleep(800);
+        await b.shot(OUT + 'token-secret.png');
+        await b.clickTitle('Close: the token is not shown again');
+        await sleep(1200);
+        await b.shot(OUT + 'admin-account-tokens.png');
+        await b.open(admin('access', 'tokens'), 3000);
+        await b.shot(OUT + 'admin-access-tokens.png');
+        await b.close();
+    },
     async streams() {
         const b = await session({ height: 900 });
         await b.open(admin('playback', 'streams'), 2000);

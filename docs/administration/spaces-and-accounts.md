@@ -145,6 +145,8 @@ is only in their space is fully theirs.
 
 ## Access tokens
 
+![Every account's access tokens](../images/admin-access-tokens.png)
+
 Every account's [access tokens](my-account.md#access-tokens) (right `access.tokens`: a space's administrators see
 those of their space's accounts, server administrators all of them): the account each belongs to, its name and first
 characters, its library and rights, its dates and the address it was last used from. Revoked and expired tokens stay

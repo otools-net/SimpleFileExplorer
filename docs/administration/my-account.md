@@ -31,6 +31,8 @@ Your own connections to storage outside the libraries (Dropbox), seen only by yo
 
 ## Access tokens
 
+![My account › Access tokens](../images/admin-account-tokens.png)
+
 A token lets a program or a script of yours call SFE's [API](../reference/api.md) as you, without your password
 (right `account.tokens`, which only the Administrators group has by default). The list shows each token's name and
 first characters, the library it works in, its rights, and when it was made, expires and was last used.
@@ -39,6 +41,9 @@ first characters, the library it works in, its rights, and when it was made, exp
   library of yours, and every right of yours or only those you tick. **Create** shows the token **once**: copy it with
   **Copy** and keep it where the program reads it. SFE keeps only a fingerprint of it; a lost token is revoked and
   replaced.
+
+  ![A new token, shown once](../images/token-secret.png)
+
 - **Revoke** ends a token at once: the programs using it are refused from then on. **Revoke all** ends every token of
   yours.
 - A token acts as your account: it never does more than you may do now, and a disabled or deleted account ends its
