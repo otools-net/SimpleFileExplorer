@@ -310,6 +310,39 @@ in `FolderRules`:
 - [ ] Clipboard, drops and Move/Copy dialogs accept a location on both sides; operations panel and task history
 - [ ] Free space checked at the destination when it tells; a move verifies before deleting
 
+Design (fourth session, a Plan agent's study; defaults taken where the owner hasn't answered, marked *default*):
+
+- **C0, refactoring only** (no behaviour change, its own commit): `FileJobs.Job` → `Files/Jobs/JobRun.cs`; ids, list,
+  find, answer, cancel, prune → per-library `JobBoard`; clash and keep-both naming → `LibraryClashes`. The job routes
+  take `JobBoard`. `FileJobs.cs` (1525 lines) only shrinks.
+- `ITransferEndpoint` (`Core/Transfers/`): get, list (paged), read from an offset, `BeginWriteAsync` →
+  `ITransferWrite` (offset, write a part, commit, abort), create folder, free name, replace, delete source, free
+  space, hash name. `LibraryTransferEndpoint` (the checks of `FileJobs.ItemAsync`, `.sfe-partial` then rename, a
+  scan turn per file, replace into the trash); `RemoteTransferEndpoint` over `IRemoteStorage` + `TransferCalls`
+  (waits instead of 429, retries with backoff, one write at a time per connection, `RemoteListings.Forget`).
+- `TransferJobs` per library (*default*), sharing `JobBoard` ids, routes and the operations panel; `FileJobView`
+  gains `FromConnection` / `ToConnection`. `POST api/files/jobs/transfer` (`TransferRequest(Kind, From{Connection?,
+  Paths}, To{Connection?, Path}, Conflicts)`, 202). The job opens connections through `ConnectionService.OpenAsync`
+  and re-checks access per item (`TransferJobAccess`); an ended sign-in marks the connection.
+- Streaming: library → connection by upload session parts (min(MaxUploadPart, 32 MB)); connection → library by
+  ranged reads into the partial file; connection → connection through a temporary file. A failed part is sent again;
+  failed items keep a resume point for 24 h behind `POST api/files/jobs/{id}/retry` (*default*).
+- Conflicts per item with the existing ask / replace / skip / keep both; folders walked depth first, page by page.
+- Free space: the library's `MinimumFreeSpaceMegabytes` (every 64 MB); a connection's `SpaceAsync` when it tells.
+  `Files:Uploads:MaxFileSizeMegabytes` applies into a connection (*default*).
+- Verified: size always; content hash computed while streaming when either side has one (`ContentHashes`: dropbox,
+  sha256, md5), for copies too (*default*). A move removes each source file once verified; **a library source goes
+  to SFE's trash** (*default chosen for safety, against the study's "deleted for good"*).
+- Library files arriving are indexed (default tags apply); leaving by move = as a delete (tags not kept: the dialog
+  says so); a library folder with folder rules moved out: allowed with a warning (*default*).
+- Connection → connection: allowed, bytes through the server (*default*). Audit: an Information line per item, a
+  `BackgroundTaskKind.Transfer` run per job (*default*).
+- Client: clipboard and drag data carry the place; sidebar entries are drop targets; `PlaceTransfers` routes
+  instead of refusing; the folder picker lists the library and each usable connection; panel rows name both places,
+  Retry for failed items. New calls inside `Api` (*default*).
+- Commits: C0; C1 server (parallel agents after the contracts: library endpoint, remote endpoint + fakes, hashes;
+  then the orchestrator and routes); C2 client; C3 free space and hashes if not in C1.
+
 ### Phase 6: groups and folder rules
 
 - [ ] Rules inside library- and server-level connections with the model chosen in phase 0; `ConnectionAccess` answers
