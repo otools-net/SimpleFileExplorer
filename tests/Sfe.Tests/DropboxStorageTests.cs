@@ -170,13 +170,128 @@ public sealed class DropboxStorageTests
     }
 
     [TestMethod]
-    public async Task ChangingFilesIsNotThereYet()
+    public async Task AFolderIsCreatedAndDeletedUnderTheConnectionsRoot()
     {
-        var error = await Assert.ThrowsExactlyAsync<RemoteStorageException>(() =>
-            _storage.CreateFolderAsync("New", Token)
+        _dropbox.Answers["/2/files/create_folder_v2"] = (HttpStatusCode.OK, $$"""{"metadata":{{Folder}}}""");
+        _dropbox.Answers["/2/files/delete_v2"] = (HttpStatusCode.OK, $$"""{"metadata":{{Folder}}}""");
+
+        var folder = await _storage.CreateFolderAsync("Trips", Token);
+        await _storage.DeleteAsync("Trips", Token);
+
+        Assert.AreEqual(new RemoteItem("Trips", "Trips", true, Id: "id:folder1"), folder);
+        var created = Json(_dropbox.Last("/2/files/create_folder_v2").Body);
+        Assert.AreEqual(("/Photos/Trips", false), (PathOf(created), created["autorename"]!.GetValue<bool>()));
+        Assert.AreEqual("/Photos/Trips", PathOf(Json(_dropbox.Last("/2/files/delete_v2").Body)));
+        // The root is never deleted.
+        var root = await Assert.ThrowsExactlyAsync<RemoteStorageException>(() => _storage.DeleteAsync("", Token));
+        Assert.AreEqual(RemoteErrorKind.NotFound, root.Kind);
+    }
+
+    [TestMethod]
+    public async Task MovesAndCopiesAskDropboxToRenameOnlyToKeepBoth()
+    {
+        _dropbox.Answers["/2/files/move_v2"] = (HttpStatusCode.OK, $$"""{"metadata":{{File}}}""");
+        _dropbox.Answers["/2/files/copy_v2"] = (HttpStatusCode.OK, $$"""{"metadata":{{File}}}""");
+
+        var moved = await _storage.MoveAsync("a.jpg", "Sunrise.jpg", RemoteConflict.Fail, Token);
+        var move = Json(_dropbox.Last("/2/files/move_v2").Body);
+        await _storage.CopyAsync("a.jpg", "Trips/a.jpg", RemoteConflict.KeepBoth, Token);
+        var copy = Json(_dropbox.Last("/2/files/copy_v2").Body);
+
+        Assert.AreEqual("Sunrise.jpg", moved.Path);
+        Assert.AreEqual(("/Photos/a.jpg", "/Photos/Sunrise.jpg"), (From(move), To(move)));
+        Assert.IsFalse(move["autorename"]!.GetValue<bool>());
+        Assert.IsTrue(move["allow_shared_folder"]!.GetValue<bool>());
+        Assert.AreEqual(("/Photos/a.jpg", "/Photos/Trips/a.jpg"), (From(copy), To(copy)));
+        Assert.IsTrue(copy["autorename"]!.GetValue<bool>());
+    }
+
+    [TestMethod]
+    public async Task ReplacingDeletesTheFileThereButNeverAFolder()
+    {
+        _dropbox.Answers["/2/files/get_metadata"] = (HttpStatusCode.OK, File);
+        _dropbox.Answers["/2/files/delete_v2"] = (HttpStatusCode.OK, $$"""{"metadata":{{File}}}""");
+        _dropbox.Answers["/2/files/move_v2"] = (HttpStatusCode.OK, $$"""{"metadata":{{File}}}""");
+
+        await _storage.MoveAsync("a.jpg", "Sunrise.jpg", RemoteConflict.Replace, Token);
+        var calls = _dropbox.Requests.Select(r => r.Request.RequestUri!.AbsolutePath).Where(p => p.StartsWith("/2/"));
+        var replaced = calls.ToArray();
+        _dropbox.Answers["/2/files/get_metadata"] = (HttpStatusCode.OK, Folder);
+        var folder = await Assert.ThrowsExactlyAsync<RemoteStorageException>(() =>
+            _storage.MoveAsync("a.jpg", "Trips", RemoteConflict.Replace, Token)
         );
+
+        CollectionAssert.AreEqual(
+            new[] { "/2/files/get_metadata", "/2/files/delete_v2", "/2/files/move_v2" },
+            replaced
+        );
+        Assert.AreEqual("/Photos/Sunrise.jpg", PathOf(Json(_dropbox.Last("/2/files/delete_v2").Body)));
+        Assert.AreEqual(RemoteErrorKind.Exists, folder.Kind);
+        Assert.HasCount(1, _dropbox.Requests.Where(r => r.Request.RequestUri!.AbsolutePath == "/2/files/delete_v2"));
+    }
+
+    [TestMethod]
+    public async Task ARenameChangingOnlyTheCaseGoesThroughATemporaryName()
+    {
+        _dropbox.Answers["/2/files/move_v2"] = (HttpStatusCode.OK, $$"""{"metadata":{{File}}}""");
+
+        await _storage.MoveAsync("sunrise.jpg", "Sunrise.jpg", RemoteConflict.Fail, Token);
+
+        var moves = _dropbox
+            .Requests.Where(r => r.Request.RequestUri!.AbsolutePath == "/2/files/move_v2")
+            .Select(r => Json(r.Body))
+            .ToList();
+        Assert.HasCount(2, moves);
+        Assert.AreEqual("/Photos/sunrise.jpg", From(moves[0]));
+        Assert.AreEqual(To(moves[0]), From(moves[1]));
+        Assert.StartsWith("/Photos/Sunrise.jpg.sfe-", To(moves[0]));
+        Assert.AreEqual("/Photos/Sunrise.jpg", To(moves[1]));
+    }
+
+    [TestMethod]
+    public async Task DropboxsWriteErrorsAreMapped()
+    {
+        // Dropbox's own answers: the summary, and the error as the SDK decodes it.
+        var cases = new (string Summary, string Error, RemoteErrorKind Kind)[]
+        {
+            ("to/conflict/file/..", """{".tag":"to","to":{".tag":"conflict","conflict":{".tag":"file"}}}""", Exists),
+            ("from_lookup/not_found/..", """{".tag":"from_lookup","from_lookup":{".tag":"not_found"}}""", NotThere),
+            ("cant_move_folder_into_itself/", """{".tag":"cant_move_folder_into_itself"}""", Invalid),
+            ("too_many_files/", """{".tag":"too_many_files"}""", RemoteErrorKind.Refused),
+            ("insufficient_quota/", """{".tag":"insufficient_quota"}""", RemoteErrorKind.TooLarge),
+            ("to/disallowed_name/", """{".tag":"to","to":{".tag":"disallowed_name"}}""", Invalid),
+        };
+        foreach (var (summary, body, kind) in cases)
+        {
+            _dropbox.Answers["/2/files/move_v2"] = (
+                HttpStatusCode.Conflict,
+                $$"""{"error_summary":"{{summary}}","error":{{body}}}"""
+            );
+            var error = await Assert.ThrowsExactlyAsync<RemoteStorageException>(() =>
+                _storage.MoveAsync("a.jpg", "Trips/a.jpg", RemoteConflict.Fail, Token)
+            );
+            Assert.AreEqual(kind, error.Kind, summary);
+        }
+    }
+
+    [TestMethod]
+    public async Task UploadingIsNotThereYet()
+    {
+        var error = await Assert.ThrowsExactlyAsync<RemoteStorageException>(() => _storage.BeginUploadAsync(Token));
         Assert.AreEqual(RemoteErrorKind.NotSupported, error.Kind);
     }
+
+    private const RemoteErrorKind Exists = RemoteErrorKind.Exists;
+
+    private const RemoteErrorKind NotThere = RemoteErrorKind.NotFound;
+
+    private const RemoteErrorKind Invalid = RemoteErrorKind.InvalidName;
+
+    private static string PathOf(JsonNode body) => body["path"]!.GetValue<string>();
+
+    private static string From(JsonNode body) => body["from_path"]!.GetValue<string>();
+
+    private static string To(JsonNode body) => body["to_path"]!.GetValue<string>();
 
     private static JsonNode Json(string body) => JsonNode.Parse(body)!;
 }

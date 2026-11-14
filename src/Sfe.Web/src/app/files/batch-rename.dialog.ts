@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
-import { Api } from '../core/api.service';
+import { PlaceFiles } from '../core/place-files';
 import { plural } from '../core/format';
 import { isFileConflict, LibraryItem } from '../core/models';
 import { ToastService } from '../core/toast.service';
@@ -92,7 +92,7 @@ export function planRenames(items: LibraryItem[], rule: BatchRenameRule, taken: 
     templateUrl: './batch-rename.dialog.html',
 })
 export class BatchRenameDialog {
-    private readonly api = inject(Api);
+    private readonly files = inject(PlaceFiles);
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
@@ -175,7 +175,7 @@ export class BatchRenameDialog {
         const failures: string[] = [];
         for (const line of changes) {
             try {
-                const result = await this.api.renameItem(line.item.path, line.name);
+                const result = await this.files.rename(line.item.path, line.name);
                 if (isFileConflict(result)) {
                     failures.push(`“${line.item.name}”: ${result.detail ?? 'not renamed.'}`);
                     continue;
@@ -206,7 +206,7 @@ export class BatchRenameDialog {
         let failed = 0;
         for (const { from, to } of [...done].reverse()) {
             try {
-                const result = await this.api.renameItem(to.path, from.name);
+                const result = await this.files.rename(to.path, from.name);
                 if (isFileConflict(result)) failed++;
                 else this.store.applyRenamed(to.path, result);
             } catch {

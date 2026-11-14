@@ -19,6 +19,7 @@ import { isExtractable } from '../formats/formats';
 import { Dialogs } from '../library/dialogs.service';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
+import { PlaceTransfers } from './place-transfers';
 
 /** How often (ms) running jobs are asked for. */
 const POLL = 700;
@@ -47,10 +48,8 @@ export class FileTransfers {
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
     private readonly dialogs = inject(Dialogs);
-    /**
-     * The extractions this page started, by job: one failing on its password is asked again as it was (never the
-     * password).
-     */
+    private readonly places = inject(PlaceTransfers);
+    /** Extractions this page started, by job: one failing on its password is asked again (never the password). */
     private readonly extractions = new Map<number, ExtractRequest>();
 
     /** The session's jobs shown in the operations panel, newest first. */
@@ -202,7 +201,7 @@ export class FileTransfers {
     pick(kind: FileJobKind, items: LibraryItem[]): boolean {
         const allowed = items.filter((item) => (kind === 'move' ? this.canMove(item) : this.canCopy(item)));
         if (!allowed.length) return false;
-        this.dialogs.transfer()?.pick(kind, allowed);
+        if (!this.places.refusesPick()) this.dialogs.transfer()?.pick(kind, allowed);
         return true;
     }
 
@@ -211,6 +210,7 @@ export class FileTransfers {
         const allowed = items.filter((item) => (kind === 'move' ? this.canMove(item) : this.canCopy(item)));
         if (!allowed.length) return false;
         this.clipboard.set({ kind, items: allowed });
+        this.places.kept();
         this.toasts.show(
             `${plural(allowed.length, 'item')} ${kind === 'move' ? 'cut' : 'copied'}: ` +
                 `paste them into a folder with Ctrl+V or its menu.`,
@@ -222,12 +222,10 @@ export class FileTransfers {
     paste(target: string): boolean {
         const clipboard = this.clipboard();
         if (!clipboard) return false;
+        if (this.places.refusesPaste()) return true;
         if (clipboard.kind === 'move') this.clipboard.set(null);
-        void this.transfer(
-            clipboard.kind,
-            clipboard.items.map((item) => item.path),
-            target,
-        );
+        const paths = clipboard.items.map((item) => item.path);
+        void this.transfer(clipboard.kind, paths, target);
         return true;
     }
 
@@ -236,6 +234,7 @@ export class FileTransfers {
      * whether to keep the access of folders that would be seen by more people there.
      */
     async transfer(kind: FileJobKind, paths: string[], target: string): Promise<void> {
+        if (this.places.handles(kind, paths, target)) return;
         if (kind === 'copy') {
             this.dialogs.transfer()?.ask({ kind, paths, target }, []);
             return;

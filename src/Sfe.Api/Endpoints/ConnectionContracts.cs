@@ -106,3 +106,41 @@ internal sealed record ConnectionArchiveServices(
     Sfe.Core.Files.Archives Archives,
     ILogger<Sfe.Core.Files.Archives> Logger
 );
+
+/// <summary>What the routes changing a connection's files use besides the connection (bound with
+/// <c>[AsParameters]</c>).</summary>
+internal sealed record ConnectionWriteServices(RemoteListings Listings, MediaClassifier Classifier);
+
+/// <summary>Files and folders of a connection moved or copied into one of its folders.</summary>
+/// <param name="Kind"><c>move</c> or <c>copy</c>.</param>
+/// <param name="Paths">The items, relative to the connection's root folder.</param>
+/// <param name="Target">The folder they go into.</param>
+/// <param name="Conflict"><c>fail</c> (default), <c>keepBoth</c> (the provider's numbering) or <c>replace</c> (a
+/// file only, never a folder).</param>
+public sealed record ConnectionTransferRequest(
+    string? Kind,
+    IReadOnlyList<string>? Paths,
+    string? Target,
+    string? Conflict = null
+);
+
+/// <summary>What became of each item of a <see cref="ConnectionTransferRequest"/>, in its order.</summary>
+public sealed record ConnectionTransferResults(IReadOnlyList<ConnectionTransferItem> Items);
+
+/// <param name="Item">The item where it is now, when <paramref name="Status"/> is Done.</param>
+public sealed record ConnectionTransferItem(
+    string Path,
+    Sfe.Core.Files.FileOperationStatus Status,
+    string? Message = null,
+    LibraryItem? Item = null
+);
+
+/// <summary>One move or copy of a <see cref="ConnectionTransferRequest"/>, as checked.</summary>
+internal sealed record ConnectionTransferStep(
+    IRemoteStorage Storage,
+    string Target,
+    RemoteConflict Conflict,
+    bool Move,
+    StringComparison Comparison,
+    MediaClassifier Classifier
+);

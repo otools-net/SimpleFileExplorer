@@ -20,9 +20,18 @@ internal sealed record ConnectionFileServices(
     /// The connection opened for this request (its storage disposed when the answer is sent, after a file is
     /// streamed), or the answer to give instead.
     /// </summary>
+    public Task<(OpenConnection? Open, IResult? Answer)> OpenAsync(
+        int id,
+        string right,
+        CancellationToken cancellationToken
+    ) => OpenAsync(id, right, write: false, cancellationToken);
+
+    /// <inheritdoc cref="OpenAsync(int, string, CancellationToken)"/>
+    /// <param name="write">The route changes files: a connection the session only reads answers 403.</param>
     public async Task<(OpenConnection? Open, IResult? Answer)> OpenAsync(
         int id,
         string right,
+        bool write,
         CancellationToken cancellationToken
     )
     {
@@ -30,7 +39,7 @@ internal sealed record ConnectionFileServices(
         var usable = await Access.FindAsync(ConnectionEndpoints.SubjectOf(state), id, cancellationToken);
         if (usable is null || Providers.Find(usable.Kind) is not { } provider)
             return (null, TypedResults.NotFound());
-        if (!state.Has(right))
+        if (!state.Has(right) || write && usable.Access != Sfe.Core.Access.FolderLevel.Write)
             return (null, TypedResults.Forbid());
 
         var opened = await Connections.OpenAsync(id, cancellationToken);

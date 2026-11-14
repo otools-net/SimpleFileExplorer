@@ -3,9 +3,9 @@
 **Connections** link SFE to storage outside its libraries: Dropbox, for now. Whoever runs the server registers an app
 at Dropbox once; then people with the rights connect their Dropbox, or one for a space or for the whole server.
 
-This version makes, signs in again and manages connections, and browses their files
-([browsing a connection](#browsing-a-connection)). Changing them, copying and moving them to and from the library come
-with a later version.
+This version makes, signs in again and manages connections, browses their files
+([browsing a connection](#browsing-a-connection)) and changes them where you may. Uploading, and copying and moving
+to and from the library come with a later version.
 
 ## Levels
 
@@ -81,5 +81,9 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
 - **Download** saves a file; several, or a folder, come as one zip, written while it downloads (as in the library;
   what has no content, a Dropbox Paper document, is listed in `SFE - left out.txt` inside).
 - A folder of more than 20,000 items is listed in Dropbox's order, the sort off.
+- Where the connection gives you **reads and changes**: **New folder**, **Rename** (F2) and batch rename, **Delete**
+  (into Dropbox's deleted files, where Dropbox keeps them for a while: no Undo in SFE), and moving or copying inside
+  the connection by cut and paste (Ctrl+X / Ctrl+C, Ctrl+V) or by dragging onto a folder. A connection made read only
+  shows none of them.
 - When Dropbox no longer accepts the connection's sign-in, the listing says so and the connection shows **Sign in
   again** for whoever manages it. When Dropbox asks to wait (too many requests), wait a moment and try again.

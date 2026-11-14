@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
+import { ConfigService } from '../core/config.service';
 import { formatSize, joinParts, plural } from '../core/format';
 import { DeletedItem, isFileConflict, LibraryItem } from '../core/models';
+import { PlaceFiles } from '../core/place-files';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { SheetComponent } from '../shared/sheet.component';
@@ -27,6 +29,8 @@ const NAMES_SHOWN = 5;
 })
 export class DeleteDialog {
     private readonly api = inject(Api);
+    private readonly files = inject(PlaceFiles);
+    protected readonly place = inject(ConfigService).place;
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
     private readonly actions = inject(FileActions);
@@ -58,7 +62,15 @@ export class DeleteDialog {
             : folders
               ? ' and what they hold'
               : '';
+        const place = this.place();
+        if (place) return `Delete ${what}${size} from ${place.name || 'the connection'}?`;
         return this.permanent() ? `Delete ${what}${size} for good?` : `Move ${what}${size} to the trash?`;
+    });
+    /** On a connection: what becomes of them there (no trash of the app, no permanent choice). */
+    protected readonly placeNote = computed(() => {
+        const place = this.place();
+        if (!place) return null;
+        return place.ownTrash ? 'The provider keeps deleted files for a while.' : "This can't be undone.";
     });
     protected readonly unavailableText = computed(
         () =>
@@ -76,7 +88,7 @@ export class DeleteDialog {
 
     open(items: LibraryItem[], permanent: boolean): void {
         this.items.set(items);
-        this.permanent.set(permanent);
+        this.permanent.set(permanent && !this.place());
         this.unavailable.set([]);
         this.sheet().open();
     }
@@ -94,7 +106,7 @@ export class DeleteDialog {
         try {
             results = (
                 await whileBusy(this.deleting, () =>
-                    this.api.deleteItems(
+                    this.files.delete(
                         items.map((item) => item.path),
                         permanent,
                     ),
@@ -109,9 +121,11 @@ export class DeleteDialog {
         const trashed = done.map((result) => result.trashId).filter((id): id is number => typeof id === 'number');
         if (done.length)
             this.toasts.show(
-                permanent || !trashed.length
-                    ? `${plural(done.length, 'item')} deleted for good.`
-                    : `${plural(done.length, 'item')} moved to the trash.`,
+                this.place()
+                    ? `${plural(done.length, 'item')} deleted.`
+                    : permanent || !trashed.length
+                      ? `${plural(done.length, 'item')} deleted for good.`
+                      : `${plural(done.length, 'item')} moved to the trash.`,
                 {
                     timeout: trashed.length ? 10000 : 4500,
                     action: trashed.length

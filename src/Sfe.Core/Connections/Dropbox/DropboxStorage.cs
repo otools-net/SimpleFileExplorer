@@ -9,7 +9,7 @@ namespace Sfe.Core.Connections.Dropbox;
 /// The files of a Dropbox account seen from a connection's root folder, through the SDK (every call through
 /// <see cref="DropboxErrors.CallAsync{T}"/>). Paths are case-insensitive at Dropbox: <c>path_lower</c> compares,
 /// <c>path_display</c> shows. A ranged read asks a temporary link and reads it with a <c>Range</c> header (the SDK's
-/// download takes no range); the link never leaves the server. Writing comes with phase 4 of the plan.
+/// download takes no range); the link never leaves the server. Uploads come later in phase 4 of the plan.
 /// </summary>
 public sealed class DropboxStorage : IRemoteStorage
 {
@@ -131,23 +131,35 @@ public sealed class DropboxStorage : IRemoteStorage
         CancellationToken cancellationToken
     ) => throw NotYet();
 
-    public Task<RemoteItem> CreateFolderAsync(string path, CancellationToken cancellationToken) => throw NotYet();
+    public async Task<RemoteItem> CreateFolderAsync(string path, CancellationToken cancellationToken)
+    {
+        var created = await DropboxErrors.CallAsync(() =>
+            _client.Files.CreateFolderV2Async(DropboxPath(path), autorename: false)
+        );
+        return ToItem(created.Metadata);
+    }
 
     public Task<RemoteItem> MoveAsync(
         string from,
         string to,
         RemoteConflict conflict,
         CancellationToken cancellationToken
-    ) => throw NotYet();
+    ) => RelocateAsync(from, to, conflict, move: true, cancellationToken);
 
     public Task<RemoteItem> CopyAsync(
         string from,
         string to,
         RemoteConflict conflict,
         CancellationToken cancellationToken
-    ) => throw NotYet();
+    ) => RelocateAsync(from, to, conflict, move: false, cancellationToken);
 
-    public Task DeleteAsync(string path, CancellationToken cancellationToken) => throw NotYet();
+    public async Task DeleteAsync(string path, CancellationToken cancellationToken)
+    {
+        // Dropbox's root, or the connection's, is never deleted through it.
+        if (path.Length == 0)
+            throw new RemoteStorageException(RemoteErrorKind.NotFound, "The root folder cannot be deleted.");
+        await DropboxErrors.CallAsync(() => _client.Files.DeleteV2Async(DropboxPath(path)));
+    }
 
     public ValueTask DisposeAsync()
     {
@@ -222,6 +234,50 @@ public sealed class DropboxStorage : IRemoteStorage
         return new RemoteContent(stream, length, total, served);
     }
 
+    /// <summary>
+    /// A move or a copy. Dropbox's names are case-insensitive: a rename that changes only the case goes through a
+    /// free temporary name. To replace, the file at the target is deleted first (into Dropbox's own trash); a
+    /// folder there is never replaced.
+    /// </summary>
+    private async Task<RemoteItem> RelocateAsync(
+        string from,
+        string to,
+        RemoteConflict conflict,
+        bool move,
+        CancellationToken cancellationToken
+    )
+    {
+        if (from.Length == 0 || to.Length == 0)
+            throw new RemoteStorageException(RemoteErrorKind.NotFound, "The root folder cannot be moved or copied.");
+        if (move && from != to && from.Equals(to, StringComparison.OrdinalIgnoreCase))
+        {
+            var temporary = $"{to}.sfe-{Guid.NewGuid().ToString("N")[..8]}";
+            await CallRelocationAsync(from, temporary, autorename: false, move: true);
+            return await CallRelocationAsync(temporary, to, autorename: false, move: true);
+        }
+        if (conflict == RemoteConflict.Replace && await GetAsync(to, cancellationToken) is { } existing)
+        {
+            if (existing.IsFolder)
+                throw new RemoteStorageException(RemoteErrorKind.Exists, "A folder of that name is already there.");
+            await DeleteAsync(to, cancellationToken);
+        }
+        return await CallRelocationAsync(from, to, autorename: conflict == RemoteConflict.KeepBoth, move);
+    }
+
+    private async Task<RemoteItem> CallRelocationAsync(string from, string to, bool autorename, bool move)
+    {
+        var argument = new RelocationArg(
+            DropboxPath(from),
+            DropboxPath(to),
+            allowSharedFolder: true,
+            autorename: autorename
+        );
+        var result = await DropboxErrors.CallAsync(() =>
+            move ? _client.Files.MoveV2Async(argument) : _client.Files.CopyV2Async(argument)
+        );
+        return ToItem(result.Metadata);
+    }
+
     private static ThumbnailSize SizeOf(int size) =>
         size switch
         {
@@ -233,5 +289,5 @@ public sealed class DropboxStorage : IRemoteStorage
         };
 
     private static RemoteStorageException NotYet() =>
-        new(RemoteErrorKind.NotSupported, "Changing files in Dropbox comes with a later version.");
+        new(RemoteErrorKind.NotSupported, "Uploading to Dropbox comes with a later version.");
 }

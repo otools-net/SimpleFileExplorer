@@ -77,8 +77,13 @@ export class SelectionBarComponent {
         () => !this.store.searching() && this.selected().filter((item) => this.menu.canRename(item)).length > 1,
     );
 
-    protected readonly movable = computed(() => this.selected().some((item) => this.transfers.canMove(item)));
-    protected readonly copyable = computed(() => this.selected().some((item) => this.transfers.canCopy(item)));
+    /** The folder picker lists the library: on a connection, items move by cut and paste or by dragging. */
+    protected readonly movable = computed(
+        () => !this.config.place() && this.selected().some((item) => this.transfers.canMove(item)),
+    );
+    protected readonly copyable = computed(
+        () => !this.config.place() && this.selected().some((item) => this.transfers.canCopy(item)),
+    );
     /** Some of the selection may go in a zip (only those do), and the dialog is there. */
     protected readonly compressible = computed(
         () => Boolean(this.dialogs.compress()) && this.selected().some((item) => this.transfers.canCompress(item)),

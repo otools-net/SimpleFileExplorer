@@ -117,6 +117,17 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
 - Dropbox: `DropboxStorage`; an endpoint's error (`ApiException<T>`) is read from its `error_summary`
   (`not_found`, `not_folder`, `conflict`…); a ranged read asks a temporary link (never sent to the client).
 
+## Changing a connection's files (`ConnectionWriteEndpoints`)
+
+- `POST api/connections/{id}/files/folders`, `rename`, `delete`, `transfer`: `OpenAsync(id, right, write: true)`
+  (403 for a connection the session only reads), then the provider in one gate turn; `RemoteListings.Forget` after.
+  Delete and transfer answer a result per item; an error stopping the provider (sign-in ended, wait, unreachable)
+  answers the usual problem and doesn't list what was done before it.
+- No SFE trash: a delete goes to the provider's own (`OwnTrash`); no Undo.
+- Client: `PlaceFiles` picks the library's or the connection's route; `PlaceTransfers` remembers the place of a cut or
+  copy and refuses a paste or drop in another place (phase 5 copies between them). The folder picker (Move to / Copy
+  to) lists the library only: hidden on a connection.
+
 ## The listing on a connection (`?c=`)
 
 - `LibraryRoute.c` (`?c=7&path=…`) lists a connection's folder through `connectionPage` (`library/connection-pages.ts`),

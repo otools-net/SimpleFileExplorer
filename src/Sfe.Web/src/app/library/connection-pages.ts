@@ -17,10 +17,19 @@ export async function connectionPage(
     signal: AbortSignal,
 ): Promise<DirectoryListing> {
     const page = await api.connectionBrowse(id, query, signal);
+    const flag = (name: string) => page.capabilities[name] === true;
+    const next: ConnectionPlace = {
+        id,
+        name: page.name,
+        thumbnails: flag('thumbnails'),
+        access: page.access,
+        serverSideMove: flag('serverSideMove'),
+        serverSideCopy: flag('serverSideCopy'),
+        ownTrash: flag('ownTrash'),
+    };
     const place = config.place();
-    const thumbnails = page.capabilities['thumbnails'] === true;
-    if (place?.id !== id || place.name !== page.name || place.thumbnails !== thumbnails || place.access !== page.access)
-        setPlace(config, { id, name: page.name, thumbnails, access: page.access });
+    if (!place || (Object.keys(next) as (keyof ConnectionPlace)[]).some((key) => place[key] !== next[key]))
+        setPlace(config, next);
     return page.listing;
 }
 
@@ -29,7 +38,15 @@ export function enterPlace(config: ConfigService, id: number | null): void {
     if (!id) {
         if (config.place()) setPlace(config, null);
     } else if (config.place()?.id !== id) {
-        setPlace(config, { id, name: '', thumbnails: false, access: 'read' });
+        setPlace(config, {
+            id,
+            name: '',
+            thumbnails: false,
+            access: 'read',
+            serverSideMove: false,
+            serverSideCopy: false,
+            ownTrash: false,
+        });
     }
 }
 

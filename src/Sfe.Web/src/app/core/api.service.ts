@@ -417,16 +417,11 @@ export class Api {
      * A link playing the Flash movie `path` in the player's frame, opening the files of its folder to it, read only.
      */
     flashLink = (path: string) => this.post<FileLink>('api/files/flash-links', { path });
-    /**
-     * Creates the folder `name` in the folder `path`. Resolves with the conflict (409: the name is taken, a scan
-     * runs...).
-     */
+    /** Creates the folder `name` in the folder `path`. Resolves with the conflict (409: name taken, scan running). */
     createFolder = (path: string, name: string) => this.post<FileOperationResult>('api/files/folders', { path, name });
     /** Creates the empty file `name` in the folder `path`. Resolves with the conflict (409) as `createFolder`. */
     createFile = (path: string, name: string) => this.post<FileOperationResult>('api/files/new-file', { path, name });
-    /**
-     * Renames the file or folder `path` to `name`, in its folder. Resolves with the conflict (409) as `createFolder`.
-     */
+    /** Renames `path` to `name`, in its folder. Resolves with the conflict (409) as `createFolder`. */
     renameItem = (path: string, name: string) => this.post<FileOperationResult>('api/files/rename', { path, name });
     /** Deletes `paths`, to the trash or for good; a result per path. */
     deleteItems = (paths: string[], permanent: boolean) =>
@@ -476,6 +471,9 @@ export class Api {
     finishUpload = (id: string, conflicts: ConflictChoice) =>
         this.post<FileOperationResult | null>(`api/files/uploads/${id}/finish`, { conflicts });
     cancelUpload = (id: string) => this.delete<void>(`api/files/uploads/${id}`);
+    /** A change to a connection's files (`folders`, `rename`, `delete`, `transfer`): see `PlaceFiles`. */
+    connectionFiles = <T>(id: number, action: string, body: unknown) =>
+        this.post<T>(`api/connections/${id}/files/${action}`, body);
     /** Names the items of a zip (of a connection's files with `connection`); the browser downloads it once. */
     createArchive = (paths: string[], connection?: number) =>
         this.post<ArchiveLink>(connection ? `api/connections/${connection}/archive` : 'api/files/archive', { paths });

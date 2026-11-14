@@ -4,7 +4,7 @@
  */
 
 import { ConnectionLevelName } from './config.models';
-import { DirectoryListing } from './models';
+import { DirectoryListing, LibraryItem } from './models';
 
 export type FolderLevelName = 'hidden' | 'read' | 'write';
 export type ConnectionStateName = 'ready' | 'needsReconnecting';
@@ -158,4 +158,23 @@ export interface ConnectionPlace {
     /** Its provider makes thumbnails. */
     thumbnails: boolean;
     access: FolderLevelName;
+    /** Its provider moves (`serverSideMove`) and copies (`serverSideCopy`) files itself. */
+    serverSideMove: boolean;
+    serverSideCopy: boolean;
+    /** Its provider keeps deleted files for a while (`ownTrash`). */
+    ownTrash: boolean;
+}
+
+/** What became of one path moved or copied on a connection (`POST api/connections/{id}/files/transfer`). */
+export interface PlaceTransferItem {
+    path: string;
+    /** `exists`: the name is taken in the target (asked again with `keepBoth` or `replace`). */
+    status: 'done' | 'exists' | 'notFound' | 'invalid' | string;
+    message?: string | null;
+    /** The item moved or copied, where it is now. */
+    item?: LibraryItem | null;
+}
+
+export interface PlaceTransferResults {
+    items: PlaceTransferItem[];
 }

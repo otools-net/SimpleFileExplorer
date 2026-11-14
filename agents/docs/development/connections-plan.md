@@ -281,7 +281,14 @@ in `FolderRules`:
 
 ### Phase 4: file management
 
-- [ ] New folder, rename, move and copy inside a connection (server side at the provider when it can), delete
+- [x] New folder, rename, move and copy inside a connection (server side at the provider when it can), delete. As
+  built: `DropboxStorage` create / move / copy / delete (Replace deletes a file at the target first, never a folder;
+  a case-only rename through a temporary name); `ConnectionWriteEndpoints` `POST connections/{id}/files/folders`,
+  `rename`, `delete`, `transfer` (plain calls, one gate turn, at most 1000 items, a result per item; Write access or
+  403; `RemoteListings.Forget` after each); client: `atPlace` gives `files.createFolders` / `rename` / `delete`
+  back for write access, `move` / `copy` with `ServerSideMove` / `ServerSideCopy`; `PlaceFiles` (core/place-files.ts)
+  picks the library's or the connection's routes for the dialogs; `PlaceTransfers` keeps cut / copy / drop inside
+  one place (between a connection and the library: phase 5); the folder picker's Move to / Copy to hidden there
 - [ ] Uploads: the resumable upload routes with a connection target (chunks passed on to the provider's session, no
   whole file on the server's disk)
 - [ ] Batch rename, properties (what the provider knows), selection bar, context menus, F2 / Shift+N

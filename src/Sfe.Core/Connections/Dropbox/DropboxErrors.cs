@@ -56,9 +56,14 @@ internal static class DropboxErrors
             _ when summary.Contains("conflict", StringComparison.Ordinal) => RemoteErrorKind.Exists,
             _ when summary.Contains("too_many_write_operations", StringComparison.Ordinal) =>
                 RemoteErrorKind.RateLimited,
-            _ when summary.Contains("insufficient_space", StringComparison.Ordinal) => RemoteErrorKind.TooLarge,
+            _ when summary.Contains("insufficient_space", StringComparison.Ordinal)
+                    || summary.Contains("insufficient_quota", StringComparison.Ordinal) => RemoteErrorKind.TooLarge,
             _ when summary.Contains("malformed_path", StringComparison.Ordinal)
-                    || summary.Contains("disallowed_name", StringComparison.Ordinal) => RemoteErrorKind.InvalidName,
+                    || summary.Contains("disallowed_name", StringComparison.Ordinal)
+                    || summary.Contains("cant_move_folder_into_itself", StringComparison.Ordinal) =>
+                RemoteErrorKind.InvalidName,
+            // A move or copy of more files than Dropbox moves in one call.
+            _ when summary.Contains("too_many_files", StringComparison.Ordinal) => RemoteErrorKind.Refused,
             _ => RemoteErrorKind.Refused,
         };
         // The summary names no token; it may name the path, which the caller already knows.

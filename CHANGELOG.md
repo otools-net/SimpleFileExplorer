@@ -28,9 +28,13 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   lists the connections you may use; one opens its files in the usual listing, sorted as you choose, with Dropbox's
   thumbnails; pictures, videos (seeking), audio and PDF open in the viewer, anything downloads, and several items or a
   folder come as one zip written while it downloads.
+- **Changing a connection's files**: on a connection you may change (reads and changes), new folders, rename and batch
+  rename, delete (into Dropbox's own deleted files) and moving or copying inside it by cut and paste or dragging,
+  done by Dropbox itself.
 - **API: a connection's files**: `GET api/v1/connections/{id}/browse` (a folder in the listing's shape, with what
   the provider can do), `files/raw/{path}` (one HTTP range when the provider reads parts), `thumbnails/{path}` and
-  `POST …/archive` (a zip, then its one-time link), for whoever may use the connection; a provider whose sign-in
+  `POST …/archive` (a zip, then its one-time link), `POST …/files/folders`, `rename`, `delete` and `transfer` (move
+  or copy inside it), for whoever may use the connection; a provider whose sign-in
   ended marks the connection "sign in again" (409 `connection-needs-reconnecting`); when the provider asks to wait,
   SFE leaves the connection alone until then and answers 429 with `Retry-After`; a few calls at once per connection
   and per caller.

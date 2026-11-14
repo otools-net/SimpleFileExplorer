@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signa
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { FileOperationResult, isFileConflict, LibraryItem } from '../core/models';
+import { PlaceFiles } from '../core/place-files';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { formatOf } from '../formats/formats';
@@ -57,6 +58,7 @@ const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
 })
 export class NameDialog {
     private readonly api = inject(Api);
+    private readonly files = inject(PlaceFiles);
     private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
     private readonly quickLinks = inject(QuickLinksService);
@@ -143,10 +145,10 @@ export class NameDialog {
         try {
             result = await whileBusy(this.saving, () =>
                 mode.kind === 'rename'
-                    ? this.api.renameItem(mode.item.path, name)
+                    ? this.files.rename(mode.item.path, name)
                     : mode.kind === 'file'
                       ? this.api.createFile(mode.parent, name)
-                      : this.api.createFolder(mode.parent, name),
+                      : this.files.createFolder(mode.parent, name),
             );
         } catch (error) {
             this.error.set(
@@ -191,7 +193,7 @@ export class NameDialog {
     /** Undo of a rename: the old name back, unless something took it meanwhile. */
     private async undoRename(item: LibraryItem, name: string): Promise<void> {
         try {
-            const result = await this.api.renameItem(item.path, name);
+            const result = await this.files.rename(item.path, name);
             if (isFileConflict(result)) {
                 this.toasts.error(result.detail ?? `“${name}” could not be given back.`);
                 return;

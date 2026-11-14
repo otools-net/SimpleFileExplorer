@@ -38,7 +38,10 @@ Checks run for the last commit: the new suites, `npm test` (1179 passed), the fu
    account before a release, and grows with phases 3 to 5.
 2. Phase 3 items 1 and 2 are done (fourth session: `DropboxStorage`, `RemoteListings`, `ConnectionFileEndpoints`,
    `ConnectionArchiveEndpoints`; the client's `?c=` and `ConfigService.place`). Item 3 (`ConnectionGates`, policy
-   `connections`) too: phase 3 is done. Next: phases 4 to 7 as the plan lists them. Phase 4 makes `atPlace` give the write rights back by the connection's
+   `connections`) too: phase 3 is done. Phase 4 item 1 done (`ConnectionWriteEndpoints`, `PlaceFiles`,
+   `PlaceTransfers`). Next: item 2 (uploads: `RemoteUploads` keeping the provider's session id on the server only,
+   Dropbox Sequential sessions, the routes answering `UploadInfo` so `uploads.ts` only switches its base), item 3
+   (properties route, menus); then phases 5 to 7. Phase 4 makes `atPlace` give the write rights back by the connection's
    `access` and capabilities, and calls `RemoteListings.Forget` after each change.
 
 Per commit, as the epic asks: tick the item in the plan with an "As built" sentence, update the status board and

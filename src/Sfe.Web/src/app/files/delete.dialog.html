@@ -3,7 +3,9 @@
             <p>{{ unavailableText() }}</p>
         } @else {
             <p>{{ question() }}</p>
-            @if (permanent()) {
+            @if (placeNote()) {
+                <p [class.form-error]="!place()?.ownTrash">{{ placeNote() }}</p>
+            } @else if (permanent()) {
                 <p class="form-error">This can't be undone: they don't go to the trash.</p>
             }
         }
