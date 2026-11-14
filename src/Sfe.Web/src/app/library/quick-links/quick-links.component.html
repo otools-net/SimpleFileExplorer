@@ -33,7 +33,7 @@
                 <a
                     class="quick-link-target"
                     routerLink="/"
-                    [queryParams]="store.browseParams(link.path)"
+                    [queryParams]="store.libraryParams(link.path)"
                     draggable="false"
                     [attr.aria-current]="isCurrent(link) ? 'page' : null"
                     [title]="hint(link)"
@@ -44,7 +44,7 @@
             } @else {
                 <a
                     class="quick-link-target"
-                    [href]="config.links.file(link.path)"
+                    [href]="config.libraryUrls()!.file(link.path)"
                     target="_blank"
                     rel="noopener"
                     draggable="false"

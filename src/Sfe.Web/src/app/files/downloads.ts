@@ -37,7 +37,9 @@ export class FileDownloads {
             return true;
         }
         try {
-            const link = await this.api.createArchive(allowed.map((item) => item.path));
+            const paths = allowed.map((item) => item.path);
+            const place = this.config.place();
+            const link = await (place ? this.api.createArchive(paths, place.id) : this.api.createArchive(paths));
             save(link.url, link.fileName);
             this.toasts.show(`Downloading ${link.fileName}: your browser shows its progress.`);
         } catch (error) {

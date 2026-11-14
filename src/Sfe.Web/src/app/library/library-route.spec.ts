@@ -4,12 +4,26 @@ import { currentSort, readRestoreState, readRoute, routeParams } from './library
 describe('library route', () => {
     it('reads the query string, ignoring unknown sorts', () => {
         expect(readRoute(convertToParamMap({ path: 'a/b', q: 'x', sort: 'size', desc: '1' }))).toEqual({
+            c: null,
             path: 'a/b',
             q: 'x',
             sort: 'size',
             desc: true,
         });
-        expect(readRoute(convertToParamMap({ sort: 'nope' }))).toEqual({ path: '', q: '', sort: '', desc: false });
+        expect(readRoute(convertToParamMap({ sort: 'nope' }))).toEqual({
+            c: null,
+            path: '',
+            q: '',
+            sort: '',
+            desc: false,
+        });
+    });
+
+    it('reads a connection, and writes it only when there is one', () => {
+        expect(readRoute(convertToParamMap({ c: '7', path: 'a' })).c).toBe(7);
+        for (const c of ['0', '-1', 'x', '1.5']) expect(readRoute(convertToParamMap({ c })).c).toBeNull();
+        expect(routeParams({ c: 7, path: 'a', q: '', sort: '', desc: false })['c']).toBe(7);
+        expect('c' in routeParams({ c: null, path: 'a', q: '', sort: '', desc: false })).toBe(false);
     });
 
     it('leaves the defaults out of the URL', () => {

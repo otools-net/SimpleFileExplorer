@@ -19,6 +19,7 @@ import { MenuEntry, usePageMenu } from '../menus/context-menu';
 import { baseName } from '../core/paths';
 import { IconComponent } from '../shared/icon.component';
 import { waitForTrickplay } from '../trickplay/trickplay';
+import { enterPlace } from '../library/connection-pages';
 import { VideoPlayerComponent } from './video-player.component';
 
 /**
@@ -121,6 +122,8 @@ export class PlayerPageComponent implements OnInit {
             return;
         }
         this.title.setTitle(`${this.name} – SFE`);
+        // A connection's video (`?c=`): its own addresses, no conversion.
+        enterPlace(this.config, Number(this.params.get('c')) || null);
         try {
             await this.config.load();
         } catch (error) {

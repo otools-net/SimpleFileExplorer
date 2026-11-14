@@ -33,7 +33,15 @@ Dropbox.
 - [ ] The server's log: a security warning for the connection made and for an app secret set; no token, code or
   e-mail address in any line.
 
-## Browse, files, transfers (phases 3 to 5)
+## Browse and download (phase 3)
 
-Added with those phases: listing with more than one page, a ranged read of a video, upload of a file over 150 MB
-(parts), rename and move at Dropbox, delete into Dropbox's own deleted files, copy to and from the library.
+- [ ] The sidebar lists the connection; it opens on Dropbox's root (or its root folder), folders first, thumbnails.
+- [ ] A folder of more than 500 items (Dropbox pages of 500): scrolling loads every item once; sorting by size works.
+- [ ] A video seeks (ranged reads through a temporary link); a photo opens; a PDF opens in the viewer.
+- [ ] Download one file; several and a folder as one zip; a Paper document in a zip is listed in `SFE - left out.txt`.
+- [ ] Connected apps at Dropbox: the app removed, the next listing says the connection must be signed in to again.
+
+## Files and transfers (phases 4 and 5)
+
+Added with those phases: upload of a file over 150 MB (parts), rename and move at Dropbox, delete into Dropbox's own
+deleted files, copy to and from the library.

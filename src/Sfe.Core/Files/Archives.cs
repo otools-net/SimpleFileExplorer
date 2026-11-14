@@ -33,7 +33,7 @@ public sealed class Archives(
     /// <summary>Name of the note added to the zip when something was left out.</summary>
     public const string LeftOutEntry = "SFE - left out.txt";
 
-    private const int CopyBuffer = 1024 * 1024;
+    internal const int CopyBuffer = 1024 * 1024;
 
     /// <summary>
     /// Extensions of files already compressed (pictures, sound, video, archives, documents that are zips): compressing
@@ -103,7 +103,7 @@ public sealed class Archives(
     /// Extensions whose files gain from compression; everything else (media, archives, documents that are zips) is
     /// stored.
     /// </summary>
-    private static readonly HashSet<string> Compressible = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly HashSet<string> Compressible = new(StringComparer.OrdinalIgnoreCase)
     {
         ".txt",
         ".md",
@@ -357,7 +357,7 @@ public sealed class Archives(
             && path.StartsWith(folder, LibraryPaths.PathComparison)
         );
 
-    private static DateTimeOffset ZipTime(DateTime local) =>
+    internal static DateTimeOffset ZipTime(DateTime local) =>
         // A zip holds 1980 to 2107.
         local.Year < 1980
             ? new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Local)

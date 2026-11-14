@@ -134,7 +134,7 @@ export class ItemMenu {
             this.canOpenAsArchive(item) ||
             this.canEditText(item) ||
             this.canEditPicture(item) ||
-            this.quickLinks.enabled() ||
+            this.quickLinks.addable() ||
             this.copyPaths.enabled() ||
             this.canRename(item) ||
             this.files.canDelete(item) ||
@@ -146,7 +146,7 @@ export class ItemMenu {
 
     /** Properties of what is listed: whoever browses. */
     canSeeProperties(): boolean {
-        return this.config.can(Rights.browse);
+        return this.config.can(Rights.browse) && !this.config.place(); // none for a connection's files yet
     }
 
     /** Several items selected that may be renamed: the batch rename opens for them. False when fewer than two. */
@@ -390,7 +390,7 @@ export class ItemMenu {
                         ? this.dialogs.scopeTags()?.open({ path: item.path, recursive: false, query: null })
                         : this.actions.openTags(item),
             });
-        if (this.quickLinks.enabled()) {
+        if (this.quickLinks.addable()) {
             const pinned = this.quickLinks.paths().has(item.path);
             entries.push({
                 id: 'quickLink',

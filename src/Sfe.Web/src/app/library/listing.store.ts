@@ -14,6 +14,7 @@ import { restorePosition } from './items/listing-position';
 import { Dialogs } from './dialogs.service';
 import { SidebarService } from './sidebar/sidebar.service';
 import { currentSort, LibraryRoute, RestoreState, routeParams } from './library-route';
+import { connectionPage, enterPlace } from './connection-pages';
 
 export type View = 'grid' | 'list' | 'single';
 export const VIEWS: readonly View[] = ['grid', 'list', 'single'];
@@ -104,14 +105,20 @@ export class ListingStore {
     }
 
     navigate(changes: Partial<LibraryRoute>, { replace = false } = {}): void {
-        const route = { ...this.route(), ...changes };
+        // A search is of the library: it leaves a connection.
+        const route = { ...this.route(), ...changes, ...(changes.q ? { c: null } : {}) };
         void this.router.navigate(['/'], { queryParams: routeParams(route), replaceUrl: replace });
     }
 
-    /** Query parameters of the link to a folder, keeping the sort. */
-    browseParams(path: string) {
+    /** Query parameters of the link to a folder of what is listed (the library or a connection), keeping the sort. */
+    browseParams(path: string, c = this.route().c) {
         const { sort, desc } = this.route();
-        return routeParams({ path, q: '', sort, desc });
+        return routeParams({ c, path, q: '', sort, desc });
+    }
+
+    /** Query parameters of the link to a folder of the library, from wherever the listing is. */
+    libraryParams(path: string) {
+        return this.browseParams(path, null);
     }
 
     /**
@@ -148,6 +155,7 @@ export class ListingStore {
         this.removedLoaded = 0;
         this.status.set('loading');
         this.error.set(null);
+        enterPlace(this.config, route.c ?? null);
 
         try {
             const minimum = Math.max(this.pageSize(), restore.loaded || 0);
@@ -182,12 +190,12 @@ export class ListingStore {
      */
     reveal(path: string): void {
         const route = this.route();
-        if (!route.q && route.path === parentPath(path) && this.status() === 'ready') {
+        if (!route.q && !route.c && route.path === parentPath(path) && this.status() === 'ready') {
             void this.show(path, this.generation());
             return;
         }
         this.revealing = path;
-        this.navigate({ path: parentPath(path), q: '' });
+        this.navigate({ c: null, path: parentPath(path), q: '' });
     }
 
     private async show(path: string, generation: number): Promise<void> {
@@ -262,7 +270,7 @@ export class ListingStore {
      */
     async refresh(): Promise<void> {
         const route = this.route();
-        if (route.q || this.status() !== 'ready' || this.loading) return;
+        if (route.q || route.c || this.status() !== 'ready' || this.loading) return;
         const generation = this.generation();
         const wanted = Math.max(this.pageSize(), this.items().length);
         const items: LibraryItem[] = [];
@@ -556,7 +564,7 @@ export class ListingStore {
 
     /** The first page, or the one following `previous` (the last page received). */
     private fetchPage(previous: ListingPage | null, limit = this.pageSize()): Promise<ListingPage> {
-        const { path, q, desc } = this.route();
+        const { c, path, q, desc } = this.route();
         const sort = this.sort();
         const signal = this.requests.signal;
         if (q)
@@ -569,7 +577,9 @@ export class ListingStore {
                 ? Math.max(0, previous.offset + previous.items.length - this.removedLoaded)
                 : 0;
         this.removedLoaded = 0;
-        return this.api.browse({ path, offset, limit, sort, desc }, signal);
+        return c
+            ? connectionPage(this.api, this.config, c, { path, offset, limit, sort, desc }, signal)
+            : this.api.browse({ path, offset, limit, sort, desc }, signal);
     }
 
     private accept(page: ListingPage): void {
@@ -590,8 +600,8 @@ export class ListingStore {
      * Asked in the sort of the current folder, so "next" is the folder the parent lists after this one.
      */
     private loadSiblings(generation: number): void {
-        const { path, q, desc } = this.route();
-        if (q || !path) return;
+        const { c, path, q, desc } = this.route();
+        if (q || c || !path) return;
         this.api
             .siblings({ path, sort: this.sort(), desc }, this.requests.signal)
             .then((siblings) => {

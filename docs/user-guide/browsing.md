@@ -96,6 +96,10 @@ and ↓ buttons on each link: that is how links are moved on a phone, where page
 
 <img src="../images/phone-quick-links.png" alt="The quick links on a phone, in the edit mode" width="300">
 
+**Connections.** Under the quick links, the sidebar lists the connections to other storage (Dropbox) you may use; one
+opens its files in the same listing ([browsing a connection](../administration/connections.md#browsing-a-connection)).
+Quick links keep the library's folders and files only.
+
 ## Folder pictures
 
 ![Folder cards at the top of the library](../images/library-root.png)

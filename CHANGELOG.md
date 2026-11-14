@@ -24,10 +24,15 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   turned off, removed; a space's connection, or the server's offered to some spaces, is given to the space's groups
   (reads, or reads and changes). The server's administrators can remove an account's private connection but never
   open or change it.
+- **Browsing a connection** ([connections](docs/administration/connections.md#browsing-a-connection)): the sidebar
+  lists the connections you may use; one opens its files in the usual listing, sorted as you choose, with Dropbox's
+  thumbnails; pictures, videos (seeking), audio and PDF open in the viewer, anything downloads, and several items or a
+  folder come as one zip written while it downloads.
 - **API: a connection's files**: `GET api/v1/connections/{id}/browse` (a folder in the listing's shape, with what
-  the provider can do), `files/raw/{path}` (one HTTP range when the provider reads parts) and `thumbnails/{path}`,
-  for whoever may use the connection; a provider whose sign-in ended marks the connection "sign in again" (409
-  `connection-needs-reconnecting`), one asking to wait answers 429 with `Retry-After`.
+  the provider can do), `files/raw/{path}` (one HTTP range when the provider reads parts), `thumbnails/{path}` and
+  `POST …/archive` (a zip, then its one-time link), for whoever may use the connection; a provider whose sign-in
+  ended marks the connection "sign in again" (409 `connection-needs-reconnecting`), one asking to wait answers 429
+  with `Retry-After`.
 - **`Sfe:Security:LinksOutsideLibrary: ReadOnly`** (configuration): what is behind a link (symbolic link, junction)
   leading out of a library can be browsed, played and downloaded, but nothing is created, changed, renamed, moved
   away or deleted there. For libraries other people can put links in outside SFE (a network share, SFTP). The default

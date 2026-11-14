@@ -33,7 +33,7 @@
     [title]="allTitle()"
     (click)="store.selectAll()"
 >Select all</button>
-@if (quickLinks.enabled()) {
+@if (quickLinks.addable()) {
     <button
         type="button"
         class="button small selection-pin"

@@ -2,7 +2,7 @@ using Sfe.Core.Library;
 
 namespace Sfe.Core.Connections;
 
-/// <summary>The library's listing order (<see cref="LibraryBrowser"/>) for a connection's items: folders first.</summary>
+/// <summary>The listing order of <see cref="LibraryBrowser"/> for a connection's items: folders first.</summary>
 public static class RemoteSort
 {
     public static List<RemoteItem> Sort(IEnumerable<RemoteItem> items, SortField sort, bool descending)

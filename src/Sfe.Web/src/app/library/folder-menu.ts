@@ -172,7 +172,7 @@ export class FolderMenu {
                 title: pasteTitle(clipboard),
                 run: () => this.transfers.paste(path),
             });
-        if (this.quickLinks.enabled()) {
+        if (this.quickLinks.addable()) {
             const pinned = this.quickLinks.paths().has(path);
             entries.push({
                 id: 'quickLink',
@@ -192,7 +192,7 @@ export class FolderMenu {
                 title: 'Copy where this folder is on the server',
                 run: () => void this.copyPaths.copy(path),
             });
-        if (this.config.can(Rights.browse) && this.dialogs.properties())
+        if (this.config.can(Rights.browse) && !this.config.place() && this.dialogs.properties())
             entries.push({
                 id: 'properties',
                 label: 'Properties',
@@ -328,7 +328,7 @@ export class FolderMenu {
                 title: 'Keep this folder out of scans, trickplay or thumbnails, for the whole space',
                 run: () => this.openExclusions(),
             });
-        if (this.quickLinks.enabled()) {
+        if (this.quickLinks.addable()) {
             const pinned = this.quickLinks.paths().has(path);
             entries.push({
                 id: 'quickLink',
@@ -356,7 +356,7 @@ export class FolderMenu {
             href,
             newTab: true,
         });
-        if (this.config.can(Rights.browse) && this.dialogs.properties())
+        if (this.config.can(Rights.browse) && !this.config.place() && this.dialogs.properties())
             entries.push({
                 id: 'properties',
                 label: 'Properties',

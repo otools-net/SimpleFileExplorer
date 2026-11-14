@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Sfe.Api.Security;
 using Sfe.Core.Access;
 using Sfe.Core.Connections;
 using Sfe.Core.Library;
@@ -97,4 +98,11 @@ internal sealed record ConnectionBrowseServices(
     RemoteListings Listings,
     MediaClassifier Classifier,
     Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions> Options
+);
+
+/// <summary>What the zips of a connection's files use (bound with <c>[AsParameters]</c>).</summary>
+internal sealed record ConnectionArchiveServices(
+    ArchiveLinks Links,
+    Sfe.Core.Files.Archives Archives,
+    ILogger<Sfe.Core.Files.Archives> Logger
 );

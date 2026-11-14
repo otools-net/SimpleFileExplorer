@@ -263,8 +263,16 @@ in `FolderRules`:
   `files.*` right, the storage disposed after the answer); `ConnectionProblems` (types
   `connection-needs-reconnecting` (marks the connection), `-rate-limited` (429 + `Retry-After`), `-unavailable`
   (502), `-refused`, `-not-supported`, `-unusable`)
-- [ ] Client: the listing page takes a location; sidebar entry and a connections page; what a location can't do is
-  hidden from the capabilities the server sends; download; zip of several items (streamed)
+- [x] Client: the listing page takes a location; sidebar entry and a connections page; what a location can't do is
+  hidden from the capabilities the server sends; download; zip of several items (streamed). As built: the location is
+  `?c=` of the listing route (`LibraryRoute.c`; a search, quick links and the SFE link leave it); `ConfigService.place`
+  (set by `connection-pages.ts` from each page) makes `config` what a connection offers (`atPlace`: no file rights but
+  view and download, no tags, index, data server, conversion, external player, trickplay, folder pictures, animated
+  hover; thumbnails from the capabilities) and `urls` its addresses, so the listing, viewer and player follow without
+  code per component; only formats read through the file's address open (`setRawFormatsOnly`: image, video, audio,
+  PDF); Properties and adding quick links hidden there; sidebar section `ConnectionLinksComponent` (the connections
+  page is the existing My account / Administration › Connections); zips: `POST api/connections/{id}/archive` and its
+  one-time link (`ArchiveLinks` with a scope), written from the provider by `RemoteArchives`
 - [ ] Rate limits and waits: Dropbox 429 honoured, a per-connection gate, per-caller limits on listing and reads
 
 ### Phase 4: file management

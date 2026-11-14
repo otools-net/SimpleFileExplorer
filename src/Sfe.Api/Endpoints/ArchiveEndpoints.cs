@@ -177,7 +177,7 @@ public static class ArchiveEndpoints
     /// The response as a stream for the zip, which writes small parts (headers, the directory) synchronously: those are
     /// kept in the response's buffer and sent with the next asynchronous write (the server refuses synchronous writes).
     /// </summary>
-    private sealed class ResponseStream(PipeWriter writer, CancellationToken token) : Stream
+    internal sealed class ResponseStream(PipeWriter writer, CancellationToken token) : Stream
     {
         public override bool CanRead => false;
         public override bool CanSeek => false;

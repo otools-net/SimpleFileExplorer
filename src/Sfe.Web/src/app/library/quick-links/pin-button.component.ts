@@ -14,7 +14,7 @@ import { QuickLinksService } from './quick-links.service';
         type: 'button',
         class: 'icon-button pin-button',
         '[class.pinned]': 'pinned()',
-        '[hidden]': '!links.enabled()',
+        '[hidden]': '!links.addable()',
         '[title]': 'title()',
         '[attr.aria-label]': 'title()',
         '[attr.aria-pressed]': 'pinned()',

@@ -1,8 +1,10 @@
 import { ParamMap, Params } from '@angular/router';
 import { SortField } from './library.models';
 
-/** What the listing page shows; the URL's query string is the source of truth (`?path=&q=&sort=&desc=1`). */
+/** What the listing page shows; the URL's query string is the source of truth (`?c=&path=&q=&sort=&desc=1`). */
 export interface LibraryRoute {
+    /** The connection whose files are listed (`path` relative to its root); null or absent for the library. */
+    c?: number | null;
     path: string;
     q: string;
     /** '' = the default, see `currentSort`. */
@@ -17,7 +19,9 @@ export const SEARCH_SORTS = new Set<SortField>(['path', 'duration', 'resolution'
 
 export function readRoute(params: ParamMap): LibraryRoute {
     const sort = params.get('sort') ?? '';
+    const connection = Number(params.get('c'));
     return {
+        c: Number.isInteger(connection) && connection > 0 ? connection : null,
         path: params.get('path') || '',
         q: params.get('q') || '',
         sort: SORTS.has(sort) ? (sort as SortField) : '',
@@ -25,9 +29,10 @@ export function readRoute(params: ParamMap): LibraryRoute {
     };
 }
 
-/** The query parameters of a route; the empty ones are left out of the URL. */
+/** The query parameters of a route; the empty ones are left out of the URL (`c` only for a connection). */
 export function routeParams(route: LibraryRoute): Params {
     return {
+        ...(route.c ? { c: route.c } : {}),
         path: route.path || null,
         q: route.q || null,
         sort: route.sort || null,

@@ -113,6 +113,22 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
 - Dropbox: `DropboxStorage`; an endpoint's error (`ApiException<T>`) is read from its `error_summary`
   (`not_found`, `not_folder`, `conflict`…); a ranged read asks a temporary link (never sent to the client).
 
+## The listing on a connection (`?c=`)
+
+- `LibraryRoute.c` (`?c=7&path=…`) lists a connection's folder through `connectionPage` (`library/connection-pages.ts`),
+  which sets `ConfigService.place`. `config` is then `atPlace(config, place)`: file rights other than view and
+  download, tags, index, data server, streaming, external player, trickplay, covers and animated hover are gone, so
+  every component already hiding what a session may not do hides them. `urls` give the connection's addresses
+  (`api/connections/{id}/files/raw/…`); player and view pages carry `c` too (`enterPlace`).
+- Leaving: a search (`navigate` with `q` drops `c`), quick links (`libraryParams`, `config.libraryUrls`), the SFE link,
+  `reveal`; the library page clears the place when destroyed (admin pages show library files).
+- `setRawFormatsOnly` (formats.ts): only image, video, audio and PDF open (no text, archive, EPUB or Flash reader on
+  the server for a connection); the viewer's "open in a tab" gives the file itself.
+- Not there yet, hidden: Properties (`ItemMenu.canSeeProperties`, `FolderMenu`), adding quick links
+  (`QuickLinksService.addable`: links are library paths).
+- Zips: `FileDownloads` asks `createArchive(paths, place.id)`; `ConnectionArchiveEndpoints` keeps the library's two
+  steps (`ArchiveLinks` with scope `connection:{id}`: the library's route never takes such a link, nor uses it up).
+
 ## Client (`app/connections/`)
 
 - `ConnectionsSectionComponent`: tab `mine` (My account › Connections: one's own), `shared` (Administration ›

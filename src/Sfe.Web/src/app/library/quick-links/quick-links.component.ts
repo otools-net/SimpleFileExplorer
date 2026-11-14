@@ -244,7 +244,7 @@ export class QuickLinksComponent implements OnInit {
     protected onDragOver(event: DragEvent): void {
         const types = event.dataTransfer?.types ?? [];
         const moving = types.includes(DRAG_LINK);
-        if (!moving && !types.includes(DRAG_ITEMS)) return;
+        if (!moving && (!types.includes(DRAG_ITEMS) || !this.links.addable())) return;
         event.preventDefault();
         event.dataTransfer!.dropEffect = moving ? 'move' : 'link';
         this.dropIndex.set(this.indexAt(event.clientY));

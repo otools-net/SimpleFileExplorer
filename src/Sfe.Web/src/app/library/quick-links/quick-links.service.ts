@@ -27,6 +27,8 @@ export class QuickLinksService {
     private sequence = 0;
 
     readonly enabled = computed(() => this.config.rights().has(Rights.quickLinks));
+    /** Items of the listing may become links: not a connection's (links are the library's paths). */
+    readonly addable = computed(() => this.enabled() && !this.config.place());
     readonly links = signal<QuickLink[]>([]);
     readonly loaded = signal(false);
     readonly paths = computed(() => new Set(this.links().map((link) => link.path)));

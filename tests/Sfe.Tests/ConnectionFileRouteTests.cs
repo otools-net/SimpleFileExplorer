@@ -199,6 +199,43 @@ public sealed class ConnectionFileRouteTests
         Assert.IsFalse(_account.Calls.Any(c => c.StartsWith("thumbnail", StringComparison.Ordinal)));
     }
 
+    [TestMethod]
+    public async Task SeveralItemsComeAsOneZipFromTheProviderOnce()
+    {
+        _account.WithFile("Photos/Trips/day1.txt", "first day");
+
+        using var refused = await _admin.PostAsJsonAsync(
+            $"{Base}/archive",
+            new ArchiveRequest(["../Secret.txt"]),
+            Cancel
+        );
+        using var created = await _admin.PostAsJsonAsync(
+            $"{Base}/archive",
+            new ArchiveRequest(["Trips", "b.jpg"]),
+            Cancel
+        );
+        var link = (await created.Content.ReadFromJsonAsync<ArchiveLink>(Json, Cancel))!;
+        var url = "/" + link.Url.TrimStart('/');
+        using var library = await _admin.GetAsync(url.Replace($"connections/{_id}/archive", "files/archive"), Cancel);
+        using var download = await _admin.GetAsync(url, Cancel);
+        using var again = await _admin.GetAsync(url, Cancel);
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.AreEqual("My files.zip", link.FileName);
+        // The link is the connection's: the library's route doesn't take it (nor use it up); it works once.
+        Assert.AreEqual(HttpStatusCode.NotFound, library.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, download.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, again.StatusCode);
+        await using var stream = await download.Content.ReadAsStreamAsync(Cancel);
+        using var archive = new System.IO.Compression.ZipArchive(stream);
+        CollectionAssert.AreEquivalent(
+            new[] { "Trips/", "Trips/day1.txt", "b.jpg" },
+            archive.Entries.Select(e => e.FullName).ToArray()
+        );
+        using var reader = new StreamReader(archive.GetEntry("Trips/day1.txt")!.Open());
+        Assert.AreEqual("first day", await reader.ReadToEndAsync(Cancel));
+    }
+
     private string Base => $"/api/connections/{_id}";
 
     private string Browse(string query) => $"{Base}/browse?{query}";

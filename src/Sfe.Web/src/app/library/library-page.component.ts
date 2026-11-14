@@ -44,6 +44,7 @@ import { currentPosition } from './items/listing-position';
 import { focusedListItem, focusItem, listedItems, MOVE_KEYS, neighbour } from './items/listing-keys';
 import { initialHistoryState, readRestoreState, readRoute, RestoreState } from './library-route';
 import { ListingStore } from './listing.store';
+import { enterPlace } from './connection-pages';
 import { LocationComponent } from './location/location.component';
 import { LocationStripComponent } from './location/location-strip.component';
 import { ScanPanelComponent } from './scan/scan-panel.component';
@@ -187,7 +188,11 @@ export class LibraryPageComponent implements OnInit {
         void this.store.load(restore);
         // Folders changed elsewhere are listed again; the feed closes when leaving the page.
         this.changes.start();
-        this.destroyRef.onDestroy(() => this.changes.stop());
+        this.destroyRef.onDestroy(() => {
+            this.changes.stop();
+            // Other pages show the library's files.
+            enterPlace(this.config, null);
+        });
     }
 
     /**

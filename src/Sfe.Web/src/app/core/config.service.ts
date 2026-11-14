@@ -2,6 +2,8 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Api } from './api.service';
 import { formatDuration, formatResolution } from './format';
 import { ClientConfig, StreamProbe } from './config.models';
+import { atPlace } from './connection-place';
+import { ConnectionPlace } from './connection.models';
 import { LibraryItem } from './models';
 import { encodePath } from './paths';
 import { setArchives, setFlashMovies, setTextExtensions } from '../formats/formats';
@@ -87,21 +89,26 @@ export function withVersion(url: string, item: { path: string }): string {
     return time === undefined || !url.startsWith('api/') ? url : `${url}${url.includes('?') ? '&' : '?'}v=${time}`;
 }
 
-export function createUrls(config: ClientConfig): Urls {
+/** `place`: the connection shown, whose files have addresses of their own (`api/connections/{id}/…`). */
+export function createUrls(config: ClientConfig, place: ConnectionPlace | null = null): Urls {
     const dataServer = config.dataServer;
-    const file = (path: string) => (dataServer ? dataServerUrl(dataServer, path) : `api/files/raw/${encodePath(path)}`);
+    const base = place ? `api/connections/${place.id}/` : 'api/';
+    const raw = (path: string) => `${base}files/raw/${encodePath(path)}`;
+    const file = (path: string) => (dataServer ? dataServerUrl(dataServer, path) : raw(path));
+    // The pages of their own carry the connection with the path.
+    const page = (path: string): Record<string, string> => (place ? { path, c: String(place.id) } : { path });
     return {
         file,
-        download: (path) => `api/files/raw/${encodePath(path)}?download=true`,
-        original: (path) => `api/files/raw/${encodePath(path)}`,
-        thumbnail: (path) => `api/thumbnails/${encodePath(path)}`,
+        download: (path) => `${raw(path)}?download=true`,
+        original: raw,
+        thumbnail: (path) => `${base}thumbnails/${encodePath(path)}`,
         trickplaySheet: (path, index, version) => `api/trickplay/files/${encodePath(path)}?sheet=${index}&v=${version}`,
         player: (path, start = 0) => {
-            const query = new URLSearchParams({ path });
+            const query = new URLSearchParams(page(path));
             if (start >= 1) query.set('t', String(Math.floor(start)));
             return `player?${query}`;
         },
-        view: (path) => `view?${new URLSearchParams({ path })}`,
+        view: (path) => `view?${new URLSearchParams(page(path))}`,
         external: (url) => {
             const template = config.externalPlayer?.url;
             if (!template) return null;
@@ -126,20 +133,30 @@ export function createUrls(config: ClientConfig): Urls {
 @Injectable({ providedIn: 'root' })
 export class ConfigService {
     private readonly api = inject(Api);
-    private readonly current = signal<ClientConfig | null>(null);
+    private readonly loaded = signal<ClientConfig | null>(null);
 
-    /** Null until loaded. */
-    readonly config = this.current.asReadonly();
+    /** The connection the listing shows (`?c=`); null for the library. Set by the pages showing its files. */
+    readonly place = signal<ConnectionPlace | null>(null);
+    /** Null until loaded; as `atPlace` makes it while a connection is shown. */
+    readonly config = computed(() => {
+        const config = this.loaded();
+        return config ? atPlace(config, this.place()) : null;
+    });
     readonly urls = computed(() => {
-        const config = this.current();
+        const config = this.config();
+        return config ? createUrls(config, this.place()) : null;
+    });
+    /** The addresses of the library's files, wherever the listing is (quick links). */
+    readonly libraryUrls = computed(() => {
+        const config = this.loaded();
         return config ? createUrls(config) : null;
     });
 
     /** What the session may do in the library: the rights of /api/config. */
-    readonly rights = computed(() => new Set(this.current()?.rights ?? []));
+    readonly rights = computed(() => new Set(this.config()?.rights ?? []));
     /** The signed-in account; null for a visitor without one (or before loading). */
-    readonly user = computed(() => this.current()?.user ?? null);
-    readonly tenant = computed(() => this.current()?.tenant ?? null);
+    readonly user = computed(() => this.config()?.user ?? null);
+    readonly tenant = computed(() => this.config()?.tenant ?? null);
 
     /**
      * Loads (or reloads) the configuration; rejects when the server can't be reached, or (after opening the sign-in
@@ -147,7 +164,7 @@ export class ConfigService {
      */
     async load(): Promise<ClientConfig> {
         const config = await this.api.config();
-        this.current.set(config);
+        this.loaded.set(config);
         setTextExtensions(config.textExtensions);
         setFlashMovies(config.flash);
         setArchives(config.archives);
@@ -157,7 +174,8 @@ export class ConfigService {
 
     /** Forgets the configuration of the session that just ended or changed (signing in or out, another library). */
     clear(): void {
-        this.current.set(null);
+        this.loaded.set(null);
+        this.place.set(null);
         this.api.tenantId = null;
     }
 
@@ -196,7 +214,7 @@ export class ConfigService {
      * doesn't convert videos for this session.
      */
     videoStream(path: string): VideoStream | null {
-        const streaming = this.current()?.streaming;
+        const streaming = this.config()?.streaming;
         if (!streaming) return null;
         // Not crypto.randomUUID: plain-http LAN pages aren't secure contexts. It only tells this player's streams
         // apart.
@@ -210,7 +228,7 @@ export class ConfigService {
 
     /** The loaded configuration, for code that only runs once it is there. */
     get value(): ClientConfig {
-        const config = this.current();
+        const config = this.config();
         if (!config) throw new Error('The configuration is not loaded yet.');
         return config;
     }
@@ -224,7 +242,7 @@ export class ConfigService {
      * (Browse:ShowResolution).
      */
     resolution(item: LibraryItem): string {
-        return this.current()?.showResolution ? formatResolution(item.width, item.height) : '';
+        return this.config()?.showResolution ? formatResolution(item.width, item.height) : '';
     }
 
     /**
@@ -232,7 +250,7 @@ export class ConfigService {
      * (Browse:ShowDuration).
      */
     duration(item: LibraryItem): string {
-        return this.current()?.showDuration && item.duration ? formatDuration(item.duration) : '';
+        return this.config()?.showDuration && item.duration ? formatDuration(item.duration) : '';
     }
 
     /**
@@ -242,7 +260,7 @@ export class ConfigService {
      * resolution.
      */
     resolutionMark(item: LibraryItem): ResolutionMark | null {
-        const thresholds = this.current()?.resolutionMark;
+        const thresholds = this.config()?.resolutionMark;
         const threshold =
             item.kind === 'image' ? thresholds?.image : item.kind === 'video' ? thresholds?.video : undefined;
         if (!threshold || !item.width || !item.height) return null;

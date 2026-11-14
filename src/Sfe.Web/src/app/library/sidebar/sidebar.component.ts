@@ -13,6 +13,7 @@ import { TagMenu } from '../../tags/tag-menu';
 import { ChangeFeed } from '../change-feed.service';
 import { Dialogs } from '../dialogs.service';
 import { QuickLinksComponent } from '../quick-links/quick-links.component';
+import { ConnectionLinksComponent } from './connection-links.component';
 import { ListingStore } from '../listing.store';
 import { tagQuery } from '../../tags/tags';
 import { SidebarService } from './sidebar.service';
@@ -48,7 +49,14 @@ const SECTIONS: Section[] = [
  */
 @Component({
     selector: 'sfe-sidebar',
-    imports: [IconComponent, TagChipComponent, QuickLinksComponent, ContextMenuDirective, RouterLink],
+    imports: [
+        IconComponent,
+        TagChipComponent,
+        QuickLinksComponent,
+        ConnectionLinksComponent,
+        ContextMenuDirective,
+        RouterLink,
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'sidebar',

@@ -4,6 +4,7 @@
  */
 
 import { ConnectionLevelName } from './config.models';
+import { DirectoryListing } from './models';
 
 export type FolderLevelName = 'hidden' | 'read' | 'write';
 export type ConnectionStateName = 'ready' | 'needsReconnecting';
@@ -132,3 +133,29 @@ export const LEVEL_NAMES: Record<ConnectionLevelName, string> = {
     library: 'This space',
     server: 'The server',
 };
+
+/** `GET api/connections/{id}/browse`: a page of a connection's folder, in the library's listing shape. */
+export interface ConnectionListing {
+    connectionId: number;
+    /** The connection's name: the root folder's. */
+    name: string;
+    kind: string;
+    /** Paths relative to the connection's root; the first breadcrumb is the connection's name. */
+    listing: DirectoryListing;
+    access: FolderLevelName;
+    /** False for a folder too large to read whole: it comes in the provider's order. */
+    sorted: boolean;
+    /** The folder has more items than `listing.total` counts so far. */
+    hasMore: boolean;
+    capabilities: Record<string, boolean | number | string | null>;
+}
+
+/** The connection the listing shows (`?c=`): its files' addresses and what can be done there. */
+export interface ConnectionPlace {
+    id: number;
+    /** Its name, shown for its root folder; empty until listed. */
+    name: string;
+    /** Its provider makes thumbnails. */
+    thumbnails: boolean;
+    access: FolderLevelName;
+}

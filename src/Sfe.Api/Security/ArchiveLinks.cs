@@ -20,22 +20,30 @@ public sealed class ArchiveLinks
     private readonly ConcurrentDictionary<string, int> _running = new();
     private readonly Lock _gate = new();
 
-    public string Add(int tenantId, string caller, IReadOnlyList<string> paths)
+    /// <param name="scope">Where the paths are (<see cref="PendingArchive.Scope"/>); the link works there only.</param>
+    public string Add(int tenantId, string caller, IReadOnlyList<string> paths, string? scope = null)
     {
         Purge();
         var token = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(24));
-        _pending[token] = new PendingArchive(tenantId, caller, paths, DateTime.UtcNow + Lifetime);
+        _pending[token] = new PendingArchive(tenantId, caller, paths, DateTime.UtcNow + Lifetime, scope);
         return token;
     }
 
     /// <summary>
     /// The zip of <paramref name="token"/> when it is this caller's in this space, forgotten here (once).
     /// </summary>
-    public PendingArchive? Take(string token, int tenantId, string caller)
+    public PendingArchive? Take(string token, int tenantId, string caller, string? scope = null)
     {
         Purge();
-        if (!_pending.TryGetValue(token, out var pending) || pending.TenantId != tenantId || pending.Caller != caller)
+        if (
+            !_pending.TryGetValue(token, out var pending)
+            || pending.TenantId != tenantId
+            || pending.Caller != caller
+            || pending.Scope != scope
+        )
+        {
             return null;
+        }
         return _pending.TryRemove(token, out pending) ? pending : null;
     }
 

@@ -1,4 +1,5 @@
 <section sfeQuickLinks></section>
+<section sfeConnectionLinks></section>
 @for (section of sections; track section.key) {
     @let usages = sidebar.data()?.[section.key] ?? [];
     @let open = !isFolded(section);

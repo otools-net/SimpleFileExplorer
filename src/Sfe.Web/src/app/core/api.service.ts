@@ -104,6 +104,7 @@ import {
 import {
     ConnectionChange,
     ConnectionInfo,
+    ConnectionListing,
     ConnectionsView,
     ConnectRequest,
     FolderLevelName,
@@ -475,8 +476,9 @@ export class Api {
     finishUpload = (id: string, conflicts: ConflictChoice) =>
         this.post<FileOperationResult | null>(`api/files/uploads/${id}/finish`, { conflicts });
     cancelUpload = (id: string) => this.delete<void>(`api/files/uploads/${id}`);
-    /** Names the items of a zip; the browser downloads it from the link answered, once. */
-    createArchive = (paths: string[]) => this.post<ArchiveLink>('api/files/archive', { paths });
+    /** Names the items of a zip (of a connection's files with `connection`); the browser downloads it once. */
+    createArchive = (paths: string[], connection?: number) =>
+        this.post<ArchiveLink>(connection ? `api/connections/${connection}/archive` : 'api/files/archive', { paths });
     properties = (path: string) => this.get<ItemProperties>('api/files/properties', { path });
     /** What the index knows below a folder. */
     folderTotals = (path: string, signal?: AbortSignal) =>
@@ -652,6 +654,12 @@ export class Api {
 
     /** Connections to other storage (agents/docs/features/connections.md); `kind` of a provider (`dropbox`). */
     connections = () => this.get<ConnectionsView>('api/connections');
+    /** A page of a connection's folder (`path` relative to its root). */
+    connectionBrowse = (
+        id: number,
+        query: { path: string; offset: number; limit: number; sort: SortField; desc: boolean },
+        signal?: AbortSignal,
+    ) => this.get<ConnectionListing>(`api/connections/${id}/browse`, query, signal);
     updateConnection = (id: number, change: ConnectionChange) =>
         this.patch<ConnectionInfo>(`api/connections/${id}`, change);
     removeConnection = (id: number) => this.delete<void>(`api/connections/${id}`);

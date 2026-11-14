@@ -523,7 +523,8 @@ describe('ListingStore', () => {
             store.route.set({ path: 'Other', q: 'cats', sort: 'size', desc: false });
 
             store.reveal('Media/d.jpg');
-            expect(navigate).toHaveBeenCalledWith({ path: 'Media', q: '' });
+            // From a connection too: quick links are the library's.
+            expect(navigate).toHaveBeenCalledWith({ c: null, path: 'Media', q: '' });
             await arrive('Media');
 
             expect(api.browse).toHaveBeenCalledTimes(2);

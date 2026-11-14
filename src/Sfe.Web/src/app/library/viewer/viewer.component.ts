@@ -190,7 +190,7 @@ export class ViewerComponent {
     protected readonly fileUrl = computed(() => {
         const item = this.item();
         if (!item) return null;
-        if (!this.format()?.page) return this.urls()!.file(item.path);
+        if (!this.format()?.page || this.config.place()) return this.urls()!.file(item.path); // a connection's: no page
         return this.opened()?.asArchive ? `${this.urls()!.view(item.path)}&asArchive=1` : this.urls()!.view(item.path);
     });
     /** The picture shown and its thumbnail, marked with its time: one saved over (the picture editor) shows again. */
@@ -259,7 +259,7 @@ export class ViewerComponent {
                 title: 'Edit: crop, then save a copy (E)',
                 run: () => this.edit(),
             });
-        if (this.quickLinks.enabled()) {
+        if (this.quickLinks.addable()) {
             const pinned = this.quickLinks.paths().has(item.path);
             entries.push({
                 id: 'quickLink',

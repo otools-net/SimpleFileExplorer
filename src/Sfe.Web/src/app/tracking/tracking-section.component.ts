@@ -65,6 +65,6 @@ export class TrackingSectionComponent {
 
     /** Browses a folder of the library (the listing and the tag sidebar load again there). */
     protected openFolder(path: string): void {
-        this.store.navigate({ path, q: '' });
+        this.store.navigate({ c: null, path, q: '' });
     }
 }

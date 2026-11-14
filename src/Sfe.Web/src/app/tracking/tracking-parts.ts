@@ -111,7 +111,7 @@ export class TrackingFileComponent {
                 label: 'Open containing folder in new tab',
                 icon: 'external',
                 title: `List ${folderName} in a tab of its own`,
-                href: this.store.pageUrl(this.store.browseParams(folder)),
+                href: this.store.pageUrl(this.store.libraryParams(folder)),
                 newTab: true,
             },
         ];

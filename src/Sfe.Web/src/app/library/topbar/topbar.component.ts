@@ -32,7 +32,7 @@ const VIEW_BUTTONS: { view: View; icon: string; label: string; title: string }[]
         >
             <svg sfeIcon="sidebar"></svg>
         </button>
-        <a class="brand" routerLink="/" [queryParams]="store.browseParams('')" title="Library root">
+        <a class="brand" routerLink="/" [queryParams]="store.libraryParams('')" title="Library root">
             <svg sfeIcon="folder"></svg>
             <span>SFE</span>
         </a>
