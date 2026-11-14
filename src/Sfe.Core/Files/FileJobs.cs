@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -34,7 +33,8 @@ public sealed class FileJobs(
     TrickplayService trickplay,
     ScanCoordinator scans,
     PathMoves moves,
-    Trash trash,
+    LibraryClashes clashes,
+    JobBoard board,
     TenantBinding tenant,
     IOptionsMonitor<SfeOptions> options,
     ILogger<FileJobs> logger,
@@ -43,16 +43,12 @@ public sealed class FileJobs(
     ArchiveBuildGate? gates = null
 ) : IDisposable
 {
-    /// <summary>Finished jobs kept for the operations panel.</summary>
-    private const int KeptJobs = 50;
     private const int CopyBuffer = 1 << 20;
 
     /// <summary>Bytes written between two reads of the free space while extracting.</summary>
     private const long FreeSpaceStep = 64L << 20;
 
-    private readonly ConcurrentDictionary<int, Job> _jobs = new();
     private readonly CancellationTokenSource _shutdown = new();
-    private int _nextId;
 
     /// <summary>Folders an extraction writes into before they take their names: never a name of the person's.</summary>
     public const string PartialSuffix = ".sfe-partial";
@@ -63,8 +59,8 @@ public sealed class FileJobs(
     /// </summary>
     public FileJobView Start(FileJobRequest request, FileActor actor, IFileJobAccess access, string? password = null)
     {
-        var job = new Job(
-            Interlocked.Increment(ref _nextId),
+        var job = new JobRun(
+            board.NextId(),
             request,
             actor,
             access,
@@ -76,41 +72,13 @@ public sealed class FileJobs(
                     ? password
                     : null,
         };
-        _jobs[job.Id] = job;
+        board.Add(job);
         job.Completion = Task.Run(() => RunAsync(job), CancellationToken.None);
-        Prune();
+        board.Prune();
         return job.View();
     }
 
-    /// <summary>The jobs of <paramref name="ownerId"/> (all with null), newest first.</summary>
-    public IReadOnlyList<FileJobView> List(int? ownerId) =>
-        [
-            .. _jobs
-                .Values.Where(j => ownerId is null || j.Actor.AccountId == ownerId)
-                .OrderByDescending(j => j.Id)
-                .Select(j => j.View()),
-        ];
-
-    public FileJobView? Find(int id) => _jobs.TryGetValue(id, out var job) ? job.View() : null;
-
-    /// <summary>The job's task; for tests.</summary>
-    internal Task? Completion(int id) => _jobs.TryGetValue(id, out var job) ? job.Completion : null;
-
-    /// <summary>
-    /// Answers the job's question about a name clash; <paramref name="forAll"/>: the same for the next ones.
-    /// </summary>
-    public bool Answer(int id, ConflictChoice choice, bool forAll) =>
-        choice != ConflictChoice.Ask && _jobs.TryGetValue(id, out var job) && job.Answer(choice, forAll);
-
-    public bool Cancel(int id)
-    {
-        if (!_jobs.TryGetValue(id, out var job) || job.State is FileJobState.Completed or FileJobState.Cancelled)
-            return false;
-        job.Cancellation.Cancel();
-        return true;
-    }
-
-    private async Task RunAsync(Job job)
+    private async Task RunAsync(JobRun job)
     {
         var request = job.Request;
         var token = job.Cancellation.Token;
@@ -227,7 +195,7 @@ public sealed class FileJobs(
     }
 
     private async Task<FileJobItem> ItemAsync(
-        Job job,
+        JobRun job,
         string path,
         string targetPath,
         string targetFull,
@@ -285,16 +253,21 @@ public sealed class FileJobs(
             return new FileJobItem(path, sourcePath, FileOperationStatus.Skipped, $"“{name}” is already there.");
 
         // A name clash: the person's choice, asked when needed.
-        var (clash, refused) = await ClashAsync(
+        var (clash, refused) = await clashes.ClashAsync(
             job,
-            path,
-            source,
-            sourcePath,
-            isFolder,
-            targetPath,
-            targetFull,
-            name,
-            request.Kind == FileJobKind.Copy && LibraryPaths.PathComparer.Equals(Parent(sourcePath), targetPath),
+            new ClashCheck
+            {
+                Path = path,
+                Source = source,
+                SourcePath = sourcePath,
+                IsFolder = isFolder,
+                TargetPath = targetPath,
+                TargetFull = targetFull,
+                Name = name,
+                KeepBoth =
+                    request.Kind == FileJobKind.Copy
+                    && LibraryPaths.PathComparer.Equals(Parent(sourcePath), targetPath),
+            },
             token
         );
         if (refused is not null)
@@ -320,109 +293,8 @@ public sealed class FileJobs(
             );
     }
 
-    /// <summary>
-    /// The name <paramref name="name"/> takes in the target: itself when free, else the person's choice (asked when
-    /// needed): another name, or the item there replaced (to the trash); or the item's result when it is left out.
-    /// </summary>
-    /// <param name="sourcePath">The item's place in the library, if it has one (an extracted item has none).</param>
-    /// <param name="keepBoth">Keep both without asking (a copy in its own folder).</param>
-    private async Task<(string? Name, FileJobItem? Refused)> ClashAsync(
-        Job job,
-        string path,
-        string source,
-        string? sourcePath,
-        bool isFolder,
-        string targetPath,
-        string targetFull,
-        string name,
-        bool keepBoth,
-        CancellationToken token
-    )
-    {
-        // A name no route reaches (the work folder at the root, its 8.3 name): never placed, never replaced.
-        if (Reserved(targetPath, name))
-        {
-            return (
-                null,
-                new FileJobItem(
-                    path,
-                    null,
-                    FileOperationStatus.Invalid,
-                    $"“{name}” was left out: that name is kept for SFE's own files."
-                )
-            );
-        }
-
-        var destination = Path.Combine(targetFull, name);
-        if (!File.Exists(destination) && !Directory.Exists(destination))
-            return (name, null);
-        var replaceRight = trash.AlwaysPermanent ? Rights.DeletePermanently : Rights.DeleteFiles;
-        var existingPath = Join(targetPath, name);
-        // Never what holds the item itself (moving X/X next to X, then replacing X).
-        var canReplace =
-            (sourcePath is null || !FolderPolicy.IsSameOrBelow(sourcePath, existingPath))
-            && await job.Access.MayAsync(existingPath, replaceRight)
-            && await job.Access.MayAsync(targetPath, replaceRight)
-            && (!Directory.Exists(destination) || await job.Access.MayThroughoutAsync(existingPath, replaceRight));
-        var choice = keepBoth
-            ? ConflictChoice.KeepBoth
-            : await job.ChooseAsync(new FileJobConflict(Side(source), Side(destination), canReplace), token);
-        switch (choice)
-        {
-            case ConflictChoice.Skip:
-                return (
-                    null,
-                    new FileJobItem(
-                        path,
-                        null,
-                        FileOperationStatus.Skipped,
-                        $"“{name}” was left out: there is one of that name there."
-                    )
-                );
-            case ConflictChoice.KeepBoth:
-                return (
-                    FileNames.KeepBoth(name, isFolder, n =>
-                        File.Exists(Path.Combine(targetFull, n)) || Directory.Exists(Path.Combine(targetFull, n))
-                    ) ?? throw new IOException("No free name."),
-                    null
-                );
-            case ConflictChoice.Replace when canReplace:
-                using (var hold = scans.TryBeginOperation(destination))
-                {
-                    if (hold is null)
-                        return (null, ScanRunning(path));
-                    if (trash.AlwaysPermanent)
-                    {
-                        await trash.DeleteForGoodAsync(
-                            destination,
-                            existingPath,
-                            Directory.Exists(destination),
-                            job.Actor,
-                            token
-                        );
-                    }
-                    else
-                    {
-                        await trash.MoveInAsync(
-                            destination,
-                            existingPath,
-                            Directory.Exists(destination),
-                            job.Actor,
-                            token
-                        );
-                    }
-                }
-                return (name, null);
-            default:
-                return (
-                    null,
-                    new FileJobItem(path, null, FileOperationStatus.Forbidden, $"You may not replace “{name}” there.")
-                );
-        }
-    }
-
     private async Task<FileJobItem> MoveAsync(
-        Job job,
+        JobRun job,
         string path,
         string source,
         string sourcePath,
@@ -485,7 +357,7 @@ public sealed class FileJobs(
     }
 
     private async Task<FileJobItem> CopyAsync(
-        Job job,
+        JobRun job,
         string path,
         string source,
         string sourcePath,
@@ -567,7 +439,7 @@ public sealed class FileJobs(
     private static string More(int count, int shown) => count > shown ? $" and {count - shown} more" : string.Empty;
 
     private async Task CopyFolderAsync(
-        Job job,
+        JobRun job,
         string source,
         string sourcePath,
         string destination,
@@ -615,7 +487,7 @@ public sealed class FileJobs(
         }
     }
 
-    private static async Task CopyFileAsync(Job job, string source, string destination, CancellationToken token)
+    private static async Task CopyFileAsync(JobRun job, string source, string destination, CancellationToken token)
     {
         await using var input = new FileStream(
             source,
@@ -652,7 +524,7 @@ public sealed class FileJobs(
     }
 
     private async Task AfterCopyAsync(
-        Job job,
+        JobRun job,
         string source,
         string destination,
         bool isFolder,
@@ -727,7 +599,7 @@ public sealed class FileJobs(
     /// the partial folder goes, nothing half written stays.
     /// </summary>
     private async Task<FileJobItem> ExtractAsync(
-        Job job,
+        JobRun job,
         string path,
         string targetPath,
         string targetFull,
@@ -865,7 +737,7 @@ public sealed class FileJobs(
                 // One folder at the top keeps its name ("trip.zip" holding "trip/" gives "trip", not "trip/trip").
                 var single = top.Count == 1 && Directory.Exists(top[0]) ? top[0] : null;
                 var folderName = single is null ? stem : Path.GetFileName(single);
-                var taken = (string n) => Taken(targetFull)(n) || Reserved(targetPath, n);
+                var taken = (string n) => LibraryClashes.Taken(targetFull)(n) || clashes.Reserved(targetPath, n);
                 if (taken(folderName))
                     folderName = FileNames.KeepBoth(folderName, true, taken) ?? throw new IOException("No free name.");
                 var destination = Path.Combine(targetFull, folderName);
@@ -884,16 +756,17 @@ public sealed class FileJobs(
                 foreach (var item in Directory.EnumerateFileSystemEntries(partial).ToList())
                 {
                     var isFolder = Directory.Exists(item);
-                    var (itemName, refused) = await ClashAsync(
+                    var (itemName, refused) = await clashes.ClashAsync(
                         job,
-                        path,
-                        item,
-                        null,
-                        isFolder,
-                        targetPath,
-                        targetFull,
-                        Path.GetFileName(item),
-                        false,
+                        new ClashCheck
+                        {
+                            Path = path,
+                            Source = item,
+                            IsFolder = isFolder,
+                            TargetPath = targetPath,
+                            TargetFull = targetFull,
+                            Name = Path.GetFileName(item),
+                        },
                         token
                     );
                     if (refused is not null)
@@ -958,7 +831,7 @@ public sealed class FileJobs(
     /// its name (a clash asked then); cancelled or failed, the partial file goes.
     /// </summary>
     private async Task<FileJobItem> CompressAsync(
-        Job job,
+        JobRun job,
         string targetPath,
         string targetFull,
         CancellationToken token
@@ -1070,16 +943,17 @@ public sealed class FileJobs(
             }
 
             // Its name, now that it is whole: a clash is asked (or answered by the request).
-            var (finalName, clash) = await ClashAsync(
+            var (finalName, clash) = await clashes.ClashAsync(
                 job,
-                label,
-                partial,
-                null,
-                false,
-                targetPath,
-                targetFull,
-                name,
-                false,
+                new ClashCheck
+                {
+                    Path = label,
+                    Source = partial,
+                    IsFolder = false,
+                    TargetPath = targetPath,
+                    TargetFull = targetFull,
+                    Name = name,
+                },
                 token
             );
             if (clash is not null)
@@ -1220,32 +1094,21 @@ public sealed class FileJobs(
         for (var n = 1; n <= FileNames.MaxKeepBothAttempts; n++)
         {
             var name = n == 1 ? stem + PartialSuffix : $"{stem} ({n}){PartialSuffix}";
-            if (!Taken(folder)(name))
+            if (!LibraryClashes.Taken(folder)(name))
                 return Path.Combine(folder, name);
         }
         throw new IOException("No free name.");
     }
 
     /// <summary>
-    /// <paramref name="name"/> in <paramref name="folder"/> is a path no route takes (the work folder, its 8.3 name).
-    /// </summary>
-    private bool Reserved(string folder, string name) => !paths.TryResolve(Join(folder, name), out _);
-
-    private static Func<string, bool> Taken(string folder) =>
-        n => File.Exists(Path.Combine(folder, n)) || Directory.Exists(Path.Combine(folder, n));
-
-    /// <summary>
     /// Partial folders an extraction left in <paramref name="folder"/> when the server stopped during it: removed at
     /// the next extraction there, unless a running job writes into one.
     /// </summary>
-    private void RemoveLeftovers(Job job, string folder)
+    private void RemoveLeftovers(JobRun job, string folder)
     {
         try
         {
-            var running = _jobs
-                .Values.Where(j => j != job && j.State is FileJobState.Running or FileJobState.Waiting)
-                .SelectMany(j => j.Partials)
-                .ToHashSet(LibraryPaths.PathComparer);
+            var running = board.PartialsOfOthers(job);
             foreach (var leftover in Directory.EnumerateDirectories(folder, "*" + PartialSuffix))
             {
                 if (!running.Contains(leftover) && new DirectoryInfo(leftover).LinkTarget is null)
@@ -1333,17 +1196,6 @@ public sealed class FileJobs(
             : null;
     }
 
-    private static ClashSide Side(string full)
-    {
-        FileSystemInfo info = Directory.Exists(full) ? new DirectoryInfo(full) : new FileInfo(full);
-        return new ClashSide(
-            info.Name,
-            info is DirectoryInfo,
-            info is FileInfo file ? file.Length : null,
-            new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero)
-        );
-    }
-
     /// <summary>Bytes of a file, or of the files below a folder (links not followed).</summary>
     private static long SizeOf(string full)
     {
@@ -1374,27 +1226,12 @@ public sealed class FileJobs(
     /// <summary>The drive would keep less free space than the server's margin.</summary>
     private sealed class NoRoomException(string message) : IOException(message);
 
-    private static FileJobItem ScanRunning(string path) =>
-        new(path, null, FileOperationStatus.ScanRunning, "A scan is running over it: try again when it has finished.");
-
-    private void Prune()
-    {
-        foreach (
-            var old in _jobs
-                .Values.Where(j => j.State is FileJobState.Completed or FileJobState.Cancelled)
-                .OrderByDescending(j => j.Id)
-                .Skip(KeptJobs)
-                .ToList()
-        )
-        {
-            _jobs.TryRemove(old.Id, out _);
-        }
-    }
+    private static FileJobItem ScanRunning(string path) => LibraryClashes.ScanRunning(path);
 
     private static string Parent(string path) =>
         path.LastIndexOf('/') is var slash and >= 0 ? path[..slash] : string.Empty;
 
-    private static string Join(string folder, string name) => folder.Length == 0 ? name : $"{folder}/{name}";
+    private static string Join(string folder, string name) => LibraryClashes.Join(folder, name);
 
     private static string Base(string path) => path.Split('/')[^1];
 
@@ -1402,124 +1239,5 @@ public sealed class FileJobs(
     {
         _shutdown.Cancel();
         _shutdown.Dispose();
-    }
-
-    /// <summary>One move or copy, its progress and its answers.</summary>
-    private sealed class Job(
-        int id,
-        FileJobRequest request,
-        FileActor actor,
-        IFileJobAccess access,
-        CancellationTokenSource cancellation
-    )
-    {
-        private readonly Lock _gate = new();
-        private readonly List<FileJobItem> _results = [];
-        private ConflictChoice? _forAll = request.Conflicts == ConflictChoice.Ask ? null : request.Conflicts;
-        private TaskCompletionSource<ConflictChoice>? _answer;
-        private FileJobConflict? _conflict;
-        private long _bytesDone;
-        private DateTimeOffset? _finished;
-
-        public int Id { get; } = id;
-        public FileJobRequest Request { get; } = request;
-        public FileActor Actor { get; } = actor;
-        public IFileJobAccess Access { get; } = access;
-        public CancellationTokenSource Cancellation { get; } = cancellation;
-        public DateTimeOffset Started { get; } = DateTimeOffset.Now;
-        public FileJobState State { get; private set; } = FileJobState.Running;
-        public long BytesTotal { get; set; }
-        public string? Current { get; set; }
-        public Task? Completion { get; set; }
-
-        public void AddBytes(long bytes) => Interlocked.Add(ref _bytesDone, bytes);
-
-        /// <summary>How far the job is in its source (an extraction: in the archive's file).</summary>
-        public void SetBytes(long bytes) => Interlocked.Exchange(ref _bytesDone, bytes);
-
-        /// <summary>The archive's password, while the job runs; never shown.</summary>
-        public string? Password { get; set; }
-
-        /// <summary>The partial folders the job writes into.</summary>
-        public ConcurrentBag<string> Partials { get; } = [];
-
-        public void Report(FileJobItem item)
-        {
-            lock (_gate)
-                _results.Add(item);
-        }
-
-        public async Task<ConflictChoice> ChooseAsync(FileJobConflict conflict, CancellationToken token)
-        {
-            Task<ConflictChoice> answer;
-            lock (_gate)
-            {
-                if (_forAll is { } choice && (choice != ConflictChoice.Replace || conflict.CanReplace))
-                    return choice;
-                _conflict = conflict;
-                _answer = new TaskCompletionSource<ConflictChoice>(TaskCreationOptions.RunContinuationsAsynchronously);
-                answer = _answer.Task;
-                State = FileJobState.Waiting;
-            }
-            try
-            {
-                return await answer.WaitAsync(token);
-            }
-            finally
-            {
-                lock (_gate)
-                {
-                    _conflict = null;
-                    _answer = null;
-                    if (State == FileJobState.Waiting)
-                        State = FileJobState.Running;
-                }
-            }
-        }
-
-        public bool Answer(ConflictChoice choice, bool forAll)
-        {
-            lock (_gate)
-            {
-                if (_answer is null)
-                    return false;
-                if (forAll)
-                    _forAll = choice;
-                return _answer.TrySetResult(choice);
-            }
-        }
-
-        public void Finish(FileJobState state)
-        {
-            lock (_gate)
-            {
-                State = state;
-                _finished = DateTimeOffset.Now;
-                Current = null;
-            }
-        }
-
-        public FileJobView View()
-        {
-            lock (_gate)
-            {
-                return new FileJobView(
-                    Id,
-                    Request.Kind,
-                    State,
-                    Request.Target,
-                    Request.Kind == FileJobKind.Compress ? 1 : Request.Paths.Distinct(StringComparer.Ordinal).Count(),
-                    _results.Count,
-                    BytesTotal,
-                    Interlocked.Read(ref _bytesDone),
-                    Current,
-                    _conflict,
-                    [.. _results],
-                    Started,
-                    _finished,
-                    Actor.AccountId
-                );
-            }
-        }
     }
 }

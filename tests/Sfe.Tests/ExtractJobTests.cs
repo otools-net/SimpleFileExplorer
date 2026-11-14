@@ -24,6 +24,7 @@ public sealed class ExtractJobTests
 
     private CancellationToken Token => TestContext.CancellationToken;
     private FileJobs Jobs => _services.Get<FileJobs>();
+    private JobBoard Board => _services.Get<JobBoard>();
 
     [TestInitialize]
     public async Task InitializeAsync()
@@ -90,10 +91,10 @@ public sealed class ExtractJobTests
         var waiting = await WaitForAsync(view.Id, j => j.State == FileJobState.Waiting);
 
         Assert.AreEqual("photo.jpg", waiting.Conflict!.Existing.Name);
-        Assert.IsTrue(Jobs.Answer(view.Id, ConflictChoice.KeepBoth, forAll: false));
-        await Jobs.Completion(view.Id)!;
+        Assert.IsTrue(Board.Answer(view.Id, ConflictChoice.KeepBoth, forAll: false));
+        await Board.Completion(view.Id)!;
 
-        var result = Jobs.Find(view.Id)!.Results.Single();
+        var result = Board.Find(view.Id)!.Results.Single();
         Assert.AreEqual(FileOperationStatus.Done, result.Status, result.Message);
         Assert.AreEqual("from the archive", File.ReadAllText(_library.FullPath("Media/photo (2).jpg")));
         Assert.AreEqual("new", File.ReadAllText(_library.FullPath("Media/new.txt")));
@@ -328,8 +329,8 @@ public sealed class ExtractJobTests
     )
     {
         var view = Jobs.Start(request, Me, access ?? new FakeAccess(), password);
-        await Jobs.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(30), Token);
-        return Jobs.Find(view.Id)!;
+        await Board.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(30), Token);
+        return Board.Find(view.Id)!;
     }
 
     private async Task<FileJobView> WaitForAsync(int id, Func<FileJobView, bool> condition)
@@ -337,7 +338,7 @@ public sealed class ExtractJobTests
         var until = DateTime.UtcNow.AddSeconds(30);
         while (DateTime.UtcNow < until)
         {
-            if (Jobs.Find(id) is { } view && condition(view))
+            if (Board.Find(id) is { } view && condition(view))
                 return view;
             await Task.Delay(20, Token);
         }

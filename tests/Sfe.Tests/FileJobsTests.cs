@@ -22,6 +22,7 @@ public sealed class FileJobsTests
 
     private CancellationToken Token => TestContext.CancellationToken;
     private FileJobs Jobs => _services.Get<FileJobs>();
+    private JobBoard Board => _services.Get<JobBoard>();
     private TagService Tags => _services.Get<TagService>();
 
     [TestInitialize]
@@ -140,17 +141,17 @@ public sealed class FileJobsTests
         Assert.AreEqual(10, waiting.Conflict.Source.Size);
         Assert.AreEqual(5, waiting.Conflict.Existing.Size);
         Assert.IsTrue(waiting.Conflict.CanReplace);
-        Assert.IsFalse(Jobs.Answer(view.Id, ConflictChoice.Ask, forAll: false));
-        Assert.IsTrue(Jobs.Answer(view.Id, ConflictChoice.KeepBoth, forAll: true));
-        await Jobs.Completion(view.Id)!;
+        Assert.IsFalse(Board.Answer(view.Id, ConflictChoice.Ask, forAll: false));
+        Assert.IsTrue(Board.Answer(view.Id, ConflictChoice.KeepBoth, forAll: true));
+        await Board.Completion(view.Id)!;
 
-        var done = Jobs.Find(view.Id)!;
+        var done = Board.Find(view.Id)!;
         Assert.AreEqual(FileJobState.Completed, done.State);
         CollectionAssert.AreEqual(
             new[] { "ChildDir/RFile1 (2).txt", "ChildDir/RFile2 (2)" },
             done.Results.Select(r => r.NewPath).ToArray()
         );
-        Assert.IsFalse(Jobs.Answer(view.Id, ConflictChoice.Skip, forAll: false), "Nothing is asked any more");
+        Assert.IsFalse(Board.Answer(view.Id, ConflictChoice.Skip, forAll: false), "Nothing is asked any more");
     }
 
     [TestMethod]
@@ -169,9 +170,9 @@ public sealed class FileJobsTests
             new FakeAccess { Refuse = (_, right) => right == Rights.DeleteFiles }
         );
         Assert.IsFalse((await WaitForAsync(started.Id, j => j.State == FileJobState.Waiting)).Conflict!.CanReplace);
-        Jobs.Answer(started.Id, ConflictChoice.Replace, forAll: false);
-        await Jobs.Completion(started.Id)!;
-        var refused = Jobs.Find(started.Id)!;
+        Board.Answer(started.Id, ConflictChoice.Replace, forAll: false);
+        await Board.Completion(started.Id)!;
+        var refused = Board.Find(started.Id)!;
 
         Assert.AreEqual(FileOperationStatus.Done, replaced.Results.Single().Status, replaced.Results.Single().Message);
         Assert.AreEqual(10, new FileInfo(_library.FullPath("ChildDir/RFile1.txt")).Length);
@@ -210,15 +211,15 @@ public sealed class FileJobsTests
             new FakeAccess()
         );
         await WaitForAsync(view.Id, j => j.State == FileJobState.Waiting);
-        Assert.IsTrue(Jobs.Cancel(view.Id));
-        await Jobs.Completion(view.Id)!;
+        Assert.IsTrue(Board.Cancel(view.Id));
+        await Board.Completion(view.Id)!;
 
-        var done = Jobs.Find(view.Id)!;
+        var done = Board.Find(view.Id)!;
         Assert.AreEqual(FileJobState.Cancelled, done.State);
         Assert.AreEqual(1, done.Done);
         Assert.IsTrue(File.Exists(_library.FullPath("ChildDir/RFile1.txt")));
         Assert.IsFalse(File.Exists(_library.FullPath("ChildDir/100%_done[1].txt")));
-        Assert.IsFalse(Jobs.Cancel(view.Id));
+        Assert.IsFalse(Board.Cancel(view.Id));
     }
 
     [TestMethod]
@@ -311,18 +312,18 @@ public sealed class FileJobsTests
             new FileActor(8, "other"),
             new FakeAccess()
         );
-        await Jobs.Completion(other.Id)!;
+        await Board.Completion(other.Id)!;
 
-        Assert.HasCount(1, Jobs.List(7));
-        Assert.HasCount(2, Jobs.List(null));
-        Assert.AreEqual(other.Id, Jobs.List(null)[0].Id, "Newest first");
+        Assert.HasCount(1, Board.List(7));
+        Assert.HasCount(2, Board.List(null));
+        Assert.AreEqual(other.Id, Board.List(null)[0].Id, "Newest first");
     }
 
     private async Task<FileJobView> RunAsync(FileJobRequest request, IFileJobAccess? access = null)
     {
         var view = Jobs.Start(request, Me, access ?? new FakeAccess());
-        await Jobs.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(30), Token);
-        return Jobs.Find(view.Id)!;
+        await Board.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(30), Token);
+        return Board.Find(view.Id)!;
     }
 
     private async Task<FileJobView> WaitForAsync(int id, Func<FileJobView, bool> condition)
@@ -330,7 +331,7 @@ public sealed class FileJobsTests
         var until = DateTime.UtcNow.AddSeconds(30);
         while (DateTime.UtcNow < until)
         {
-            if (Jobs.Find(id) is { } view && condition(view))
+            if (Board.Find(id) is { } view && condition(view))
                 return view;
             await Task.Delay(20, Token);
         }

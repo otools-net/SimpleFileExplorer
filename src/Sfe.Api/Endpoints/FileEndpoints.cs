@@ -558,11 +558,11 @@ public static class FileEndpoints
         return TypedResults.Accepted(ApiRoutes.Link($"files/jobs/{view.Id}"), view);
     }
 
-    private static async Task<Ok<IReadOnlyList<FileJobView>>> ListJobs(FileJobs jobs, CurrentAccess current) =>
+    private static async Task<Ok<IReadOnlyList<FileJobView>>> ListJobs(JobBoard jobs, CurrentAccess current) =>
         TypedResults.Ok(jobs.List((await current.GetAsync()).User?.Id ?? -1));
 
     private static async Task<Results<Ok<FileJobView>, NotFound>> GetJob(
-        FileJobs jobs,
+        JobBoard jobs,
         CurrentAccess current,
         int id
     ) =>
@@ -571,7 +571,7 @@ public static class FileEndpoints
             : TypedResults.NotFound();
 
     private static async Task<Results<NoContent, NotFound, Conflict>> AnswerJob(
-        FileJobs jobs,
+        JobBoard jobs,
         CurrentAccess current,
         int id,
         JobAnswer answer
@@ -583,7 +583,7 @@ public static class FileEndpoints
     }
 
     private static async Task<Results<NoContent, NotFound>> CancelJob(
-        FileJobs jobs,
+        JobBoard jobs,
         CurrentAccess current,
         int id,
         CancellationToken cancellationToken

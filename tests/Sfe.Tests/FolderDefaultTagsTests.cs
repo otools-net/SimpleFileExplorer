@@ -326,9 +326,10 @@ public sealed class FolderDefaultTagsTests
     private async Task<FileJobView> RunAsync(FileJobRequest request)
     {
         var jobs = _services.Get<FileJobs>();
+        var board = _services.Get<JobBoard>();
         var view = jobs.Start(request, Me, new AllowAll());
-        await jobs.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(30), Token);
-        return jobs.Find(view.Id)!;
+        await board.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(30), Token);
+        return board.Find(view.Id)!;
     }
 
     /// <summary>Root-relative paths of the indexed files having the tag.</summary>

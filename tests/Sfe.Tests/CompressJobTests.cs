@@ -26,6 +26,7 @@ public sealed class CompressJobTests
 
     private CancellationToken Token => TestContext.CancellationToken;
     private FileJobs Jobs => _services.Get<FileJobs>();
+    private JobBoard Board => _services.Get<JobBoard>();
 
     [TestInitialize]
     public async Task InitializeAsync()
@@ -137,7 +138,7 @@ public sealed class CompressJobTests
         Assert.IsTrue(entry.Encrypted);
         using (var data = ArchiveReader.OpenEntry(zip, ArchiveFormat.Zip, entry, "zip-secret"))
             Assert.AreEqual(new FileInfo(_library.FullPath("RFile1.txt")).Length, data.CopyToCount());
-        Assert.DoesNotContain("zip-secret", JsonSerializer.Serialize(Jobs.List(null)));
+        Assert.DoesNotContain("zip-secret", JsonSerializer.Serialize(Board.List(null)));
         Assert.DoesNotContain("zip-secret", _log.ToString());
     }
 
@@ -149,10 +150,10 @@ public sealed class CompressJobTests
         var view = Jobs.Start(Compress(["RFile1.txt"], ""), Me, new FakeAccess());
         var waiting = await WaitForAsync(view.Id, j => j.State == FileJobState.Waiting);
         Assert.AreEqual("RFile1.zip", waiting.Conflict!.Existing.Name);
-        Assert.IsTrue(Jobs.Answer(view.Id, ConflictChoice.KeepBoth, forAll: false));
-        await Jobs.Completion(view.Id)!;
+        Assert.IsTrue(Board.Answer(view.Id, ConflictChoice.KeepBoth, forAll: false));
+        await Board.Completion(view.Id)!;
 
-        Assert.AreEqual("RFile1 (2).zip", Jobs.Find(view.Id)!.Results.Single().NewPath);
+        Assert.AreEqual("RFile1 (2).zip", Board.Find(view.Id)!.Results.Single().NewPath);
         Assert.AreEqual(5, new FileInfo(_library.FullPath("RFile1.zip")).Length, "the one there is kept");
         Assert.IsEmpty(Directory.GetFiles(_library.Root, "*" + FileJobs.PartialSuffix));
     }
@@ -235,10 +236,10 @@ public sealed class CompressJobTests
 
         var view = Jobs.Start(Compress(["Big"], "") with { Level = 9, SkipCompressed = false }, Me, new FakeAccess());
         await WaitForAsync(view.Id, j => j.BytesDone > 0);
-        Assert.IsTrue(Jobs.Cancel(view.Id));
-        await Jobs.Completion(view.Id)!;
+        Assert.IsTrue(Board.Cancel(view.Id));
+        await Board.Completion(view.Id)!;
 
-        Assert.AreEqual(FileJobState.Cancelled, Jobs.Find(view.Id)!.State);
+        Assert.AreEqual(FileJobState.Cancelled, Board.Find(view.Id)!.State);
         Assert.IsFalse(File.Exists(_library.FullPath("Big.zip")));
         Assert.IsEmpty(Directory.GetFiles(_library.Root, "*" + FileJobs.PartialSuffix));
     }
@@ -259,7 +260,7 @@ public sealed class CompressJobTests
         {
             gate.Release();
         }
-        await Jobs.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(30), Token);
+        await Board.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(30), Token);
         Assert.IsTrue(File.Exists(_library.FullPath("RFile1.zip")));
     }
 
@@ -273,8 +274,8 @@ public sealed class CompressJobTests
     )
     {
         var view = Jobs.Start(request, Me, access ?? new FakeAccess(), password);
-        await Jobs.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(60), Token);
-        return Jobs.Find(view.Id)!;
+        await Board.Completion(view.Id)!.WaitAsync(TimeSpan.FromSeconds(60), Token);
+        return Board.Find(view.Id)!;
     }
 
     private async Task<FileJobView> WaitForAsync(int id, Func<FileJobView, bool> condition)
@@ -282,7 +283,7 @@ public sealed class CompressJobTests
         var until = DateTime.UtcNow.AddSeconds(30);
         while (DateTime.UtcNow < until)
         {
-            if (Jobs.Find(id) is { } view && condition(view))
+            if (Board.Find(id) is { } view && condition(view))
                 return view;
             await Task.Delay(20, Token);
         }
