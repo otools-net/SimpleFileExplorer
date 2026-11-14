@@ -361,8 +361,13 @@ Design (fourth session, a Plan agent's study; defaults taken where the owner has
 
 ### Phase 6: groups and folder rules
 
-- [ ] Rules inside library- and server-level connections with the model chosen in phase 0; `ConnectionAccess` answers
-  404 for what a person doesn't see; "throughout" checks for folder operations
+- [x] Rules inside library- and server-level connections with the model chosen in phase 0; `ConnectionAccess` answers
+  404 for what a person doesn't see; "throughout" checks for folder operations. As built: `ConnectionFolderRules`
+  + `ConnectionRuleService` (C1); `ConnectionPolicies` (each group with a `ConnectionGroup` row a principal with its
+  own rights and the row's level as default; `ReadOnly` caps; cached by `AccessChanges`) closing both gaps; hidden =
+  404 before any provider call, refused = 403; listings filtered per subject over the shared snapshot; zips and
+  transfers checked per item (`IConnectionJobAccess`); management routes `api/connections/{id}/folder-rules`,
+  `folders`; the card reused through `FolderRulesSource`
 - [ ] Management card reused on a connection's folders ([folder-access](../features/folder-access.md)); rules follow
   folders renamed or moved in the app ([file-operations](file-operations.md))
 

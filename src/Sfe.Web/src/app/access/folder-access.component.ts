@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, input, si
 import { Api } from '../core/api.service';
 import { FolderLevel } from '../core/access.models';
 import { FolderPicker } from '../core/models';
-import { FolderAccessReport, FolderRuleView, GroupInfo, UserInfo } from './access.models';
+import { FolderAccessReport, FolderRuleView } from './access.models';
+import { FolderRulesSource, libraryRules, RuleGroup, RuleMember } from './folder-rules-source';
 import { ToastService } from '../core/toast.service';
 import { valueOf } from '../shared/events';
 import { HelpComponent } from '../shared/help.component';
@@ -32,7 +33,7 @@ type PrincipalKey = `g${number}` | `u${number}`;
 /**
  * The folder rules of a space: what a group, or one account, may do in a folder and below it. The nearest rule above
  * a folder decides; groups add up (an account sees a folder when one of its groups does), and an account's own rule
- * only adds to what its groups give.
+ * only adds to what its groups give. The rules are the space's library's, or a connection's (`source`).
  */
 @Component({
     selector: 'sfe-folder-access',
@@ -46,9 +47,11 @@ export class FolderAccessComponent {
 
     /** The space's id for another space than the session's (server administrators), null for the session's. */
     readonly space = input<number | null>(null);
-    readonly groups = input.required<GroupInfo[]>();
+    /** Where the rules are: the space's library without it. */
+    readonly source = input<FolderRulesSource | null>(null);
+    readonly groups = input.required<RuleGroup[]>();
     /** The space's accounts. */
-    readonly members = input.required<UserInfo[]>();
+    readonly members = input.required<RuleMember[]>();
 
     protected readonly rules = signal<FolderRuleView[]>([]);
     protected readonly draft = signal<{ path: string; principal: PrincipalKey; level: FolderLevel } | null>(null);
@@ -60,6 +63,8 @@ export class FolderAccessComponent {
     protected readonly busy = signal(false);
 
     protected readonly levels = FOLDER_LEVELS;
+    protected readonly rulesSource = computed(() => this.source() ?? libraryRules(this.api, this.space()));
+    protected readonly rootName = computed(() => this.rulesSource().rootName);
     protected readonly valueOf = valueOf;
 
     /** The rules by folder, in path order. */
@@ -75,14 +80,14 @@ export class FolderAccessComponent {
 
     constructor() {
         effect(() => {
-            this.space();
+            this.rulesSource();
             untracked(() => void this.load());
         });
     }
 
     async load(): Promise<void> {
         try {
-            this.rules.set(await this.api.folderRules(this.space()));
+            this.rules.set(await this.rulesSource().load());
         } catch (error) {
             this.toasts.error(`Could not load the folder rules: ${(error as Error).message}`);
         }
@@ -119,7 +124,7 @@ export class FolderAccessComponent {
     /** Opens a folder of the picker; the folder opened is the one chosen. */
     protected async browse(path: string | null): Promise<void> {
         try {
-            const picker = await this.api.spaceFolders(path, this.space());
+            const picker = await this.rulesSource().folders(path);
             this.picker.set(picker);
             this.draft.update((draft) => draft && { ...draft, path: picker.path ?? '' });
         } catch (error) {
@@ -132,26 +137,22 @@ export class FolderAccessComponent {
         const draft = this.draft();
         if (!draft) return;
         const from = this.repointing();
+        const source = this.rulesSource();
         await this.run(async () => {
-            if (from !== null) {
-                this.rules.set(await this.api.repointFolderRules(from, draft.path, this.space()));
-                this.toasts.show(
-                    `The rules of ${from || 'the library root'} now apply to ${draft.path || 'the library root'}.`,
-                );
+            if (from !== null && source.repoint) {
+                this.rules.set(await source.repoint(from, draft.path));
+                this.toasts.show(`The rules of ${this.named(from)} now apply to ${this.named(draft.path)}.`);
             } else {
                 const id = Number(draft.principal.slice(1));
                 this.rules.set(
-                    await this.api.setFolderRule(
-                        {
-                            path: draft.path,
-                            groupId: draft.principal.startsWith('g') ? id : null,
-                            userId: draft.principal.startsWith('u') ? id : null,
-                            level: draft.level,
-                        },
-                        this.space(),
-                    ),
+                    await source.set({
+                        path: draft.path,
+                        groupId: draft.principal.startsWith('g') ? id : null,
+                        userId: draft.principal.startsWith('u') ? id : null,
+                        level: draft.level,
+                    }),
                 );
-                this.toasts.show(`Rule set on ${draft.path || 'the library root'}.`);
+                this.toasts.show(`Rule set on ${this.named(draft.path)}.`);
             }
             this.cancel();
         });
@@ -159,20 +160,15 @@ export class FolderAccessComponent {
 
     protected async changeLevel(rule: FolderRuleView, value: string): Promise<void> {
         const level = value === '' ? null : (value as FolderLevel);
+        const source = this.rulesSource();
         await this.run(async () => {
-            this.rules.set(
-                await this.api.setFolderRule(
-                    { path: rule.path, groupId: rule.groupId, userId: rule.userId, level },
-                    this.space(),
-                ),
-            );
+            this.rules.set(await source.set({ path: rule.path, groupId: rule.groupId, userId: rule.userId, level }));
             this.toasts.show(
                 level === null
-                    ? `${rule.name} follows the folder above again at ${rule.path || 'the library root'}.`
+                    ? `${rule.name} follows the folder above again at ${this.named(rule.path)}.`
                     : `Rule changed for ${rule.name}.`,
             );
-            if (this.report()?.path === rule.path)
-                this.report.set(await this.api.folderAccess(rule.path, this.space()));
+            if (this.report()?.path === rule.path && source.report) this.report.set(await source.report(rule.path));
         });
     }
 
@@ -181,11 +177,18 @@ export class FolderAccessComponent {
             this.report.set(null);
             return;
         }
+        const source = this.rulesSource();
+        if (!source.report) return;
         try {
-            this.report.set(await this.api.folderAccess(path, this.space()));
+            this.report.set(await source.report(path));
         } catch (error) {
             this.toasts.error(`Could not tell who has access: ${(error as Error).message}`);
         }
+    }
+
+    /** A folder as the toasts name it. */
+    private named(path: string): string {
+        return path || `the ${this.rootName().toLowerCase()}`;
     }
 
     private async run(action: () => Promise<void>): Promise<void> {

@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using Sfe.Api.Security;
 using Sfe.Core.Access;
-using Sfe.Core.Connections;
 using Sfe.Core.Files;
 using Sfe.Core.Transfers;
 
@@ -116,10 +115,10 @@ public static class TransferEndpoints
         if (!state.Has(right) || connected && !state.Has(Rights.UseConnections))
             return TypedResults.Forbid();
 
-        var sides = new TransferOpening(connections, transfers, right, cancellationToken);
+        var sides = new TransferOpening(connections, transfers, files, right, cancellationToken);
         if (await sides.CheckAsync(request.From.Connection, write: move) is { } fromAnswer)
             return fromAnswer;
-        if (await sides.CheckAsync(request.To!.Connection, write: true) is { } toAnswer)
+        if (await sides.CheckAsync(request.To!.Connection, write: true, request.To.Path ?? "") is { } toAnswer)
             return toAnswer;
 
         var access = new FileJobAccess(

@@ -18,6 +18,7 @@ public sealed class ConnectionService(
     ConnectionProviders providers,
     ICredentialProtector protector,
     SettingLayers settings,
+    AccessChanges changes,
     ILogger<ConnectionService> logger
 )
 {
@@ -152,6 +153,8 @@ public sealed class ConnectionService(
         connection.ReadOnly = change.ReadOnly ?? connection.ReadOnly;
         connection.RootPath = rootPath ?? connection.RootPath;
         await db.SaveChangesAsync(cancellationToken);
+        // Read only or off changes what each person may do in it (ConnectionPolicies).
+        changes.Changed();
 
         logger.LogInformation(
             "Connection {Connection} changed by account {UserId}: disabled {Disabled}, read-only {ReadOnly}, at {Root}",
@@ -226,6 +229,7 @@ public sealed class ConnectionService(
 
         db.Connections.Remove(connection);
         await db.SaveChangesAsync(cancellationToken);
+        changes.Changed();
         logger.LogInformation(
             "Connection {Connection} removed by account {UserId}",
             ConnectionRows.Describe(connection),

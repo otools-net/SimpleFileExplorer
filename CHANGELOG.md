@@ -38,6 +38,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   checked, a moved library file going to the trash only once its copy is verified; copies out of a connection you
   only read work too. A transfer whose items failed shows **Retry** in the operations panel (for a day), and each
   transfer is a run of the task history (Administration › Tasks).
+- **Folder rules inside a space's or the server's connection** (Administration › Connections › Manage › Folder
+  rules…): the library's folder-access card on the connection's folders: hide a folder from a group, or make it read
+  only or writable, per space. Hidden folders are absent everywhere (listings, counts, zips, transfers); a right of a
+  group counts only where that group's level allows it.
 - **API: a connection's files**: `GET api/v1/connections/{id}/browse` (a folder in the listing's shape, with what
   the provider can do), `files/raw/{path}` (one HTTP range when the provider reads parts), `thumbnails/{path}` and
   `POST …/archive` (a zip, then its one-time link), `POST …/files/folders`, `rename`, `delete` and `transfer` (move

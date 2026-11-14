@@ -33,6 +33,37 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
 - Server administrators: Write on library and server levels reachable in that library.
 - `ConnectionAccess.Decide` is the pure rule (tested without a database).
 
+## Where in it (folder rules, `ConnectionPolicies`)
+
+Code: `ConnectionPolicies`, `ConnectionFolders`, `ConnectionAccess.FoldersAsync`; Api `OpenConnection` (`At`, `Check`,
+`CheckThroughout`, `AnswerOf`), `ConnectionWriteChecks`, `ConnectionJobAccess`; Core `RemoteTransferChecks`,
+`RemoteSnapshot`. Tests: `ConnectionPoliciesTests`, `RemoteListingFilterTests`, `ConnectionFolderAccessRouteTests`,
+`ConnectionFolderAccessJobTests` (on `RuledConnection`), `RemoteTransferEndpointTests`, `TransferJobsTests`.
+
+- The `ConnectionGroup` row is the gate (`ConnectionAccess`); `ConnectionPolicies` says where and what: one
+  `FolderPrincipal` per group of the subject **with a row**, its own library rights, `DefaultLevel` = the row's level;
+  plus the account (rights of those groups, no say without its own rule). Rules raise or lower (nearest wins);
+  `ReadOnly` caps every level at Read (rules too). **A right counts only where the group granting it has the level**:
+  group A (delete, row Read) + group B (Write, no delete) deletes nowhere. Owner of an account-level one and server
+  administrators: unrestricted (`Whole`), but for the cap.
+- Cached per subject, connection and provider comparison until `AccessChanges.Version`; `ConnectionService.UpdateAsync`
+  and `RemoveAsync` bump it (read only, off).
+- `ConnectionFileServices.OpenAsync(write: true)` answers 403 when the route's right is allowed nowhere
+  (`AllowsSomewhere`); then each route checks its paths **before any provider call**: hidden 404, seen but refused 403.
+  Single items (raw, thumbnails for restricted subjects, properties) again at the provider's `item.Path` (stricter
+  wins). Delete, rename, move: the right at the item, its folder and throughout (`CheckThroughout`); a server-side
+  copy needs `files.view` throughout the source; a name hidden from the session is taken (409 / item `exists`).
+  Per-item routes (delete, transfer) answer per-item `notFound` / `forbidden`.
+- Listings: `RemoteListings.ListAsync(…, ListingFilter)` filters the shared snapshot per page (offsets, `Total`,
+  `DirectoryCount` of what is left). A window past the cap remembers the watched (hidden) names that leave it, with
+  their places; a filter naming what wasn't watched reads the folder anew. A path-only folder is not listed: its
+  leading children are asked one by one (`GetAsync`). `DirectoryListing.Access` is filled for restricted subjects.
+- Zips: chosen paths checked (404/403) at both steps; the walk skips what isn't viewable and downloadable without
+  naming it in the left-out entry. Transfers: `TransferOpening` checks the target folder at once; the job's
+  `RemoteTransferEndpoint` checks every item through `IConnectionJobAccess` (`ConnectionJobAccess`, read again when
+  `AccessChanges.Version` moved): hidden items not found nor listed, folders without `files.view` left out, a hidden
+  name taken (also for free names), a move's source folder holding a hidden one stays.
+
 ## Credentials
 
 - Stored only protected (`ICredentialProtector`; the Api's `ConnectionCredentials`, Data Protection purpose

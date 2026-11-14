@@ -108,6 +108,8 @@ import {
     ConnectionChange,
     ConnectionInfo,
     ConnectionListing,
+    ConnectionRule,
+    ConnectionRuleView,
     ConnectionsView,
     ConnectRequest,
     FolderLevelName,
@@ -209,10 +211,7 @@ export class Api {
 
     /** Every folder kept out of scans, trickplay or thumbnails in the space (those the session sees). */
     folderExclusions = () => this.get<ExcludedFolder[]>('api/index/exclusions');
-    /**
-     * Keeps a folder out of scans, trickplay or thumbnails (true) or lets it in again (false); absent kinds stay as
-     * they are.
-     */
+    /** Keeps a folder out of scans, trickplay or thumbnails (true) or lets it in again (false); absent kinds stay. */
     setFolderExclusions = (path: string, changes: Partial<Record<ExclusionKind, boolean>>) =>
         this.put<FolderExclusions>('api/index/exclusions', { path, ...changes });
 
@@ -396,9 +395,7 @@ export class Api {
             false,
         );
     /** Whether the install waits for its update to this version (works while everything else is closed). */
-    /**
-     * With the setup code (once typed on the update page), the update's log and the reason of its error; else neither.
-     */
+    /** With the setup code (once typed on the update page), the update's log and its error's reason; else neither. */
     migrationInfo = (code = '') =>
         this.send(
             this.http.get<MigrationInfo>('api/migration', {
@@ -584,9 +581,7 @@ export class Api {
     propertyJob = (id: string) => this.get<PropertyJob>(`api/files/properties/jobs/${id}`);
     cancelPropertyJob = (id: string) => this.delete<void>(`api/files/properties/jobs/${id}`);
 
-    /**
-     * Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original stays.
-     */
+    /** Saves `image` (JPEG, PNG or WebP) as the edited version of the picture `path`: a new file, the original kept. */
     saveEditedImage = (path: string, image: Blob) =>
         this.post<EditedImage>(withQuery('api/editor/images', { path }), image);
     /** The picture's version, and whether this account may save over it. */
@@ -640,9 +635,7 @@ export class Api {
 
     /** Every space (server administrators). */
     tenants = () => this.get<TenantDetails[]>('api/tenants');
-    /**
-     * The folders a space's library folder can be chosen in: the allowed roots without `path`, else its sub-folders.
-     */
+    /** Where a space's library folder can be chosen: the allowed roots without `path`, else their sub-folders. */
     tenantFolders = (path: string | null) => this.get<FolderPicker>('api/tenants/folders', { path });
     createTenant = (tenant: TenantInput) => this.post<TenantDetails>('api/tenants', tenant);
     updateTenant = (id: number, tenant: TenantInput) => this.put<TenantDetails>(`api/tenants/${id}`, tenant);
@@ -663,6 +656,11 @@ export class Api {
         this.put<ConnectionInfo>(`api/connections/${id}/libraries`, { allLibraries, libraryIds });
     setConnectionGroups = (id: number, groups: Record<number, FolderLevelName>) =>
         this.put<ConnectionInfo>(`api/connections/${id}/groups`, { groups });
+    /** The library's folder rules in a connection; setting them replaces them all. Its sub-folders, for the picker. */
+    connectionRules = (id: number) => this.get<ConnectionRuleView[]>(`api/connections/${id}/folder-rules`);
+    setConnectionRules = (id: number, rules: ConnectionRule[]) =>
+        this.put<ConnectionRuleView[]>(`api/connections/${id}/folder-rules`, { rules });
+    connectionFolders = (id: number, path: string) => this.get<FolderPicker>(`api/connections/${id}/folders`, { path });
     authorizeConnection = (request: ConnectRequest) => this.post<SignInBegun>('api/connections/authorize', request);
     reauthorizeConnection = (id: number, method: SignInKindName, fields: Record<string, string> = {}) =>
         this.post<SignInBegun>(`api/connections/${id}/reauthorize`, { method, fields });

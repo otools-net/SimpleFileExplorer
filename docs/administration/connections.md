@@ -68,7 +68,26 @@ A sign-in lasts 10 minutes and works once, for the account that started it.
 - **Who uses it** (space and server connections): **Groups of this space** — doesn't see it, reads, or reads and
   changes; for a server connection, the **spaces it is offered to** (every space, or some), then each space's
   administrators choose their groups.
+- **Folder rules…** (space and server connections, for those who manage the space's connections): see below.
 - **Remove**: the connection goes with who used it; the files stay in the storage.
+
+### Folder rules of a connection
+
+Like [folder access](spaces-and-accounts.md#folder-access) in the library, a space can narrow what its groups and
+accounts may do in some folders of a space or server connection: **Manage** › **Folder rules…** opens the same card.
+
+- **New rule**: pick a folder of the connection (every folder is listed, whatever rules apply to you), then a group
+  or an account of the space and a level: **Hidden**, **Read only** or **Read & write**. Each rule's level can be
+  changed later, or **Inherit (remove)** to remove it.
+- The nearest rule above a folder decides, and groups add up, as in the library. A group still needs its level under
+  **Groups of this space** to see the connection at all; a rule never opens it to a group without one, and a
+  connection made **Read only** stays read only.
+- Each space sets its own rules in a server connection; a space no longer offered the connection loses them. An
+  account's own connection has none.
+- A space has at most 250 rules per connection. The card has no **Who has access** report for a connection, and
+  folders renamed at Dropbox are not followed yet.
+
+A screenshot of the card on a connection comes with the release check.
 
 ## Browsing a connection
 

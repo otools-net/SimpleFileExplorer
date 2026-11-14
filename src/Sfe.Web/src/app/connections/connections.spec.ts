@@ -272,6 +272,47 @@ describe('Connections', () => {
             expect(api.setConnectionGroups).toHaveBeenCalledWith(8, { 3: 'read' });
         });
 
+        it("opens a space's or the server's connection's folder rules to those managing the space's", async () => {
+            const own = connection({ id: 8, name: 'Shared', level: 'library', ownerId: null, tenantId: LIBRARY.id });
+            const theirs = connection({ id: 9, ownerId: 5, name: "Bob's" });
+            api.connections.mockResolvedValue(
+                view({
+                    managed: [
+                        { connection: own, manage: true, remove: true },
+                        { connection: theirs, manage: false, remove: true },
+                    ],
+                    groups: [{ id: 3, name: 'Users' }],
+                }),
+            );
+            api.connectionRules.mockResolvedValue([]);
+            await create('shared');
+            const row = (id: number) => el().querySelector<HTMLElement>(`[data-connection="${id}"]`)!;
+            row(9).querySelector<HTMLButtonElement>('[data-manage]')!.click();
+            await settle();
+            expect(row(9).querySelector('[data-folder-rules]')).toBeNull();
+
+            row(8).querySelector<HTMLButtonElement>('[data-manage]')!.click();
+            await settle();
+            row(8).querySelector<HTMLButtonElement>('[data-folder-rules]')!.click();
+            await settle();
+
+            expect(api.connectionRules).toHaveBeenCalledWith(8);
+            expect(row(8).querySelector('sfe-folder-access')).not.toBeNull();
+            expect(row(8).querySelector('#folder-rule-principal, .access-card')).not.toBeNull();
+        });
+
+        it("hides the folder rules from who manages only the server's connections", async () => {
+            const shared = connection({ id: 8, name: 'Shared', level: 'server', ownerId: null, allTenants: true });
+            api.connections.mockResolvedValue(view({ managed: [{ connection: shared, manage: true, remove: true }] }));
+            await create(
+                'shared',
+                limitedConfig([Rights.serverConnections], { connections: CONNECTIONS, tenant: LIBRARY }),
+            );
+            el().querySelector<HTMLButtonElement>('[data-manage]')!.click();
+            await settle();
+            expect(el().querySelector('[data-folder-rules]')).toBeNull();
+        });
+
         it('adds nothing at a level the session may not make', async () => {
             await create(
                 'shared',

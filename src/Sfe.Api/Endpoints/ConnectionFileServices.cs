@@ -5,7 +5,9 @@ namespace Sfe.Api.Endpoints;
 
 /// <summary>
 /// What a route on a connection's files uses (bound with <c>[AsParameters]</c>), and the one way it opens the
-/// connection: usable by the session (else 404), the route's right held, the provider's sign-in still good.
+/// connection: usable by the session (else 404), the route's right held, the provider's sign-in still good; with
+/// where the session may use its rights in it (<see cref="OpenConnection.Folders"/>), which every route checks its
+/// paths against before calling the provider.
 /// </summary>
 internal sealed record ConnectionFileServices(
     CurrentAccess Current,
@@ -27,7 +29,8 @@ internal sealed record ConnectionFileServices(
     ) => OpenAsync(id, right, write: false, cancellationToken);
 
     /// <inheritdoc cref="OpenAsync(int, string, CancellationToken)"/>
-    /// <param name="write">The route changes files: a connection the session only reads answers 403.</param>
+    /// <param name="write">The route changes files: a connection where the session may use
+    /// <paramref name="right"/> nowhere (read only, Read for all its groups) answers 403.</param>
     public async Task<(OpenConnection? Open, IResult? Answer)> OpenAsync(
         int id,
         string right,
@@ -36,10 +39,15 @@ internal sealed record ConnectionFileServices(
     )
     {
         var state = await Current.GetAsync();
-        var usable = await Access.FindAsync(ConnectionEndpoints.SubjectOf(state), id, cancellationToken);
+        var subject = ConnectionEndpoints.SubjectOf(state);
+        var usable = await Access.FindAsync(subject, id, cancellationToken);
         if (usable is null || Providers.Find(usable.Kind) is not { } provider)
             return (null, TypedResults.NotFound());
-        if (!state.Has(right) || write && usable.Access != Sfe.Core.Access.FolderLevel.Write)
+        if (!state.Has(right))
+            return (null, TypedResults.Forbid());
+        var comparison = RemotePaths.ComparisonOf(provider.Capabilities);
+        var folders = await Access.FoldersAsync(subject, id, (state.Access.Rights, comparison), cancellationToken);
+        if (write && !folders.AllowsSomewhere(right))
             return (null, TypedResults.Forbid());
 
         var opened = await Connections.OpenAsync(id, cancellationToken);
@@ -53,7 +61,7 @@ internal sealed record ConnectionFileServices(
             );
         }
         Context.Response.RegisterForDisposeAsync(storage);
-        return (new OpenConnection(usable, storage, provider.Capabilities), null);
+        return (new OpenConnection(usable, storage, provider.Capabilities, folders), null);
     }
 
     /// <summary>

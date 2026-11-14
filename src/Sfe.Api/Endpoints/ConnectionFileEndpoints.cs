@@ -10,7 +10,9 @@ namespace Sfe.Api.Endpoints;
 /// A connection's files, browsed and read: the library's routes with the connection's id in front. Paths are
 /// relative to the connection's root folder and go through <see cref="RemotePaths.Normalize"/> before a provider
 /// sees them. A connection the session may not use answers 404 (<see cref="ConnectionAccess"/>); the route's
-/// <c>files.*</c> right is asked as in the library.
+/// <c>files.*</c> right is asked as in the library, and at the path by the connection's folder rules
+/// (<see cref="OpenConnection.Check(string, string)"/>) before the provider is called: 404 for what the session
+/// doesn't see, 403 for what it sees but may not do. A single item is checked again where the provider says it is.
 /// </summary>
 public static class ConnectionFileEndpoints
 {
@@ -85,15 +87,23 @@ public static class ConnectionFileEndpoints
         var (open, answer) = await files.OpenAsync(id, Rights.Browse, cancellationToken);
         if (open is null)
             return answer!;
+        // A folder only leading to what the session sees is listed with only those children.
+        if (open.At(path) is not { IsVisible: true } here)
+            return TypedResults.NotFound();
 
         var sort = Enum.TryParse<SortField>(query.Sort, ignoreCase: true, out var parsed) ? parsed : SortField.Name;
         var page = browse.Options.CurrentValue.Browse;
         var limit = Math.Clamp(query.Limit ?? page.DefaultPageSize, 1, Math.Max(1, page.MaxPageSize));
         var asked = new RemoteListingQuery(id, path, Math.Max(0, query.Offset), limit, sort, query.Desc);
+        var filter = open.Folders.ListingFilterOf(path, here);
         return await files.RunAsync(open, async storage =>
         {
-            var listing = await browse.Listings.ListAsync(storage, asked, cancellationToken);
-            return TypedResults.Ok(ConnectionListings.Of(open, path, listing, limit, browse.Classifier));
+            var listing = await browse.Listings.ListAsync(storage, asked, filter, cancellationToken);
+            if (!IsSeenWhereListed(open, path, listing))
+                return TypedResults.NotFound();
+            var page = ConnectionListings.Of(open, path, listing, limit, browse.Classifier);
+            var view = open.Folders.ViewOf(path, here);
+            return TypedResults.Ok(page with { Listing = page.Listing with { Access = view } });
         });
     }
 
@@ -112,11 +122,16 @@ public static class ConnectionFileEndpoints
             return answer!;
         if (download && !(await files.Current.GetAsync()).Has(Rights.Download))
             return TypedResults.Forbid();
+        var right = download ? Rights.Download : Rights.ViewFiles;
+        if (Refusal(open, normalized, right) is { } refused)
+            return refused;
 
         return await files.RunAsync(open, async storage =>
         {
             if (await storage.GetAsync(normalized, cancellationToken) is not { IsFolder: false } item)
                 return TypedResults.NotFound();
+            if (OpenConnection.AnswerOf(Stricter(open, normalized, item, right)) is { } there)
+                return there;
             RemoteRange? range = null;
             if (open.Capabilities.RangedReads)
             {
@@ -147,9 +162,20 @@ public static class ConnectionFileEndpoints
             return answer!;
         if (!open.Capabilities.Thumbnails)
             return TypedResults.NotFound();
+        if (OpenConnection.AnswerOf(open.Check(normalized, Rights.ViewFiles)) is { } refused)
+            return refused;
 
         return await files.RunAsync(open, async storage =>
         {
+            // Where the provider says the file is, for a session folder rules restrict (one more call).
+            if (
+                !open.Folders.IsUnrestricted
+                && await SeenThereAsync(open, storage, normalized, cancellationToken) is { } there
+            )
+            {
+                return there;
+            }
+
             var thumbnail = await storage.ThumbnailAsync(normalized, Math.Clamp(size, 32, 1024), cancellationToken);
             if (thumbnail is null)
                 return TypedResults.NotFound();
@@ -171,12 +197,16 @@ public static class ConnectionFileEndpoints
         var (open, answer) = await files.OpenAsync(id, Rights.Browse, cancellationToken);
         if (open is null)
             return answer!;
+        if (OpenConnection.AnswerOf(open.Check(normalized, Rights.Browse)) is { } refused)
+            return refused;
         var account = await OwnAccountAsync(files, open.Connection, cancellationToken);
 
         return await files.RunAsync(open, async storage =>
         {
             if (await storage.GetAsync(normalized, cancellationToken) is not { } item)
                 return TypedResults.NotFound();
+            if (OpenConnection.AnswerOf(open.Check(normalized, item, Rights.Browse)) is { } there)
+                return there;
             if (normalized.Length == 0)
                 item = item with { Name = open.Connection.Name };
             return TypedResults.Ok(
@@ -190,6 +220,46 @@ public static class ConnectionFileEndpoints
                 )
             );
         });
+    }
+
+    /// <summary>
+    /// A raw read refused at the path asked: 404 unseen, 403 seen but not viewable (or downloadable when it is a
+    /// download); null when allowed.
+    /// </summary>
+    private static IResult? Refusal(OpenConnection open, string path, string right) =>
+        OpenConnection.AnswerOf(Stricter(open.Check(path, Rights.ViewFiles), open.Check(path, right)));
+
+    private static PathVerdict Stricter(OpenConnection open, string asked, RemoteItem item, string right) =>
+        Stricter(open.Check(asked, item, Rights.ViewFiles), open.Check(asked, item, right));
+
+    private static PathVerdict Stricter(PathVerdict one, PathVerdict other) => one > other ? one : other;
+
+    /// <summary>
+    /// The file where the provider says it is: not found when it isn't there or the session doesn't see it there,
+    /// 403 when it may not view it; null when it may.
+    /// </summary>
+    private static async Task<IResult?> SeenThereAsync(
+        OpenConnection open,
+        IRemoteStorage storage,
+        string path,
+        CancellationToken cancellationToken
+    )
+    {
+        if (await storage.GetAsync(path, cancellationToken) is not { IsFolder: false } item)
+            return TypedResults.NotFound();
+        return OpenConnection.AnswerOf(open.Check(path, item, Rights.ViewFiles));
+    }
+
+    /// <summary>
+    /// The folder where the provider listed it (another case of its name, a name it folds) is one the session sees
+    /// too: an empty page tells nothing.
+    /// </summary>
+    private static bool IsSeenWhereListed(OpenConnection open, string path, RemoteListing listing)
+    {
+        if (listing.Items.Count == 0 || path.Length == 0)
+            return true;
+        var listed = RemotePaths.Parent(listing.Items[0].Path);
+        return listed == path || open.At(listed).IsVisible;
     }
 
     /// <summary>The provider's account of an account-level connection the caller owns; null for any other.</summary>

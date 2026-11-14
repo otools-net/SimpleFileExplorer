@@ -223,6 +223,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ConnectionSharing>();
         services.AddSingleton<ConnectionRuleService>();
         services.AddSingleton<ConnectionAccess>();
+        services.AddSingleton<ConnectionPolicies>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<PendingSignIns>();
         services.AddSingleton<ConnectionSignInFlow>();

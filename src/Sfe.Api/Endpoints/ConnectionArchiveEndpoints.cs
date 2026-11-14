@@ -10,7 +10,8 @@ namespace Sfe.Api.Endpoints;
 /// <summary>
 /// Several files or folders of a connection downloaded as one zip: the library's two steps
 /// (<see cref="ArchiveEndpoints"/>), the link bound to the connection, the zip written from the provider while it
-/// is sent (<see cref="RemoteArchives"/>).
+/// is sent (<see cref="RemoteArchives"/>). The chosen paths are checked against the connection's folder rules
+/// before the provider is called, at both steps; what they hide inside a folder is left out without being named.
 /// </summary>
 public static class ConnectionArchiveEndpoints
 {
@@ -59,13 +60,15 @@ public static class ConnectionArchiveEndpoints
         var caller = RequestLimits.Caller(files.Context);
         if (!links.HasRoom(caller))
             return TooMany();
+        if (Refusal(open, request.Paths) is { } refused)
+            return refused;
 
         return await files.RunAsync(open, async storage =>
         {
             var result = await RemoteArchives.PlanAsync(
                 storage,
                 request.Paths,
-                open.Connection.Name,
+                (open.Connection.Name, open.Folders),
                 cancellationToken
             );
             if (result.Invalid is { } invalid)
@@ -98,25 +101,27 @@ public static class ConnectionArchiveEndpoints
         using var running = archives.Links.TryBegin(caller);
         if (running is null)
             return TooMany();
+        if (Refusal(open, pending.Paths) is { } refused)
+            return refused;
 
         return await files.RunAsync(open, async storage =>
         {
             var result = await RemoteArchives.PlanAsync(
                 storage,
                 pending.Paths,
-                open.Connection.Name,
+                (open.Connection.Name, open.Folders),
                 context.RequestAborted
             );
             if (result.Plan is not { } plan)
                 return TypedResults.NotFound();
-            await StreamAsync(context, storage, plan, archives);
+            await StreamAsync(context, (storage, open.Folders), plan, archives);
             return TypedResults.Empty;
         });
     }
 
     private static async Task StreamAsync(
         HttpContext context,
-        IRemoteStorage storage,
+        (IRemoteStorage Storage, ConnectionFolders Folders) place,
         RemoteArchivePlan plan,
         ConnectionArchiveServices archives
     )
@@ -134,10 +139,10 @@ public static class ConnectionArchiveEndpoints
             await response.StartAsync(cancellationToken);
             var output = new ArchiveEndpoints.ResponseStream(response.BodyWriter, cancellationToken);
             var summary = await RemoteArchives.WriteAsync(
-                storage,
+                place.Storage,
                 plan,
                 output,
-                archives.Archives.MaxBytes,
+                (archives.Archives.MaxBytes, place.Folders),
                 cancellationToken
             );
             await response.BodyWriter.FlushAsync(cancellationToken);
@@ -171,6 +176,23 @@ public static class ConnectionArchiveEndpoints
         if (opened.Open is not null && !(await files.Current.GetAsync()).Has(Rights.ViewFiles))
             return (null, TypedResults.Forbid());
         return opened;
+    }
+
+    /// <summary>
+    /// The answer when a chosen path is hidden from the session (404) or not one it may view and download (403);
+    /// null when all are fine. Paths that aren't any are left to the plan (400).
+    /// </summary>
+    private static IResult? Refusal(OpenConnection open, IEnumerable<string?>? paths)
+    {
+        foreach (var path in (paths ?? []).Take(Archives.MaxItems + 1).Select(RemotePaths.Normalize).OfType<string>())
+        {
+            var verdict = open.Check(path, Rights.ViewFiles);
+            if (verdict == PathVerdict.Allowed)
+                verdict = open.Check(path, Rights.Download);
+            if (OpenConnection.AnswerOf(verdict) is { } refused)
+                return refused;
+        }
+        return null;
     }
 
     private static string Scope(int id) => $"connection:{id}";

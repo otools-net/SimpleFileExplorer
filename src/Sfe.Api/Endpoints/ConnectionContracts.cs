@@ -102,13 +102,6 @@ public sealed record ConnectionItemProperties(
     bool Downloadable
 );
 
-/// <summary>A connection opened for one request (<see cref="ConnectionFileServices.OpenAsync"/>).</summary>
-internal sealed record OpenConnection(
-    UsableConnection Connection,
-    IRemoteStorage Storage,
-    ProviderCapabilities Capabilities
-);
-
 /// <summary>What the listing of a connection's folder uses (bound with <c>[AsParameters]</c>).</summary>
 internal sealed record ConnectionBrowseServices(
     RemoteListings Listings,
@@ -153,11 +146,10 @@ public sealed record ConnectionTransferItem(
 
 /// <summary>One move or copy of a <see cref="ConnectionTransferRequest"/>, as checked.</summary>
 internal sealed record ConnectionTransferStep(
-    IRemoteStorage Storage,
+    OpenConnection Open,
     string Target,
     RemoteConflict Conflict,
     bool Move,
-    StringComparison Comparison,
     MediaClassifier Classifier
 );
 

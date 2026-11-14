@@ -222,6 +222,24 @@ public sealed class TransferJobsTests
         CollectionAssert.Contains(_account.Trash, "RepeatedDir/ChildDir");
     }
 
+    [TestMethod]
+    public async Task ARuleAddedWhileAJobRunsStopsItsNextItems()
+    {
+        _account.WithFile("Docs/a.txt", "a").WithFile("Docs/b.txt", "b");
+        var access = new HidingAfterCall(_account, "read Docs/a.txt", "Docs");
+        var start = Down(FileJobKind.Copy, ["Docs/a.txt", "Docs/b.txt"], "ChildDir") with { Source = Remote(access) };
+
+        var job = await RunAsync(start);
+
+        CollectionAssert.AreEqual(
+            new[] { FileOperationStatus.Done, FileOperationStatus.NotFound },
+            job.Results.Select(r => r.Status).ToArray()
+        );
+        Assert.IsTrue(File.Exists(_library.FullPath("ChildDir/a.txt")));
+        Assert.IsFalse(File.Exists(_library.FullPath("ChildDir/b.txt")));
+        Assert.IsFalse(_account.Calls.Any(c => c.EndsWith("Docs/b.txt", StringComparison.Ordinal)));
+    }
+
     /// <summary>From the library into the connection.</summary>
     private TransferStart Up(FileJobKind kind, IReadOnlyList<string> paths, string target) =>
         Transfer(kind, paths, null, new TransferPlace(Connection, target));
@@ -256,11 +274,15 @@ public sealed class TransferJobsTests
     private LibraryTransferEndpoint Library(string right) =>
         _services.Get<LibraryTransfers>().Open(Me, new FakeAccess(), right, _partials);
 
-    private RemoteTransferEndpoint Remote() =>
+    private RemoteTransferEndpoint Remote(IConnectionJobAccess? access = null) =>
         new(
-            Connection,
-            _provider.Open("alice", "", new()),
-            _provider.Capabilities,
+            new RemoteTransferSide(
+                Connection,
+                _provider.Open("alice", "", new()),
+                _provider.Capabilities,
+                access ?? new FixedJobAccess(),
+                Rights.CopyFiles
+            ),
             new TransferCalls(new ConnectionGates(_clock), _clock),
             new RemoteListings(_clock)
         );
@@ -309,6 +331,17 @@ public sealed class TransferJobsTests
     }
 
     /// <summary>Everything allowed; the work folder protected.</summary>
+    /// <summary>
+    /// Folder rules hiding <paramref name="hidden"/> once the provider was called with <paramref name="call"/>.
+    /// </summary>
+    private sealed class HidingAfterCall(FakeAccount account, string call, string hidden) : IConnectionJobAccess
+    {
+        public Task<ConnectionFolders?> FoldersAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(
+                account.Calls.Contains(call) ? FixedJobAccess.Hiding(hidden) : new FixedJobAccess().Folders
+            );
+    }
+
     internal sealed class FakeAccess : IFileJobAccess
     {
         public Task<bool> MayAsync(string path, string right) => Task.FromResult(true);

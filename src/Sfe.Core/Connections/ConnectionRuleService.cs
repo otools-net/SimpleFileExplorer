@@ -25,7 +25,8 @@ public sealed class ConnectionRuleService(
     /// <summary>One lock per connection: two libraries' changes, or one library's two, wait for each other.</summary>
     private readonly ConcurrentDictionary<int, SemaphoreSlim> _locks = new();
 
-    /// <summary>The rules library <paramref name="tenantId"/> set in connection <paramref name="connectionId"/>.</summary>
+    /// <summary>The rules library <paramref name="tenantId"/> set in connection
+    /// <paramref name="connectionId"/>.</summary>
     public async Task<IReadOnlyList<ConnectionRuleInfo>> GetAsync(
         int connectionId,
         int tenantId,
@@ -208,7 +209,8 @@ public sealed class ConnectionRuleService(
         if (openedToMore)
         {
             logger.LogSecurityWarning(
-                "Connection {Connection} folder rules opened to more by account {UserId} in library {TenantId}: [{Rules}]",
+                "Connection {Connection} folder rules opened to more by account {UserId} in library {TenantId}: "
+                    + "[{Rules}]",
                 ConnectionRows.Describe(connection),
                 change.ChangedById,
                 change.TenantId,

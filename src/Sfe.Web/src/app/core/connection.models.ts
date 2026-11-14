@@ -195,3 +195,20 @@ export interface PlaceProperties {
     /** False for an online document: nothing to download. */
     downloadable: boolean;
 }
+
+/** A folder rule of a connection for one group or account of the library (`api/connections/{id}/folder-rules`). */
+export interface ConnectionRule {
+    /** Relative to the connection's root folder; empty for the root. */
+    path: string;
+    groupId: number | null;
+    userId: number | null;
+    level: FolderLevelName;
+    /** The provider's id of the folder, when known. */
+    itemId: string | null;
+}
+
+/** A folder rule of a connection as listed: with its id and its group's or account's name. */
+export interface ConnectionRuleView extends ConnectionRule {
+    id: number;
+    name: string;
+}

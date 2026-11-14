@@ -8,8 +8,9 @@ namespace Sfe.Api.Endpoints;
 /// <summary>
 /// A connection's files changed: new folder, rename, delete, move and copy, done by the provider at once (no job).
 /// Paths go through <see cref="RemotePaths.Normalize"/>; a connection the session may not use answers 404, one it
-/// only reads 403; the route's <c>files.*</c> right is asked as in the library. Each change drops the connection's
-/// cached listings (<see cref="RemoteListings.Forget"/>), so the next page shows it.
+/// only reads 403; the route's <c>files.*</c> right is asked as in the library, and at each path by the
+/// connection's folder rules before the provider is called (<see cref="ConnectionWriteChecks"/>). Each change drops
+/// the connection's cached listings (<see cref="RemoteListings.Forget"/>), so the next page shows it.
 /// </summary>
 public static class ConnectionWriteEndpoints
 {
@@ -89,12 +90,14 @@ public static class ConnectionWriteEndpoints
             return TypedResults.NotFound();
         if (!RemotePaths.IsValidName(request.Name))
             return InvalidName("The name cannot be used.");
+        var path = RemotePaths.Combine(folder, request.Name!);
+        if (ConnectionWriteChecks.NewItem(open, folder, path, Rights.CreateFolders) is { } refused)
+            return refused;
 
         return await files.RunAsync(open, async storage =>
         {
             if (folder.Length > 0 && await storage.GetAsync(folder, cancellationToken) is not { IsFolder: true })
                 return TypedResults.NotFound();
-            var path = RemotePaths.Combine(folder, request.Name!);
             return await ChangeAsync(id, writes, () => storage.CreateFolderAsync(path, cancellationToken));
         });
     }
@@ -116,6 +119,16 @@ public static class ConnectionWriteEndpoints
             return InvalidName("The name cannot be used.");
 
         var to = RemotePaths.Combine(RemotePaths.Parent(path), request.Name!);
+        if (OpenConnection.AnswerOf(open.CheckThroughout(path, Rights.RenameFiles)) is { } refused)
+            return refused;
+        if (
+            to != path
+            && ConnectionWriteChecks.NewItem(open, RemotePaths.Parent(to), to, Rights.RenameFiles) is { } taken
+        )
+        {
+            return taken;
+        }
+
         return await files.RunAsync(open, async storage =>
         {
             if (to == path)
@@ -148,7 +161,7 @@ public static class ConnectionWriteEndpoints
             try
             {
                 foreach (var asked in (request.Paths ?? []).Distinct(StringComparer.Ordinal).Take(MaxItems))
-                    results.Add(await DeleteOneAsync(storage, asked, cancellationToken));
+                    results.Add(await DeleteOneAsync(open, asked, cancellationToken));
             }
             finally
             {
@@ -159,16 +172,19 @@ public static class ConnectionWriteEndpoints
     }
 
     private static async Task<DeletedItem> DeleteOneAsync(
-        IRemoteStorage storage,
+        OpenConnection open,
         string asked,
         CancellationToken cancellationToken
     )
     {
         if (RemotePaths.Normalize(asked) is not { Length: > 0 } path)
             return new DeletedItem(asked, FileOperationStatus.NotFound);
+        var verdict = open.CheckThroughout(path, Rights.DeleteFiles);
+        if (ConnectionWriteChecks.StatusOf(verdict) is { } refused)
+            return new DeletedItem(asked, refused);
         try
         {
-            await storage.DeleteAsync(path, cancellationToken);
+            await open.Storage.DeleteAsync(path, cancellationToken);
             return new DeletedItem(asked, FileOperationStatus.Done);
         }
         catch (RemoteStorageException error) when (StatusOf(error.Kind) is { } status)
@@ -203,13 +219,14 @@ public static class ConnectionWriteEndpoints
             return NotSupported(move.Value);
         if (RemotePaths.Normalize(request.Target) is not { } target)
             return TypedResults.NotFound();
+        if (OpenConnection.AnswerOf(open.Check(target, right)) is { } refused)
+            return refused;
 
-        var comparison = RemotePaths.ComparisonOf(open.Capabilities);
         return await files.RunAsync(open, async storage =>
         {
             if (target.Length > 0 && await storage.GetAsync(target, cancellationToken) is not { IsFolder: true })
                 return TypedResults.NotFound();
-            var step = new ConnectionTransferStep(storage, target, conflict, move.Value, comparison, writes.Classifier);
+            var step = new ConnectionTransferStep(open, target, conflict, move.Value, writes.Classifier);
             var results = new List<ConnectionTransferItem>();
             try
             {
@@ -233,15 +250,27 @@ public static class ConnectionWriteEndpoints
         if (RemotePaths.Normalize(asked) is not { Length: > 0 } path)
             return new(asked, FileOperationStatus.NotFound);
         var to = RemotePaths.Combine(step.Target, RemotePaths.NameOf(path));
-        if (step.Move && to.Equals(path, step.Comparison))
+        var comparison = step.Open.Folders.Comparison;
+        if (ConnectionWriteChecks.SourceStatus(step.Open, path, step.Move) is { } refused)
+            return new(asked, refused);
+        if (step.Move && to.Equals(path, comparison))
             return new(asked, FileOperationStatus.Skipped);
-        if (RemotePaths.IsInTree(step.Target, path, step.Comparison))
+        if (RemotePaths.IsInTree(step.Target, path, comparison))
             return new(asked, FileOperationStatus.Invalid, "A folder cannot go into itself.");
+        if (
+            ConnectionWriteChecks.TargetStatus(step.Open, to, step.Move ? Rights.MoveFiles : Rights.CopyFiles) is
+            { } held
+        )
+        {
+            return new(asked, held);
+        }
+
+        var storage = step.Open.Storage;
         try
         {
             var item = step.Move
-                ? await step.Storage.MoveAsync(path, to, step.Conflict, cancellationToken)
-                : await step.Storage.CopyAsync(path, to, step.Conflict, cancellationToken);
+                ? await storage.MoveAsync(path, to, step.Conflict, cancellationToken)
+                : await storage.CopyAsync(path, to, step.Conflict, cancellationToken);
             return new(asked, FileOperationStatus.Done, Item: ConnectionListings.ToItem(item, step.Classifier));
         }
         catch (RemoteStorageException error) when (StatusOf(error.Kind) is { } status)

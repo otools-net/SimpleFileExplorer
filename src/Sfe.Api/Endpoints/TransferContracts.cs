@@ -32,7 +32,8 @@ internal sealed record TransferServices(
     TransferJobs Jobs,
     LibraryTransfers Library,
     TransferCalls Calls,
-    RemoteListings Listings
+    RemoteListings Listings,
+    AccessChanges Changes
 );
 
 /// <summary>

@@ -1,4 +1,5 @@
 using System.Text;
+using Sfe.Core.Access;
 using Sfe.Core.Connections;
 using Sfe.Core.Transfers;
 using Sfe.Tests.Infrastructure;
@@ -16,6 +17,7 @@ public sealed class RemoteTransferEndpointTests
 
     private readonly FakeProvider _provider = new();
     private readonly InstantClock _clock = new();
+    private readonly FixedJobAccess _access = new();
     private FakeAccount _account = null!;
     private RemoteTransferEndpoint _endpoint = null!;
 
@@ -174,6 +176,54 @@ public sealed class RemoteTransferEndpointTests
         CollectionAssert.AreEqual(new[] { "Docs/a.txt" }, _account.Trash);
     }
 
+    [TestMethod]
+    public async Task WhatFolderRulesHideIsNotFoundNorListedAndItsNameIsTaken()
+    {
+        Open();
+        _account.WithFile("Docs/a.txt", "a").WithFile("Docs/Hidden/h.txt", "h").WithFile("Docs/Hidden.txt", "x");
+        _access.Folders = FixedJobAccess.Hiding("Docs/Hidden");
+
+        var listed = new List<string>();
+        await foreach (var entry in _endpoint.ListAsync("Docs", Token))
+            listed.Add(entry.Name);
+        var hidden = await _endpoint.GetAsync("docs/HIDDEN/h.txt", Token);
+        var free = await _endpoint.FreeNameAsync("Docs", "hidden", isFolder: true, Token);
+        var written = await Assert.ThrowsAsync<RemoteStorageException>(() =>
+            _endpoint.BeginWriteAsync("Docs", "Hidden", 1, null, Token)
+        );
+        var docs = await _endpoint.GetAsync("Docs", Token);
+        var moved = await Assert.ThrowsAsync<RemoteStorageException>(() => _endpoint.DeleteSourceAsync(docs!, Token));
+
+        CollectionAssert.AreEquivalent(new[] { "a.txt", "Hidden.txt" }, listed);
+        Assert.IsNull(hidden);
+        Assert.AreEqual("hidden (2)", free);
+        Assert.AreEqual(RemoteErrorKind.Exists, written.Kind);
+        Assert.AreEqual(RemoteErrorKind.Refused, moved.Kind, "a folder holding a hidden one stays");
+        Assert.IsTrue(_account.Exists("Docs/Hidden/h.txt"));
+        Assert.IsFalse(_account.Calls.Any(c => c.Contains("hidden/", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(_account.Calls.Any(c => c.StartsWith("upload", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task ThePersonsAccessIsReadAgainAtEveryItem()
+    {
+        Open();
+        _account.WithFile("Docs/a.txt", "a").WithFile("Docs/b.txt", "b");
+
+        var first = await _endpoint.GetAsync("Docs/a.txt", Token);
+        _access.Folders = FixedJobAccess.Hiding("Docs");
+        var second = await _endpoint.GetAsync("Docs/b.txt", Token);
+        var read = await Assert.ThrowsAsync<RemoteStorageException>(() => _endpoint.OpenReadAsync(first!, 0, Token));
+        _access.Folders = null;
+        var gone = await Assert.ThrowsAsync<RemoteStorageException>(() => _endpoint.GetAsync("Other", Token));
+
+        Assert.IsNotNull(first);
+        Assert.IsNull(second);
+        Assert.AreEqual(RemoteErrorKind.NotFound, read.Kind);
+        Assert.AreEqual(RemoteErrorKind.Refused, gone.Kind);
+        CollectionAssert.AreEqual(new[] { "get Docs/a.txt" }, _account.Calls);
+    }
+
     private void Open(ProviderCapabilities? capabilities = null)
     {
         _provider.Capabilities = capabilities ?? _provider.Capabilities;
@@ -181,9 +231,7 @@ public sealed class RemoteTransferEndpointTests
         var storage = _provider.Open("alice", "", new());
         var calls = new TransferCalls(new ConnectionGates(_clock), _clock);
         _endpoint = new RemoteTransferEndpoint(
-            Connection,
-            storage,
-            _provider.Capabilities,
+            _access.Side(Connection, storage, _provider.Capabilities, Rights.MoveFiles),
             calls,
             new RemoteListings(_clock)
         );

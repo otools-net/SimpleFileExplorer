@@ -66,10 +66,13 @@ public sealed class TransferRetryTests
         Assert.AreEqual((FileOperationStatus.Done, "RepeatedDir"), (result.Status, result.NewPath), result.Message);
         Assert.AreEqual(1, _account.Calls.Count(c => c.StartsWith("upload-begin", StringComparison.Ordinal)));
         foreach (var file in Directory.GetFiles(_library.FullPath("RepeatedDir"), "*", SearchOption.AllDirectories))
+        {
             Assert.IsTrue(
                 _account.Exists(Path.GetRelativePath(_library.Root, file).Replace(Path.DirectorySeparatorChar, '/')),
                 file
             );
+        }
+
         Assert.IsNull(Jobs.Retry(failed.Id, Up(retry.Paths)), "Started again once");
         Assert.IsNull(Jobs.FindRetry(again.Id, Me.AccountId), "Nothing left");
     }
@@ -162,9 +165,12 @@ public sealed class TransferRetryTests
                 .Get<LibraryTransfers>()
                 .Open(Me, new TransferJobsTests.FakeAccess(), Rights.CopyFiles, _partials),
             Target = new RemoteTransferEndpoint(
-                Connection,
-                _provider.Open("alice", "", new()),
-                _provider.Capabilities,
+                new FixedJobAccess().Side(
+                    Connection,
+                    _provider.Open("alice", "", new()),
+                    _provider.Capabilities,
+                    Rights.CopyFiles
+                ),
                 new TransferCalls(new ConnectionGates(_clock), _clock),
                 new RemoteListings(_clock)
             ),

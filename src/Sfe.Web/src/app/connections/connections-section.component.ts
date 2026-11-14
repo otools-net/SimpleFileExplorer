@@ -16,6 +16,9 @@ import {
     ManagedConnection,
 } from '../core/connection.models';
 import { ProviderSetupComponent } from './provider-setup.component';
+import { UserInfo } from '../access/access.models';
+import { FolderAccessComponent } from '../access/folder-access.component';
+import { ConnectionRules } from '../access/folder-rules-source';
 
 /**
  * Administration › My account › Connections (`mine`: the account's own) and Administration › Connections
@@ -24,7 +27,7 @@ import { ProviderSetupComponent } from './provider-setup.component';
  */
 @Component({
     selector: 'sfe-connections-section',
-    imports: [ConnectDialog, IconComponent, ProviderSetupComponent],
+    imports: [ConnectDialog, IconComponent, ProviderSetupComponent, FolderAccessComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'connections-section' },
     templateUrl: './connections-section.component.html',
@@ -42,6 +45,10 @@ export class ConnectionsSectionComponent {
     /** The connection whose users are open below it. */
     protected readonly openId = signal<number | null>(null);
     protected readonly renaming = signal<{ id: number; name: string } | null>(null);
+    /** The connection whose folder rules are open in its panel. */
+    protected readonly folderRules = signal<{ id: number; source: ConnectionRules } | null>(null);
+    /** The space's accounts, for rules of one account (with `tenant.members`; else rules of groups only). */
+    protected readonly members = signal<UserInfo[]>([]);
 
     protected readonly levelNames = LEVEL_NAMES;
     protected readonly value = valueOf;
@@ -160,6 +167,19 @@ export class ConnectionsSectionComponent {
         if (!this.config.can(Rights.libraryConnections) || tenant === undefined) return false;
         if (connection.level === 'library') return connection.tenantId === tenant;
         return connection.level === 'server' && (connection.allTenants || connection.tenantIds.includes(tenant));
+    }
+
+    protected async toggleFolderRules(connection: ConnectionInfo): Promise<void> {
+        if (this.folderRules()?.id === connection.id) {
+            this.folderRules.set(null);
+            return;
+        }
+        this.folderRules.set({
+            id: connection.id,
+            source: new ConnectionRules(this.api, connection.id, connection.name),
+        });
+        if (this.config.can(Rights.manageMembers) && this.members().length === 0)
+            this.members.set(await this.api.users().catch(() => []));
     }
 
     /** Runs a change and loads the list again; false (and a toast) when it was refused. */

@@ -19,7 +19,11 @@ namespace Sfe.Core.Connections;
 /// Server administrators: Write on library and server levels. <see cref="Connection.ReadOnly"/> caps at Read; guests
 /// and visitors never.
 /// </remarks>
-public sealed class ConnectionAccess(IDbContextFactory<AccessDbContext> dbFactory, SettingLayers settings)
+public sealed class ConnectionAccess(
+    IDbContextFactory<AccessDbContext> dbFactory,
+    SettingLayers settings,
+    ConnectionPolicies policies
+)
 {
     /// <summary>How far <paramref name="subject"/> may use connection <paramref name="connectionId"/>; null = not at
     /// all.</summary>
@@ -42,6 +46,22 @@ public sealed class ConnectionAccess(IDbContextFactory<AccessDbContext> dbFactor
     {
         var usable = await UsableAsync(subject, connectionId, cancellationToken);
         return usable.Count == 1 ? usable[0] : null;
+    }
+
+    /// <summary>
+    /// Where in connection <paramref name="connectionId"/> the subject may use the rights it holds in the library
+    /// (<paramref name="granted"/>): its folder rules and its groups' levels (<see cref="ConnectionPolicies"/>),
+    /// paths compared by <paramref name="comparison"/>. Asked once <see cref="FindAsync"/> let the subject in.
+    /// </summary>
+    public async Task<ConnectionFolders> FoldersAsync(
+        ConnectionSubject subject,
+        int connectionId,
+        (IReadOnlySet<string> Granted, StringComparison Comparison) how,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var policy = await policies.GetAsync(subject, connectionId, how.Comparison, cancellationToken);
+        return new ConnectionFolders(policy, how.Granted, how.Comparison);
     }
 
     /// <summary>The connections <paramref name="subject"/> may use in its library, by name.</summary>

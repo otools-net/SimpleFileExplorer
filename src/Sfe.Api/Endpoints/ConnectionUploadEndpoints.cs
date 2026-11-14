@@ -10,7 +10,9 @@ namespace Sfe.Api.Endpoints;
 /// Resumable uploads into a connection: the library's routes (<see cref="UploadEndpoints"/>) in paths, bodies and
 /// answers, so the client only changes their base. Each chunk goes on to the provider's upload session at once (no
 /// file on the server's disk); <see cref="RemoteUploads"/> keeps the records, and the provider's session id never
-/// leaves the server. An upload is its owner's only: anyone else is answered 404.
+/// leaves the server. An upload is its owner's only: anyone else is answered 404. The connection's folder rules
+/// are checked at the target folder and the file's path at every step (they can change during an upload): a folder
+/// hidden from the session is not found, a name hidden from it is taken.
 /// </summary>
 public static class ConnectionUploadEndpoints
 {
@@ -117,6 +119,8 @@ public static class ConnectionUploadEndpoints
             return Invalid("names", $"Name 1 to {UploadEndpoints.MaxCheckNames} files.");
         if (RemotePaths.Normalize(request.Target) is not { } target)
             return TypedResults.NotFound();
+        if (OpenConnection.AnswerOf(open.Check(target, Rights.UploadFiles)) is { } refused)
+            return refused;
 
         var canReplace = (await files.Current.GetAsync()).Has(Rights.DeleteFiles);
         return await files.RunAsync(open, async storage =>
@@ -130,7 +134,11 @@ public static class ConnectionUploadEndpoints
                 open.Capabilities,
                 cancellationToken
             );
-            return TypedResults.Ok(new UploadCheck(taken, canReplace));
+            // A name hidden from the session is taken, whatever is there.
+            var hidden = names.Where(name =>
+                ConnectionUploadNames.PathOf(name) is { } path && !open.At(RemotePaths.Combine(target, path)).IsVisible
+            );
+            return TypedResults.Ok(new UploadCheck([.. taken.Union(hidden, StringComparer.Ordinal)], canReplace));
         });
     }
 
@@ -153,14 +161,18 @@ public static class ConnectionUploadEndpoints
             return Invalid("name", "The name cannot be used.");
         if (request.Size < 0)
             return Invalid("name", "The size is not valid.");
+        if (Refusal(open, target, name) is { } refused)
+            return refused;
         // The space's limit holds whatever the place (Files:Uploads:MaxFileSizeMegabytes).
         if (uploads.Options.CurrentValue.Files.Uploads.MaxFileSizeMegabytes is > 0 and var max)
         {
             if (request.Size > max * 1024L * 1024)
+            {
                 return Invalid(
                     "name",
                     $"“{RemotePaths.NameOf(name)}” is larger than the {max:N0} MB a file may have here."
                 );
+            }
         }
         var state = await files.Current.GetAsync();
         if (state.User is not { } user)
@@ -240,6 +252,8 @@ public static class ConnectionUploadEndpoints
         var owner = OwnerOf(id, await files.Current.GetAsync());
         if (uploads.Uploads.Find(uploadId, owner) is not { } upload)
             return TypedResults.NotFound();
+        if (Refusal(open, upload.Target, upload.Name) is { } refused)
+            return refused;
 
         await upload.Gate.WaitAsync(cancellationToken);
         try
@@ -268,11 +282,23 @@ public static class ConnectionUploadEndpoints
         if (uploads.Uploads.Find(uploadId, OwnerOf(id, state)) is not { } upload)
             return TypedResults.NotFound();
         var choice = request?.Conflicts ?? ConflictChoice.Ask;
-        if (choice == ConflictChoice.Replace && !state.Has(Rights.DeleteFiles))
+        var path = RemotePaths.Combine(upload.Target, upload.Name);
+        var mayReplace = state.Has(Rights.DeleteFiles) && open.Check(path, Rights.DeleteFiles) != PathVerdict.Forbidden;
+        if (choice == ConflictChoice.Replace && !mayReplace)
+        {
             return TypedResults.Problem(
                 "Replacing needs the right to delete.",
                 statusCode: StatusCodes.Status403Forbidden
             );
+        }
+
+        if (choice == ConflictChoice.Skip && !open.At(path).IsVisible)
+        {
+            uploads.Uploads.Remove(upload);
+            return TypedResults.NoContent();
+        }
+        if (Refusal(open, upload.Target, upload.Name) is { } refused)
+            return refused;
 
         await upload.Gate.WaitAsync(cancellationToken);
         try
@@ -325,6 +351,18 @@ public static class ConnectionUploadEndpoints
     /// <summary>The caller as an owner of uploads; visitors without an account have none (an id no one has).</summary>
     private static RemoteUploadOwner OwnerOf(int id, AccessState state) =>
         new(id, state.TenantId, state.User?.Id ?? -1);
+
+    /// <summary>
+    /// The answer when the session may not upload <paramref name="name"/> (a path for a folder upload) into
+    /// <paramref name="target"/> now; null when it may.
+    /// </summary>
+    private static IResult? Refusal(OpenConnection open, string target, string name)
+    {
+        if (OpenConnection.AnswerOf(open.Check(target, Rights.UploadFiles)) is { } refused)
+            return refused;
+        var path = RemotePaths.Combine(target, name);
+        return ConnectionWriteChecks.NewItem(open, RemotePaths.Parent(path), path, Rights.UploadFiles);
+    }
 
     private static async Task<bool> IsFolderAsync(IRemoteStorage storage, string path, CancellationToken token) =>
         path.Length == 0 || await storage.GetAsync(path, token) is { IsFolder: true };

@@ -36,7 +36,7 @@
             <div class="field">
                 <span class="field-label">{{ repointing() ? 'Folder the rules now apply to' : 'Folder' }}</span>
                 <div class="folder-picker">
-                    <p class="folder-picker-path"><svg sfeIcon="folder"></svg><span>{{ draft.path || 'Library root' }}</span></p>
+                    <p class="folder-picker-path"><svg sfeIcon="folder"></svg><span>{{ draft.path || rootName() }}</span></p>
                     @if (picker(); as picker) {
                         <ul>
                             @if (picker.parent !== null) {
@@ -124,7 +124,7 @@
             <li class="access-row">
                 <div class="access-row-main">
                     <svg sfeIcon="folder"></svg>
-                    <strong class="access-path">{{ folder.path || 'Library root' }}</strong>
+                    <strong class="access-path">{{ folder.path || rootName() }}</strong>
                     @if (!folder.exists) {
                         <span
                             class="access-badge danger"
@@ -137,7 +137,7 @@
                         <li>
                             <span>{{ rule.name }}<span class="field-hint">{{ rule.groupId !== null ? 'group' : 'account' }}</span></span>
                             <select
-                                [attr.aria-label]="'Level of ' + rule.name + ' at ' + (folder.path || 'the library root')"
+                                [attr.aria-label]="'Level of ' + rule.name + ' at ' + (folder.path || rootName())"
                                 [disabled]="busy()"
                                 (change)="changeLevel(rule, valueOf($event))"
                             >
@@ -157,16 +157,16 @@
                     }
                 </ul>
                 <div class="access-row-actions">
-                    @if (folder.exists) {
+                    @if (folder.exists && rulesSource().report) {
                         <button
                             type="button"
                             class="button small"
-                            [title]="'Who may see and change ' + (folder.path || 'the library root')"
+                            [title]="'Who may see and change ' + (folder.path || rootName())"
                             (click)="toggleReport(folder.path)"
                         >
                             {{ report()?.path === folder.path ? 'Hide who has access' : 'Who has access' }}
                         </button>
-                    } @else {
+                    } @else if (!folder.exists) {
                         <button
                             type="button"
                             class="button small"

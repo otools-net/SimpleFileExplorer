@@ -20,7 +20,7 @@ public sealed class ConnectionFolderRule
     /// <summary>The library whose people the rule is for: each library sets its own in a server connection.</summary>
     public int TenantId { get; set; }
 
-    /// <summary>Relative to the connection's root folder (<see cref="RemotePaths"/>); empty for the root itself.</summary>
+    /// <summary>Relative to the connection's root folder (<see cref="RemotePaths"/>); empty for the root.</summary>
     public string Path { get; set; } = string.Empty;
 
     /// <summary>The group the rule is for; null for a rule of an account (<see cref="UserId"/>).</summary>
