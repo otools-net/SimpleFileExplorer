@@ -53,5 +53,5 @@ def services_record(namespace_usings, name, summary, fields):
     """The text of a services record file: fields as (Type, Name)."""
     usings = ''.join(f'using {u};\n' for u in namespace_usings)
     body = ',\n'.join(f'    {t} {n}' for t, n in fields)
-    return (f'{usings}\nnamespace Sfe.Api.Endpoints;\n\n/// <summary>\n/// {summary}\n/// </summary>\n'
+    return (f'{usings}\nnamespace Otools.Net.Sfe.Api.Endpoints;\n\n/// <summary>\n/// {summary}\n/// </summary>\n'
             f'internal sealed record {name}(\n{body}\n);\n')

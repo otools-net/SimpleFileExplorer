@@ -3,7 +3,7 @@ using Otools.Net.Sfe.Core.Data;
 namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
-/// The rights of personal access tokens (agents/docs/development/api-tokens-plan.md), a part of
+/// The rights of personal access tokens (agents/docs/features/access-tokens.md), a part of
 /// <see cref="RightCatalog.All"/> kept in its own file: the Administrators' only, never a guest's, given to the
 /// Administrators of existing spaces once (<see cref="Since"/>). They build their definitions without
 /// <see cref="RightCatalog"/>, which reads this list while it initializes.

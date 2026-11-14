@@ -12,7 +12,7 @@ Code: `src/Sfe.Core/Data/` (`SfeDbContext`, `Migrations/`, `DatabaseInitializer`
   columns). Other column changes to existing tables are not handled on SQLite: make new columns nullable.
 - Indexed strings need a max length on SQL Server; SQL Server caps paths at 260 (`SfeDbContext.MaxPathLength`).
 - Schema: tables in schema `SFE` on SQL Server (`Directories`, `Files`, tags in `TagDefinitions`). Entities: one class
-  per file in `Index/ Tags/ MissingFiles/ Tasks/ Access/`, all in namespace `Sfe.Core.Data`.
+  per file in `Index/ Tags/ MissingFiles/ Tasks/ Access/`, all in namespace `Otools.Net.Sfe.Core.Data`.
 - `dotnet ef migrations add` writes CRLF (with BOM): normalise the new files and the snapshot to LF
   ([line-endings.md](../environment/line-endings.md)).
 - The match count query is unordered on purpose and EF's `RowLimitingOperationWithoutOrderByWarning` is ignored: order

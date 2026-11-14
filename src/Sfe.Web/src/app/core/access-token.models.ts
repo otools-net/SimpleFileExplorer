@@ -1,6 +1,6 @@
 /*
  * Personal access tokens: programs calling the API as an account (`Authorization: Bearer`). The server's
- * AccessTokenModels.cs; agents/docs/development/api-tokens-plan.md.
+ * AccessTokenModels.cs; agents/docs/features/access-tokens.md.
  */
 
 /** A token as lists show it (`me/tokens`, `access/tokens`): never its secret. */

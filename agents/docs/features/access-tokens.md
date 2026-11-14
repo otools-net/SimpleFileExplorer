@@ -88,7 +88,8 @@ Personal access tokens let a program call any v1 route with `Authorization: Bear
   `LockoutMinutes`.
 - The security warning names a wrong token by `sfe_<lookup>` only, with the address, never a secret character.
 - `AccessTokenAudit` (after authentication) logs every bearer request but GET/HEAD/OPTIONS at information
-  (`Sfe.Api.Security.AccessTokenAudit`): "POST /api/v1/tags answered 201 to admin through access token 5 “name”".
+  (`Otools.Net.Sfe.Api.Security.AccessTokenAudit`): "POST /api/v1/tags answered 201 to admin through access token 5
+  “name”".
 - `ProblemLog` names the token too (`BearerTokens.Describe`).
 - `RequestLimits` partitions per account: a token counts as its account (no extra budget by making tokens).
 

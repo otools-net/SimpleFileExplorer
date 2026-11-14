@@ -1,7 +1,7 @@
 namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
-/// Routes a personal access token may not call (agents/docs/development/api-tokens-plan.md): what lets someone into
+/// Routes a personal access token may not call (agents/docs/features/access-tokens.md): what lets someone into
 /// an account or the server (sign-in, password, setup, installation, update) and the tokens themselves. A bearer
 /// request gets 403 <see cref="Type"/> there (<see cref="RequestGuard"/>): a leaked token never makes more tokens
 /// nor takes its account over.

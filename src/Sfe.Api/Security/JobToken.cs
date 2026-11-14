@@ -3,7 +3,7 @@ using Otools.Net.Sfe.Core.Access;
 namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
-/// The access token a job was started with (agents/docs/development/api-tokens-plan.md): the job checks each item
+/// The access token a job was started with (agents/docs/features/access-tokens.md): the job checks each item
 /// with the token's rights over its account's, as the request did, and stops once the token is revoked or expired.
 /// A job started from a session has none.
 /// </summary>

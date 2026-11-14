@@ -170,7 +170,8 @@ owner):
 - Changing a library's group rows: keep the rows that stay and change their level in place; removing and adding a row
   with the same key in one context is refused by EF.
 - Name clashes in the Api: `ConnectionInfo` (ASP.NET has one: alias it with `using ConnectionInfo =
-  Sfe.Core.Connections.ConnectionInfo;`), and `SignInRequest` is the account sign-in's (ours is `ConnectRequest`).
+  Otools.Net.Sfe.Core.Connections.ConnectionInfo;`), and `SignInRequest` is the account sign-in's (ours is
+  `ConnectRequest`).
 - Tests reading the API's answers need `JsonStringEnumConverter(JsonNamingPolicy.CamelCase)` (levels, sign-in
   kinds and field types are strings).
 - `ConnectionService` and `ConnectionAccess` read the settings through `SettingLayers.ServerLevel()` (server level

@@ -9,7 +9,7 @@ src/Sfe.Core/           Domain library, no ASP.NET dependency; DI in ServiceColl
                         QuickLinkService (each user's quick links per library)
   Data/                 SfeDbContext, Migrations (SQL Server), DatabaseInitializer, SfeDatabase; AccessDbContext,
                         AccessMigrations (its own history table), AccessDatabaseInitializer
-    Entities/           one class per file in Index/ Tags/ MissingFiles/ Tasks/ Access/, all in namespace Sfe.Core.Data
+    Entities/           one class per file in Index/ Tags/ MissingFiles/ Tasks/ Access/, all in namespace Otools.Net.Sfe.Core.Data
   Indexing/             DirectoryIndexer, ScanCoordinator (background scan), FileFingerprint (partial SHA1),
                         MediaDimensions (image headers / ffmpeg → Width, Height)
   Library/ Paths/       LibraryBrowser, MediaClassifier, NaturalComparer / LibraryPaths (root-relative, escape-proof)

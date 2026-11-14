@@ -10,7 +10,7 @@ using Otools.Net.Sfe.Core.Logs;
 namespace Otools.Net.Sfe.Api.Security;
 
 /// <summary>
-/// The personal access tokens' scheme (agents/docs/development/api-tokens-plan.md): a request sending
+/// The personal access tokens' scheme (agents/docs/features/access-tokens.md): a request sending
 /// <c>Authorization: Bearer sfe_…</c> is the token's account, with the same claims as its session cookie plus the
 /// token's id (<see cref="TokenClaim"/>); its limits go to <see cref="CurrentAccess"/> as a request feature
 /// (<see cref="BearerTokens.TokenOf"/>). The cookie's own check (<see cref="SfeSession.ValidateAsync"/>) doesn't run

@@ -20,7 +20,7 @@ namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// Calling the API with a personal access token (<c>Authorization: Bearer</c>), and the attack vectors of
-/// agents/docs/development/api-tokens-plan.md: wrong, expired and revoked tokens, an account disabled or deleted, a
+/// agents/docs/features/access-tokens.md: wrong, expired and revoked tokens, an account disabled or deleted, a
 /// token beyond its rights or its library, routes for sessions only, guessing, the secret in logs, a cookie sent
 /// along, Local mode.
 /// </summary>

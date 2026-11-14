@@ -5,7 +5,7 @@ using Otools.Net.Sfe.Core.Access;
 namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
-/// Personal access tokens (agents/docs/development/api-tokens-plan.md): an account's own (<c>me/tokens</c>) and those
+/// Personal access tokens (agents/docs/features/access-tokens.md): an account's own (<c>me/tokens</c>) and those
 /// administrators see and revoke (<c>access/tokens</c>). Every route needs a signed-in session: a token never makes,
 /// lists or revokes tokens (<see cref="SessionOnlyRoutes"/>).
 /// </summary>

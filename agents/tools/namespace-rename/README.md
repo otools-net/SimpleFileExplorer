@@ -1,7 +1,7 @@
 # namespace-rename
 
 `rename.mjs` renamed the C# namespaces `Sfe.Core` / `Sfe.Api` / `Sfe.Tests` to `Otools.Net.Sfe.*`
-([namespace-rename-plan](../../docs/development/namespace-rename-plan.md)). It splits each `.cs` file into code,
+([namespaces](../../docs/development/namespaces.md)). It splits each `.cs` file into code,
 comments and strings, and rewrites only:
 
 - `Sfe.Core|Api|Tests` names in code (`namespace`, `using`, qualified names, `typeof`, generic arguments);
