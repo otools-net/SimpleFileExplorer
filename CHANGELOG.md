@@ -68,6 +68,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - **The OpenAPI document names each route's rights and the problem types**: `x-sfe-rights` on each operation (one
   list per requirement, any one of its rights) and `x-sfe-problem-types` (every `type` word of the errors). A test now
   refuses any change that would break a client of v1.
+- **The API page of the documentation** ([API](docs/reference/api.md)) says how to call the API from a program: the
+  `/api/v1` address, what stays compatible inside v1 (programs ignore properties they don't know), the old `/api/…`
+  addresses and their end with SFE 2.0, and every problem type.
 - **A new install is set up without the setup code only through its setup link**: the address SFE opens in the
   browser at its first start, also shown in the console. Opening `http://localhost:5080` by hand asks for the code
   (other users of the computer, and visitors a tunnel brings in, are "on the computer" too).

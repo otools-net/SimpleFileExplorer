@@ -31,6 +31,12 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.86
+
+- The API moves to `/api/v1/…`. Programs and scripts calling the old `/api/…` addresses keep working until SFE 2.0;
+  their answers carry a `Deprecation` header, and the server's log names each caller once a day: move them to
+  `/api/v1` ([API](reference/api.md#the-old-addresses-api)).
+
 ## To 1.84
 
 - New rights `files.extract` (extracting archives) and `files.compress` (making zips in the library), given to **no

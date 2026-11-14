@@ -1,9 +1,10 @@
 # API versioning
 
 Code: `src/Sfe.Api/ApiRoutes.cs`, `LegacyApiPaths.cs`, `LegacyPathLog.cs`, `Program.cs` (the route group),
-`src/Sfe.Api/Endpoints/*Endpoints.cs`. Being put in place by [api-v1-plan](api-v1-plan.md) (the OpenAPI baseline and
-`ProblemTypes` come with it);
-route conventions are in [api-routes](api-routes.md).
+`src/Sfe.Api/Endpoints/*Endpoints.cs`, `ProblemTypes.cs`, `ApiDocument.cs`; client `core/api.service.ts`
+(`API_BASE`); tests `LegacyPathTests`, `OpenApiBaselineTests`, `ProblemTypesTests`. Route conventions are in
+[api-routes](api-routes.md); the user page is `docs/reference/api.md`. Set up 2026-11-13/14 (plan 1 of the
+[epic](external-access-epic-plan.md), done).
 
 - Every `api/` path the server tests or hands out goes through `ApiRoutes`: `IsApi`/`IsServerEntry`/`IsDocs` in the
   middleware, `Link` (relative to the app's address, for links) and `Location` (absolute, for `Created`/`Accepted`).
@@ -12,13 +13,38 @@ route conventions are in [api-routes](api-routes.md).
   `/api/x` to `/api/v1/x` (not `/api/docs`, not `/api/v2/…`); `app.UseRouting()` is called right after it, because
   the implicit one of WebApplication picks the endpoint before any middleware runs. Mapping the routes twice would
   fail on duplicate `.WithName` and double the OpenAPI document.
-- An old path's answer carries `Deprecation: @1794614400` (RFC 9745) and `Link: <…/api/v1/x>;
-  rel="successor-version"`; `LegacyPathLog` writes one warning per caller (account, or address) and UTC day, with the
+- An old path's answer carries `Deprecation: @1794614400` (RFC 9745, the date v1 came: 2026-11-14) and `Link:
+  <…/api/v1/x>; rel="successor-version"`, no `Sunset` (2.0 has no date); `LegacyPathLog` writes one warning per caller (account, or address) and UTC day, with the
   path's first two segments only (link tokens stay out of the log), at most 10,000 callers a day.
 - `ApiRoutes.OAuthCallback` (`/api/connections/oauth/callback`) is the one unversioned address kept for good: it is
   registered at the providers. It answers through the rewrite without `Deprecation`; `ReturnAddress` hands it out.
 - The 404 fallback is mapped on all of `/api/…`, every version: an unknown API path never gets the client's
   `index.html`. Tested by `LegacyPathTests`.
+- `LegacyPathTests` is the only test calling old paths: every route of the endpoint data source answers at its old
+  path with the status of its new one (anonymous every method; signed in the GETs only, since a route that changes
+  something answers its second call differently), parameters filled from the route pattern's constraints, a
+  redirect followed (fast sign-in) excusing the missing header; plus unknown paths, the OpenAPI document (v1 paths
+  only), the OAuth return address, a player link with an old path and a range, the log line.
+- Links handed out before v1 (external player tokens, up to 7 days; Flash links; one-time zip links) carry old paths
+  and open through the aliases; a browser tab still holding an older client calls old paths until it reloads.
+- `ServerModeTests`, `LocalStartTests` and the setup and migration gates depend on the guard's prefixes
+  (`ApiRoutes.IsServerEntry`…): run them after touching `ApiRoutes`, `LegacyApiPaths` or `RequestGuard`.
+- Swagger UI's `SwaggerEndpoint("../../openapi/v1.json")` is relative to `/api/docs/index.html`; `/api/docs` and
+  `/openapi/v1.json` are outside the versions.
+
+## Client, tests and tools
+
+- Client: `API_BASE = 'api/v1/'` in `core/api.service.ts` (re-used by `config.service.ts`, archive entries, epub,
+  the change feed, the backup link). `Api`'s private `get`/`post`/… and its direct `http` calls prefix it, so routes
+  there read `'tags'`, `` `files/jobs/${id}` ``; `withVersion` marks only `API_BASE` addresses. Paths stay relative
+  (virtual directory, [frontend](frontend.md)). Only `api/docs` (link in System › About) is unversioned.
+  `public/flash/player.js` accepts `/api/v1/files/flash/` links only (the server makes those).
+- Server tests: `ApiPaths.V1` (`= ApiRoutes.Base`), imported in every test file by `<Using Static="true">` in
+  `Sfe.Tests.csproj`: `$"{V1}/tags"` (a constant, so `[DataRow]` takes it). Route patterns with `{…}` in
+  `AccessTests`' `[DataRow]`s stay literal `/api/v1/…`.
+- `tests/e2e/` and `agents/tools/*` call `api/v1/…` (`menu-profile.spec.ts` filters on `/api/`, both forms).
+- `references.mjs --only openapi,routes` compares a refactoring's document and route list; a change of the base shows
+  as the prefix only.
 
 ## Where the version is
 

@@ -3,6 +3,13 @@
 Code: `src/Sfe.Api/Endpoints/*Endpoints.cs` (one class per area), `Program.cs`.
 
 - What may change in a published route, and when a new version is needed: [api-versioning](api-versioning.md).
+- Routes are mapped on the group `Program.cs` makes at `ApiRoutes.Base` (`/api/v1`): a `Map…Endpoints` names its
+  path from there (`/tags`). No literal `"api/` in `src/Sfe.Api` outside `ApiRoutes`: a link the server hands out is
+  `ApiRoutes.Link(…)`, a `Created`/`Accepted` location `ApiRoutes.Location(…)`.
+- A new or changed route changes the OpenAPI document: write the baseline again in the same commit
+  ([the compatibility net](api-versioning.md#the-compatibility-net)); `OpenApiBaselineTests` says when to.
+- A problem's `type` is a word of `ProblemTypes` (a new case: a new word, listed in api-versioning.md and
+  `docs/reference/api.md`); the rights of `.RequireRight` show in the document as `x-sfe-rights`.
 - Every route gets `.WithName`, `.WithSummary`, `.WithTags` (and `.WithDescription` for details): routes are
   documented by OpenAPI (`/openapi/v1.json`, Swagger UI at `/api/docs`), not in `docs/`.
 - Every route names its right(s): `.RequireRight(Rights.X)` or `.AllowAnonymous()` ([rights.md](../features/rights.md)).

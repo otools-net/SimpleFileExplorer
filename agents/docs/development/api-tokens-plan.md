@@ -4,7 +4,7 @@ Files: `src/Sfe.Core/Access/` (new `AccessTokens`), `Data/AccessDbContext.cs`, `
 `AccessDatabaseInitializer`, `Access/RightCatalog.cs`; `src/Sfe.Api/Security/` (new token scheme, `CurrentAccess`,
 `RequestGuard`, `SfeSession`, `SecurityServiceCollectionExtensions`), new `Endpoints/TokenEndpoints.cs`; client
 `core/rights.ts`, `app/account/`, `app/access/`. Part 2 of the [epic](external-access-epic-plan.md); needs
-[api-v1-plan](api-v1-plan.md) finished. Delete this plan once its last item is ticked.
+plan 1 (the API under `/api/v1`, done: [api-versioning](api-versioning.md)). Delete this plan once its last item is ticked.
 
 ## Starting point (2026-11-13)
 

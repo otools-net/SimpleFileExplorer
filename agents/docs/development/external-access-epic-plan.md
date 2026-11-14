@@ -1,6 +1,6 @@
 # Plan (epic): versioned API, access tokens, C# client library, external connections
 
-Files: the plans below (plan 5, connections, done and deleted); code named in each. This file is the **overview**:
+Files: the plans below (plans 1, api-v1, and 5, connections, done and deleted); code named in each. This file is the **overview**:
 what was decided, in what order the plans run, what none of them does. Delete it with the last plan (see
 [AGENTS.md](../../../AGENTS.md), "Keeping these notes current"), moving the decisions that stay true into the feature
 notes.
@@ -19,7 +19,7 @@ Each plan is worked alone, with its own releases; a later one builds on the earl
 
 | # | Plan | Delivers | Needs |
 |---|---|---|---|
-| 1 | [api-v1-plan](api-v1-plan.md) | every route under `/api/v1`, old paths as aliases, compatibility net | |
+| 1 | api-v1 (done 2026-11-14; notes: [api-versioning](api-versioning.md)) | every route under `/api/v1`, old paths as aliases, compatibility net | |
 | 2 | [api-tokens-plan](api-tokens-plan.md) | personal access tokens (`Authorization: Bearer`) | 1 |
 | 3 | [namespace-rename-plan](namespace-rename-plan.md) | C# namespaces `Sfe.*` become `Otools.Net.Sfe.*` (refactoring) | |
 | 4 | [client-library-plan](client-library-plan.md) | `Otools.Net.Sfe.Client` package over the v1 API | 1, 2, 3 |
@@ -36,8 +36,8 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 | # | Plan | State | Done | Next |
 |---|---|---|---|---|
-| 1 | api-v1 | in progress (**next of the epic**) | phase 0 (rules: [api-versioning](api-versioning.md)); phase 1 (`ApiRoutes`); phase 2 (base `/api/v1`, `LegacyApiPaths` with `Deprecation`, `LegacyPathLog`, `LegacyPathTests`); phase 3 (client `API_BASE`, server tests `V1`, e2e and tools on v1); phase 4 (OpenAPI baseline `tests/samples/openapi/v1.json`, `OpenApiBaselineTests` refusing breaks, rights in the document, `ProblemTypes`) | phase 5 (user docs `docs/reference/api.md`, close the plan) |
-| 2 | api-tokens | not started | | |
+| 1 | api-v1 | **done** 2026-11-14; plan deleted, what stays true in [api-versioning](api-versioning.md) and [api-routes](api-routes.md), user page `docs/reference/api.md` | phases 0 to 5 (rules; `ApiRoutes`; base `/api/v1`, `LegacyApiPaths`, `LegacyPathLog`, `LegacyPathTests`; client `API_BASE`, tests `V1`, e2e and tools; OpenAPI baseline, `OpenApiBaselineTests`, `x-sfe-rights`, `ProblemTypes`; user docs) | |
+| 2 | api-tokens | not started (**next of the epic**: first unfinished plan, its need, plan 1, is met; plan 3 needs nothing but comes after it) | | phase 1 of [api-tokens-plan](api-tokens-plan.md) (model and service) |
 | 3 | namespace-rename | not started | plan written; scope: namespaces only (projects, assemblies, exe keep their names) | phase 1: `Sfe.Core` namespaces |
 | 4 | client-library | not started | | |
 | 5 | connections | **done** 2026-11-14 (started before plans 1 to 4 at the owner's request; routes mapped through `ApiRoutes`, so they follow the base); plan deleted, what stays true in [connections](../features/connections.md) and its sibling notes | phases 0 to 6 (providers, `OutboundPolicy`, tables, rights, settings; Dropbox sign-in and management; browse, read, zips, gates; file management, uploads, properties; transfers with the library, retry, history; folder rules, enforcement, following moves); phase 7: notes split, security vectors in [security](security.md#connections) | the facade item (`sfe.Connections`) moved to plan 4's phase 5; a person runs `agents/tools/dropbox-check` before a release |
@@ -45,6 +45,9 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
 
+- 2026-11-14 (seventh session, continued): api-v1 phase 5: `docs/reference/api.md` (base address, compatibility,
+  old addresses until 2.0, problem types, sign-in today), facts moved into `api-versioning.md` and `api-routes.md`,
+  plan 1 deleted. Next: api-tokens (plan 2).
 - 2026-11-14 (seventh session): api-v1 phase 3 (client, tests and tools on v1); phase 4: the OpenAPI baseline and
   the test refusing breaking changes (`x-sfe-rights`, `x-sfe-problem-types` added to the document), `ProblemTypes`.
   Next: api-v1 phase 5.

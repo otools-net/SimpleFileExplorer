@@ -77,13 +77,12 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [scale](agents/docs/development/scale.md) | paging, batches, snapshots | |
 | [paths](agents/docs/development/paths.md) | root-relative paths, case | `Core/Paths/LibraryPaths` |
 | [api-routes](agents/docs/development/api-routes.md) | minimal API conventions and gotchas | `Sfe.Api/Endpoints/` |
-| [api-versioning](agents/docs/development/api-versioning.md) | `/api/v1`, what is breaking, old paths as aliases, problem `type` words | `Program.cs`, `Sfe.Api/Endpoints/` |
+| [api-versioning](agents/docs/development/api-versioning.md) | `/api/v1`, what is breaking, old paths as aliases, problem `type` words (`ProblemTypes`), the OpenAPI baseline and the test refusing breaks (command to write it) | `Program.cs`, `ApiRoutes`, `ProblemTypes`, `OpenApiBaselineTests` |
 | [external-access-epic-plan](agents/docs/development/external-access-epic-plan.md) | epic: versioned API, access tokens, C# client, external connections; **status board** (done / next) across sessions | its `*-plan.md` (plan 5 done) |
 | [code-style](agents/docs/development/code-style.md) | C# style | `.editorconfig` |
 | [readability](agents/docs/development/readability.md) | readable code: size limits (lines, functions, files, templates), names, comments, per-language rules, refactoring existing code without changing behaviour, checking tools | `.editorconfig`, `agents/tools/readability/` |
 | [readability-handover](agents/docs/development/readability-handover.md) | handover of the readability refactoring: where it stands, how to resume, checks per commit, patterns set, traps | `agents/tools/readability/` |
 | [readability-refactoring-plan](agents/docs/development/readability-refactoring-plan.md) | plan: bringing existing code to the readability rules, phase by phase (starting numbers, checks per step, traps, final checks in CI) | `agents/tools/readability/` |
-| [api-v1-plan](agents/docs/development/api-v1-plan.md) | plan 1: every route under `/api/v1`, old paths as aliases until 2.0, version rules, compatibility test | `Program.cs`, `RequestGuard`, `core/api.service.ts` |
 | [api-tokens-plan](agents/docs/development/api-tokens-plan.md) | plan 2: personal access tokens (`Authorization: Bearer`), session-only routes, rights, pages | `Core/Access/`, `Sfe.Api/Security/`, `app/account/` |
 | [namespace-rename-plan](agents/docs/development/namespace-rename-plan.md) | plan 3: C# namespaces `Sfe.*` become `Otools.Net.Sfe.*` (namespaces only; projects, assemblies and the executable keep their names) | `src/`, `tests/` |
 | [client-library-plan](agents/docs/development/client-library-plan.md) | plan 4: `Sfe.Client` C# package (generated client + hand-written facade), tests, packaging | `src/Sfe.Client/` |

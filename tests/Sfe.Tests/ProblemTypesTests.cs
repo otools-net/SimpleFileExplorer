@@ -7,7 +7,7 @@ namespace Sfe.Tests;
 
 /// <summary>
 /// The problem <c>type</c> words are listed in one place, <see cref="ProblemTypes"/>: every word the server answers
-/// with comes from it, and the notes list the same words.
+/// with comes from it, and the notes (api-versioning.md, the user docs) list the same words.
 /// </summary>
 [TestClass]
 public sealed partial class ProblemTypesTests
@@ -68,16 +68,17 @@ public sealed partial class ProblemTypesTests
     }
 
     [TestMethod]
-    public void TheNotesListTheSameWords()
+    [DataRow("agents/docs/development/api-versioning.md")]
+    [DataRow("docs/reference/api.md")]
+    public void TheNotesListTheSameWords(string note)
     {
-        var note = File.ReadAllText(Path.Combine(RepositoryRoot, "agents", "docs", "development", "api-versioning.md"));
+        var text = File.ReadAllText(Path.Combine(RepositoryRoot, note));
 
-        var missing = ProblemTypes.All.Where(word => !note.Contains($"`{word}`", StringComparison.Ordinal)).ToList();
+        var missing = ProblemTypes
+            .All.Where(word => !text.Contains($"| `{word}` |", StringComparison.Ordinal))
+            .ToList();
 
-        Assert.IsEmpty(
-            missing,
-            "Not listed in agents/docs/development/api-versioning.md: " + string.Join(", ", missing)
-        );
+        Assert.IsEmpty(missing, $"Not in the table of {note}: " + string.Join(", ", missing));
     }
 
     private static IEnumerable<string> ServerSources()

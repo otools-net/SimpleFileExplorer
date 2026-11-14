@@ -2,8 +2,8 @@
 
 Files: new `src/Sfe.Client/`, `tests/Sfe.Client.Tests/`, `samples/Sfe.Client.Sample/`; `Sfe.slnx`,
 `Directory.Build.props`, `build/build.ps1`, `build/build.sh`, `.csharpierignore`, `agents/tools/readability/`.
-Part 4 of the [epic](external-access-epic-plan.md); needs [api-v1-plan](api-v1-plan.md) and
-[api-tokens-plan](api-tokens-plan.md) finished. Delete this plan once its last item is ticked.
+Part 4 of the [epic](external-access-epic-plan.md); needs plan 1 (done:
+[api-versioning](api-versioning.md)) and [api-tokens-plan](api-tokens-plan.md) finished. Delete this plan once its last item is ticked.
 
 ## Goal
 
@@ -27,7 +27,7 @@ against the real server in process, and a server change that would break it fail
   for files, jobs, trash, properties, search, tags, zip downloads, libraries, and connections once they exist.
   Administration is reached through `Raw` only.
 - No reference to `Sfe.Core` or `Sfe.Api`: the contracts are generated from the committed v1 document
-  (`tests/samples/openapi/v1.json` of [api-v1-plan](api-v1-plan.md)).
+  (`tests/samples/openapi/v1.json`, [the compatibility net](api-versioning.md#the-compatibility-net)).
 - Targets `netstandard2.0` and `net8.0`; System.Text.Json; as few dependencies as the generator allows.
 - Version = the app's (`Directory.Build.props`); the library works with every server that has v1 and says so when a
   function is missing there.
