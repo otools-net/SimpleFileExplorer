@@ -2,7 +2,8 @@
 
 Code: `src/Sfe.Core/Connections/` (`ConnectionService`, `ConnectionSharing`, `ConnectionAccess`, `ConnectionRows`,
 `ConnectionLevels`, `ProviderSecrets`, `Dropbox/`), `src/Sfe.Core/Data/Entities/Access/Connection*.cs`,
-`src/Sfe.Api/Security/ConnectionCredentials.cs`, `src/Sfe.Api/Endpoints/ConnectionProviderEndpoints.cs`; tests
+`src/Sfe.Api/Security/ConnectionCredentials.cs`, `src/Sfe.Api/Endpoints/ConnectionProviderEndpoints.cs`,
+`ConnectionFileEndpoints.cs`, `RemoteListings`; tests `ConnectionFileRouteTests`, `RemoteListingsTests`, `DropboxStorageTests`,
 `ConnectionServiceTests`, `ConnectionAccessTests`, `ConnectionDataTests`, `ConnectionCredentialsTests`,
 `DropboxProviderTests`, `ConnectionProviderRouteTests` with `tests/Sfe.Tests/Infrastructure/Connections/`
 (`ConnectionWorld`, `FakeProvider`, `FakeProtector`, `RecordedDropbox`). Work still planned:
@@ -93,6 +94,24 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
 - `PUT …/libraries` needs `connections.server`; `PUT …/groups` needs `connections.library` and acts on the request's
   library only (`ConnectionSharing` answers 404 when the connection isn't that library's or offered to it). A
   library's administrator gives a server connection to groups but can't rename or remove it.
+
+## Browsing and reading (`ConnectionFileEndpoints`)
+
+- `GET api/connections/{id}/browse`, `files/raw/{**path}`, `thumbnails/{**path}`: every one opens through
+  `ConnectionFileServices.OpenAsync` (usable by the session or 404, then the route's `files.*` / `library.browse`
+  right, then `ConnectionService.OpenAsync`); the storage is disposed with the response (`RegisterForDisposeAsync`),
+  since a raw read streams from the provider's `HttpClient` after the handler returns.
+- Paths go through `RemotePaths.Normalize` (null = 404). An encoded `%2F` stays in a catch-all route value: it is a
+  name with `%2F` inside the root, never a separator (as in the library's routes).
+- `RemoteListings`: offset 0 reads the whole folder (up to 20,000 items) and sorts it as `LibraryBrowser` does;
+  later pages reuse the read for 5 minutes; larger folders come unsorted through a forward window (`hasMore`).
+  `Forget(id)` drops a connection's reads: call it when SFE changes its files (phase 4).
+- `files/raw` serves one range (`RemoteRanges`), under the library's sandbox (`RemoteFileResult`: `FilePolicy`, types
+  a page could run downloaded); a provider without `RangedReads` serves the whole file with no `Accept-Ranges`.
+- A provider's error becomes `ConnectionProblems`: `CredentialsEnded` marks the connection `NeedsReconnecting` and
+  answers 409 `connection-needs-reconnecting`; `RateLimited` 429 with `Retry-After`; `Unavailable` 502.
+- Dropbox: `DropboxStorage`; an endpoint's error (`ApiException<T>`) is read from its `error_summary`
+  (`not_found`, `not_folder`, `conflict`…); a ranged read asks a temporary link (never sent to the client).
 
 ## Client (`app/connections/`)
 

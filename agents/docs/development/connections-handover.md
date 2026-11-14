@@ -36,9 +36,9 @@ Checks run for the last commit: the new suites, `npm test` (1179 passed), the fu
 
 1. The manual check list (`agents/tools/dropbox-check/README.md`) is written; it is run by a person with a Dropbox
    account before a release, and grows with phases 3 to 5.
-2. Phase 3: `DropboxStorage` (`IRemoteStorage` over the SDK, `DropboxErrors.CallAsync`, ranged reads through
-   temporary links), `GET connections/{id}/browse` and `files/raw`, marking `NeedsReconnecting` on `CredentialsEnded`;
-   then phases 4 to 7 as the plan lists them.
+2. Phase 3 item 1 is done (fourth session: `DropboxStorage`, `RemoteListings`, `ConnectionFileEndpoints`). Next:
+   item 2, the client's listing page on a connection, then item 3 (rate limits); then phases 4 to 7 as the plan
+   lists them.
 
 Per commit, as the epic asks: tick the item in the plan with an "As built" sentence, update the status board and
 session log of the epic plan, a line under `## Unreleased` when something is visible, `dotnet csharpier format`,

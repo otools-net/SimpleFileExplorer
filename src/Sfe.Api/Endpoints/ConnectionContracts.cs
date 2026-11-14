@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Mvc;
+using Sfe.Core.Access;
 using Sfe.Core.Connections;
+using Sfe.Core.Library;
 
 namespace Sfe.Api.Endpoints;
 
@@ -53,3 +56,45 @@ public sealed record ConnectionLibrariesInput(bool AllLibraries, int[]? LibraryI
 
 /// <summary>The groups of the request's library using a connection, with their level (Read or Write).</summary>
 public sealed record ConnectionGroupsInput(Dictionary<int, Sfe.Core.Access.FolderLevel>? Groups);
+
+/// <summary>A page of a connection's folder (<c>GET api/connections/{id}/browse</c>).</summary>
+public sealed record ConnectionBrowseQuery(
+    [FromQuery(Name = "path")] string? Path = null,
+    [FromQuery(Name = "offset")] int Offset = 0,
+    [FromQuery(Name = "limit")] int? Limit = null,
+    [FromQuery(Name = "sort")] string? Sort = null,
+    [FromQuery(Name = "desc")] bool Desc = false
+);
+
+/// <summary>A page of a connection's folder: the library's listing, and what the connection can do.</summary>
+/// <param name="Listing">As <c>GET api/browse</c> gives it; paths are relative to the connection's root folder,
+/// whose breadcrumb is the connection's name. While <paramref name="HasMore"/>, <c>total</c> counts what was read so
+/// far.</param>
+/// <param name="Access"><c>read</c> or <c>write</c>: how far the session uses the connection.</param>
+/// <param name="Sorted">The sort asked for was applied; false for a folder too large to read whole (the provider's
+/// order).</param>
+/// <param name="HasMore">The folder has more items than <c>total</c>: the next pages read them.</param>
+public sealed record ConnectionListing(
+    int ConnectionId,
+    string Name,
+    string Kind,
+    DirectoryListing Listing,
+    FolderLevel Access,
+    bool Sorted,
+    bool HasMore,
+    ProviderCapabilities Capabilities
+);
+
+/// <summary>A connection opened for one request (<see cref="ConnectionFileServices.OpenAsync"/>).</summary>
+internal sealed record OpenConnection(
+    UsableConnection Connection,
+    IRemoteStorage Storage,
+    ProviderCapabilities Capabilities
+);
+
+/// <summary>What the listing of a connection's folder uses (bound with <c>[AsParameters]</c>).</summary>
+internal sealed record ConnectionBrowseServices(
+    RemoteListings Listings,
+    MediaClassifier Classifier,
+    Microsoft.Extensions.Options.IOptionsMonitor<Sfe.Core.Options.SfeOptions> Options
+);

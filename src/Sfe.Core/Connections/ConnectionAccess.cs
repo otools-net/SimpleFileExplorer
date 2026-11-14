@@ -29,8 +29,19 @@ public sealed class ConnectionAccess(IDbContextFactory<AccessDbContext> dbFactor
         CancellationToken cancellationToken = default
     )
     {
+        return (await FindAsync(subject, connectionId, cancellationToken))?.Access;
+    }
+
+    /// <summary>Connection <paramref name="connectionId"/> as <paramref name="subject"/> may use it; null = it may
+    /// not (the route answers 404).</summary>
+    public async Task<UsableConnection?> FindAsync(
+        ConnectionSubject subject,
+        int connectionId,
+        CancellationToken cancellationToken = default
+    )
+    {
         var usable = await UsableAsync(subject, connectionId, cancellationToken);
-        return usable.Count == 1 ? usable[0].Access : null;
+        return usable.Count == 1 ? usable[0] : null;
     }
 
     /// <summary>The connections <paramref name="subject"/> may use in its library, by name.</summary>

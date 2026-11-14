@@ -50,7 +50,9 @@ internal static class DropboxErrors
         var summary = error.Message;
         var kind = summary switch
         {
-            _ when summary.Contains("not_found", StringComparison.Ordinal) => RemoteErrorKind.NotFound,
+            _ when summary.Contains("not_found", StringComparison.Ordinal)
+                    || summary.Contains("not_folder", StringComparison.Ordinal)
+                    || summary.Contains("not_file", StringComparison.Ordinal) => RemoteErrorKind.NotFound,
             _ when summary.Contains("conflict", StringComparison.Ordinal) => RemoteErrorKind.Exists,
             _ when summary.Contains("too_many_write_operations", StringComparison.Ordinal) =>
                 RemoteErrorKind.RateLimited,

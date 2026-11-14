@@ -28,6 +28,8 @@ public sealed class DropboxStorageTests
         {".tag":"folder","name":"Trips","path_lower":"/photos/trips","path_display":"/Photos/Trips","id":"id:folder1"}
         """;
 
+    private static readonly string Deleted = """{".tag":"deleted","name":"Old","path_lower":"/photos/old"}""";
+
     private static readonly string NotFound = """
         {"error_summary":"path/not_found/..","error":{".tag":"path","path":{".tag":"not_found"}}}
         """;
@@ -64,7 +66,7 @@ public sealed class DropboxStorageTests
         );
         _dropbox.Answers["/2/files/list_folder/continue"] = (
             HttpStatusCode.OK,
-            """{"entries":[{".tag":"deleted","name":"Old","path_lower":"/photos/old"}],"cursor":"c2","has_more":false}"""
+            $$"""{"entries":[{{Deleted}}],"cursor":"c2","has_more":false}"""
         );
 
         var first = await _storage.ListAsync("", null, Token);

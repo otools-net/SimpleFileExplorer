@@ -1,0 +1,71 @@
+using Microsoft.Net.Http.Headers;
+using Sfe.Core.Connections;
+
+namespace Sfe.Api.Endpoints;
+
+/// <summary>
+/// The answers of a connection's file routes when the connection or its provider fails: a problem whose
+/// <c>type</c> word says what to do (sign in again, wait, try later). A provider's refused sign-in marks the
+/// connection, so nobody opens it until someone signs in again.
+/// </summary>
+public static class ConnectionProblems
+{
+    /// <summary>409: the provider no longer accepts the sign-in; the connection's manager signs in again.</summary>
+    public const string NeedsReconnectingType = "connection-needs-reconnecting";
+
+    /// <summary>409: the connection is off, or its kind or level is no longer allowed.</summary>
+    public const string UnusableType = "connection-unusable";
+
+    /// <summary>429 with <c>Retry-After</c>: the provider asks to wait.</summary>
+    public const string RateLimitedType = "connection-rate-limited";
+
+    /// <summary>502: the provider cannot be reached, or failed on its side; trying later may work.</summary>
+    public const string UnavailableType = "connection-unavailable";
+
+    /// <summary>403: the provider does not let this account do it.</summary>
+    public const string RefusedType = "connection-refused";
+
+    /// <summary>409: the provider lacks the function.</summary>
+    public const string NotSupportedType = "connection-not-supported";
+
+    /// <summary>The answer to <see cref="ConnectionService.OpenAsync"/>'s conflict.</summary>
+    public static IResult OfOpening(string? problem) =>
+        TypedResults.Problem(
+            problem,
+            statusCode: StatusCodes.Status409Conflict,
+            type: problem == ConnectionService.NeedsReconnectingProblem ? NeedsReconnectingType : UnusableType
+        );
+
+    /// <summary>The answer to a provider's error; marks the connection when its sign-in ended.</summary>
+    public static async Task<IResult> OfAsync(
+        RemoteStorageException error,
+        int connectionId,
+        HttpContext context,
+        ConnectionService connections
+    )
+    {
+        if (error.Kind == RemoteErrorKind.CredentialsEnded)
+        {
+            await connections.MarkNeedsReconnectingAsync(connectionId, CancellationToken.None);
+            return OfOpening(ConnectionService.NeedsReconnectingProblem);
+        }
+        if (error is { Kind: RemoteErrorKind.RateLimited, RetryAfter: { } wait })
+            context.Response.Headers[HeaderNames.RetryAfter] = ((int)Math.Ceiling(wait.TotalSeconds)).ToString();
+
+        return error.Kind switch
+        {
+            RemoteErrorKind.NotFound => TypedResults.NotFound(),
+            RemoteErrorKind.Exists => Problem(StatusCodes.Status409Conflict, FileEndpoints.ExistsType),
+            RemoteErrorKind.RateLimited => Problem(StatusCodes.Status429TooManyRequests, RateLimitedType),
+            RemoteErrorKind.Refused => Problem(StatusCodes.Status403Forbidden, RefusedType),
+            RemoteErrorKind.NotSupported => Problem(StatusCodes.Status409Conflict, NotSupportedType),
+            RemoteErrorKind.TooLarge => Problem(StatusCodes.Status413PayloadTooLarge, null),
+            RemoteErrorKind.InvalidName => Problem(StatusCodes.Status400BadRequest, null),
+            _ => Problem(StatusCodes.Status502BadGateway, UnavailableType),
+        };
+
+        // The message names no token or address (RemoteStorageException's rule).
+        IResult Problem(int status, string? type) =>
+            TypedResults.Problem(error.Message, statusCode: status, type: type);
+    }
+}

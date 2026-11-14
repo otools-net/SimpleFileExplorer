@@ -172,6 +172,7 @@ api.MapKeepAliveEndpoints();
 api.MapConnectionProviderEndpoints();
 api.MapConnectionSignInEndpoints();
 api.MapConnectionEndpoints();
+api.MapConnectionFileEndpoints();
 api.MapFallback(() => TypedResults.NotFound()).AllowAnonymous();
 
 app.MapFallbackToFile("index.html");

@@ -251,8 +251,18 @@ in `FolderRules`:
 
 ### Phase 3: browse and download
 
-- [ ] `GET connections/{id}/browse` (paged, the listing's shape), `files/raw` (ranges, the sandbox rules of
-  `LibraryEndpoints.ServeFile`), marked folder-scoped
+- [x] `GET connections/{id}/browse` (paged, the listing's shape), `files/raw` (ranges, the sandbox rules of
+  `LibraryEndpoints.ServeFile`), marked folder-scoped. As built: `DropboxStorage` (SDK calls through
+  `DropboxErrors.CallAsync`, endpoint errors read from their `error_summary`, ranged reads through a temporary link
+  kept on the server); `RemoteListings` (singleton: offset 0 reads the folder whole, at most 20,000 items, and sorts
+  it as `LibraryBrowser` does; later pages reuse it for 5 minutes; past the cap, the provider's order through a
+  window that reads forward; 16 snapshots at most); `ConnectionFileEndpoints` `browse` (answers `ConnectionListing`:
+  the library's `DirectoryListing` plus `access`, `sorted`, `hasMore`, `capabilities`), `files/raw/{**path}` (one
+  range, 416 past the end, 200 whole without `Accept-Ranges` when the provider can't), `thumbnails/{**path}` (only
+  when the provider makes them); one opening step (`ConnectionFileServices.OpenAsync`: usable or 404, the route's
+  `files.*` right, the storage disposed after the answer); `ConnectionProblems` (types
+  `connection-needs-reconnecting` (marks the connection), `-rate-limited` (429 + `Retry-After`), `-unavailable`
+  (502), `-refused`, `-not-supported`, `-unusable`)
 - [ ] Client: the listing page takes a location; sidebar entry and a connections page; what a location can't do is
   hidden from the capabilities the server sends; download; zip of several items (streamed)
 - [ ] Rate limits and waits: Dropbox 429 honoured, a per-connection gate, per-caller limits on listing and reads
