@@ -103,6 +103,63 @@ namespace Sfe.Core.Data.AccessMigrations
                         });
                 });
 
+            modelBuilder.Entity("Sfe.Core.Data.ConnectionFolderRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ConnectionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConnectionId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("TenantId", "ConnectionId");
+
+                    b.ToTable("ConnectionFolderRules", "SFE", t =>
+                        {
+                            t.HasCheckConstraint("CK_ConnectionFolderRules_Principal", "(GroupId IS NULL AND UserId IS NOT NULL) OR (GroupId IS NOT NULL AND UserId IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("Sfe.Core.Data.ConnectionGroup", b =>
                 {
                     b.Property<int>("ConnectionId")
@@ -529,6 +586,35 @@ namespace Sfe.Core.Data.AccessMigrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("Sfe.Core.Data.ConnectionFolderRule", b =>
+                {
+                    b.HasOne("Sfe.Core.Data.Connection", "Connection")
+                        .WithMany("Rules")
+                        .HasForeignKey("ConnectionId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.HasOne("Sfe.Core.Data.UserGroup", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.ClientCascade);
+
+                    b.HasOne("Sfe.Core.Data.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sfe.Core.Data.UserAccount", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Connection");
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("Sfe.Core.Data.ConnectionGroup", b =>
                 {
                     b.HasOne("Sfe.Core.Data.Connection", "Connection")
@@ -674,6 +760,8 @@ namespace Sfe.Core.Data.AccessMigrations
             modelBuilder.Entity("Sfe.Core.Data.Connection", b =>
                 {
                     b.Navigation("Groups");
+
+                    b.Navigation("Rules");
 
                     b.Navigation("Tenants");
                 });

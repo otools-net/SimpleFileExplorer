@@ -214,11 +214,13 @@ public sealed class ConnectionService(
             logger.LogWarning("Connection {ConnectionId} needs to be signed in to again", id);
     }
 
-    /// <summary>Removes it with who uses it; the remote storage is left as it is.</summary>
+    /// <summary>Removes it with who uses it and its folder rules; the remote storage is left as it is.</summary>
     public async Task<AccessStatus> RemoveAsync(int id, int? removedById, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var connection = await db.Connections.WithUses().FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        var connection = await db
+            .Connections.WithUsesAndRules()
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         if (connection is null)
             return AccessStatus.NotFound;
 

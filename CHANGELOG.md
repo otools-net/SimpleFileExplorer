@@ -10,7 +10,7 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - **Connections to other storage, first step (nothing to connect to yet)**: the rights `connections.use`,
   `connections.own`, `connections.library` (given to the Administrators group of every space, never to guests) and
   `connections.server`, and the server settings `Sfe:Connections:Enabled`, `Providers` and `Levels`
-  (Administration › Connections), which `Sfe:Locked` can fix. The database gets three empty tables. Dropbox, the
+  (Administration › Connections), which `Sfe:Locked` can fix. The database gets four empty tables (the fourth for the folder rules of connections). Dropbox, the
   first kind, comes with a later version.
 - **Connecting a Dropbox** (browsing its files comes with a later version;
   [connections](docs/administration/connections.md)): the server's administrators register a Dropbox app and type its

@@ -13,6 +13,13 @@ internal static class ConnectionRows
     public static IQueryable<Connection> WithUses(this IQueryable<Connection> connections) =>
         connections.Include(c => c.Tenants).Include(c => c.Groups).ThenInclude(g => g.Group);
 
+    /// <summary>
+    /// <see cref="WithUses"/> and the folder rules of every library: what removing a connection, or a library from
+    /// it, needs. Split, so that libraries, groups and rules don't multiply into one result.
+    /// </summary>
+    public static IQueryable<Connection> WithUsesAndRules(this IQueryable<Connection> connections) =>
+        connections.WithUses().Include(c => c.Rules).AsSplitQuery();
+
     /// <param name="tenantId">Only the groups of this library; null = all.</param>
     public static ConnectionInfo ToInfo(Connection connection, int? tenantId = null) =>
         new(

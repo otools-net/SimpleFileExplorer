@@ -651,12 +651,12 @@ public sealed partial class AccessService(
         if (group.BuiltIn is not null)
             return AccessResult<GroupInfo>.Conflict("Built-in groups cannot be deleted.");
 
-        // Its folder rules first: the database doesn't cascade to them (AccessDbContext).
+        // Its folder rules (the library's and the connections') first: the database doesn't cascade to them.
         var strategy = db.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
             await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-            await db.FolderRules.Where(r => r.GroupId == id).ExecuteDeleteAsync(cancellationToken);
+            await GroupRules.DeleteAsync(db, id, cancellationToken);
             db.Groups.Remove(group);
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);

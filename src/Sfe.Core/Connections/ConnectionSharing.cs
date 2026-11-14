@@ -11,11 +11,15 @@ namespace Sfe.Core.Connections;
 /// library the groups that use it (Read or Write). Opening a connection to more people is a security event of the
 /// log. Checks the rows mean something (a library that exists, a group of that library) but not who asks.
 /// </summary>
-public sealed class ConnectionSharing(IDbContextFactory<AccessDbContext> dbFactory, ILogger<ConnectionSharing> logger)
+public sealed class ConnectionSharing(
+    IDbContextFactory<AccessDbContext> dbFactory,
+    AccessChanges changes,
+    ILogger<ConnectionSharing> logger
+)
 {
     /// <summary>
     /// Offers a server-level connection to every library (<paramref name="allTenants"/>, those made later too) or to
-    /// <paramref name="tenantIds"/>. A library no longer offered loses its groups' rows.
+    /// <paramref name="tenantIds"/>. A library no longer offered loses its groups' rows and its folder rules.
     /// </summary>
     public async Task<AccessResult<ConnectionInfo>> SetTenantsAsync(
         int id,
@@ -26,7 +30,9 @@ public sealed class ConnectionSharing(IDbContextFactory<AccessDbContext> dbFacto
     )
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var connection = await db.Connections.WithUses().FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        var connection = await db
+            .Connections.WithUsesAndRules()
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         if (connection is null)
             return AccessResult<ConnectionInfo>.Missing();
         if (connection.Level != ConnectionLevel.Server)
@@ -47,8 +53,12 @@ public sealed class ConnectionSharing(IDbContextFactory<AccessDbContext> dbFacto
         connection.Tenants.RemoveAll(t => !wanted.Contains(t.TenantId));
         connection.Tenants.AddRange(wanted.Except(before).Select(t => new ConnectionTenant { TenantId = t }));
         if (!allTenants)
+        {
             connection.Groups.RemoveAll(g => !wanted.Contains(g.Group!.TenantId));
+            connection.Rules.RemoveAll(r => !wanted.Contains(r.TenantId));
+        }
         await db.SaveChangesAsync(cancellationToken);
+        changes.Changed();
 
         var libraries = allTenants ? "every library" : $"libraries [{string.Join(", ", wanted.Order())}]";
         if (openedToMore)
@@ -118,6 +128,7 @@ public sealed class ConnectionSharing(IDbContextFactory<AccessDbContext> dbFacto
                 })
         );
         await db.SaveChangesAsync(cancellationToken);
+        changes.Changed();
 
         var described = string.Join(", ", levels.OrderBy(p => p.Key).Select(p => $"{p.Key}: {p.Value}"));
         if (openedToMore)

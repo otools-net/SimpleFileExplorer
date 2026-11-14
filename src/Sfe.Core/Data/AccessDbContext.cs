@@ -34,6 +34,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public DbSet<Connection> Connections => Set<Connection>();
     public DbSet<ConnectionTenant> ConnectionTenants => Set<ConnectionTenant>();
     public DbSet<ConnectionGroup> ConnectionGroups => Set<ConnectionGroup>();
+    public DbSet<ConnectionFolderRule> ConnectionFolderRules => Set<ConnectionFolderRule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -264,5 +265,38 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
                 .OnDelete(DeleteBehavior.ClientCascade);
             entity.HasOne(g => g.Group).WithMany().HasForeignKey(g => g.GroupId).OnDelete(DeleteBehavior.Cascade);
         });
+        ConfigureConnectionFolderRules(modelBuilder);
     }
+
+    /// <summary>
+    /// The folder rules of connections. The database removes them with their library or their account; not with
+    /// their connection nor their group (a second cascade path from <c>Tenants</c>): <see cref="ConnectionService"/>
+    /// and <see cref="Access.AccessService"/> delete them.
+    /// </summary>
+    private static void ConfigureConnectionFolderRules(ModelBuilder modelBuilder) =>
+        modelBuilder.Entity<ConnectionFolderRule>(entity =>
+        {
+            // A rule is for a group or for an account, never both nor neither.
+            entity.ToTable("ConnectionFolderRules", table =>
+                table.HasCheckConstraint(
+                    "CK_ConnectionFolderRules_Principal",
+                    "(GroupId IS NULL AND UserId IS NOT NULL) OR (GroupId IS NOT NULL AND UserId IS NULL)"
+                )
+            );
+            entity.Property(r => r.Path).HasMaxLength(RemotePaths.MaxPathLength).IsRequired();
+            entity.Property(r => r.Level).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
+            entity.Property(r => r.ItemId).HasMaxLength(ConnectionFolderRule.MaxItemIdLength);
+            entity.HasIndex(r => new { r.TenantId, r.ConnectionId });
+            entity.HasIndex(r => r.ConnectionId);
+            entity.HasIndex(r => r.GroupId);
+            entity.HasIndex(r => r.UserId);
+            entity
+                .HasOne(r => r.Connection)
+                .WithMany(c => c.Rules)
+                .HasForeignKey(r => r.ConnectionId)
+                .OnDelete(DeleteBehavior.ClientCascade);
+            entity.HasOne<Tenant>().WithMany().HasForeignKey(r => r.TenantId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(r => r.Group).WithMany().HasForeignKey(r => r.GroupId).OnDelete(DeleteBehavior.ClientCascade);
+            entity.HasOne<UserAccount>().WithMany().HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
 }

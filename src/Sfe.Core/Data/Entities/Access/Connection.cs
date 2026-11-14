@@ -62,4 +62,7 @@ public sealed class Connection
 
     public List<ConnectionTenant> Tenants { get; set; } = [];
     public List<ConnectionGroup> Groups { get; set; } = [];
+
+    /// <summary>Its folder rules, of every library (<see cref="ConnectionFolderRule"/>).</summary>
+    public List<ConnectionFolderRule> Rules { get; set; } = [];
 }

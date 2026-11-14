@@ -221,6 +221,7 @@ public static class ServiceCollectionExtensions
         // Their credentials are protected by the Api's keys (ICredentialProtector, AddSfeSecurity).
         services.AddSingleton<ConnectionService>();
         services.AddSingleton<ConnectionSharing>();
+        services.AddSingleton<ConnectionRuleService>();
         services.AddSingleton<ConnectionAccess>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<PendingSignIns>();
