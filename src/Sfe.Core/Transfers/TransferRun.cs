@@ -173,7 +173,31 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
         await CheckRoomAsync(file, into, token);
         var written = await _writer.WriteAsync(file, into, name, token);
         await Target.AfterWriteAsync(written, token);
+        await CarryTagsAsync(file, written, token);
         return written;
+    }
+
+    /// <summary>
+    /// The source file's tags given to the file written (before a move takes the source away). Never fails the file:
+    /// a target without an index row of it (a connection this library doesn't index yet) gets none, which is logged.
+    /// </summary>
+    private async Task CarryTagsAsync(TransferEntry file, TransferEntry written, CancellationToken token)
+    {
+        try
+        {
+            await TagAsync(file, written, token);
+        }
+        catch (Exception error) when (error is not OperationCanceledException)
+        {
+            logger.LogWarning(error, "The tags of “{Name}” could not be given to its copy", file.Name);
+        }
+    }
+
+    private async Task TagAsync(TransferEntry file, TransferEntry written, CancellationToken token)
+    {
+        var tags = await Source.TagsAsync(file, token);
+        if (tags.Count > 0 && !await Target.TagAsync(written, tags, token))
+            logger.LogWarning("“{Name}” arrived without its tags: the index holds no row of it yet", written.Name);
     }
 
     /// <summary>A file going into a connection is no larger than the space allows (refused before reading).</summary>

@@ -11,5 +11,8 @@ Code: `src/Sfe.Core/Tagging/ScopeTagger.cs`, route `api/file-tags/scope` in `src
   `FileSearchService.Matches` (hidden-tag rule included).
 - Every change is confirmed in the dialog's `.scope-confirm` box; a new tag is created only on confirming.
 - A folder's dialog also holds its default tags: [default-tags.md](default-tags.md).
+- In a connection (`config.place()` when opened) the dialog calls `api/connections/{id}/file-tags/scope`
+  (`RemoteScopeTagger`): only the rows the library's index holds, nothing indexed first, no default tags section;
+  folder rules as key conditions ([connection-files](connection-files.md#tags)).
 - The listing is patched with `ListingStore.applyScopeTags` (by path for folders; for a search, every listed file when
   the route is that search), not reloaded.

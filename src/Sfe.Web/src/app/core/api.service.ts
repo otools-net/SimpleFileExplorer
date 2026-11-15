@@ -86,7 +86,7 @@ import {
     FolderExclusions,
     FolderPicker,
 } from './models';
-import { uploadsRoute } from './connection-place';
+import { tagsRoute, uploadsRoute } from './connection-place';
 import { SettingLevel, SettingsValues, SettingsView } from './setting.models';
 import {
     FileTagChangeResult,
@@ -247,18 +247,18 @@ export class Api {
     createTag = (tag: TagInput) => this.post<TagDetails>('tags', tag);
     updateTag = (id: number, tag: TagInput) => this.put<TagDetails>(`tags/${id}`, tag);
     deleteTag = (id: number) => this.delete<void>(`tags/${id}`);
-    fileTags = (path: string) => this.get<FileTags>('file-tags', { path });
-    changeFileTags = (change: FileTagChange) => this.post<FileTagChangeResult>('file-tags', change);
-    /** The tags of the files of a folder or of a search's matches, counted. */
-    scopeTags = (scope: TagScope, signal?: AbortSignal) =>
+    fileTags = (path: string, connection?: number | null) => this.get<FileTags>(tagsRoute(connection), { path });
+    changeFileTags = (change: FileTagChange, c?: number | null) => this.post<FileTagChangeResult>(tagsRoute(c), change);
+    /** The tags of the files of a folder or of a search's matches (in the connection `c`), counted. */
+    scopeTags = (scope: TagScope, signal?: AbortSignal, c?: number | null) =>
         this.get<ScopeTags>(
-            'file-tags/scope',
+            `${tagsRoute(c)}/scope`,
             { path: scope.path, recursive: scope.recursive, q: scope.query },
             signal,
         );
     /** Tags every file of a folder or every match of a search. Resolves with the problem (409) while a scan runs. */
-    changeScopeTags = (change: ScopeTagChange) =>
-        this.post<ScopeTagChangeResult | { detail?: string }>('file-tags/scope', change);
+    changeScopeTags = (change: ScopeTagChange, c?: number | null) =>
+        this.post<ScopeTagChangeResult | { detail?: string }>(`${tagsRoute(c)}/scope`, change);
     fileViewed = (path: string) => this.post<void>('file-tags/viewed', { path });
     /** The default tags of a folder, its own and its parents'. */
     folderDefaultTags = (path: string, signal?: AbortSignal) =>

@@ -4,6 +4,7 @@ import { ConfigService } from '../core/config.service';
 import { plural } from '../core/format';
 import { TagDetails, TagSummary } from '../core/tag.models';
 import { TagInput } from './tag.models';
+import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { Dialogs, registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
@@ -12,7 +13,7 @@ import { IconComponent } from '../shared/icon.component';
 import { SheetComponent } from '../shared/sheet.component';
 import { TagChipComponent } from './tag-chip.component';
 import { TagOption, TagPickerComponent } from './tag-picker.component';
-import { tagQuery, textOn } from './tags';
+import { removedFrom, tagQuery, textOn } from './tags';
 
 /** What closing the editor did: the tag saved, the id of the tag deleted, or null (cancelled). */
 export type TagEditResult = TagDetails | { deleted: number } | null;
@@ -49,7 +50,7 @@ export class TagEditorDialog {
     protected readonly subtitle = computed(() => {
         const tag = this.tag();
         return tag
-            ? [tag.isBuiltIn ? 'Built-in tag' : null, plural(tag.fileCount, 'file')].filter(Boolean).join(' · ')
+            ? [tag.isBuiltIn ? 'Built-in tag' : null, plural(tag.fileCount, 'library file')].filter(Boolean).join(' · ')
             : null;
     });
     protected readonly swatches = computed(() => [
@@ -152,7 +153,7 @@ export class TagEditorDialog {
 
     protected async delete(): Promise<void> {
         const tag = this.tag()!;
-        const uses = tag.fileCount ? ` It is removed from ${plural(tag.fileCount, 'file')}.` : '';
+        const uses = removedFrom(tag.fileCount, this.config.can(Rights.useConnections));
         if (!confirm(`Delete the tag “${tag.displayName}”?${uses}`)) return;
         try {
             await this.api.deleteTag(tag.id);

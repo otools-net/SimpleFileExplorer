@@ -21,6 +21,9 @@ public static class ProblemTypes
     /// <summary>409: the provider no longer accepts the connection's sign-in; its manager signs in again.</summary>
     public const string ConnectionNeedsReconnecting = "connection-needs-reconnecting";
 
+    /// <summary>409: the library's index doesn't hold the connection's files yet (its sync began).</summary>
+    public const string ConnectionNotIndexed = "connection-not-indexed";
+
     /// <summary>409: the connection's provider lacks the function.</summary>
     public const string ConnectionNotSupported = "connection-not-supported";
 
@@ -109,6 +112,7 @@ public static class ProblemTypes
         ArchiveReading,
         ArchiveUnreadable,
         ConnectionNeedsReconnecting,
+        ConnectionNotIndexed,
         ConnectionNotSupported,
         ConnectionRateLimited,
         ConnectionRefused,

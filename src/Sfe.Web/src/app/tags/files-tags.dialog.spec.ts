@@ -118,7 +118,10 @@ describe('FilesTagsDialog', () => {
             options()[0].click();
             await settle();
 
-            expect(api.changeFileTags).toHaveBeenCalledWith({ paths: selection.map((f) => f.path), add: [sea.id] });
+            expect(api.changeFileTags).toHaveBeenCalledWith(
+                { paths: selection.map((f) => f.path), add: [sea.id] },
+                null,
+            );
             expect(chips('On all these files')).toEqual(['Sea']);
             expect(chips('On some of these files')).toEqual(['Beach · 1']);
             expect(applied).toHaveBeenCalledTimes(1);
@@ -146,7 +149,10 @@ describe('FilesTagsDialog', () => {
             section('On some of these files')!.querySelector<HTMLButtonElement>('button.tag-name')!.click();
             await settle();
 
-            expect(api.changeFileTags).toHaveBeenCalledWith({ paths: selection.map((f) => f.path), add: [sun.id] });
+            expect(api.changeFileTags).toHaveBeenCalledWith(
+                { paths: selection.map((f) => f.path), add: [sun.id] },
+                null,
+            );
             expect(chips('On all these files')).toEqual(['sun']);
             expect(section('On some of these files')).toBeUndefined();
         });
@@ -160,10 +166,10 @@ describe('FilesTagsDialog', () => {
                 .click();
             await settle();
 
-            expect(api.changeFileTags).toHaveBeenCalledWith({
-                paths: [selection[0].path, selection[2].path],
-                remove: [sun.id],
-            });
+            expect(api.changeFileTags).toHaveBeenCalledWith(
+                { paths: [selection[0].path, selection[2].path], remove: [sun.id] },
+                null,
+            );
             expect(chips('On some of these files')).toEqual(['Beach · 2']);
         });
 

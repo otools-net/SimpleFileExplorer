@@ -35,7 +35,8 @@ internal sealed record TransferServices(
     RemoteListings Listings,
     AccessChanges Changes,
     ConnectionRuleService Rules,
-    ConnectionChanges Written
+    ConnectionChanges Written,
+    TransferTagSides Tags
 );
 
 /// <summary>

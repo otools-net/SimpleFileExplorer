@@ -464,6 +464,12 @@ public static class Run
             ("t:holiday + name contains 'beach', path sort",
                 c1.Where(Predicates.Tag<RemoteFile>([1, 2, 3])).Where(Predicates.NameContains<RemoteFile>("beach")),
                 q => q.OrderBy(f => f.FullName)),
+            // The tag term as phase 4 writes it on remote rows: from the TagId index (Id IN (SELECT FileId …)).
+            ("t:holiday as Id IN (SELECT FileId …), modified descending", c1.Where(TaggedIn(db, [1, 2, 3])),
+                q => q.OrderByDescending(f => f.LastWriteTime).ThenBy(f => f.FullName)),
+            ("t:holiday as IN + name contains 'beach', path sort",
+                c1.Where(TaggedIn(db, [1, 2, 3])).Where(Predicates.NameContains<RemoteFile>("beach")),
+                q => q.OrderBy(f => f.FullName)),
             ("folder /photos/2014 and below, path sort", c1.Where(Predicates.InTree<RemoteFile>("/photos/2014")),
                 q => q.OrderBy(f => f.FullName)),
         };
@@ -486,6 +492,12 @@ public static class Run
         if (!sqlServer)
             await PlansAsync(db, sql, sqlFile);
         SameSql(db);
+    }
+
+    private static Expression<Func<RemoteFile, bool>> TaggedIn(MeasureDb db, int[] ids)
+    {
+        var tagged = db.RemoteFileTags.Where(l => ids.Contains(l.TagId)).Select(l => l.FileId);
+        return f => tagged.Contains(f.Id);
     }
 
     private static IQueryable<Row> Page(IQueryable<RemoteFile> ordered) =>

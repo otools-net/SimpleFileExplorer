@@ -81,6 +81,20 @@ public sealed class RemoteIndexSearch(
         return new RemoteSearchPage(results, [.. shown.Select(row => row.ProviderId)], coverage);
     }
 
+    /// <summary>
+    /// Every row the search of <paramref name="ask"/> finds (no page, no sort): what a search's tagging changes.
+    /// </summary>
+    internal async Task<IQueryable<RemoteFile>> MatchesAsync(
+        SfeDbContext db,
+        RemoteSearchAsk ask,
+        CancellationToken cancellationToken
+    )
+    {
+        var parsed = SearchQuery.Parse(ask.Query);
+        var graph = await TagGraph.LoadAsync(db, cancellationToken);
+        return await MatchesAsync(db, ask, parsed, SearchTagTerms.Of(parsed, graph), cancellationToken);
+    }
+
     private async Task<IQueryable<RemoteFile>> MatchesAsync(
         SfeDbContext db,
         RemoteSearchAsk ask,
@@ -97,13 +111,14 @@ public sealed class RemoteIndexSearch(
             settings.HighResolution(),
             settings.MediaKinds()
         );
+        var tagTerms = new RemoteTagTerms(db);
         var files = db
             .RemoteFiles.AsNoTracking()
             .Where(f => f.ConnectionId == id && !f.Removed)
-            .Where(predicate)
+            .Where(tagTerms.Rewrite(predicate))
             .Where(scope.Below(ask.Folder));
         if (terms.HiddenIds is { } hiddenIds)
-            files = files.Where(f => !f.TagLinks.Any(l => hiddenIds.Contains(l.TagId)));
+            files = files.Where(tagTerms.Rewrite(f => !f.TagLinks.Any(l => hiddenIds.Contains(l.TagId))));
         if (ask.Visible is { IsEverything: false } visible)
             files = files.Where(scope.Visible(visible));
         return await scope.WithoutHiddenAsync(db, id, files, ask.HiddenIds, cancellationToken);

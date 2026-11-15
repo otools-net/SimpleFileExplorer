@@ -119,4 +119,11 @@ The history is shared by everyone using the space; it is turned off or cleared i
 ## When files move
 
 A file's tags survive rescans while it keeps its path, and follow it when it is moved or renamed: see
-[Moved files](../administration/duplicates-and-moves.md#moved-files).
+[Moved files](../administration/duplicates-and-moves.md#moved-files). Files moved or copied to or from a connection
+keep their tags too.
+
+## Files of a connection
+
+Files of a connection (Dropbox) take the same tags with the same dialogs; the tags are kept by the space, never in
+Dropbox. Tag counts in the tag list and the sidebar count the library's files only. See
+[Tags on a connection's files](../administration/connections.md#tags-on-a-connections-files).

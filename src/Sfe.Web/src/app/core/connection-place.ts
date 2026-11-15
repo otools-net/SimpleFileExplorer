@@ -2,13 +2,23 @@ import { ClientConfig } from './config.models';
 import { ConnectionPlace } from './connection.models';
 import { Rights } from './rights';
 
-/** What a connection's files always offer: browsing, viewing, downloading. */
-const PLACE_RIGHTS: ReadonlySet<string> = new Set([Rights.browse, Rights.viewFiles, Rights.download]);
+/**
+ * What a connection's files always offer: browsing, viewing, downloading; the library's tags on them (kept by the
+ * library's index of the connection, at any access: tagging changes no file there). No default tags of folders.
+ */
+const PLACE_RIGHTS: ReadonlySet<string> = new Set([
+    Rights.browse,
+    Rights.viewFiles,
+    Rights.download,
+    Rights.viewTags,
+    Rights.assignTags,
+    Rights.manageTags,
+]);
 
 /**
  * What they offer too: copies out of any connection; where the session may write there, new folders, renames,
  * deletes, moves and copies, uploads when the provider takes files in parts. No new files, extract, compress,
- * permanent delete, edits or tags yet.
+ * permanent delete or edits yet.
  */
 function placeRights(place: ConnectionPlace): ReadonlySet<string> {
     // A copy only reads its source: copying out of a connection one reads (into the library) is allowed.
@@ -26,7 +36,7 @@ const FILE_RIGHTS = /^(files|tags|index|tracking|trickplay)\./;
 
 /**
  * The configuration as the pages see it while the listing shows a connection (agents/docs/features/connections.md):
- * what its files can't do is hidden where the app already hides what a session may not do. No tags, index, data
+ * what its files can't do is hidden where the app already hides what a session may not do. No default tags, index, data
  * server, conversion, external player, trickplay, folder pictures or animated hover (they read the library); thumbnails
  * when its provider makes them.
  */
@@ -52,4 +62,12 @@ export function atPlace(config: ClientConfig, place: ConnectionPlace | null): Cl
  */
 export function uploadsRoute(connection?: number | null): string {
     return connection ? `connections/${connection}/files/uploads` : 'files/uploads';
+}
+
+/**
+ * The routes (below `API_BASE`) of the tags of a connection's files (`connections/{id}/file-tags…`), or of the
+ * library's (`file-tags…`): the same paths below, bodies and answers.
+ */
+export function tagsRoute(connection?: number | null): string {
+    return connection ? `connections/${connection}/file-tags` : 'file-tags';
 }

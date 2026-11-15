@@ -33,6 +33,8 @@ export class FileTagsDialog {
     private readonly picker = viewChild.required<TagPickerComponent>('picker');
 
     private path = '';
+    /** The connection the file is in (`config.place()` when opened); null for the library. */
+    private connection: number | null = null;
     protected readonly name = signal('');
     /** Null while loading. */
     protected readonly current = signal<FileTags | null>(null);
@@ -50,6 +52,7 @@ export class FileTagsDialog {
 
     async open(item: LibraryItem): Promise<void> {
         this.path = item.path;
+        this.connection = this.config.place()?.id ?? null;
         this.name.set(item.name);
         this.current.set(null);
         this.sheet().open();
@@ -67,14 +70,14 @@ export class FileTagsDialog {
     }
 
     private async change(delta: { add?: number[]; remove?: number[] }): Promise<void> {
-        const result = await this.api.changeFileTags({ paths: [this.path], ...delta });
+        const result = await this.api.changeFileTags({ paths: [this.path], ...delta }, this.connection);
         this.current.set(result.files[0]);
         this.store.applyFileTags(result.files);
     }
 
     private async reload(): Promise<void> {
         try {
-            this.current.set(await this.api.fileTags(this.path));
+            this.current.set(await this.api.fileTags(this.path, this.connection));
         } catch (error) {
             this.toasts.error(`Could not load the tags: ${(error as Error).message}`);
         }

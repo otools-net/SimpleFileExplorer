@@ -229,7 +229,7 @@ describe('the folder picker with places', () => {
         await settle();
         fixture.detectChanges();
 
-        expect(element.querySelector('[data-tags-lost]')).not.toBeNull();
+        expect(element.querySelector('[data-tags-travel]')).not.toBeNull();
         expect(element.textContent).not.toContain('Copy their tags too');
         buttonNamed(element, 'Move here')!.click();
         await settle();

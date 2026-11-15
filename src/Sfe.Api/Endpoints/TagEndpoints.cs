@@ -11,6 +11,9 @@ public static class TagEndpoints
     private const int DefaultTagLimit = 100;
     private const int MaxTagLimit = 1000;
 
+    private const string FileCountDescription =
+        "`fileCount` counts the library's files only (a connection's: `api/connections/{id}/file-tags/scope`).";
+
     private const string GetScopeTagsDescription =
         "Without `q`: the indexed files of the folder `path`, and of its sub-folders with `recursive`. "
         + "With `q`: what that search finds in `path`.";
@@ -49,11 +52,11 @@ public static class TagEndpoints
         tags.MapGet("/", Search)
             .RequireRight(Rights.ViewTags)
             .FolderScoped("file counts count only the files the subject sees")
-            .FolderScoped("file counts count only the files the subject sees")
             .WithName("SearchTags")
             .WithSummary("Lists tags, or finds the ones whose name, shorthand or alias contains `q`.")
             .WithDescription(
-                "Names starting with `q` come first. `descendants` lists the tags inheriting from a match."
+                "Names starting with `q` come first. `descendants` lists the tags inheriting from a match. "
+                    + FileCountDescription
             );
 
         tags.MapGet(
@@ -78,7 +81,7 @@ public static class TagEndpoints
         tags.MapGet("/{id:int}", Get)
             .RequireRight(Rights.ViewTags)
             .FolderScoped("the file count counts only the files the subject sees")
-            .FolderScoped("the file count counts only the files the subject sees")
+            .WithDescription(FileCountDescription)
             .WithName("GetTag")
             .WithSummary("A tag with its aliases and parent tags.");
 
@@ -104,14 +107,12 @@ public static class TagEndpoints
             .MapGet("/", GetFileTags)
             .RequireRight(Rights.ViewTags)
             .FolderScoped("tags.view at the file")
-            .FolderScoped("tags.view at the file")
             .WithName("GetFileTags")
             .WithSummary("Tags of a file, also grouped by category tag.");
 
         files
             .MapPost("/", ChangeFileTags)
             .RequireRight(Rights.AssignTags)
-            .FolderScoped("tags.assign at every file, else nothing changes")
             .FolderScoped("tags.assign at every file, else nothing changes")
             .WithName("ChangeFileTags")
             .WithSummary("Adds and removes tags on one or more files.")
@@ -177,7 +178,6 @@ public static class TagEndpoints
         files
             .MapPost("/viewed", Viewed)
             .RequireRight(Rights.ViewFiles)
-            .FolderScoped("files.view at the file")
             .FolderScoped("files.view at the file")
             .WithName("RecordFileViewed")
             .WithSummary("Records that a file was viewed: its tags become the last viewed tags.");

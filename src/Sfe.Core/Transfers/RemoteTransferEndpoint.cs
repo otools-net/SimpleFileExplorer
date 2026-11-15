@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Connections;
+using Otools.Net.Sfe.Core.Connections.Indexing;
 using Otools.Net.Sfe.Core.Files;
 
 namespace Otools.Net.Sfe.Core.Transfers;
@@ -12,13 +13,15 @@ namespace Otools.Net.Sfe.Core.Transfers;
 /// trash; what was written drops the connection's listing snapshots and is told to the indexes and open listings
 /// (<paramref name="changes"/>). Disposing it disposes the storage. The person's folder access is checked at every
 /// item before the provider is called (<see cref="RemoteTransferChecks"/>): a hidden item is not found, nor listed; a
-/// hidden name is taken.
+/// hidden name is taken. The library's tags of its files are read and written on their rows of the library's index
+/// (<paramref name="tags"/>; none without it): a file arriving gets its row from the change told, then the tags.
 /// </summary>
 public sealed class RemoteTransferEndpoint(
     RemoteTransferSide side,
     TransferCalls calls,
     RemoteListings listings,
-    ConnectionChanges? changes = null
+    ConnectionChanges? changes = null,
+    RemoteFileTags? tags = null
 ) : ITransferEndpoint
 {
     private const int SkipBuffer = 81920;
@@ -28,6 +31,7 @@ public sealed class RemoteTransferEndpoint(
     private readonly ProviderCapabilities _capabilities = side.Capabilities;
     private readonly RemoteTransferChecks _checks = new(side.Access, side.Right);
     private readonly Func<string, CancellationToken, Task>? _folderGone = side.FolderGone;
+    private readonly RemoteTagPlace _place = new(side.ConnectionId, side.Capabilities.CaseInsensitiveNames);
 
     public string? HashName => _capabilities.ContentHash;
 
@@ -163,6 +167,9 @@ public sealed class RemoteTransferEndpoint(
     {
         await _checks.ChangeableAsync(entry.Path, null, cancellationToken);
         await DeleteAsync(entry.Path, cancellationToken);
+        // Its tags went with it (copied to the target): the row, marked removed, keeps none.
+        if (!entry.IsFolder && tags is not null)
+            await tags.ForgetAsync(_place, entry.Path, cancellationToken);
         if (entry.IsFolder && _folderGone is { } gone)
             await gone(entry.Path, cancellationToken);
     }
@@ -180,6 +187,15 @@ public sealed class RemoteTransferEndpoint(
         listings.Forget(_connectionId);
         return Task.CompletedTask;
     }
+
+    public async Task<IReadOnlyList<int>> TagsAsync(TransferEntry file, CancellationToken cancellationToken) =>
+        tags is null || file.IsFolder ? [] : await tags.TagIdsAsync(_place, file.Path, cancellationToken);
+
+    public async Task<bool> TagAsync(
+        TransferEntry written,
+        IReadOnlyList<int> tagIds,
+        CancellationToken cancellationToken
+    ) => tags is not null && await tags.AddAsync(_place, written.Path, tagIds, cancellationToken);
 
     public ValueTask DisposeAsync() => _storage.DisposeAsync();
 

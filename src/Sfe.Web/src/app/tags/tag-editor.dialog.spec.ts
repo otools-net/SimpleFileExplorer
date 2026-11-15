@@ -180,7 +180,7 @@ describe('TagEditorDialog', () => {
 
             expect(api.tag).toHaveBeenCalledWith(details.id);
             expect(element.querySelector('h2')!.textContent).toBe('Edit tag');
-            expect(element.querySelector('.sheet-subtitle')!.textContent).toBe('3 files');
+            expect(element.querySelector('.sheet-subtitle')!.textContent).toBe('3 library files');
             expect(field('name').value).toBe('Cat');
             expect(field('shorthand').value).toBe('C');
             expect(field<HTMLTextAreaElement>('aliases').value).toBe('Feline\nKitty');
@@ -279,7 +279,7 @@ describe('TagEditorDialog', () => {
         it('says when a tag is built in, and cannot delete it', async () => {
             await open(tag('Favorite', { isBuiltIn: true, fileCount: 1 }));
 
-            expect(element.querySelector('.sheet-subtitle')!.textContent).toBe('Built-in tag · 1 file');
+            expect(element.querySelector('.sheet-subtitle')!.textContent).toBe('Built-in tag · 1 library file');
             expect(button('Delete')).toBeUndefined();
             expect(button('Find files')).toBeDefined();
         });
@@ -345,7 +345,10 @@ describe('TagEditorDialog', () => {
             button('Delete')!.click();
             await settle();
 
-            expect(ask).toHaveBeenCalledWith('Delete the tag “Cat (Ani)”? It is removed from 3 files.');
+            expect(ask).toHaveBeenCalledWith(
+                'Delete the tag “Cat (Ani)”? It is removed from 3 library files and from the connections’ files ' +
+                    'that have it.',
+            );
             expect(api.deleteTag).toHaveBeenCalledWith(details.id);
             expect(deleted).toHaveBeenCalledWith(details.id);
             expect(await result).toEqual({ deleted: details.id });
@@ -358,7 +361,9 @@ describe('TagEditorDialog', () => {
             button('Delete')!.click();
             await settle();
 
-            expect(ask).toHaveBeenCalledWith('Delete the tag “Unused”?');
+            expect(ask).toHaveBeenCalledWith(
+                'Delete the tag “Unused”? It is removed from the connections’ files that have it.',
+            );
             expect(api.deleteTag).not.toHaveBeenCalled();
             expect(dialog().open).toBe(true);
         });

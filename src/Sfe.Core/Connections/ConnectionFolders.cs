@@ -110,8 +110,11 @@ public sealed class ConnectionFolders(
     /// Where the subject sees files, for a search of the index: null when everywhere (as the library's
     /// <c>Visible()</c>).
     /// </summary>
-    public PathFilter? Visible() =>
-        policy.FilterFor(Rights.Browse, granted) is { IsEverything: false } filter ? filter : null;
+    public PathFilter? Visible() => Where(Rights.Browse);
+
+    /// <summary>Where the subject may use <paramref name="right"/>: null when everywhere.</summary>
+    public PathFilter? Where(string right) =>
+        policy.FilterFor(right, granted) is { IsEverything: false } filter ? filter : null;
 
     /// <summary>
     /// The provider's ids of the items a rule set on them at another path hides (they were renamed or moved outside

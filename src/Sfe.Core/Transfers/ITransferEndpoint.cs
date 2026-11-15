@@ -46,4 +46,15 @@ public interface ITransferEndpoint : IAsyncDisposable
 
     /// <summary>Told once a file arrived (the library indexes it, applying the folder's default tags).</summary>
     Task AfterWriteAsync(TransferEntry written, CancellationToken cancellationToken);
+
+    /// <summary>The library's tags on a file of this side (its index row); none when it has no row.</summary>
+    Task<IReadOnlyList<int>> TagsAsync(TransferEntry file, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<int>>([]);
+
+    /// <summary>
+    /// Gives the library's tags to a file that arrived (told after <see cref="AfterWriteAsync"/>); false when the side
+    /// has no index row of it to carry them.
+    /// </summary>
+    Task<bool> TagAsync(TransferEntry written, IReadOnlyList<int> tagIds, CancellationToken cancellationToken) =>
+        Task.FromResult(false);
 }

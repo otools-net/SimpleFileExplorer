@@ -91,7 +91,10 @@ export class TagMenu {
 
     private async removeFrom(tag: TagSummary, file: LibraryItem): Promise<void> {
         try {
-            const result = await this.api.changeFileTags({ paths: [file.path], remove: [tag.id] });
+            const result = await this.api.changeFileTags(
+                { paths: [file.path], remove: [tag.id] },
+                this.config.place()?.id,
+            );
             this.store.applyFileTags(result.files);
         } catch (error) {
             this.toasts.error(`Could not remove the tag: ${(error as Error).message}`);

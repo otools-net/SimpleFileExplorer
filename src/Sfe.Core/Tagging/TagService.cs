@@ -136,8 +136,7 @@ public sealed class TagService(
         var tag = await db
             .Tags.Include(t => t.Aliases)
             .Include(t => t.ParentLinks)
-            // One tag with a handful of aliases and parents: the joined rows are few, so a single round trip
-            // beats split queries. Stating it explicitly silences EF's MultipleCollectionIncludeWarning.
+            // Few joined rows: one round trip beats split queries (stated: no MultipleCollectionIncludeWarning).
             .AsSingleQuery()
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         if (tag is null)
@@ -154,8 +153,8 @@ public sealed class TagService(
     }
 
     /// <summary>
-    /// Deletes a tag, its aliases, its links to other tags and to files, and where it is a folder's default. Built-in
-    /// tags cannot be deleted.
+    /// Deletes a tag, its aliases, its links to other tags and to files (connection files too, first, by batches), and
+    /// where it is a folder's default. Built-in tags cannot be deleted.
     /// </summary>
     public async Task<TagDeleteStatus> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
@@ -167,6 +166,7 @@ public sealed class TagService(
             return TagDeleteStatus.NotFound;
 
         // Same steps as TagStudio's remove_tag; the links to other tags have no cascade (see SfeDbContext).
+        await Connections.Indexing.RemoteFileTagRows.DeleteTagAsync(db, id, cancellationToken); // batches
         var strategy = db.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {

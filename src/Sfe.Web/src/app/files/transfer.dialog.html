@@ -21,9 +21,8 @@
             </label>
         }
     }
-    @if (tagsLost()) {
-        <p class="field-hint" data-tags-lost>Their tags are not kept: the files leave the library, as deleted ones
-        do.</p>
+    @if (tagsTravel()) {
+        <p class="field-hint" data-tags-travel>Their tags go with them.</p>
     }
     @if (tagsAsked()) {
         <label class="check">

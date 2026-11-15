@@ -53,8 +53,11 @@ Tests: `TransferJobsTests`, `TransferRouteTests`, `TransferRetryTests`, `Transfe
   before reading; that item fails, the others go).
 - An ended sign-in marks the connection needs reconnecting (both probed when both sides are connections) and fails
   the rest.
-- Leaving the library by a move is a delete there: tags don't travel (the dialog says so); arriving files get the
-  folder's default tags. A library folder with rules may be moved out (as for a delete, its rules go into the trash
+- Tags travel both ways (`ITransferEndpoint.TagsAsync` / `TagAsync`, `TransferRun.CarryTagsAsync`): read from the
+  source's index row, given to the file written once verified (a connection's row is made by the change told on
+  upload), then a moved connection source loses its links; a moved library source goes to the trash with them.
+  Never fails a file (logged). Files arriving in the library also get the folder's default tags. The dialog says
+  tags go with the files (`tagsTravel`). A library folder with rules may be moved out (as for a delete, its rules go into the trash
   entry, [trash](trash.md); no warning of its own).
   A connection folder moved out loses its rules ([connection-folder-rules](connection-folder-rules.md)).
 

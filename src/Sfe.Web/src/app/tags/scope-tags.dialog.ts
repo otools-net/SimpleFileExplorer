@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
+import { ConfigService } from '../core/config.service';
 import { plural } from '../core/format';
 import { FolderDefaults, TagScope, TagSummary, TagUsage } from '../core/tag.models';
 import { ScopeTags } from './tag.models';
@@ -27,6 +28,9 @@ interface PendingChange {
  *
  * For a folder, also its default tags (agents/docs/features/default-tags.md): the tags every file put into it or its
  * sub-folders gets. Adding or removing one asks whether the files already there change too.
+ *
+ * In a connection (`config.place()` when opened), the files are those the library's index of it holds: nothing is
+ * indexed for the change, and folders have no default tags there.
  */
 @Component({
     selector: 'sfe-scope-tags',
@@ -38,12 +42,15 @@ export class ScopeTagsDialog {
     private readonly api = inject(Api);
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
+    private readonly config = inject(ConfigService);
     protected readonly dialogs = inject(Dialogs);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
     private readonly picker = viewChild<TagPickerComponent>('picker');
     private readonly defaultPicker = viewChild<TagPickerComponent>('defaultPicker');
 
     protected readonly scope = signal<TagScope>({ path: '', recursive: false, query: null });
+    /** The connection whose files are tagged; null for the library. */
+    private readonly connection = signal<number | null>(null);
     protected readonly summary = signal<ScopeTags | null>(null);
     protected readonly error = signal<string | null>(null);
     protected readonly pending = signal<PendingChange | null>(null);
@@ -85,6 +92,10 @@ export class ScopeTagsDialog {
     protected readonly countText = computed(() => {
         const files = this.summary()?.files ?? 0;
         if (this.scope().query) return files ? `${plural(files, 'file')} found.` : 'The search finds no file.';
+        if (this.connection())
+            return files
+                ? `${plural(files, 'indexed file')}. Files the library has not indexed yet don’t change.`
+                : 'None of these files is indexed in the library yet: open the folder again once its sync has run.';
         return files
             ? `${plural(files, 'indexed file')}. Files not indexed yet are indexed when a tag is added or removed.`
             : 'No file of this folder is indexed yet: they are indexed when a tag is added or removed.';
@@ -116,7 +127,9 @@ export class ScopeTagsDialog {
         return [
             pending.create ? 'The tag is created first.' : '',
             having ? `${plural(having, 'file already has', 'files already have')} it.` : '',
-            this.scope().query ? '' : 'This can take a while for a large folder: its files are indexed first.',
+            this.scope().query || this.connection()
+                ? ''
+                : 'This can take a while for a large folder: its files are indexed first.',
         ]
             .filter(Boolean)
             .join(' ');
@@ -178,6 +191,7 @@ export class ScopeTagsDialog {
     /** Opens on the files of a folder (`recursive`: and of its sub-folders) or on a search's matches (`query`). */
     open(scope: TagScope): void {
         this.scope.set({ ...scope, query: scope.query?.trim() || null, recursive: !scope.query && scope.recursive });
+        this.connection.set(this.config.place()?.id ?? null);
         this.pending.set(null);
         this.pendingDefault.set(null);
         this.sheet().open();
@@ -280,10 +294,8 @@ export class ScopeTagsDialog {
                     this.pending.set({ ...pending, tag });
                 }
                 const id = tag.id;
-                const result = await this.api.changeScopeTags({
-                    ...scope,
-                    ...(pending.remove ? { remove: [id] } : { add: [id] }),
-                });
+                const change = { ...scope, ...(pending.remove ? { remove: [id] } : { add: [id] }) };
+                const result = await this.api.changeScopeTags(change, this.connection());
                 if (!('files' in result)) {
                     this.toasts.error(result.detail ?? 'A scan is running: try again when it has finished.');
                     return;
@@ -311,7 +323,7 @@ export class ScopeTagsDialog {
         const requests = (this.defaultRequests = new AbortController());
         this.defaults.set(null);
         this.defaultsError.set(null);
-        if (this.scope().query) return;
+        if (this.scope().query || this.connection()) return;
         try {
             const defaults = await this.api.folderDefaultTags(this.scope().path, requests.signal);
             if (requests === this.defaultRequests) this.defaults.set(defaults);
@@ -327,7 +339,7 @@ export class ScopeTagsDialog {
         this.summary.set(null);
         this.error.set(null);
         try {
-            const summary = await this.api.scopeTags(this.scope(), requests.signal);
+            const summary = await this.api.scopeTags(this.scope(), requests.signal, this.connection());
             if (requests === this.requests) this.summary.set(summary);
         } catch (error) {
             if (requests === this.requests)

@@ -82,6 +82,7 @@ list (`x-sfe-problem-types`), so the baseline refuses a word removed.
 | `archive-reading` | 409 | the archive's list is still being read: try again in a moment |
 | `archive-unreadable` | 422 | the archive (or an entry) can't be read |
 | `connection-needs-reconnecting` | 409 | the provider no longer accepts the connection's sign-in |
+| `connection-not-indexed` | 409 | the library's index doesn't hold the connection's files yet (its sync started) |
 | `connection-not-supported` | 409 | the provider lacks the function |
 | `connection-rate-limited` | 429 | the provider asks to wait (`Retry-After`) |
 | `connection-refused` | 403 | the provider doesn't let this account do it |

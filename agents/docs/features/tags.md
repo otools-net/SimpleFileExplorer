@@ -19,3 +19,7 @@ search: [scope-tagging.md](scope-tagging.md).
   too. A dialog that focuses its picker on open needs `blur()` + `focus()` to load suggestions again.
 - Tagged files that disappear become missing files: [missing-files.md](missing-files.md).
 - Folders can give tags to the files put into them: [default-tags.md](default-tags.md).
+- Connection files take the same tags (`RemoteFileTags` rows, routes `api/connections/{id}/file-tags…`):
+  [connection-files](connection-files.md#tags). Tag counts (`fileCount` of the tag list, a tag, the sidebar) count
+  the **library's** files only, by design: never a connection's rows (an account's own included).
+- Deleting a tag removes its connection links first, by batches (`RemoteFileTagRows.DeleteTagAsync`).

@@ -41,6 +41,8 @@ export class FilesTagsDialog {
     private readonly items = signal<LibraryItem[]>([]);
     protected readonly progress = signal(false);
     private busy = false;
+    /** The connection the files are in (`config.place()` when opened); null for the library. */
+    private connection: number | null = null;
 
     protected readonly subtitle = computed(() => plural(this.items().length, 'file'));
     protected readonly filesText = this.subtitle;
@@ -76,6 +78,7 @@ export class FilesTagsDialog {
 
     open(selected: LibraryItem[]): void {
         this.items.set(selected);
+        this.connection = this.config.place()?.id ?? null;
         this.sheet().open();
         this.picker().focus();
     }
@@ -116,7 +119,8 @@ export class FilesTagsDialog {
         this.progress.set(paths.length > size);
         try {
             for (let start = 0; start < paths.length; start += size) {
-                const result = await this.api.changeFileTags({ paths: paths.slice(start, start + size), ...delta });
+                const part = { paths: paths.slice(start, start + size), ...delta };
+                const result = await this.api.changeFileTags(part, this.connection);
                 const byPath = new Map(result.files.map((file) => [file.path, file.tags]));
                 this.items.update((items) =>
                     items.map((item) => (byPath.has(item.path) ? { ...item, tags: byPath.get(item.path) } : item)),

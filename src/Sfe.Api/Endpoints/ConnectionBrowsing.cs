@@ -1,3 +1,4 @@
+using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Connections;
 using Otools.Net.Sfe.Core.Connections.Indexing;
 using Otools.Net.Sfe.Core.Library;
@@ -23,7 +24,7 @@ internal static class ConnectionBrowsing
         var open = request.Open;
         var target = await TargetAsync(files, open, cancellationToken);
         if (target is not null && await FromIndexAsync(request, target, browse, cancellationToken) is { } indexed)
-            return Answer(request, indexed, browse.Classifier, _ => true);
+            return await AnswerAsync(request, indexed, browse, (target, _ => true), cancellationToken);
 
         return await files.RunAsync(open, async storage =>
         {
@@ -31,7 +32,8 @@ internal static class ConnectionBrowsing
             var known = target is null
                 ? null
                 : await browse.IndexListings.IndexedAsync(target, read.Items, cancellationToken);
-            return Answer(request, read, browse.Classifier, known is null ? null : known.Contains);
+            var index = (target, known is null ? null : (Func<string, bool>)known.Contains);
+            return await AnswerAsync(request, read, browse, index, cancellationToken);
         });
     }
 
@@ -63,23 +65,29 @@ internal static class ConnectionBrowsing
             ? ConnectionIndexTarget.Of(info, open.Capabilities)
             : null;
 
-    /// <param name="indexed">Whether the index holds the item at a path; null when nothing is told.</param>
-    private static IResult Answer(
+    /// <param name="index">The connection as its index is made (null when gone), and whether the index holds the
+    /// item at a path (null when nothing is told). The files' tags come from it where the folder lets the session
+    /// see tags.</param>
+    private static async Task<IResult> AnswerAsync(
         ConnectionBrowseRequest request,
         RemoteListing read,
-        MediaClassifier classifier,
-        Func<string, bool>? indexed
+        ConnectionBrowseServices browse,
+        (ConnectionIndexTarget? Target, Func<string, bool>? Indexed) index,
+        CancellationToken cancellationToken
     )
     {
         var (open, path) = (request.Open, request.Asked.Path);
         if (!IsSeenWhereListed(open, path, read))
             return TypedResults.NotFound();
         var listing = open.Folders.Seen(read);
-        var page = ConnectionListings.Of(open, path, listing, request.Asked.Limit, classifier);
+        var page = ConnectionListings.Of(open, path, listing, request.Asked.Limit, browse.Classifier);
         var view = open.Folders.ViewOf(path, request.Here, listing.Items);
-        var items = indexed is null
+        var indexed = index.Indexed;
+        IReadOnlyList<LibraryItem> items = indexed is null
             ? page.Listing.Items
             : [.. page.Listing.Items.Select(item => item with { Indexed = indexed(item.Path) })];
+        if (index.Target is { } target && request.Here.Has(Rights.ViewTags))
+            items = await browse.Tags.AttachAsync(RemoteTagPlace.Of(target), items, cancellationToken);
         return TypedResults.Ok(page with { Listing = page.Listing with { Access = view, Items = items } });
     }
 

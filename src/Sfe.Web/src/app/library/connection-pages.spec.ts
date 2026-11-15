@@ -91,7 +91,11 @@ describe('a connection in the listing', () => {
         expect(config.config()!.features).toEqual({ thumbnails: true, trickplay: false });
         expect(config.config()!.rootName).toBe('My Dropbox');
         expect(config.can(Rights.viewFiles) && config.can(Rights.download)).toBe(true);
-        expect(config.can(Rights.assignTags) || config.can(Rights.renameFiles) || config.can(Rights.scan)).toBe(false);
+        expect(config.can(Rights.folderDefaultTags) || config.can(Rights.renameFiles) || config.can(Rights.scan)).toBe(
+            false,
+        );
+        // The library's tags on its files: kept by the library's index of it, whatever the access.
+        expect(config.can(Rights.viewTags) && config.can(Rights.assignTags)).toBe(true);
         // Rights of the account, not of the files, stay.
         expect(config.can(Rights.useConnections)).toBe(true);
         expect(config.videoStream('clip.mp4')).toBeNull();

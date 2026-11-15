@@ -51,7 +51,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tags.Item
             await RequestAdapter.SendNoContentAsync(requestInfo, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// A tag with its aliases and parent tags.
+        /// `fileCount` counts the library&apos;s files only (a connection&apos;s: `api/connections/{id}/file-tags/scope`).
         /// </summary>
         /// <returns>A <see cref="global::Otools.Net.Sfe.Client.Generated.Models.TagDetails"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -112,7 +112,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tags.Item
             return requestInfo;
         }
         /// <summary>
-        /// A tag with its aliases and parent tags.
+        /// `fileCount` counts the library&apos;s files only (a connection&apos;s: `api/connections/{id}/file-tags/scope`).
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>

@@ -125,6 +125,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<LibraryClashes>();
         services.AddSingleton<FileJobs>();
         services.AddSingleton<Transfers.LibraryTransfers>();
+        services.AddSingleton<Transfers.LibraryTransferTags>();
+        services.AddSingleton<Transfers.TransferTagSides>();
         services.AddSingleton<Transfers.TransferJobs>();
         AddConnectionIndex(services);
         services.AddSingleton<Uploads>();
@@ -175,6 +177,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<Connections.Indexing.IndexListingPlaces>();
         services.AddSingleton<Connections.Indexing.RemoteIndexListings>();
         services.AddSingleton<Connections.Indexing.RemoteIndexSearch>();
+        services.AddSingleton<Connections.Indexing.RemoteFileTags>();
+        services.AddSingleton<Connections.Indexing.RemoteScopeTagger>();
     }
 
     private static void AddLegacyLogCategories(IServiceCollection services) =>

@@ -5,6 +5,8 @@ import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
+import { ConfigService } from '../core/config.service';
+import { enterPlace } from '../library/connection-pages';
 import {
     ApiMock,
     buttonNamed,
@@ -65,7 +67,11 @@ describe('ScopeTagsDialog', () => {
         await fixture.whenStable();
     });
 
-    afterEach(() => vi.restoreAllMocks());
+    afterEach(() => {
+        // A connection made the place leaves the module's formats raw: back to the library.
+        enterPlace(TestBed.inject(ConfigService), null);
+        vi.restoreAllMocks();
+    });
 
     async function open(scope: TagScope, answer: ScopeTags): Promise<void> {
         api.scopeTags.mockResolvedValue(answer);
@@ -89,11 +95,29 @@ describe('ScopeTagsDialog', () => {
     it('counts the indexed files of a folder and the tags on all or some of them', async () => {
         await open(folder, tags(folder, 3, [beach, 3], [sun, 1]));
 
-        expect(api.scopeTags).toHaveBeenCalledWith(folder, expect.any(AbortSignal));
+        expect(api.scopeTags).toHaveBeenCalledWith(folder, expect.any(AbortSignal), null);
         expect(element.querySelector('.sheet-subtitle')!.textContent).toBe('Files in “Media”');
         expect(element.querySelector('.scope-count')!.textContent).toContain('3 indexed files.');
         expect(chips('On all these files')).toEqual(['Beach']);
         expect(chips('On some of these files')).toEqual(['sun · 1']);
+    });
+
+    it('in a connection, counts and tags the files its index holds, without default tags', async () => {
+        enterPlace(TestBed.inject(ConfigService), 7);
+        await open(folder, tags(folder, 2, [beach, 1]));
+        api.changeScopeTags.mockResolvedValue(changed(folder, 2, 1, 0));
+        api.scopeTags.mockResolvedValue(tags(folder, 2, [beach, 2]));
+
+        section('On some of these files')!.querySelector<HTMLButtonElement>('button.tag-name')!.click();
+        await settle();
+        buttonNamed(confirmBox()!, 'Add tag')!.click();
+        await settle();
+
+        expect(api.scopeTags).toHaveBeenCalledWith(folder, expect.any(AbortSignal), 7);
+        expect(api.changeScopeTags).toHaveBeenCalledWith({ ...folder, add: [beach.id] }, 7);
+        expect(api.folderDefaultTags).not.toHaveBeenCalled();
+        expect(defaultSection()).toBeNull();
+        expect(element.querySelector('.scope-count')!.textContent).toContain('not indexed yet don’t change');
     });
 
     it('counts again with the sub-folders when asked', async () => {
@@ -104,7 +128,7 @@ describe('ScopeTagsDialog', () => {
         recursive()!.click();
         await settle();
 
-        expect(api.scopeTags).toHaveBeenLastCalledWith(tree, expect.any(AbortSignal));
+        expect(api.scopeTags).toHaveBeenLastCalledWith(tree, expect.any(AbortSignal), null);
         expect(element.querySelector('.sheet-subtitle')!.textContent).toBe('Files in “Media” and its sub-folders');
         expect(element.querySelector('.scope-count')!.textContent).toContain('10 indexed files.');
     });
@@ -138,7 +162,7 @@ describe('ScopeTagsDialog', () => {
         buttonNamed(confirmBox()!, 'Add tag')!.click();
         await settle();
 
-        expect(api.changeScopeTags).toHaveBeenCalledWith({ ...tree, add: [beach.id] });
+        expect(api.changeScopeTags).toHaveBeenCalledWith({ ...tree, add: [beach.id] }, null);
         expect(show).toHaveBeenCalledWith('“Beach” added to 4 files.');
         expect(applied).toHaveBeenCalledWith(tree, { add: expect.objectContaining({ id: beach.id }) });
         expect(confirmBox()).toBeNull();
@@ -158,7 +182,7 @@ describe('ScopeTagsDialog', () => {
         buttonNamed(confirmBox()!, 'Remove tag')!.click();
         await settle();
 
-        expect(api.changeScopeTags).toHaveBeenCalledWith({ ...folder, remove: [sun.id] });
+        expect(api.changeScopeTags).toHaveBeenCalledWith({ ...folder, remove: [sun.id] }, null);
         expect(applied).toHaveBeenCalledWith(folder, { remove: sun.id });
     });
 
@@ -166,7 +190,7 @@ describe('ScopeTagsDialog', () => {
         const search: TagScope = { path: 'Media', recursive: false, query: 'cat' };
         await open({ ...search, query: ' cat ', recursive: true }, tags(search, 2, [sun, 1]));
 
-        expect(api.scopeTags).toHaveBeenCalledWith(search, expect.any(AbortSignal));
+        expect(api.scopeTags).toHaveBeenCalledWith(search, expect.any(AbortSignal), null);
         expect(recursive()).toBeNull();
         expect(element.querySelector('.sheet-subtitle')!.textContent).toBe('Search “cat” in “Media”');
         section('On some of these files')!.querySelector<HTMLButtonElement>('button.tag-name')!.click();
@@ -195,7 +219,7 @@ describe('ScopeTagsDialog', () => {
         await settle();
 
         expect(api.createTag).toHaveBeenCalledWith({ name: 'Holiday' });
-        expect(api.changeScopeTags).toHaveBeenCalledWith({ ...folder, add: [created.id] });
+        expect(api.changeScopeTags).toHaveBeenCalledWith({ ...folder, add: [created.id] }, null);
     });
 
     it('keeps the change waiting when a scan is running', async () => {

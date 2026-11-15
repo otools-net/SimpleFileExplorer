@@ -80,7 +80,7 @@ describe('TagManagerDialog', () => {
             'category, hidden',
             '',
         ]);
-        expect(counts).toEqual(['1 file', `${(1234).toLocaleString()} files`, '0 files']);
+        expect(counts).toEqual(['1 library file', `${(1234).toLocaleString()} library files`, '0 library files']);
         expect(rows()[0].title).toBe('Edit Jinx Piltover');
     });
 

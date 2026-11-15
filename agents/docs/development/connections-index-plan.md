@@ -289,8 +289,7 @@ As built (2026-11-15; code `Core/Search/` (`ISearchableFile`, `SearchPages`, `Se
   (its CI collation doesn't keep `/` and `0` adjacent). Shown items pass `ConnectionFolders.At(path, id)` again.
 - `coverage`: `none` (no state of this root and account), `partial` (listing, or older than `MaxAge`), `complete`;
   a search starts the index (`OpenedAsync`) and never calls the provider (no gate turn).
-- Not tuned: the tag term keeps the `EXISTS` form (phase 0 measured the `IN (SELECT FileId …)` one faster on SQLite
-  counts; needs the link table in the generic builder); no measurement on millions of remote rows was run in phase 3.
+- Tag term tuned in phase 4 (`RemoteTagTerms`, below); no other measurement on millions of remote rows in phase 3.
 - Client: a search keeps `?c=` (it no longer leaves a connection); `?all=1` (only with `q`; `c` and `path` kept) is
   Everywhere: `EverywhereSearch` asks the library and each usable connection apart (20 a page, **Show more**),
   each group with its own loading, error (**Retry**), count and coverage note; a result opens its folder in its
@@ -299,10 +298,63 @@ As built (2026-11-15; code `Core/Search/` (`ISearchableFile`, `SearchPages`, `Se
 
 ### Phase 4: tags
 
-- [ ] `RemoteFileTags` with the tag dialogs, picker, quick tagging and scope tagging on remote rows
+- [x] `RemoteFileTags` with the tag dialogs, picker, quick tagging and scope tagging on remote rows
   ([tags](../features/tags.md), [scope-tagging](../features/scope-tagging.md)); tag counts say what they count
-- [ ] Deleting or merging a tag covers remote rows; tag rights as for library files
-- [ ] A file moved between the library and a connection by a transfer keeps its tags (copied to the other table)
+- [x] Deleting or merging a tag covers remote rows; tag rights as for library files
+- [x] A file moved between the library and a connection by a transfer keeps its tags (copied to the other table)
+
+As built (2026-11-15; code `Indexing/RemoteFileTags`, `RemoteScopeTagger`, `RemoteFileTagRows`, `RemoteTagTerms`,
+`RemoteTagPlace`, `Transfers/LibraryTransferTags`, `TransferTagSides`, Api `ConnectionTagEndpoints`,
+`ConnectionTagChanges`; client `core/connection-place.ts` (`tagsRoute`), the tag dialogs; tests `RemoteFileTagsTests`,
+`ConnectionTagRouteTests`, `TransferTagRouteTests`, `connection-tags.spec.ts`; the full pass keeping tags by id:
+`ConnectionIndexerTests.ACursorResetListsEverythingAgainAndFilesKeepTheirTagsByTheirIds`):
+
+- Routes `api/v1/connections/{id}/file-tags` (GET, POST) and `…/file-tags/scope` (GET, POST): the library's
+  `file-tags` routes, same bodies and answers, paths from the connection's root. Opened as every connection route
+  (`ConnectionFileServices.OpenAsync`: 404 for a connection the session may not use, so an account's own is its
+  owner's only, never the library administrators'); then `tags.view` / `tags.assign` at each path by the connection's
+  folder rules, by path and again by the row's provider id (renamed outside SFE). As the library: one file refused
+  fails the whole change (400); a scope's folder hidden is 404; a scope changes only where `tags.assign` applies
+  (`ConnectionFolders.Where(right)` as key conditions). `tags.assign` is `AtFolder` Read: a folder the session only
+  reads is tagged (no file there changes). No provider call but for files missing from the index.
+- Tag counts: `fileCount` of `api/tags`, `api/tags/{id}` and the sidebar stays **the library's files only**
+  (unchanged answers; said in their descriptions, the client writes "library files"): a global count over remote
+  rows would have to apply each connection's access and rules per asker, and could tell about an account's own
+  connection. Connection files are counted per connection, by `…/file-tags/scope` (only the rows the asker sees,
+  `tags.view` region). The tag editor's delete question says connection files lose it too.
+- Rows read are of the connection's current root and account only (`RemoteTagPlace.IsCurrentAsync`, as the search's
+  coverage): rows of an index made for another account show and take no tags until the sync drops them.
+- A file the index doesn't hold (POST `file-tags`): asked of the provider (one gate turn, at most 20 such files a
+  request) and written into this library's index by `ConnectionIndexUpdates` as SFE's own changes are, then tagged;
+  409 `connection-not-indexed` (new problem type) when the library has no index of the connection (its first sync is
+  started) or more files are missing. A scope (folder, tree, search) counts and changes only the rows the index
+  holds: a folder is never listed for it (the dialog says files not indexed yet don't change).
+- Listings: every page (index or provider) gets its files' tags in one query by key, when the folder lets the
+  session see tags (`ConnectionBrowsing`); search rows already had them. The viewed-tags history stays the library's.
+- Writes are batches of 1000 links under the connection's lock (`RemoteIndexTransactions.WriteAsync`), so a sync
+  never drops a row being tagged; a scope change walks rows by id (a search on the tag changed still reaches every
+  match, as `ScopeTagger`). Deleting a tag deletes its remote links first, 1000 a statement, before the tag's
+  transaction (the cascade then has nothing left). There is no tag merge in SFE (nothing to cover).
+- Transfers: `ITransferEndpoint.TagsAsync` / `TagAsync` (default: none; library side `LibraryTransferTags`,
+  connection side `RemoteFileTags`); `TransferRun` gives the source's tags to each file once written and verified,
+  before a move takes the source away; a failure there is logged, never fails the file. A moved source in a
+  connection loses its links (`ForgetAsync`, its row marked removed or not); one in the library goes to the trash,
+  which keeps its tags for a restore. **Choice: the row is made at once**: the provider's answer to the upload is
+  told to `ConnectionIndexUpdates` (phase 1) before the tags are written, so the arriving file has its row. A
+  connection this library never indexed has no rows to hold them: the transfer starts its index
+  (`ConnectionIndexes.OpenedAsync`) and files written before its state exists arrive untagged (logged, "arrived
+  without its tags"); waiting tags for a later sync would need a table of their own (not built).
+- Tag term (phase 0's tuning): `RemoteTagTerms` rewrites each `f.TagLinks.Any(l => …)` of the shared builder (and the
+  hidden-tag filter) into `f.Id IN (SELECT FileId FROM RemoteFileTags WHERE …)` for the connection's search only;
+  `SearchSqlTests` (the library's SQL) unchanged. Measured with
+  [connection-index-measure](../../tools/connection-index-measure/README.md) on 1 M rows (800 k in the connection):
+  SQLite count of a tag 1 074 → 109 ms, tag + word page 992 → 140 ms; SQL Server about even (count 208 → 203 ms,
+  tag + word count 1 345 → 1 465 ms).
+- Client: `atPlace` keeps `tags.view`, `tags.assign`, `tags.manage` at a connection (not `tags.folderDefaults`); the
+  dialogs take the connection when opened (`config.place()`) and call `tagsRoute(connection)`; the scope dialog shows
+  no default tags there; the transfer dialog says tags go with the files between places.
+- Left: default tags of folders in connections (left for later), the tag history of connection files, the C#
+  facade's methods (phase 6; the routes are left to `Raw` in `FacadeCoverageTests`).
 
 ### Phase 5: previews
 

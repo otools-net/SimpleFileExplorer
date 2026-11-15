@@ -70,7 +70,7 @@ describe('SidebarComponent', () => {
         expect(names('Most popular')).toEqual(['Sun', 'Science "Fiction"']);
         expect(section('Most popular').querySelector('.tag-count')!.textContent).toBe((1234).toLocaleString());
         expect(section('Most popular').querySelector('.tag-count')!.getAttribute('title')).toBe(
-            `${(1234).toLocaleString()} files`,
+            `${(1234).toLocaleString()} library files`,
         );
         expect(names('Last viewed')).toEqual(['Sun']);
     });

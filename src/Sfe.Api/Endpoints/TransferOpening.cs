@@ -76,7 +76,7 @@ internal sealed class TransferOpening
     )
     {
         if (connection is not { } id)
-            return (_transfers.Library.Open(actor, access, _right, partials), null);
+            return (_transfers.Library.Open(actor, access, _right, partials, _transfers.Tags.Library), null);
         var opened = await _files.Connections.OpenAsync(id, _cancellationToken);
         if (opened.Value is not { } storage)
             return (null, ConnectionProblems.OfOpening(opened.Problem));
@@ -89,7 +89,13 @@ internal sealed class TransferOpening
         {
             FolderGone = (folder, token) => rules.RemoveFolderAsync(id, folder, comparison, token),
         };
-        return (new RemoteTransferEndpoint(side, _transfers.Calls, _transfers.Listings, _transfers.Written), null);
+        // The library's index of it begins now when it never did: an arriving file then gets a row for its tags.
+        await _transfers.Tags.Indexes.OpenedAsync(id, _cancellationToken);
+        var tags = _transfers.Tags.Connections;
+        return (
+            new RemoteTransferEndpoint(side, _transfers.Calls, _transfers.Listings, _transfers.Written, tags),
+            null
+        );
     }
 
     /// <summary>The person's access to connection <paramref name="id"/>, read again as the job goes.</summary>

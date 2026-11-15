@@ -113,7 +113,7 @@ export class SidebarComponent implements OnInit {
     }
 
     protected countTitle(usage: TagUsage): string {
-        return plural(usage.fileCount, 'file');
+        return plural(usage.fileCount, 'library file');
     }
 
     protected search(tag: TagSummary): void {

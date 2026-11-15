@@ -1,3 +1,4 @@
+import { plural } from '../core/format';
 import { TagDetails, TagSummary } from '../core/tag.models';
 
 /*
@@ -54,4 +55,16 @@ export function termAt(text: string, caret: number): { start: number; end: numbe
 /** A tag name as a search term value: quoted when it holds a separator. */
 export function termValue(name: string): string {
     return /[\s,"]/.test(name) ? `"${name.replaceAll('"', '')}"` : name;
+}
+
+/**
+ * What deleting a tag takes it off, for the question asked first: `fileCount` counts the library's files only;
+ * connection files lose it too (`connections`: the session uses connections).
+ */
+export function removedFrom(fileCount: number, connections: boolean): string {
+    const library = fileCount ? plural(fileCount, 'library file') : '';
+    if (!connections) return library ? ` It is removed from ${library}.` : '';
+    return library
+        ? ` It is removed from ${library} and from the connections’ files that have it.`
+        : ' It is removed from the connections’ files that have it.';
 }

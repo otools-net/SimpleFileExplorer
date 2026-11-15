@@ -3427,7 +3427,7 @@
           "Tags"
         ],
         "summary": "Lists tags, or finds the ones whose name, shorthand or alias contains `q`.",
-        "description": "Names starting with `q` come first. `descendants` lists the tags inheriting from a match.",
+        "description": "Names starting with `q` come first. `descendants` lists the tags inheriting from a match. `fileCount` counts the library's files only (a connection's: `api/connections/{id}/file-tags/scope`).",
         "operationId": "SearchTags",
         "parameters": [
           {
@@ -3567,6 +3567,7 @@
           "Tags"
         ],
         "summary": "A tag with its aliases and parent tags.",
+        "description": "`fileCount` counts the library's files only (a connection's: `api/connections/{id}/file-tags/scope`).",
         "operationId": "GetTag",
         "parameters": [
           {
@@ -8856,6 +8857,208 @@
             "connections.own",
             "connections.library",
             "connections.server"
+          ]
+        ]
+      }
+    },
+    "/api/v1/connections/{id}/file-tags": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Tags of a file of a connection, also grouped by category tag.",
+        "description": "The tags of a file of the connection, from the library's index (no provider call); a file the index doesn't\nhold yet has none.",
+        "operationId": "GetConnectionFileTags",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileTags"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.use"
+          ]
+        ]
+      },
+      "post": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Adds and removes tags on one or more files of a connection.",
+        "description": "As `POST api/file-tags`, on files of the connection (paths relative to its root, at most\n1000). A file the library's index doesn't hold yet is asked of the provider and\nindexed first (at most 20 such files a request); 409\n`connection-not-indexed` when the connection is not indexed in this library yet (its first sync\nstarts: try again once it ends) or more files than that are missing from its index.",
+        "operationId": "ChangeConnectionFileTags",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileTagChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileTagChangeResult"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.use"
+          ]
+        ]
+      }
+    },
+    "/api/v1/connections/{id}/file-tags/scope": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Tags of the indexed files of a connection's folder (or tree), or of a search's matches.",
+        "description": "As `api/file-tags/scope`, on the connection's files the library's index holds (paths relative to its root):\na file not indexed yet is neither counted nor changed, so a folder is never listed for it. Folder rules apply:\nhidden files are in no count; a change touches only the files where the subject may tag. The files are\nchanged by batches: a request that is cancelled keeps the batches already written.",
+        "operationId": "GetConnectionScopeTags",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Path",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "Q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScopeTags"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.use"
+          ]
+        ]
+      },
+      "post": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Adds and removes tags on every indexed file of a connection's folder, or every match.",
+        "description": "As `api/file-tags/scope`, on the connection's files the library's index holds (paths relative to its root):\na file not indexed yet is neither counted nor changed, so a folder is never listed for it. Folder rules apply:\nhidden files are in no count; a change touches only the files where the subject may tag. The files are\nchanged by batches: a request that is cancelled keeps the batches already written.",
+        "operationId": "ChangeConnectionScopeTags",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScopeTagChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScopeTagChangeResult"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.use"
           ]
         ]
       }
@@ -19013,6 +19216,7 @@
     "archive-reading",
     "archive-unreadable",
     "connection-needs-reconnecting",
+    "connection-not-indexed",
     "connection-not-supported",
     "connection-rate-limited",
     "connection-refused",

@@ -65,7 +65,7 @@ export class TagListComponent {
     }
 
     protected files(tag: TagDetails): string {
-        return plural(tag.fileCount, 'file');
+        return plural(tag.fileCount, 'library file');
     }
 
     protected async edit(tag: TagDetails): Promise<void> {

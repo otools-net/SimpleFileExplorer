@@ -40,6 +40,9 @@ public sealed class LibraryTransferEndpoint : ITransferEndpoint
 
     private LibraryPaths Paths => _library.Paths;
 
+    /// <summary>The tags carried with the files (none without it).</summary>
+    internal LibraryTransferTags? Tags { get; init; }
+
     /// <summary>None: the library keeps no content hash (a transfer computes the other side's).</summary>
     public string? HashName => null;
 
@@ -180,6 +183,15 @@ public sealed class LibraryTransferEndpoint : ITransferEndpoint
             return;
         await TryIndexAsync(full, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<int>> TagsAsync(TransferEntry file, CancellationToken cancellationToken) =>
+        Tags is null || file.IsFolder ? [] : await Tags.TagIdsAsync(file.Path, cancellationToken);
+
+    public async Task<bool> TagAsync(
+        TransferEntry written,
+        IReadOnlyList<int> tagIds,
+        CancellationToken cancellationToken
+    ) => Tags is not null && await Tags.AddAsync(written.Path, tagIds, cancellationToken);
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 

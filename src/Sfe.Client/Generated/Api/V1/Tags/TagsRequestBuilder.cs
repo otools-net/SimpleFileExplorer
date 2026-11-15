@@ -59,7 +59,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tags
         {
         }
         /// <summary>
-        /// Names starting with `q` come first. `descendants` lists the tags inheriting from a match.
+        /// Names starting with `q` come first. `descendants` lists the tags inheriting from a match. `fileCount` counts the library&apos;s files only (a connection&apos;s: `api/connections/{id}/file-tags/scope`).
         /// </summary>
         /// <returns>A <see cref="global::Otools.Net.Sfe.Client.Generated.Models.TagSearchResults"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -102,7 +102,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tags
             return await RequestAdapter.SendAsync<global::Otools.Net.Sfe.Client.Generated.Models.TagDetails>(requestInfo, global::Otools.Net.Sfe.Client.Generated.Models.TagDetails.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Names starting with `q` come first. `descendants` lists the tags inheriting from a match.
+        /// Names starting with `q` come first. `descendants` lists the tags inheriting from a match. `fileCount` counts the library&apos;s files only (a connection&apos;s: `api/connections/{id}/file-tags/scope`).
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -152,7 +152,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tags
             return new global::Otools.Net.Sfe.Client.Generated.Api.V1.Tags.TagsRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Names starting with `q` come first. `descendants` lists the tags inheriting from a match.
+        /// Names starting with `q` come first. `descendants` lists the tags inheriting from a match. `fileCount` counts the library&apos;s files only (a connection&apos;s: `api/connections/{id}/file-tags/scope`).
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class TagsRequestBuilderGetQueryParameters 

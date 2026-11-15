@@ -5,6 +5,7 @@ using Microsoft.Kiota.Abstractions.Serialization;
 using Microsoft.Kiota.Abstractions;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Archive;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Browse;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.FileTags;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.FolderRules;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Folders;
@@ -42,6 +43,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.FilesRequestBuilder Files
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.FilesRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The fileTags property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.FileTags.FileTagsRequestBuilder FileTags
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.FileTags.FileTagsRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The folderRules property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.FolderRules.FolderRulesRequestBuilder FolderRules

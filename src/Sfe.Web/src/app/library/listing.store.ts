@@ -437,9 +437,9 @@ export class ListingStore {
         this.sidebar.refresh();
     }
 
-    /** The tags of a viewed file become the sidebar's "last viewed" tags. */
+    /** The tags of a viewed file of the library (not of a connection) become the sidebar's "last viewed" tags. */
     reportView(item: LibraryItem): void {
-        if (!item.tags?.length) return;
+        if (!item.tags?.length || this.config.place()) return;
         this.api
             .fileViewed(item.path)
             .then(() => this.sidebar.refresh())

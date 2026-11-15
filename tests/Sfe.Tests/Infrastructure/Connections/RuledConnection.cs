@@ -23,7 +23,9 @@ public sealed class RuledConnection : IAsyncDisposable
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
-    /// <summary>What Writers grant: using connections and changing files, nothing of the library's settings.</summary>
+    /// <summary>
+    /// What Writers grant: using connections, changing files and tagging them, nothing of the library's settings.
+    /// </summary>
     public static readonly string[] WriterRights =
     [
         Rights.UseConnections,
@@ -36,6 +38,8 @@ public sealed class RuledConnection : IAsyncDisposable
         Rights.MoveFiles,
         Rights.CopyFiles,
         Rights.UploadFiles,
+        Rights.ViewTags,
+        Rights.AssignTags,
     ];
 
     private readonly TestLibrary _library = new();

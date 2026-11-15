@@ -1,7 +1,16 @@
 import { tag } from '../../testing/fakes';
-import { describeTag, TAG_TERM, tagQuery, termAt, termValue, textOn } from './tags';
+import { describeTag, removedFrom, TAG_TERM, tagQuery, termAt, termValue, textOn } from './tags';
 
 describe('tags', () => {
+    it('says what deleting a tag takes it off: library files counted, connection files named', () => {
+        expect(removedFrom(0, false)).toBe('');
+        expect(removedFrom(2, false)).toBe(' It is removed from 2 library files.');
+        expect(removedFrom(1, true)).toBe(
+            ' It is removed from 1 library file and from the connections’ files that have it.',
+        );
+        expect(removedFrom(0, true)).toBe(' It is removed from the connections’ files that have it.');
+    });
+
     describe('tagQuery', () => {
         it('quotes the name, so spaces and commas stay in the term', () => {
             expect(tagQuery({ name: 'Science Fiction' })).toBe('t:"Science Fiction"');

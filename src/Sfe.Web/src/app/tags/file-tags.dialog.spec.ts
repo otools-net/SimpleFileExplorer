@@ -4,6 +4,8 @@ import { FileTags, TagSummary } from '../core/tag.models';
 import { ToastService } from '../core/toast.service';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
+import { ConfigService } from '../core/config.service';
+import { enterPlace } from '../library/connection-pages';
 import {
     ApiMock,
     applyChange,
@@ -61,7 +63,11 @@ describe('FileTagsDialog', () => {
         await fixture.whenStable();
     });
 
-    afterEach(() => vi.restoreAllMocks());
+    afterEach(() => {
+        // A connection made the place leaves the module's formats raw: back to the library.
+        enterPlace(TestBed.inject(ConfigService), null);
+        vi.restoreAllMocks();
+    });
 
     async function open(tags: FileTags = fileTags(photo.path)): Promise<void> {
         current.set(photo.path, tags.tags);
@@ -78,8 +84,19 @@ describe('FileTagsDialog', () => {
         expect(element.querySelector('dialog')!.open).toBe(true);
         expect(element.querySelector('.sheet-subtitle')!.textContent).toBe('Ünïcødé #1 & 100%.jpg');
         expect(element.querySelector('.tag-groups .spinner')).not.toBeNull();
-        expect(api.fileTags).toHaveBeenCalledWith('Media/Ünïcødé #1 & 100%.jpg');
+        expect(api.fileTags).toHaveBeenCalledWith('Media/Ünïcødé #1 & 100%.jpg', null);
         expect(document.activeElement).toBe(picker());
+    });
+
+    it('reads and changes the tags of a file of a connection through it', async () => {
+        enterPlace(TestBed.inject(ConfigService), 7);
+        await open(fileTags(photo.path, [shrek]));
+
+        element.querySelector<HTMLButtonElement>('[aria-label="Remove Shrek"]')!.click();
+        await settle();
+
+        expect(api.fileTags).toHaveBeenCalledWith(photo.path, 7);
+        expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], remove: [shrek.id] }, 7);
     });
 
     it('invites to add a tag to a file without any', async () => {
@@ -137,7 +154,7 @@ describe('FileTagsDialog', () => {
         options()[0].click();
         await settle();
 
-        expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], add: [shrek.id] });
+        expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], add: [shrek.id] }, null);
         expect(groups()).toEqual([{ heading: 'Tags', tags: ['Shrek'] }]);
         expect(applied).toHaveBeenCalledWith([fileTags(photo.path, [shrek])]);
     });
@@ -174,7 +191,7 @@ describe('FileTagsDialog', () => {
 
         expect(api.createTag).toHaveBeenCalledWith({ name: 'Donkey' });
         expect(show).toHaveBeenCalledWith('Tag “Donkey” created.');
-        expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], add: [created.id] });
+        expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], add: [created.id] }, null);
         expect(groups()).toEqual([{ heading: 'Tags', tags: ['Donkey'] }]);
     });
 
@@ -200,7 +217,7 @@ describe('FileTagsDialog', () => {
         element.querySelector<HTMLButtonElement>('[aria-label="Remove Shrek"]')!.click();
         await settle();
 
-        expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], remove: [shrek.id] });
+        expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], remove: [shrek.id] }, null);
         expect(groups()).toEqual([{ heading: 'Tags', tags: ['Swamp'] }]);
     });
 

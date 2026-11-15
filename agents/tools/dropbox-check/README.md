@@ -113,16 +113,20 @@ afternoon; most of it is waiting.
    - [ ] the task goes on from where it stopped (its progress doesn't start at 0, the log says it resumed);
    - [ ] at the end, the entry count equals step 2's (no rows twice, none missing).
 4. **Changes** *(writes: use the App folder app)*. Index the App folder app's connection with a few hundred files.
-   Then on Dropbox's web page: add a file, rename a file, move a folder, delete a file. Press **Sync now** in the
-   connection's Manage panel:
+   In SFE, tag three files (**Tags…** on each): the one you will rename, one in the folder you will move, one you
+   will delete; and tag a whole folder of about a hundred files (its tag button). Then on Dropbox's web page: add a
+   file, rename the first tagged file, move the folder holding the second, delete the third. Press **Sync now** in
+   the connection's Manage panel:
    - [ ] the status's counts follow (one file more, one less), and the log names the changes;
    - [ ] the sync took seconds (by cursor), not a full pass;
-   - [ ] once tags on connection files exist (plan 6, phase 4): tag three files first, and check the renamed and
-     moved ones keep their tags (rows follow Dropbox's ids).
-5. **A long pause.** Leave the install of step 2 off for **two weeks or more**, start it and press **Sync now**:
+   - [ ] the renamed and the moved files show their tag in their new place (rows follow Dropbox's ids), and a search
+     `t:<tag>` in the connection finds them there; the deleted one is gone from it;
+   - [ ] the folder's tag dialog counts its hundred files, and removing the tag there takes a moment, not minutes.
+5. **A long pause.** Before stopping the install of step 2, tag a few files of the large connection and note them.
+   Leave it off for **two weeks or more**, start it and press **Sync now**:
    - [ ] the log says whether Dropbox reset the cursor, and how old it was;
-   - [ ] after a reset, a full pass ran (the counts end as before), and, once tags exist, tags on files still
-     there are kept.
+   - [ ] after a reset, a full pass ran (the counts end as before), and the noted files still there keep their tags
+     (`t:<tag>` in the connection finds them all).
 6. **Search** (once phase 3 is built): a name, a type and a size on the large connection; note the time to the
    first page and to the count (the plan's table, measured locally on 3 M rows, says what to expect).
 7. **Previews** (once phase 5 is built): open a folder of photos and one of videos:

@@ -6,8 +6,9 @@ at Dropbox once; then people with the rights connect their Dropbox, or one for a
 Connections are made, signed in to again and managed here; their files are browsed and downloaded
 ([browsing a connection](#browsing-a-connection)), changed and uploaded to where you may, copied and moved between a
 connection and the library ([below](#between-the-library-and-a-connection)), and a space narrows what its groups do
-in some folders with [folder rules](#folder-rules-of-a-connection). There is no search, tags or folder pictures in a
-connection yet.
+in some folders with [folder rules](#folder-rules-of-a-connection). Its files are searched
+([below](#searching-a-connection)) and tagged ([below](#tags-on-a-connections-files)) from the space's index of it.
+There are no folder pictures or default tags of folders in a connection yet.
 
 ## Levels
 
@@ -79,7 +80,7 @@ A sign-in lasts 10 minutes and works once, for the account that started it.
 ### The index of a connection
 
 Each space keeps an index of the connections opened in it: the names, sizes and dates the storage tells (nothing is
-downloaded for it). Listings use it (below); searching and tagging a connection's files will.
+downloaded for it). Listings, searches and tags use it (below).
 
 - It begins the first time someone opens the connection in the space, and is brought up to date again when the
   connection is opened and its index is more than 10 minutes old.
@@ -127,8 +128,9 @@ The connections you may use are listed in the sidebar under **Connections**, und
 in the usual listing: folders first, sorted as you choose, pictures and videos shown with Dropbox's thumbnails.
 
 - Pictures, videos, audio and PDF files open in the viewer; videos seek as usual. Other files are downloaded. Videos
-  the browser can't play aren't converted, and there is no external player, trickplay or tags there. A search typed
-  there searches the connection ([below](#searching-a-connection)).
+  the browser can't play aren't converted, and there is no external player or trickplay there. A search typed there
+  searches the connection ([below](#searching-a-connection)); files show their tags
+  ([below](#tags-on-a-connections-files)).
 - **Download** saves a file; several, or a folder, come as one zip, written while it downloads (as in the library;
   what has no content, a Dropbox Paper document, is listed in `SFE - left out.txt` inside).
 - Once the space's [index](#the-index-of-a-connection) holds a folder whole, the folder is listed from it, without
@@ -167,6 +169,27 @@ sorts and count. Dropbox is not asked: results come at once, even while Dropbox 
 - **Everywhere** (the chip at the end of the search box) searches the library and each connection you use, the
   results grouped by place ([Search › Everywhere](../user-guide/search.md#everywhere)).
 
+## Tags on a connection's files
+
+A connection's files take the space's tags as the library's do, with the same dialogs: **Tags…** of a file or of the
+selection, the tag button of a folder or of a search, a tag's menu on a file. The tags are kept in the space's
+[index](#the-index-of-a-connection) of the connection, never in Dropbox: Dropbox and other spaces don't see them.
+
+- The same rights as in the library (**See tags**, **Tag files**), where the connection's folder rules let you: files
+  of folders hidden from you can't be tagged and their tags aren't shown. A folder you only read can be tagged:
+  tagging changes nothing in Dropbox.
+- Tags follow a file renamed or moved, in SFE or in Dropbox itself (the index knows it by Dropbox's id), and survive
+  Dropbox forgetting where the index was.
+- A whole folder, or every result of a search, counts and changes the files the index holds. A file Dropbox has and
+  the index doesn't yet (added in Dropbox since the last sync) is asked of Dropbox when you tag it alone or in a
+  selection; in a folder's or a search's tags, it is not counted or changed until the next sync brings it.
+- A connection never opened in the space isn't indexed yet: tagging its files waits until its first sync has run.
+- Tag counts (the tag list, the sidebar, a tag's editor) count the **library's** files only, so they never tell
+  about a connection's files, a connection of someone else's account included; a folder's or a search's tags count
+  the connection's files you see.
+- Deleting a tag removes it from the connections' files too.
+- A connection of someone's own account keeps its tags for its owner only.
+
 ## Between the library and a connection
 
 Copy or move files and folders between the library and a connection like between two folders: **cut and paste**
@@ -176,7 +199,9 @@ Copy or move files and folders between the library and a connection like between
 - It runs as a job of the operations panel (progress, cancel, the same keep both / replace / skip question).
 - Each part goes on as it is read: the server keeps no copy. Sizes, and Dropbox's content hash, are checked; a moved
   file leaves its place only once its copy is checked, into SFE's trash (library) or Dropbox's deleted files.
-- Tags stay with the library: files moved out lose them, files arriving get the folder's default tags.
+- Files keep their tags, moved or copied either way (a moved file's source loses them). Files arriving in the library
+  also get the folder's default tags. A connection never opened in the space starts being indexed by the transfer;
+  files arriving before its first sync has begun come without their tags.
 - From a connection you only read, files can be copied into the library, never pasted into it.
 - When some items failed (Dropbox unreachable, a file larger than the space allows, a name refused), **Retry** in the
   operations panel starts them again, for a day after the transfer ended. A file the failed transfer already wrote is

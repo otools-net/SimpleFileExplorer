@@ -7,6 +7,20 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Tags on connections' files**: a connection's files take the space's tags with the library's dialogs (a file, a
+  selection, a whole folder or every result of a search, a tag's menu on a file); the tags are kept in the space's
+  index of the connection, never at the provider, and follow files renamed or moved there (also in Dropbox itself).
+  Same rights as in the library, where the connection's folder rules let you (hidden files are neither tagged nor
+  shown nor counted; a folder you only read can be tagged); an account's own connection's tags are its owner's
+  only. Listings and searches in a connection show the files' tags. A file not indexed yet is asked of the provider
+  when tagged; a whole folder or search changes the files the index holds. New routes `api/v1/connections/{id}/
+  file-tags` and `…/file-tags/scope` (the library's, same bodies), new problem type `connection-not-indexed` (409).
+  Tag counts (tag list, sidebar, a tag) still count the library's files only, and now say so ("library files").
+- **Transfers keep tags**: a file moved or copied between the library and a connection (either way, or between two
+  connections) keeps its tags; a moved source loses them (the library's goes to the trash with them, as before).
+- Deleting a tag removes it from connections' files too (by batches).
+- Searches in a connection find tagged files faster on SQLite (the tag term starts from the tag's links).
+
 - **Search in connections, and Everywhere**: the search box searches the connection you are browsing, from the
   space's index of it (no call to Dropbox): the library's query language, sorts, paging and count; names in the
   folders' order; files of folders hidden by folder rules in no result or count; the results say when the index is

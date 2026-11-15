@@ -54,10 +54,8 @@ export class TransferDialog {
     protected readonly tagsAsked = computed(
         () => this.kind() === 'copy' && this.from() === null && this.browser.connection() === null,
     );
-    /** A move out of the library: the files leave its index, as deleted ones do. */
-    protected readonly tagsLost = computed(
-        () => this.kind() === 'move' && this.from() === null && this.browser.connection() !== null,
-    );
+    /** Between two places: the files' tags go with them (the library keeps the tags of connection files too). */
+    protected readonly tagsTravel = computed(() => this.from() !== this.browser.connection());
 
     protected readonly what = computed(() => {
         const items = this.items();

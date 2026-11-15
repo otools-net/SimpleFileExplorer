@@ -114,6 +114,7 @@ their status.
 | `archive-reading` | 409 | the archive's list is still being read: try again in a moment |
 | `archive-unreadable` | 422 | the archive, or one of its files, can't be read |
 | `connection-needs-reconnecting` | 409 | the connection's provider no longer accepts its sign-in: sign in again |
+| `connection-not-indexed` | 409 | the library hasn't indexed this connection's files yet: try again once its sync has run |
 | `connection-not-supported` | 409 | the connection's provider can't do that |
 | `connection-rate-limited` | 429 | the provider asks to wait (`Retry-After` says how long) |
 | `connection-refused` | 403 | the provider doesn't let this account do that |

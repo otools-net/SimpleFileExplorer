@@ -37,12 +37,13 @@ public sealed class LibraryTransfers(
     /// The library's side for one job of <paramref name="actor"/>. <paramref name="writeRight"/>: what writing there
     /// and taking a source away needs (<see cref="Access.Rights.CopyFiles"/> or <see cref="Access.Rights.MoveFiles"/>).
     /// <paramref name="partials"/>: where the partial files it writes are told (the job's, so that an extraction in
-    /// the same folder leaves them).
+    /// the same folder leaves them). <paramref name="tags"/>: the tags carried with the files (none without it).
     /// </summary>
     public LibraryTransferEndpoint Open(
         FileActor actor,
         IFileJobAccess access,
         string writeRight,
-        ConcurrentBag<string> partials
-    ) => new(this, actor, access, writeRight, partials);
+        ConcurrentBag<string> partials,
+        LibraryTransferTags? tags = null
+    ) => new(this, actor, access, writeRight, partials) { Tags = tags };
 }

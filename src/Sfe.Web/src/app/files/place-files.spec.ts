@@ -121,7 +121,7 @@ describe('the rights on a connection', () => {
                 Rights.copyFiles,
             ]),
         );
-        expect(config.can(Rights.assignTags)).toBe(false);
+        expect(config.can(Rights.folderDefaultTags)).toBe(false);
     });
 
     it('starts read-only when a page enters a connection before it is listed', () => {

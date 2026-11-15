@@ -73,7 +73,7 @@ describe('TagMenu', () => {
         expect(ids(photo)).toEqual(['search', 'newTab', 'exclude', 'remove', 'edit']);
         entry('remove', photo).run!();
         await vi.waitFor(() => expect(apply).toHaveBeenCalled());
-        expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], remove: [3] });
+        expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], remove: [3] }, undefined);
         entry('edit').run!();
         expect(open).toHaveBeenCalledWith(3);
 

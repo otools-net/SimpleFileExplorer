@@ -2,7 +2,8 @@
 
 Code: Api `ConnectionFileEndpoints` (browse, raw, thumbnails, properties), `ConnectionSearchEndpoints`,
 `ConnectionFileServices` (`OpenAsync`, `RunAsync`), `ConnectionBrowsing`, `ConnectionArchiveEndpoints`,
-`ConnectionWriteEndpoints`, `ConnectionWriteChecks`, `ConnectionUploadEndpoints` (`ConnectionUploadSteps`,
+`ConnectionTagEndpoints`, `ConnectionTagChanges`, `ConnectionWriteEndpoints`, `ConnectionWriteChecks`,
+`ConnectionUploadEndpoints` (`ConnectionUploadSteps`,
 `ConnectionUploadNames`), `ConnectionProblems`, `OpenConnection`, `RemoteFileResult`, `RemoteRanges`; Core
 `Connections/RemoteListings` (`RemoteSnapshot`, `RemoteSort`), `Connections/Indexing/RemoteIndexListings`,
 `RemoteArchives`, `RemoteUploads`, `ConnectionGates`. Client `library/connection-pages.ts`, `place-files.ts`,
@@ -69,6 +70,17 @@ with the library: [transfers](transfers.md).
   coverage that isn't complete. "Everywhere" (`?q=&all=1`, `c` and `path` kept for going back):
   `library/everywhere/` asks the library and each usable connection apart (`EverywhereSearch`), groups paged alone;
   the scope menu of the search box (`topbar/search-scope.ts`) switches.
+
+## Tags
+
+- `api/connections/{id}/file-tags` (GET, POST) and `…/scope` (GET, POST): the library's `file-tags` routes on the
+  rows of the library's index (`RemoteFileTags`, `RemoteScopeTagger`); right `connections.use`, then `tags.view` /
+  `tags.assign` through `OpenAsync` and at each path by folder rules (and by the row's provider id). Details, choices
+  and measurements: [connections-index-plan](../development/connections-index-plan.md#phase-4-tags).
+- Rows of another root or account are never read (`RemoteTagPlace.IsCurrentAsync`). A file missing from the index is
+  fetched (20 a request at most) and written by `ConnectionIndexUpdates`; no index of the connection: 409
+  `connection-not-indexed`. Listing pages get their files' tags where the folder allows `tags.view`.
+- Client: `atPlace` keeps the tag rights but `tags.folderDefaults`; dialogs call `tagsRoute(connection)`.
 
 ## Changing files (`ConnectionWriteEndpoints`)
 
