@@ -64,3 +64,70 @@ Dropbox.
   opens it (address typed by hand: not found).
 - [ ] Rename the ruled folder in SFE: the rule follows. Rename it on Dropbox's web page: it stays hidden where the
   listing shows it; re-point the rule on the card.
+
+## Index of a large Dropbox
+
+Confirms the estimates of [connections-index-plan](../../docs/development/connections-index-plan.md) ("First sync of
+1 M files") on a real account; the suites can't (no account, and Dropbox publishes no page times or rate limits).
+Run it once the connection index (plan 6, phase 1) is built, and again after phase 5 for the preview steps. Takes an
+afternoon; most of it is waiting.
+
+### Before you start
+
+1. A Dropbox account holding **many files**: 100 000 at least, ideally 1 million, in deep and wide folders (one
+   folder of 50 000 files or more, and a tree 10 levels deep). Photos and a few videos for the preview steps.
+2. A Dropbox app **only for this check**, at the App Console: **Scoped access**, **Full Dropbox** (an App folder
+   would only see what was copied into it), permissions `account_info.read`, `files.metadata.read`,
+   `files.content.read` and nothing that writes: the check can't change a real account's files. The steps marked
+   *(writes)* below use a second, App folder app (the one of "Setup" above) instead.
+3. A scratch install of the version to release ([running-the-app](../../docs/environment/running-the-app.md)), on
+   SQLite (the default). Repeat steps 3 to 6 on SQL Server if the release notes will promise it.
+4. A file to note results in: date, SFE version, database, Dropbox entries (files and folders), and each number
+   asked for below.
+5. Make the index's logs visible: in the scratch install's `appsettings.json`, under `Logging:LogLevel`, set
+   `"Otools.Net.Sfe.Core.Connections": "Debug"`; restart.
+
+### Steps
+
+1. **Connect.** Set the app key of the Full Dropbox app (Administration › Connections › Settings), then My account ›
+   Connections › Add, and allow at Dropbox. Note the time.
+2. **First sync.** Open the connection once: its "Connection index" task starts (Administration › Tasks shows it
+   running, with its progress). Don't use the connection meanwhile. Note:
+   - [ ] the total time, and the entries indexed (the task's run history or log gives both);
+   - [ ] seconds per page of 2000 entries: the log's lines per page, first, middle and last pages (the estimate
+     says 1–2 s; much more makes 1 M files take hours);
+   - [ ] any 429 (rate limited) in the log, with its `Retry-After`, and whether the sync went on by itself;
+   - [ ] the server's memory every few minutes (Task Manager, or `Get-Process Sfe.Api` in PowerShell, column
+     `WS`): it must stay flat, not grow with the entries;
+   - [ ] the database file's size after the sync (`.sfe/sfe.db` in the library, or the SQL Server database):
+     about 0.5 KB a row on SQLite, 1 KB on SQL Server;
+   - [ ] whether the recursive listing failed on the large tree (an error in the log naming `list_folder`): the
+     SDK warns it can; if so, what the sync did next.
+3. **Restart halfway.** Sync again from scratch (remove the connection, add it back), and stop the server
+   (Ctrl+C) when the task shows about half done. Start it again and open the connection:
+   - [ ] the task goes on from where it stopped (its progress doesn't start at 0, the log says it resumed);
+   - [ ] at the end, the entry count equals step 2's (no rows twice, none missing).
+4. **Changes** *(writes: use the App folder app)*. Index the App folder app's connection with a few hundred files.
+   Tag three files in SFE. Then on Dropbox's web page: add a file, rename a tagged file, move a tagged folder,
+   delete a tagged file. Press **Sync now**:
+   - [ ] the new file is listed, the deleted one gone;
+   - [ ] the renamed and moved files keep their tags (rows follow Dropbox's ids);
+   - [ ] the sync took seconds (by cursor), not a full pass.
+5. **A long pause.** Leave the install of step 2 off for **two weeks or more**, start it and press **Sync now**:
+   - [ ] the log says whether Dropbox reset the cursor, and how old it was;
+   - [ ] after a reset, a full pass ran and tags on files still there are kept.
+6. **Search** (once phase 3 is built): a name, a type and a size on the large connection; note the time to the
+   first page and to the count (the plan's table, measured locally on 3 M rows, says what to expect).
+7. **Previews** (once phase 5 is built): open a folder of photos and one of videos:
+   - [ ] photos get Dropbox's thumbnails; note whether **videos** get one (Dropbox doesn't document it);
+   - [ ] open a photo and a video: afterwards their width, height and duration are filled (properties, or
+     `w:` / `d:` searches find them);
+   - [ ] a photo over 20 MB gets a thumbnail made by SFE (Dropbox makes none).
+
+### Afterwards
+
+- Write the numbers in the release's notes, and in the plan's phase 0 table (or the feature note once the plan is
+  deleted) in place of the estimates; tick the plan's "A person confirms the sync numbers" item.
+- Anything far from the estimates (pages over 3 s, memory growing, a resume starting over, tags lost) is a bug to
+  fix before the release.
+- Remove both apps at Dropbox (Settings › Connected apps) and the scratch install.
