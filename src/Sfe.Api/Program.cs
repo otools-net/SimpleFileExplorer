@@ -176,6 +176,7 @@ api.MapConnectionEndpoints();
 api.MapConnectionFileEndpoints();
 api.MapConnectionWriteEndpoints();
 api.MapConnectionIndexEndpoints();
+api.MapConnectionSearchEndpoints();
 api.MapConnectionUploadEndpoints();
 api.MapConnectionArchiveEndpoints();
 api.MapConnectionFolderRuleEndpoints();

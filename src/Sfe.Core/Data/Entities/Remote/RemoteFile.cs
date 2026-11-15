@@ -1,3 +1,6 @@
+using System.Linq.Expressions;
+using Otools.Net.Sfe.Core.Search;
+
 namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
@@ -7,7 +10,7 @@ namespace Otools.Net.Sfe.Core.Data;
 /// <c>Pixels</c>, <c>TagLinks</c>), so that one search builder reads both. Known by the provider's id first: a file
 /// renamed or moved keeps its row, and its tags.
 /// </summary>
-public sealed class RemoteFile
+public sealed class RemoteFile : ISearchableFile<RemoteFile>
 {
     public long Id { get; set; }
 
@@ -71,6 +74,17 @@ public sealed class RemoteFile
     public bool Removed { get; set; }
 
     public List<RemoteFileTag> TagLinks { get; set; } = [];
+
+    /// <summary>The search sorts names by their natural key, as the listings do (<see cref="NameKey"/>).</summary>
+    public static Expression<Func<RemoteFile, string?>> SortName { get; } = f => f.NameKey;
+
+    /// <summary>Rows indexed before <see cref="NameKey"/> existed have none until a sync fills it.</summary>
+    public static bool SortNameMayBeMissing => true;
+
+    public static Expression<Func<RemoteFile, bool>> IsTagged { get; } = f => f.TagLinks.Any();
+
+    public static Expression<Func<RemoteFile, bool>> HasAnyTag(int[] ids) =>
+        f => f.TagLinks.Any(l => ids.Contains(l.TagId));
 
     public override string ToString() => DisplayPath;
 }

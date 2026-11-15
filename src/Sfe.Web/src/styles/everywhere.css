@@ -1,0 +1,134 @@
+/* ---------- A search everywhere: one group per location (everywhere.component.ts) ---------- */
+
+.everywhere {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.everywhere-group {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+/* One line: the name gives way (ellipsis), the count and the link stay. */
+.everywhere-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.everywhere-head > svg {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+}
+
+.everywhere-name {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.everywhere-count {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.everywhere-here {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 4px 6px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.everywhere-note,
+.everywhere-state,
+.search-coverage-note {
+    margin: 8px 0 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.everywhere-state {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.everywhere-error {
+    color: var(--danger);
+}
+
+.everywhere-items {
+    display: flex;
+    flex-direction: column;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.everywhere-item {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    column-gap: 8px;
+    align-items: center;
+    width: 100%;
+    min-height: 40px;
+    padding: 4px 6px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.everywhere-item:hover,
+.everywhere-item:focus-visible {
+    background: var(--surface-3);
+}
+
+.everywhere-item > svg {
+    grid-row: span 2;
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+}
+
+.everywhere-item-name,
+.everywhere-item-details {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.everywhere-item-details {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.everywhere-more {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0 0;
+}
+
+.search-coverage-note {
+    margin: 0 0 12px;
+}

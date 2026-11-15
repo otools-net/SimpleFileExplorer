@@ -1,12 +1,19 @@
 import { ParamMap, Params } from '@angular/router';
 import { SortField } from './library.models';
 
-/** What the listing page shows; the URL's query string is the source of truth (`?c=&path=&q=&sort=&desc=1`). */
+/**
+ * What the listing page shows; the URL's query string is the source of truth (`?c=&path=&q=&all=1&sort=&desc=1`).
+ */
 export interface LibraryRoute {
     /** The connection whose files are listed (`path` relative to its root); null or absent for the library. */
     c?: number | null;
     path: string;
     q: string;
+    /**
+     * The search runs everywhere: the library and every connection the session uses, each apart (`c` and `path` are
+     * kept, for going back to searching there). Only with `q`.
+     */
+    all?: boolean;
     /** '' = the default, see `currentSort`. */
     sort: SortField | '';
     desc: boolean;
@@ -24,6 +31,7 @@ export function readRoute(params: ParamMap): LibraryRoute {
         c: Number.isInteger(connection) && connection > 0 ? connection : null,
         path: params.get('path') || '',
         q: params.get('q') || '',
+        ...(params.get('all') === '1' ? { all: true } : {}),
         sort: SORTS.has(sort) ? (sort as SortField) : '',
         desc: params.get('desc') === '1',
     };
@@ -35,6 +43,7 @@ export function routeParams(route: LibraryRoute): Params {
         ...(route.c ? { c: route.c } : {}),
         path: route.path || null,
         q: route.q || null,
+        ...(route.all && route.q ? { all: '1' } : {}),
         sort: route.sort || null,
         desc: route.desc ? '1' : null,
     };

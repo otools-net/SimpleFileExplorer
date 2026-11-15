@@ -89,6 +89,10 @@ emulation can't see is checked on real phones by hand ([below](#by-hand-on-real-
 - The guard lets one console error through: a 404 of a video's trickplay description (`api/trickplay/files/…`, not a
   `sheet=`), the app's "not made yet" (only with ffmpeg); a failed load's message carries its address.
 - `npm run typecheck` in `tests/e2e`: Playwright strips the types without checking them.
+- The suite's server has no connection (the fake provider lives in `tests/Sfe.Tests`): a spec about connections
+  answers `api/v1/config` (patched: `connections`, the right `connections.use`), `api/v1/connections` and their routes
+  itself with `page.route` (`everywhere.spec.ts`); a 4xx it makes on purpose is logged by the browser, so the spec
+  lists it in `allowedErrors`.
 - WebKit (Windows) gives a page reloaded by Back `history.state` null (Chromium: the state written before leaving), so
   listing positions saved there are lost; `navigation.spec.ts` marks it `fixme` on WebKit until checked on an iPhone.
 

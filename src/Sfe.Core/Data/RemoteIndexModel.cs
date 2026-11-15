@@ -98,6 +98,13 @@ internal static class RemoteIndexModel
             entity.HasIndex(f => new { f.ConnectionId, f.Duration });
             entity.HasIndex(f => new { f.ConnectionId, f.Pixels });
             entity.HasIndex(f => new { f.ConnectionId, f.Removed });
+            // The search sorted by name, as listings sort names (new since 1.86, migration ConnectionIndexSearch).
+            entity.HasIndex(f => new
+            {
+                f.ConnectionId,
+                f.NameKey,
+                f.FullName,
+            });
             ConfigureListingIndexes(entity);
             entity
                 .HasOne(f => f.Directory)

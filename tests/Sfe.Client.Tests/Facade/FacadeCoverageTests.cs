@@ -127,6 +127,7 @@ public sealed class FacadeCoverageTests
         ["PUT /connections/{id}/folder-rules"] = "Raw: folder rules (administration of a library)",
         ["GET /connections/{id}/index"] = "Raw: the state of a connection's index (administration)",
         ["POST /connections/{id}/index/sync"] = "Raw: a connection's index synced now (administration)",
+        ["GET /connections/{id}/search"] = "Raw: a connection's index searched (facade: connections-index phase 6)",
         ["GET /connections/{id}/folders"] = "Raw: folders to put a rule on (administration of a library)",
     };
 

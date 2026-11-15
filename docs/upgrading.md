@@ -34,8 +34,8 @@ to the earlier version by installing it again.
 ## To 1.86
 
 - Each space's index gets new tables for the connections' index (empty until a connection is opened), and their
-  indexes for listing a connection's folders; on a large index they are made in a moment, the existing rows are not
-  touched. The next sync of each connection fills the names' sort keys of what it had indexed already.
+  indexes for listing and searching a connection's files; on a large index they are made in a moment, the existing
+  rows are not touched. The next sync of each connection fills the names' sort keys of what it had indexed already.
 - The API moves to `/api/v1/…`. Programs and scripts calling the old `/api/…` addresses keep working until SFE 2.0;
   their answers carry a `Deprecation` header, and the server's log names each caller once a day: move them to
   `/api/v1` ([API](reference/api.md#the-old-addresses-api)).

@@ -1,6 +1,8 @@
 # Search terms and their quirks
 
-Code: `src/Sfe.Core/Search/` (`SearchQuery` (parser), `SearchPredicateBuilder`, `FileSearchService`); client mirror in
+Code: `src/Sfe.Core/Search/` (`SearchQuery` (parser), `SearchPredicateBuilder` (generic over `ISearchableFile<T>`:
+the library's `FileEntry` and a connection's `RemoteFile`), `SearchTagTerms`, `SearchTermSettings`,
+`FileSearchService`), `Connections/Indexing/RemoteIndexSearch`; client mirror in
 `src/app/library/search-explain/` ([search-explain.md](search-explain.md)). Tests: `SearchCombinationTests`. User
 docs: `docs/reference/` (search syntax).
 
@@ -29,3 +31,7 @@ complement: `-w:1920` includes unknown resolutions). A new filter term goes thro
 - On SQLite, `LIKE` and `NOCASE` fold ASCII only: `русский` / `ESPAÑOL` don't find `Русский` / `Español` (SQL Server's
   CI collation does).
 - Sorting and paging: [search-sort.md](search-sort.md).
+- A connection's rows have the same terms (`RemoteIndexSearch`), but width, height and duration are mostly null
+  there (the provider's listing doesn't tell them): `w:`, `h:`, `r:`, `d:` don't match them, `-w:`… do.
+- A new term is written once, on `ISearchableFile<T>` members (mapped columns only); a tag condition goes through
+  `T.HasAnyTag` / `T.IsTagged` (the link tables differ).

@@ -12,7 +12,7 @@ import {
 import { Api } from '../../core/api.service';
 import { plural } from '../../core/format';
 import { TagDetails } from '../../core/tag.models';
-import { ContextMenuDirective, MenuTarget } from '../../menus/context-menu';
+import { ContextMenu, ContextMenuDirective, MenuTarget } from '../../menus/context-menu';
 import { IconComponent } from '../../shared/icon.component';
 import { TagChipComponent } from '../../tags/tag-chip.component';
 import { describeTag, TAG_TERM, termAt, termValue } from '../../tags/tags';
@@ -21,6 +21,8 @@ import { ListingStore } from '../listing.store';
 import { SearchBoxState } from '../search-explain/search-explain.component';
 import { matchedParts, SearchHistory } from '../search-history.service';
 import { SearchHelpDialog } from './search-help.dialog';
+import { scopeText, scopeTitle } from './search-scope';
+import { SearchScopeMenu } from './search-scope-menu';
 
 const LIVE_SEARCH_MIN_LENGTH = 4; // search as you type once the query is longer than 3 characters
 const LIVE_SEARCH_DELAY = 300; // ms of typing pause before the search runs
@@ -52,6 +54,8 @@ export class SearchBoxComponent {
     protected readonly search = inject(SearchBoxState);
     private readonly api = inject(Api);
     private readonly history = inject(SearchHistory);
+    private readonly scopeMenu = inject(SearchScopeMenu);
+    private readonly menu = inject(ContextMenu);
     private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
 
     protected readonly listId = LIST_ID;
@@ -63,19 +67,14 @@ export class SearchBoxComponent {
     protected readonly active = signal(-1);
     protected readonly suggesting = signal(false);
     protected readonly emptyText = signal('');
-    protected readonly scopeText = computed(() => {
-        const path = this.store.route().path;
-        return path ? `in ${path.split('/').pop()}` : '';
-    });
-    protected readonly scopeTitle = computed(() => {
-        const path = this.store.route().path;
-        return path ? `Searching inside “${path}”. Click to search the whole library.` : '';
-    });
+    protected readonly scopeText = computed(() => scopeText(this.store.route(), this.scopeMenu.scopes()));
+    protected readonly scopeTitle = computed(() => scopeTitle(this.store.route(), this.scopeMenu.scopes()));
     protected readonly describe = describeTag;
     /** How many files the search found, once its results are listed and only while the box still holds its query. */
     protected readonly found = computed(() => {
         const q = this.store.route().q;
-        if (!q || this.store.status() !== 'ready' || this.search.text().trim() !== q) return null;
+        if (!q || this.store.everywhere() || this.store.status() !== 'ready' || this.search.text().trim() !== q)
+            return null;
         const total = this.store.total();
         const count = total?.count ?? this.store.items().length;
         const more = total ? total.capped : this.store.hasMore();
@@ -153,9 +152,13 @@ export class SearchBoxComponent {
         if (!this.input().nativeElement.value && this.store.route().q) this.store.navigate({ q: '' });
     }
 
-    protected onScope(): void {
-        if (this.store.route().q) this.store.navigate({ path: '' });
-        else this.input().nativeElement.focus();
+    /** While searching: the menu of where to search (this folder, the whole location, everywhere). */
+    protected onScope(button: HTMLElement): void {
+        if (!this.store.route().q) {
+            this.input().nativeElement.focus();
+            return;
+        }
+        this.menu.toggle(this.scopeMenu.target(), button);
     }
 
     /** `complete`: the query is not still being typed, search it whatever its length. */

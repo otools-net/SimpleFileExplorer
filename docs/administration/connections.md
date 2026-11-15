@@ -127,8 +127,8 @@ The connections you may use are listed in the sidebar under **Connections**, und
 in the usual listing: folders first, sorted as you choose, pictures and videos shown with Dropbox's thumbnails.
 
 - Pictures, videos, audio and PDF files open in the viewer; videos seek as usual. Other files are downloaded. Videos
-  the browser can't play aren't converted, and there is no external player, trickplay, tags or search there: a search
-  typed there searches the library.
+  the browser can't play aren't converted, and there is no external player, trickplay or tags there. A search typed
+  there searches the connection ([below](#searching-a-connection)).
 - **Download** saves a file; several, or a folder, come as one zip, written while it downloads (as in the library;
   what has no content, a Dropbox Paper document, is listed in `SFE - left out.txt` inside).
 - Once the space's [index](#the-index-of-a-connection) holds a folder whole, the folder is listed from it, without
@@ -150,6 +150,22 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
   page starts over.
 - When Dropbox no longer accepts the connection's sign-in, the listing says so and the connection shows **Sign in
   again** for whoever manages it. When Dropbox asks to wait (too many requests), wait a moment and try again.
+
+## Searching a connection
+
+The search box searches the connection you are browsing, from the space's [index](#the-index-of-a-connection) of it:
+the folder you are in and below, with the library's [query language](../user-guide/search.md#the-query-language),
+sorts and count. Dropbox is not asked: results come at once, even while Dropbox asks to wait.
+
+- What is found is what the index holds. Until its first sync ends (or while it lists everything again, or when it
+  hasn't been synced for more than 30 minutes) the results say they may be incomplete; a connection never opened in
+  the space isn't indexed yet: searching it starts its index.
+- Dropbox doesn't tell the width, height or duration of files when listing them: `w:`, `h:`, `r:` and `d:` find
+  almost nothing in a connection for now, and the **Duration** and **Resolution** sorts list files by path.
+- Names sort as in the connection's folders (`file2` before `file10`).
+- Folder rules apply: files of folders hidden from you are in no result and no count.
+- **Everywhere** (the chip at the end of the search box) searches the library and each connection you use, the
+  results grouped by place ([Search › Everywhere](../user-guide/search.md#everywhere)).
 
 ## Between the library and a connection
 

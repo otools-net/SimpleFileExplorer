@@ -1,0 +1,74 @@
+@for (group of search.groups(); track group.location.c) {
+    <section
+        class="everywhere-group"
+        [attr.aria-busy]="group.status === 'loading'"
+        [attr.aria-label]="group.location.name"
+    >
+        <header class="everywhere-head">
+            <svg [sfeIcon]="group.location.c === null ? 'space' : 'globe'"></svg>
+            <h2 class="everywhere-name" [title]="group.location.name">{{ group.location.name }}</h2>
+            <span class="everywhere-count" [title]="countTitle(group)">{{ countText(group) }}</span>
+            <a class="everywhere-here" routerLink="/" [queryParams]="hereParams(group)" [title]="hereTitle(group)"
+                >Search here</a
+            >
+        </header>
+        @if (coverageText(group); as note) {
+            <p class="everywhere-note">{{ note }}</p>
+        }
+        @switch (group.status) {
+            @case ('loading') {
+                <p class="everywhere-state"><span class="spinner"></span> Searching…</p>
+            }
+            @case ('error') {
+                <p class="everywhere-state everywhere-error">
+                    <span>{{ group.error }}</span>
+                    <button
+                        type="button"
+                        class="button"
+                        title="Search this location again"
+                        (click)="search.retry(group.location)"
+                        >Retry</button
+                    >
+                </p>
+            }
+            @default {
+                @if (!group.items.length) {
+                    <p class="everywhere-state">No results here.</p>
+                }
+                <ul class="everywhere-items">
+                    @for (item of group.items; track item.path) {
+                        <li>
+                            <button
+                                type="button"
+                                class="everywhere-item"
+                                [title]="'Show “' + item.path + '” in its folder'"
+                                [sfeContextMenu]="itemTarget(group, item)"
+                                (click)="open(group, item)"
+                            >
+                                <svg [sfeIcon]="iconOf(item)"></svg>
+                                <span class="everywhere-item-name">{{ item.name }}</span>
+                                <span class="everywhere-item-details">{{ detailsOf(item) }}</span>
+                            </button>
+                        </li>
+                    }
+                </ul>
+                @if (group.next) {
+                    <p class="everywhere-more">
+                        @if (group.error) {
+                            <span class="everywhere-error">{{ group.error }}</span>
+                        }
+                        <button
+                            type="button"
+                            class="button"
+                            title="Load more results of this location"
+                            [attr.aria-busy]="group.loadingMore"
+                            [disabled]="group.loadingMore"
+                            (click)="search.more(group.location)"
+                            >Show more</button
+                        >
+                    </p>
+                }
+            }
+        }
+    </section>
+}

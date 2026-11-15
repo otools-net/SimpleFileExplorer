@@ -107,6 +107,13 @@ public sealed class ConnectionFolders(
     public RemoteListing Seen(RemoteListing listing) => policy.IsUnrestricted ? listing : WithoutUnseen(listing);
 
     /// <summary>
+    /// Where the subject sees files, for a search of the index: null when everywhere (as the library's
+    /// <c>Visible()</c>).
+    /// </summary>
+    public PathFilter? Visible() =>
+        policy.FilterFor(Rights.Browse, granted) is { IsEverything: false } filter ? filter : null;
+
+    /// <summary>
     /// The provider's ids of the items a rule set on them at another path hides (they were renamed or moved outside
     /// SFE): a listing read from the index leaves them out in its query.
     /// </summary>

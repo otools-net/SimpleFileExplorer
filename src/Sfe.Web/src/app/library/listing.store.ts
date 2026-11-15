@@ -14,7 +14,7 @@ import { restorePosition } from './items/listing-position';
 import { Dialogs } from './dialogs.service';
 import { SidebarService } from './sidebar/sidebar.service';
 import { currentSort, LibraryRoute, RestoreState, routeParams } from './library-route';
-import { connectionPage, enterPlace } from './connection-pages';
+import { connectionPage, enterPlace, searchPage } from './connection-pages';
 
 export type View = 'grid' | 'list' | 'single';
 export const VIEWS: readonly View[] = ['grid', 'list', 'single'];
@@ -64,6 +64,8 @@ export class ListingStore {
     /** The loaded files (not folders), in listing order. */
     readonly files = computed(() => this.items().filter((item) => item.kind !== 'directory'));
     readonly searching = computed(() => Boolean(this.route().q));
+    /** The search runs in every location the session uses, each apart (`EverywhereComponent`), not in the listing. */
+    readonly everywhere = computed(() => Boolean(this.route().q && this.route().all));
     readonly sort = computed(() => currentSort(this.route()));
     /** What folder rules let the session do in the folder listed; null when none apply to it, and for searches. */
     readonly folderAccess = computed(() => {
@@ -105,8 +107,7 @@ export class ListingStore {
     }
 
     navigate(changes: Partial<LibraryRoute>, { replace = false } = {}): void {
-        // A search is of the library: it leaves a connection.
-        const route = { ...this.route(), ...changes, ...(changes.q ? { c: null } : {}) };
+        const route = { ...this.route(), ...changes };
         void this.router.navigate(['/'], { queryParams: routeParams(route), replaceUrl: replace });
     }
 
@@ -155,7 +156,7 @@ export class ListingStore {
         this.removedLoaded = 0;
         this.status.set('loading');
         this.error.set(null);
-        enterPlace(this.config, route.c ?? null);
+        enterPlace(this.config, this.everywhere() ? null : (route.c ?? null));
 
         try {
             const minimum = Math.max(this.pageSize(), restore.loaded || 0);
@@ -188,14 +189,14 @@ export class ListingStore {
      * Lists the folder of the file `path` and shows the file there (a quick link): what has a viewer opens there, other
      * files are scrolled to and highlighted. Pages of a big folder are loaded until the file is found (`REVEAL_LIMIT`).
      */
-    reveal(path: string): void {
+    reveal(path: string, c: number | null = null): void {
         const route = this.route();
-        if (!route.q && !route.c && route.path === parentPath(path) && this.status() === 'ready') {
+        if (!route.q && (route.c ?? null) === c && route.path === parentPath(path) && this.status() === 'ready') {
             void this.show(path, this.generation());
             return;
         }
         this.revealing = path;
-        this.navigate({ c: null, path: parentPath(path), q: '' });
+        this.navigate({ c, path: parentPath(path), q: '', all: false });
     }
 
     private async show(path: string, generation: number): Promise<void> {
@@ -567,11 +568,8 @@ export class ListingStore {
         const { c, path, q, desc } = this.route();
         const sort = this.sort();
         const signal = this.requests.signal;
-        if (q)
-            return this.api.search(
-                { q, path, after: previous && 'next' in previous ? previous.next : null, limit, sort, desc },
-                signal,
-            );
+        const after = previous && 'next' in previous ? previous.next : null;
+        if (q) return searchPage(this.api, this.config, this.route(), { q, path, after, limit, sort, desc }, signal);
         const offset =
             previous && 'offset' in previous
                 ? Math.max(0, previous.offset + previous.items.length - this.removedLoaded)

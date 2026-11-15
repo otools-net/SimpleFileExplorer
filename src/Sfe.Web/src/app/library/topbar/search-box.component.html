@@ -24,11 +24,13 @@
     <span class="search-count" [title]="found.title">{{ found.text }}</span>
 }
 <button
+    #scope
     type="button"
     class="search-scope"
-    [hidden]="!store.route().path"
+    aria-haspopup="menu"
+    [hidden]="!scopeText()"
     [title]="scopeTitle()"
-    (click)="onScope()"
+    (click)="onScope(scope)"
 >{{ scopeText() }}</button>
 <button
     type="button"

@@ -7,6 +7,18 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Search in connections, and Everywhere**: the search box searches the connection you are browsing, from the
+  space's index of it (no call to Dropbox): the library's query language, sorts, paging and count; names in the
+  folders' order; files of folders hidden by folder rules in no result or count; the results say when the index is
+  not whole yet (first sync, or old). Its chip now opens a menu of where to search: this folder, all of the library
+  or the connection, or **Everywhere**: the library and every connection you use searched apart, results grouped by
+  place with their count, **Show more** and **Search here** per group, each loading (or failing) on its own. New
+  route `GET api/v1/connections/{id}/search` (right `connections.use`); index on `RemoteFiles` (SQL Server migration
+  `ConnectionIndexSearch`; added to existing SQLite files). A search typed in a connection no longer leaves it for
+  the library.
+- Internal: the library's search is now written once for its files and a connection's (`ISearchableFile`); a test
+  checks that the SQL it sends is the same as before.
+
 - **Connections' folders listed from the index**: once a space's index of a connection holds a folder whole (its
   sync past the first listing and less than 30 minutes old), the folder is listed from it without asking the
   provider: at once, sorted and counted whatever its size (a folder of more than 20,000 items is no longer listed

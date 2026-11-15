@@ -437,6 +437,8 @@ namespace Otools.Net.Sfe.Core.Data.Migrations
 
                     b.HasIndex("ConnectionId", "Size");
 
+                    b.HasIndex("ConnectionId", "NameKey", "FullName");
+
                     b.HasIndex("ConnectionId", "DirectoryId", "Extension", "NameKey", "FullName");
 
                     b.HasIndex("ConnectionId", "DirectoryId", "LastWriteTime", "NameKey", "FullName");

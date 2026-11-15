@@ -145,16 +145,32 @@ describe('SearchBoxComponent', () => {
             expect(input().value).toBe('from url  ');
         });
 
-        it('shows the folder searched, and a click searches the whole library', async () => {
+        it('shows the folder searched, and a click offers where else to search', async () => {
             store.route.set({ path: 'Media/2020', q: 'beach', sort: '', desc: false });
             await settle();
             const scope = element.querySelector<HTMLButtonElement>('.search-scope')!;
+            const toggle = vi.spyOn(TestBed.inject(ContextMenu), 'toggle').mockImplementation(() => {});
 
             expect(scope.hidden).toBe(false);
             expect(scope.textContent).toBe('in 2020');
             scope.click();
 
-            expect(navigate).toHaveBeenCalledWith({ path: '' });
+            const [target, trigger] = toggle.mock.calls[0];
+            expect(trigger).toBe(scope);
+            const entries = target.entries();
+            expect(entries.map((entry) => entry.id)).toEqual(['folder', 'location']);
+            entries[1].run!();
+            expect(navigate).toHaveBeenCalledWith({ path: '', all: false });
+        });
+
+        it('hides the count of a search everywhere: each location counts its own', async () => {
+            store.route.set({ path: '', q: 'cats', sort: '', desc: false, all: true });
+            store.total.set({ count: 0, capped: false });
+            store.status.set('ready');
+            await settle();
+
+            expect(element.querySelector('.search-count')).toBeNull();
+            expect(element.querySelector<HTMLButtonElement>('.search-scope')!.textContent).toBe('everywhere');
         });
 
         it('shows how many files were found while the box holds the query listed', async () => {

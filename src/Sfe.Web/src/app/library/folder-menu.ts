@@ -14,6 +14,7 @@ import { Dialogs } from './dialogs.service';
 import { routeParams } from './library-route';
 import { ListingStore } from './listing.store';
 import { QuickLinksService } from './quick-links/quick-links.service';
+import { SearchScopeMenu } from './topbar/search-scope-menu';
 
 /**
  * What can be done to the folder listed, or the search: the buttons of the location header and the menu of the
@@ -30,6 +31,7 @@ export class FolderMenu {
     private readonly copyPaths = inject(CopyPathService);
     private readonly toasts = inject(ToastService);
     private readonly router = inject(Router);
+    private readonly scopeMenu = inject(SearchScopeMenu);
 
     /**
      * Folders and files are made in the folder browsed (not in a search, nor in a folder shown only on the way to
@@ -229,6 +231,8 @@ export class FolderMenu {
                     title: 'Add or remove tags on all the results of this search (asks first)',
                     run: () => this.openScopeTags(),
                 });
+            const searchIn = this.scopeMenu.entry();
+            if (searchIn) entries.push(searchIn);
             entries.push(
                 {
                     id: 'refresh',

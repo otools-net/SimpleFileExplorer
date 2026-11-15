@@ -1,7 +1,9 @@
 # Search
 
-The search box in the top bar searches the **index** of the folder you are in and its sub-folders (the grey chip
-`in 2024 Beach trip` at its end says where; click it to search the whole library). Results update as you type once the
+The search box in the top bar searches the **index** of the folder you are in and its sub-folders: of the library, or
+of the [connection](../administration/connections.md#searching-a-connection) you are browsing. The grey chip at its
+end (`in 2024 Beach trip`) says where; while a search shows, click it to choose where to search: **this folder**, **all
+of** the library or the connection, or **Everywhere** (when you use connections). Results update as you type once the
 query has more than 3 characters; press Enter to search shorter ones.
 
 ![Search results with the explanation open](../images/search-explain.png)
@@ -60,6 +62,22 @@ administrator can remove the button for everyone ([Interface › Search](../admi
 - Pressing Enter on the search already shown keeps the results and your place.
 - Files with a hidden tag, like **Archived**, only show up when the search names that tag (or a parent of it).
 - The [tag button next to the location](tags.md#a-whole-folder-or-every-search-result) tags every result at once.
+
+## Everywhere
+
+**Everywhere** searches the library and every connection you may use with the same query, each on its own: the results
+come in groups, one per place, headed by its name and its count of matches, with its first results.
+
+- **Show more** under a group loads more of that place; **Search here** opens the search of that place alone, with
+  every sort, the viewer and the tag button.
+- Each group loads on its own: a place that is slow, unreachable or asks to wait shows its own message (and
+  **Retry**) without holding the others.
+- A connection whose index in this space is not made yet, or is being brought up to date, says so: its results may
+  miss files until its sync ends.
+- Click a result to open its folder, in its place, with the file shown (pictures and videos open in the viewer); its
+  menu (right click, or a long press) opens that folder in a new tab too.
+- Only the places you may use appear, and folder rules apply as everywhere else. No search sorts the files of several
+  places together: the sort you chose applies inside each group.
 
 ## Tag suggestions
 

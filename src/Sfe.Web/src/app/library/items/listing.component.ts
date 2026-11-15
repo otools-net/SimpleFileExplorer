@@ -15,6 +15,7 @@ import { ConfigService } from '../../core/config.service';
 import { highlightPattern } from '../../core/format';
 import { Rights } from '../../core/rights';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { EverywhereComponent } from '../everywhere/everywhere.component';
 import { ListingStore } from '../listing.store';
 import { FileRowComponent, FileTileComponent } from './file-tile.component';
 import { FolderItemComponent } from './folder-item.component';
@@ -34,6 +35,7 @@ import { ScrollProgressComponent } from './scroll-progress.component';
         FileRowComponent,
         FolderItemComponent,
         ScrollProgressComponent,
+        EverywhereComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './listing.component.html',
@@ -55,6 +57,21 @@ export class ListingComponent {
     protected readonly canInstall = computed(() => this.config.can(Rights.serverSettings));
     protected readonly folderLayout = computed(() =>
         this.store.view() === 'list' ? 'list' : this.folderCards() ? 'grid covers' : 'grid',
+    );
+
+    /** A search of a connection whose index is not whole: what it finds may miss files. */
+    protected readonly coverageNote = computed(() => {
+        const page = this.store.listing();
+        const coverage = page && 'coverage' in page ? page.coverage : null;
+        if (coverage === 'none') return 'This connection is not indexed in this library yet: its index is being made.';
+        if (coverage === 'partial')
+            return 'The index of this connection is being brought up to date: some files may be missing.';
+        return null;
+    });
+    protected readonly noResultsText = computed(() =>
+        this.store.route().c
+            ? 'Nothing in the index of this connection matches this search.'
+            : 'Nothing in the index matches this search. If files were added recently, run Scan on this folder.',
     );
 
     private readonly observer = new IntersectionObserver(

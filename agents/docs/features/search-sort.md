@@ -1,7 +1,9 @@
 # Search sort and keyset paging
 
-Code: `src/Sfe.Core/Search/FileSearchService.cs` (`ReadAsync`, `CountLimit`), `SfeDatabase.Configure`; client
-`library/library-route.ts` (`currentSort`, `SEARCH_SORTS`).
+Code: `src/Sfe.Core/Search/SearchPages.cs` (`ReadAsync`, `Order`, `After`: generic over `ISearchableFile<T>`),
+`SearchCursor`, `FileSearchService` (`CountLimit`), `Connections/Indexing/RemoteIndexSearch`, `SfeDatabase.Configure`;
+client `library/library-route.ts` (`currentSort`, `SEARCH_SORTS`). Tests: `SearchCombinationTests`,
+`RemoteIndexSearchTests`, `SearchSqlTests`.
 
 - `SortField.Path` (search default; browse treats it as `Name`) or name/modified/size/type, ties by ascending
   `FullName` in both directions.
@@ -16,3 +18,12 @@ Code: `src/Sfe.Core/Search/FileSearchService.cs` (`ReadAsync`, `CountLimit`), `S
 - The match count (`Take(10001).Count`) is unordered on purpose: EF's `RowLimitingOperationWithoutOrderByWarning` is
   ignored in `SfeDatabase.Configure` (even `ORDER BY (SELECT 1)` makes SQLite sort every match), so nothing warns
   about an unordered page any more: order every `Take`.
+- The keyset is shared by the library's files and a connection's (`SearchPages`, `ISearchableFile<T>`): the name
+  sort reads `T.SortName` (`FileEntry.Name`; `RemoteFile.NameKey`, the listings' natural key). A connection's rows
+  without a `NameKey` yet come after the others by key (lowered path), as unknown durations do (`/{path}` cursor);
+  `SortNameMayBeMissing` turns that second part on.
+- **The library's SQL must not change by accident**: `SearchSqlTests` (+ `…SqlServerTests`, LocalDB) runs a set of
+  searches (terms, sorts, three keyset pages each, a folder, folder rules) and compares every command's text with
+  `tests/samples/search-sql/{sqlite,sqlserver}.sql`. Parameter names come from the captured variables' names
+  (`ids`, `hiddenIds`, `text`, `path`…): renaming one changes the SQL. A change meant to alter it rewrites the files
+  with `SFE_SEARCH_SQL=write dotnet test tests/Sfe.Tests --filter FullyQualifiedName~SearchSqlTests`.

@@ -99,7 +99,8 @@ describe('FolderMenu', () => {
 
     it("offers the search's own entries while searching", async () => {
         await setUp(undefined, 'beach');
-        expect(ids()).toEqual(['selectAll', 'tags', 'refresh', 'newTab', 'copyLink']);
+        expect(ids()).toEqual(['selectAll', 'tags', 'searchIn', 'refresh', 'newTab', 'copyLink']);
+        expect(entry('searchIn').submenu!().map((e) => e.id)).toEqual(['folder', 'location']);
         expect(entry('tags').label).toBe('Tag the results…');
         entry('tags').run!();
         expect(TestBed.inject(Dialogs).scopeTags()!.open).toHaveBeenCalledWith({

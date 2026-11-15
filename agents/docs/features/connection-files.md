@@ -1,15 +1,16 @@
 # Files of a connection: browse, read, change, upload, properties
 
-Code: Api `ConnectionFileEndpoints` (browse, raw, thumbnails, properties), `ConnectionFileServices` (`OpenAsync`,
-`RunAsync`), `ConnectionBrowsing`, `ConnectionArchiveEndpoints`, `ConnectionWriteEndpoints`, `ConnectionWriteChecks`,
-`ConnectionUploadEndpoints` (`ConnectionUploadSteps`, `ConnectionUploadNames`), `ConnectionProblems`, `OpenConnection`,
-`RemoteFileResult`, `RemoteRanges`; Core `Connections/RemoteListings` (`RemoteSnapshot`, `RemoteSort`),
-`Connections/Indexing/RemoteIndexListings`,
+Code: Api `ConnectionFileEndpoints` (browse, raw, thumbnails, properties), `ConnectionSearchEndpoints`,
+`ConnectionFileServices` (`OpenAsync`, `RunAsync`), `ConnectionBrowsing`, `ConnectionArchiveEndpoints`,
+`ConnectionWriteEndpoints`, `ConnectionWriteChecks`, `ConnectionUploadEndpoints` (`ConnectionUploadSteps`,
+`ConnectionUploadNames`), `ConnectionProblems`, `OpenConnection`, `RemoteFileResult`, `RemoteRanges`; Core
+`Connections/RemoteListings` (`RemoteSnapshot`, `RemoteSort`), `Connections/Indexing/RemoteIndexListings`,
 `RemoteArchives`, `RemoteUploads`, `ConnectionGates`. Client `library/connection-pages.ts`, `place-files.ts`,
 `place-transfers.ts`, `place-properties.ts`, `upload-places.ts`, `files/drag-items.ts`, `file-clipboard.ts`. Tests:
-`ConnectionFileRouteTests`, `ConnectionWriteRouteTests`, `ConnectionUploadRouteTests`, `ConnectionGatesTests`,
-`RemoteListingsTests`, `place-*.spec.ts`. The connection itself: [connections](connections.md); who sees what inside
-it: [connection-folder-rules](connection-folder-rules.md); copies with the library: [transfers](transfers.md).
+`ConnectionFileRouteTests`, `ConnectionSearchRouteTests`, `RemoteIndexSearchTests`, `ConnectionWriteRouteTests`,
+`ConnectionUploadRouteTests`, `ConnectionGatesTests`, `RemoteListingsTests`, `place-*.spec.ts`. The connection itself:
+[connections](connections.md); who sees what inside it: [connection-folder-rules](connection-folder-rules.md); copies
+with the library: [transfers](transfers.md).
 
 ## Opening a connection for a request
 
@@ -49,6 +50,25 @@ it: [connection-folder-rules](connection-folder-rules.md); copies with the libra
 - Zips: `POST api/connections/{id}/archive` and its one-time link (`ArchiveLinks` with scope `connection:{id}`: the
   library's route never takes such a link, nor uses it up), written from the provider by `RemoteArchives`; a file
   without content (Dropbox Paper) is named in `SFE - left out.txt`.
+
+## Searching (`ConnectionSearchEndpoints`)
+
+- `GET api/connections/{id}/search` (right `connections.use`, then `library.browse` through `OpenAsync`; 404 for a
+  connection the session may not use or a folder it doesn't see): the library's search on the library's index of
+  the connection (`RemoteIndexSearch`), no provider call, no gate turn. Answer `ConnectionSearchResults`: the
+  library's `SearchResults` (paths relative to the connection's root), name, access, capabilities, `coverage`
+  (`none`: no index of this root and account in the library; `partial`: listing or synced over 30 minutes ago;
+  `complete`). A search starts the index like a browse (`ConnectionIndexes.OpenedAsync`).
+- Rows `Removed` are never found. Folder rules are query conditions (`RemoteSearchScope`): the regions of
+  `ConnectionFolders.Visible()` (`FolderPolicy.FilterFor(library.browse)`) as key trees, minus the files whose
+  provider id `HiddenIds()` holds and the trees of folders with such an id (renamed outside SFE: their files have
+  other ids); every item shown then passes `ConnectionFolders.At(path, id)`.
+- A key tree is `[key/, key0)` on SQLite (binary key column: a seek) and `LIKE 'key/%'` plus the start compared on
+  SQL Server (its CI collation would not keep `/` and `0` adjacent).
+- Client: `connectionSearchPage` (`?c=&q=`) makes the connection the place as its folders do; the listing tells a
+  coverage that isn't complete. "Everywhere" (`?q=&all=1`, `c` and `path` kept for going back):
+  `library/everywhere/` asks the library and each usable connection apart (`EverywhereSearch`), groups paged alone;
+  the scope menu of the search box (`topbar/search-scope.ts`) switches.
 
 ## Changing files (`ConnectionWriteEndpoints`)
 

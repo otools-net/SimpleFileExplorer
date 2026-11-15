@@ -12,6 +12,7 @@ using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Groups;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.IndexNamespace;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Libraries;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Reauthorize;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Search;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails;
 using Otools.Net.Sfe.Client.Generated.Models;
 using System.Collections.Generic;
@@ -71,6 +72,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Reauthorize.ReauthorizeRequestBuilder Reauthorize
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Reauthorize.ReauthorizeRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The search property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Search.SearchRequestBuilder Search
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Search.SearchRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The thumbnails property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails.ThumbnailsRequestBuilder Thumbnails

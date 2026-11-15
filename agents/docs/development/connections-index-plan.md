@@ -263,12 +263,39 @@ As built (2026-11-15; code `Indexing/RemoteIndexListings`, `IndexListing*`, Api 
 
 ### Phase 3: search
 
-- [ ] The query language on remote rows (name, type, size, dates, `w:` `h:` `r:` `d:` when known, tags), same sorts,
+- [x] The query language on remote rows (name, type, size, dates, `w:` `h:` `r:` `d:` when known, tags), same sorts,
   cursors and match count ([search-terms](../features/search-terms.md), [search-sort](../features/search-sort.md))
-- [ ] Routes under `api/v1/connections/{id}/search`; the client's search box searches the current location; search
+- [x] Routes under `api/v1/connections/{id}/search`; the client's search box searches the current location; search
   explain and history unchanged
-- [ ] "Everywhere": a scope switch; one request per location from the client (each paged alone), results in groups
+- [x] "Everywhere": a scope switch; one request per location from the client (each paged alone), results in groups
   with the location's name; only locations the person may use; a slow or unreachable location never holds the others
+
+As built (2026-11-15; code `Core/Search/` (`ISearchableFile`, `SearchPages`, `SearchCursor`, `SearchTagTerms`,
+`SearchTermSettings`), `Indexing/RemoteIndexSearch`, `RemoteSearchScope`, Api `ConnectionSearchEndpoints`, client
+`library/everywhere/`, `topbar/search-scope.ts`; tests `SearchSqlTests`, `RemoteIndexSearchTests` (+ `…SqlServer…`),
+`ConnectionSearchRouteTests`, `everywhere*.spec.ts`, `search-scope.spec.ts`):
+
+- Phase 0's shape (a): `SearchPredicateBuilder` and the keyset (`SearchPages`: `Order`, `After`, the two-part read)
+  are generic over `ISearchableFile<T>` (`FileEntry`, `RemoteFile`) with static abstract `SortName`,
+  `SortNameMayBeMissing`, `IsTagged`, `HasAnyTag`; matches, row projection and items stay per type. A refactoring
+  step first: `SearchSqlTests` captured every command of a set of library searches before it and compares the text
+  on both providers (`tests/samples/search-sql/`): the library's SQL is unchanged.
+- Name sort = `NameKey` (index `(ConnectionId, NameKey, FullName)`, migration `ConnectionIndexSearch`, SQLite through
+  `DatabaseSchema`); rows without a key come **after** the others, by key (lowered path), cursor `/{path}`.
+- Scope: `!Removed`, the connection, the folder and folder rules are conditions of the query (`RemoteSearchScope`):
+  `ConnectionFolders.Visible()` regions as key trees, `HiddenIds()` as files by id **and** the trees of indexed
+  folders with those ids (a folder renamed outside SFE: its files have other ids, and a search would otherwise reach
+  them). A tree is the range `[key/, key0)` on SQLite (phase 0's tuning) and `LIKE` plus the start on SQL Server
+  (its CI collation doesn't keep `/` and `0` adjacent). Shown items pass `ConnectionFolders.At(path, id)` again.
+- `coverage`: `none` (no state of this root and account), `partial` (listing, or older than `MaxAge`), `complete`;
+  a search starts the index (`OpenedAsync`) and never calls the provider (no gate turn).
+- Not tuned: the tag term keeps the `EXISTS` form (phase 0 measured the `IN (SELECT FileId …)` one faster on SQLite
+  counts; needs the link table in the generic builder); no measurement on millions of remote rows was run in phase 3.
+- Client: a search keeps `?c=` (it no longer leaves a connection); `?all=1` (only with `q`; `c` and `path` kept) is
+  Everywhere: `EverywhereSearch` asks the library and each usable connection apart (20 a page, **Show more**),
+  each group with its own loading, error (**Retry**), count and coverage note; a result opens its folder in its
+  place with the file shown (`ListingStore.reveal(path, c)`). The chip of the search box opens a scope menu (the
+  app's menu: a sheet on phones). Explain and history are unchanged.
 
 ### Phase 4: tags
 

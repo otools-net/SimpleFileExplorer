@@ -524,7 +524,7 @@ describe('ListingStore', () => {
 
             store.reveal('Media/d.jpg');
             // From a connection too: quick links are the library's.
-            expect(navigate).toHaveBeenCalledWith({ c: null, path: 'Media', q: '' });
+            expect(navigate).toHaveBeenCalledWith({ c: null, path: 'Media', q: '', all: false });
             await arrive('Media');
 
             expect(api.browse).toHaveBeenCalledTimes(2);

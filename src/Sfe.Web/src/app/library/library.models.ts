@@ -1,6 +1,7 @@
 import type { DirectoryListing, FolderExclusions, ItemKind, LibraryItem } from '../core/models';
 import type { TagUsage } from '../core/tag.models';
 import type { ScanState } from '../core/task.models';
+import type { FolderLevelName } from '../core/connection.models';
 
 export type SortField = 'name' | 'modified' | 'size' | 'type' | 'path' | 'duration' | 'resolution';
 
@@ -56,6 +57,43 @@ export interface SearchResults {
 }
 
 export type ListingPage = DirectoryListing | SearchResults;
+
+/** A page of a folder asked of the library (`api/browse`) or of a connection (`api/connections/{id}/browse`). */
+export type BrowseAsk = {
+    path: string;
+    offset: number;
+    limit: number;
+    sort: SortField;
+    desc: boolean;
+};
+
+/**
+ * A page of a search asked of the library (`api/search`) or of a connection's index (`api/connections/{id}/search`).
+ */
+export type SearchAsk = {
+    q: string;
+    path: string;
+    /** The `next` of the page before; null for the first page. */
+    after: string | null;
+    limit: number;
+    sort: SortField;
+    desc: boolean;
+};
+
+/** How much of a connection its index holds in the library: what a search of it can find. */
+export type SearchCoverage = 'none' | 'partial' | 'complete';
+
+/** `GET api/connections/{id}/search`: a page of a search of a connection's files, from the library's index. */
+export interface ConnectionSearchResults {
+    connectionId: number;
+    name: string;
+    kind: string;
+    /** Paths relative to the connection's root. */
+    results: SearchResults;
+    access: FolderLevelName;
+    capabilities: Record<string, boolean | number | string | null>;
+    coverage: SearchCoverage;
+}
 
 export interface FolderSiblings {
     path: string;

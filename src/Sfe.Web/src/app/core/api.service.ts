@@ -39,9 +39,12 @@ import {
     QuickLink,
     RemovedFromIndex,
     ScanStatus,
+    SearchAsk,
+    BrowseAsk,
     SearchResults,
     SortField,
     TagSidebar,
+    ConnectionSearchResults,
 } from '../library/library.models';
 import { LogQuery, LogSearchResult } from '../logs/log.models';
 import { BackupLink, MigrationInfo } from '../migration/migration.models';
@@ -191,21 +194,17 @@ export class Api {
 
     config = () => this.get<ClientConfig>('config');
 
-    browse = (
-        query: { path: string; offset: number; limit: number; sort: SortField; desc: boolean },
-        signal?: AbortSignal,
-    ) => this.get<DirectoryListing>('browse', query, signal);
+    browse = (query: BrowseAsk, signal?: AbortSignal) => this.get<DirectoryListing>('browse', query, signal);
     /** The folders around `path` in its parent, in the given sort. */
     siblings = (query: { path: string; sort: SortField; desc: boolean }, signal?: AbortSignal) =>
         this.get<FolderSiblings>('browse/siblings', query, signal);
     /** The first pictures of each folder of `paths` that exists (folder cards). */
     folderCovers = (paths: string[], signal?: AbortSignal) =>
         this.post<FolderCover[]>('browse/covers', { paths }, signal);
-    /** `after`: the `next` value of the previous page. */
-    search = (
-        query: { q: string; path: string; after: string | null; limit: number; sort: SortField; desc: boolean },
-        signal?: AbortSignal,
-    ) => this.get<SearchResults>('search', query, signal);
+    /** `after`: the `next` value of the previous page; a connection's files: `connectionSearch` (its index). */
+    search = (query: SearchAsk, signal?: AbortSignal) => this.get<SearchResults>('search', query, signal);
+    connectionSearch = (id: number, query: SearchAsk, signal?: AbortSignal) =>
+        this.get<ConnectionSearchResults>(`connections/${id}/search`, query, signal);
 
     scanStatus = () => this.get<ScanStatus>('scan');
     startScan = (path: string) => this.post<ScanStatus>('scan', { path });
@@ -638,11 +637,8 @@ export class Api {
     /** Connections to other storage (agents/docs/features/connections.md); `kind` of a provider (`dropbox`). */
     connections = () => this.get<ConnectionsView>('connections');
     /** A page of a connection's folder (`path` relative to its root). */
-    connectionBrowse = (
-        id: number,
-        query: { path: string; offset: number; limit: number; sort: SortField; desc: boolean },
-        signal?: AbortSignal,
-    ) => this.get<ConnectionListing>(`connections/${id}/browse`, query, signal);
+    connectionBrowse = (id: number, query: BrowseAsk, signal?: AbortSignal) =>
+        this.get<ConnectionListing>(`connections/${id}/browse`, query, signal);
     updateConnection = (id: number, change: ConnectionChange) =>
         this.patch<ConnectionInfo>(`connections/${id}`, change);
     removeConnection = (id: number) => this.delete<void>(`connections/${id}`);

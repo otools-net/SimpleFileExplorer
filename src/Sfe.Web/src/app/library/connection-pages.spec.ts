@@ -120,7 +120,52 @@ describe('a connection in the listing', () => {
         expect(saved).toEqual([`api/v1/connections/7/archive/${'a'.repeat(48)}`]);
     });
 
-    it('goes back to the library with a folder of it, and with a search', async () => {
+    it('searches the connection from its index, keeping it the place, with how much the index holds', async () => {
+        api.connectionSearch.mockResolvedValue({
+            connectionId: 7,
+            name: 'My Dropbox',
+            kind: 'dropbox',
+            results: {
+                query: 'beach',
+                path: '',
+                items: [item('Trips/beach.jpg')],
+                limit: 100,
+                hasMore: false,
+                next: null,
+                total: 1,
+            },
+            access: 'write',
+            capabilities: { thumbnails: true },
+            coverage: 'partial',
+        });
+        store.route.set({ c: 7, path: 'Trips', q: 'beach', sort: '', desc: false });
+
+        await store.load();
+
+        expect(api.connectionSearch).toHaveBeenCalledWith(
+            7,
+            expect.objectContaining({ q: 'beach', path: 'Trips', sort: 'path' }),
+            expect.anything(),
+        );
+        expect(api.search).not.toHaveBeenCalled();
+        expect(store.items().map((i) => i.path)).toEqual(['Trips/beach.jpg']);
+        expect(config.place()).toEqual(expect.objectContaining({ id: 7, name: 'My Dropbox', access: 'write' }));
+        expect(store.listing()).toEqual(expect.objectContaining({ coverage: 'partial' }));
+    });
+
+    it('searches nothing itself everywhere: the locations are searched apart', async () => {
+        store.route.set({ c: 7, path: 'Trips', q: 'beach', sort: '', desc: false, all: true });
+
+        await store.load();
+
+        expect(store.everywhere()).toBe(true);
+        expect(api.connectionSearch).not.toHaveBeenCalled();
+        expect(api.search).not.toHaveBeenCalled();
+        expect(config.place()).toBeNull();
+        expect(store.status()).toBe('ready');
+    });
+
+    it('goes back to the library with a folder of it; a search stays in the connection', async () => {
         await list();
         expect(store.browseParams('Sub')).toEqual(expect.objectContaining({ c: 7, path: 'Sub' }));
         expect(store.libraryParams('Sub')).toEqual(expect.objectContaining({ path: 'Sub' }));
@@ -130,8 +175,7 @@ describe('a connection in the listing', () => {
         store.navigate({ q: 'holiday' });
 
         const [, extras] = navigate.mock.calls[0];
-        expect(extras!.queryParams).toEqual(expect.objectContaining({ q: 'holiday' }));
-        expect(extras!.queryParams!['c']).toBeUndefined();
+        expect(extras!.queryParams).toEqual(expect.objectContaining({ q: 'holiday', c: 7 }));
 
         api.browse.mockResolvedValue({ ...page([]).listing, name: 'Root' });
         store.route.set({ c: null, path: '', q: '', sort: '', desc: false });

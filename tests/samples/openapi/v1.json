@@ -3046,6 +3046,93 @@
         ]
       }
     },
+    "/api/v1/connections/{id}/search": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Searches the library's index of a connection's files.",
+        "description": "The search of `GET api/search` (same terms, sorts, `after` paging and `total` on the first page), on the\nlibrary's index of the connection: paths are relative to the connection's root, `path` is the folder searched\nwith everything below it. The index holds what the provider tells when listing: width, height and duration\nare mostly unknown, so `w:`, `h:`, `r:` and `d:` rarely match. `coverage` says how much of the connection the\nindex holds: `none` (not indexed in this library yet: nothing found, the first sync starts), `partial` (being\nlisted, or not synced for a while) or `complete`. Folder rules apply: hidden folders and files are in no page\nnor count. Names sort as the connection's listings sort them; files indexed before that key existed come\nafter the others, by path.",
+        "operationId": "SearchConnection",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "desc",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionSearchResults"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.use"
+          ]
+        ]
+      }
+    },
     "/api/v1/scan": {
       "get": {
         "tags": [
@@ -10910,6 +10997,46 @@
           }
         }
       },
+      "ConnectionSearchResults": {
+        "required": [
+          "connectionId",
+          "name",
+          "kind",
+          "results",
+          "access",
+          "capabilities",
+          "coverage"
+        ],
+        "type": "object",
+        "properties": {
+          "connectionId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "results": {
+            "$ref": "#/components/schemas/SearchResults"
+          },
+          "access": {
+            "$ref": "#/components/schemas/FolderLevel"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/ProviderCapabilities"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/RemoteSearchCoverage"
+          }
+        }
+      },
       "ConnectionSettings": {
         "type": "object",
         "properties": {
@@ -14744,6 +14871,13 @@
             "format": "int32"
           }
         }
+      },
+      "RemoteSearchCoverage": {
+        "enum": [
+          "none",
+          "partial",
+          "complete"
+        ]
       },
       "RemovedDuplicate": {
         "required": [
@@ -18841,6 +18975,9 @@
       "name": "Files"
     },
     {
+      "name": "Connections"
+    },
+    {
       "name": "Index"
     },
     {
@@ -18869,9 +19006,6 @@
     },
     {
       "name": "Keep alive"
-    },
-    {
-      "name": "Connections"
     }
   ],
   "x-sfe-problem-types": [
