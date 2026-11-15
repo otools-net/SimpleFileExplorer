@@ -100,6 +100,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<LibraryPaths>();
         services.AddSingleton<MediaClassifier>();
         services.AddSingleton<LibraryBrowser>();
+        services.AddSingleton<SearchTermSettings>();
         services.AddSingleton<FileSearchService>();
         services.AddSingleton<MediaDimensions>();
         services.AddSingleton<FolderDefaultTags>();

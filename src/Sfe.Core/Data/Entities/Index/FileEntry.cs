@@ -1,6 +1,9 @@
+using System.Linq.Expressions;
+using Otools.Net.Sfe.Core.Search;
+
 namespace Otools.Net.Sfe.Core.Data;
 
-public sealed class FileEntry : IndexEntry
+public sealed class FileEntry : IndexEntry, ISearchableFile<FileEntry>
 {
     public int DirectoryId { get; set; }
     public DirectoryEntry? Directory { get; set; }
@@ -34,4 +37,14 @@ public sealed class FileEntry : IndexEntry
     public long? Pixels { get; private set; }
 
     public List<FileTag> TagLinks { get; set; } = [];
+
+    /// <summary>The search sorts by the name itself (the library's collation).</summary>
+    public static Expression<Func<FileEntry, string?>> SortName { get; } = f => f.Name;
+
+    public static bool SortNameMayBeMissing => false;
+
+    public static Expression<Func<FileEntry, bool>> IsTagged { get; } = f => f.TagLinks.Any();
+
+    public static Expression<Func<FileEntry, bool>> HasAnyTag(int[] ids) =>
+        f => f.TagLinks.Any(l => ids.Contains(l.TagId));
 }

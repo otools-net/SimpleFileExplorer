@@ -129,7 +129,7 @@ public sealed class SimilarVideoFinder(
             {
                 var rows = await db
                     .Files.AsNoTracking()
-                    .Where(SearchPredicateBuilder.HasExtension(settings.FileTypes.Videos))
+                    .Where(SearchPredicateBuilder.HasExtension<FileEntry>(settings.FileTypes.Videos))
                     .Select(f => new
                     {
                         f.Id,
