@@ -1,9 +1,11 @@
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using Otools.Net.Sfe.Api.Endpoints;
 using Otools.Net.Sfe.Client.Generated;
 using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Indexing;
 using Otools.Net.Sfe.Tests.Infrastructure;
 
 namespace Otools.Net.Sfe.Client.Tests.Infrastructure;
@@ -87,6 +89,25 @@ public sealed class TokenServer : IDisposable
             BaseUrl = _bearer.BaseAddress!.ToString().TrimEnd('/'),
         };
         return new SfeRawClient(adapter);
+    }
+
+    /// <summary>
+    /// Indexes the whole library (a scan from the root, as an administrator starts it) and waits until it ends: the
+    /// search finds only indexed files.
+    /// </summary>
+    public async Task IndexAsync(CancellationToken cancellationToken)
+    {
+        var request = new ScanRequest("");
+        using (var start = await _bearer.PostAsJsonAsync($"{V1}/scan", request, TokenClients.Json, cancellationToken))
+            start.EnsureSuccessStatusCode();
+        for (var attempt = 0; attempt < 400; attempt++)
+        {
+            var status = await TokenClients.GetAsync<ScanStatus>(_bearer, $"{V1}/scan", cancellationToken);
+            if (status.State != ScanState.Running)
+                return;
+            await Task.Delay(50, cancellationToken);
+        }
+        throw new AssertFailedException("The scan did not finish in time.");
     }
 
     public void Dispose()

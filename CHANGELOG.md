@@ -11,8 +11,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   the committed OpenAPI document, and a hand-written `SfeClient` over it: a token and a library, retries of
   429/503 honouring `Retry-After`, errors as `SfeApiException` by problem type, the server's version and functions;
   files listed, read (ranges, going on after a cut-off), uploaded in resumable chunks (folders too), made, renamed,
-  moved and copied as jobs (clashes answered), deleted; trash, properties (counts, checksums) and zips;
-  `AddSfeClient` for a program's services. Search, tags, connections and the package come next.
+  moved and copied as jobs (clashes answered), deleted; trash, properties (counts, checksums) and zips; search in
+  the app's language (sorts, a folder, cursor paging, the count); tags (list, find, make, change, delete, read on
+  files, add to and remove from files); `AddSfeClient` for a program's services. Packed with each release
+  (`build/build.ps1`, `build/build.sh`: `Sfe.Client.<version>.nupkg` and `.snupkg` in `artifacts/`), with a sample
+  program (`samples/Sfe.Client.Sample`) and a guide ([C# client library](docs/reference/client-library.md)); a
+  snapshot test keeps its public surface. Connections come next.
 - **Docs: calling the API with an access token** ([API](docs/reference/api.md#calling-with-a-token)): the header,
   the library header, the routes refused to tokens, the 401/403/429 answers, and curl and PowerShell examples.
 - **Personal access tokens, for programs calling the API** (made and revoked on My account › Access tokens;

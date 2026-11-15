@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Otools.Net.Sfe.Client;
@@ -39,4 +40,7 @@ public sealed class SfeItem
 
     /// <summary>Whether the file is in the index (searchable, taggable); null when not told.</summary>
     public bool? Indexed { get; init; }
+
+    /// <summary>A file's tags, when the listing tells them (folder listings and searches do).</summary>
+    public IReadOnlyList<SfeTagSummary>? Tags { get; init; }
 }

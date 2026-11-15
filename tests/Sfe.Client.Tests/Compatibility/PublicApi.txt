@@ -1,0 +1,390 @@
+class Otools.Net.Sfe.Client.SfeApiException : Otools.Net.Sfe.Client.SfeException
+  System.Collections.Generic.IReadOnlyDictionary<System.String, System.String[]> Errors { get; }
+  System.Int32 StatusCode { get; }
+  System.String? Detail { get; }
+  System.String? ProblemType { get; }
+  System.String? Title { get; }
+  ctor(System.Int32 statusCode, Otools.Net.Sfe.Client.SfeProblem problem)
+sealed class Otools.Net.Sfe.Client.SfeArchives
+  System.Threading.Tasks.Task<System.String> DownloadZipAsync(System.Collections.Generic.IEnumerable<System.String> paths, System.IO.Stream destination, System.IProgress<System.Int64>? progress = null, System.Threading.CancellationToken cancellationToken = default)
+enum Otools.Net.Sfe.Client.SfeChecksumAlgorithm
+  Md5 = 2
+  Sha1 = 1
+  Sha256 = 0
+sealed class Otools.Net.Sfe.Client.SfeClashSide
+  System.Boolean IsFolder { get; init; }
+  System.DateTimeOffset? Modified { get; init; }
+  System.Int64? Size { get; init; }
+  System.String Name { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeClient : System.IDisposable
+  Otools.Net.Sfe.Client.Generated.SfeRawClient Raw { get; }
+  Otools.Net.Sfe.Client.SfeArchives Archives { get; }
+  Otools.Net.Sfe.Client.SfeFiles Files { get; }
+  Otools.Net.Sfe.Client.SfeLibraries Libraries { get; }
+  Otools.Net.Sfe.Client.SfeProperties Properties { get; }
+  Otools.Net.Sfe.Client.SfeSearch Search { get; }
+  Otools.Net.Sfe.Client.SfeServer Server { get; }
+  Otools.Net.Sfe.Client.SfeTags Tags { get; }
+  Otools.Net.Sfe.Client.SfeTrash Trash { get; }
+  System.Void Dispose()
+  const System.String HttpClientName = "Sfe.Client"
+  ctor(Otools.Net.Sfe.Client.SfeClientOptions options)
+  ctor(System.Net.Http.HttpClient httpClient, Otools.Net.Sfe.Client.SfeClientOptions options)
+  ctor(System.Uri baseAddress, System.String token)
+sealed class Otools.Net.Sfe.Client.SfeClientOptions
+  System.Int32 MaxRetries { get; set; }
+  System.Int32? Library { get; set; }
+  System.String? Token { get; set; }
+  System.TimeSpan MaxRetryDelay { get; set; }
+  System.TimeSpan PollInterval { get; set; }
+  System.TimeSpan RequestTimeout { get; set; }
+  System.TimeSpan RetryDelay { get; set; }
+  System.Uri? BaseAddress { get; set; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeConflictAnswer
+  Otools.Net.Sfe.Client.SfeConflictChoice Choice { get; }
+  System.Boolean ForAll { get; }
+  ctor(Otools.Net.Sfe.Client.SfeConflictChoice choice, System.Boolean forAll = false)
+enum Otools.Net.Sfe.Client.SfeConflictChoice
+  Ask = 0
+  KeepBoth = 3
+  Replace = 1
+  Skip = 2
+sealed class Otools.Net.Sfe.Client.SfeConflictException : Otools.Net.Sfe.Client.SfeApiException
+  ctor(System.Int32 statusCode, Otools.Net.Sfe.Client.SfeProblem problem)
+sealed class Otools.Net.Sfe.Client.SfeDeleteResult
+  Otools.Net.Sfe.Client.SfeItemStatus Status { get; init; }
+  System.Int32? TrashId { get; init; }
+  System.String Path { get; init; }
+  System.String? Message { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeDownloadOptions
+  System.IProgress<System.Int64>? Progress { get; set; }
+  System.Int64 Offset { get; set; }
+  System.Int64? Length { get; set; }
+  ctor()
+class Otools.Net.Sfe.Client.SfeException : System.Exception
+  ctor(System.String message, System.Exception? innerException = null)
+sealed class Otools.Net.Sfe.Client.SfeFileTags
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeTagGroup> Groups { get; init; }
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeTagSummary> Tags { get; init; }
+  System.String Path { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeFiles
+  System.Collections.Generic.IAsyncEnumerable<Otools.Net.Sfe.Client.SfeItem> ListAsync(System.String folder, Otools.Net.Sfe.Client.SfeListOptions? options, System.Threading.CancellationToken cancellationToken = default)
+  System.Collections.Generic.IAsyncEnumerable<Otools.Net.Sfe.Client.SfeItem> ListAsync(System.String folder, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeItem> CreateFolderAsync(System.String path, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeItem> GetAsync(System.String path, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeItem> RenameAsync(System.String path, System.String newName, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeItem?> UploadAsync(System.String path, System.IO.Stream content, Otools.Net.Sfe.Client.SfeUploadOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeJob> CopyAsync(System.Collections.Generic.IEnumerable<System.String> paths, System.String targetFolder, Otools.Net.Sfe.Client.SfeJobOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeJob> MoveAsync(System.Collections.Generic.IEnumerable<System.String> paths, System.String targetFolder, Otools.Net.Sfe.Client.SfeJobOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.Boolean> ExistsAsync(System.String path, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeDeleteResult>> DeleteAsync(System.Collections.Generic.IEnumerable<System.String> paths, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeDeleteResult>> DeletePermanentlyAsync(System.Collections.Generic.IEnumerable<System.String> paths, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeItem>> UploadFolderAsync(System.String localFolder, System.String targetFolder, Otools.Net.Sfe.Client.SfeUploadOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.IO.Stream> OpenReadAsync(System.String path, System.Int64 offset = 0, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.Int64> DownloadAsync(System.String path, System.IO.Stream destination, Otools.Net.Sfe.Client.SfeDownloadOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+sealed class Otools.Net.Sfe.Client.SfeFolderCount
+  System.Boolean Capped { get; init; }
+  System.Int64 Bytes { get; init; }
+  System.Int64 Files { get; init; }
+  System.Int64 Folders { get; init; }
+  System.Int64 LeftOut { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeFolderTotals
+  System.Boolean Indexed { get; init; }
+  System.Int64 Bytes { get; init; }
+  System.Int64 Files { get; init; }
+  System.Int64 Folders { get; init; }
+  ctor()
+enum Otools.Net.Sfe.Client.SfeFunction
+  AccessTokens = 4
+  Connections = 3
+  Thumbnails = 1
+  Trickplay = 2
+sealed class Otools.Net.Sfe.Client.SfeItem
+  Otools.Net.Sfe.Client.SfeItemKind Kind { get; init; }
+  System.Boolean IsFolder { get; }
+  System.Boolean? Indexed { get; init; }
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeTagSummary>? Tags { get; init; }
+  System.DateTimeOffset? Modified { get; init; }
+  System.Double? Duration { get; init; }
+  System.Int32? Height { get; init; }
+  System.Int32? Width { get; init; }
+  System.Int64? Size { get; init; }
+  System.String Name { get; init; }
+  System.String Path { get; init; }
+  System.String? Extension { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeItemDetails
+  System.Boolean Hidden { get; init; }
+  System.Boolean IsLink { get; init; }
+  System.Boolean ReadOnly { get; init; }
+  System.DateTimeOffset Modified { get; init; }
+  System.DateTimeOffset? Accessed { get; init; }
+  System.DateTimeOffset? Created { get; init; }
+  ctor()
+enum Otools.Net.Sfe.Client.SfeItemKind
+  Audio = 4
+  Directory = 1
+  File = 5
+  Image = 2
+  Unknown = 0
+  Video = 3
+sealed class Otools.Net.Sfe.Client.SfeItemProperties
+  Otools.Net.Sfe.Client.SfeItem Item { get; init; }
+  Otools.Net.Sfe.Client.SfeItemDetails Details { get; init; }
+  System.Boolean CanChecksum { get; init; }
+  ctor()
+enum Otools.Net.Sfe.Client.SfeItemStatus
+  Conflict = 6
+  Done = 1
+  Exists = 4
+  Failed = 7
+  Forbidden = 9
+  Invalid = 3
+  NeedsPassword = 11
+  NotFound = 2
+  ScanRunning = 5
+  Skipped = 8
+  TrashUnavailable = 10
+  Unknown = 0
+sealed class Otools.Net.Sfe.Client.SfeJob
+  Otools.Net.Sfe.Client.SfeJobStatus Status { get; }
+  System.Int32 Id { get; }
+  System.Threading.Tasks.Task AnswerAsync(Otools.Net.Sfe.Client.SfeConflictAnswer answer, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task CancelAsync(System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeJobStatus> RefreshAsync(System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeJobStatus> WaitAsync(Otools.Net.Sfe.Client.SfeJobWaitOptions? options = null, System.Threading.CancellationToken cancellationToken = default)
+sealed class Otools.Net.Sfe.Client.SfeJobConflict
+  Otools.Net.Sfe.Client.SfeClashSide Existing { get; init; }
+  Otools.Net.Sfe.Client.SfeClashSide Source { get; init; }
+  System.Boolean CanReplace { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeJobConflictException : Otools.Net.Sfe.Client.SfeException
+  Otools.Net.Sfe.Client.SfeJob Job { get; }
+  Otools.Net.Sfe.Client.SfeJobConflict Conflict { get; }
+  ctor(Otools.Net.Sfe.Client.SfeJob job, Otools.Net.Sfe.Client.SfeJobConflict conflict)
+sealed class Otools.Net.Sfe.Client.SfeJobItem
+  Otools.Net.Sfe.Client.SfeItemStatus Status { get; init; }
+  System.String Path { get; init; }
+  System.String? Message { get; init; }
+  System.String? NewPath { get; init; }
+  ctor()
+enum Otools.Net.Sfe.Client.SfeJobKind
+  Compress = 4
+  Copy = 2
+  Extract = 3
+  Move = 1
+  Unknown = 0
+sealed class Otools.Net.Sfe.Client.SfeJobOptions
+  Otools.Net.Sfe.Client.SfeConflictChoice Conflicts { get; set; }
+  System.Boolean KeepAccess { get; set; }
+  System.Boolean KeepTags { get; set; }
+  ctor()
+enum Otools.Net.Sfe.Client.SfeJobState
+  Cancelled = 4
+  Completed = 3
+  Running = 1
+  Unknown = 0
+  Waiting = 2
+sealed class Otools.Net.Sfe.Client.SfeJobStatus
+  Otools.Net.Sfe.Client.SfeJobConflict? Conflict { get; init; }
+  Otools.Net.Sfe.Client.SfeJobKind Kind { get; init; }
+  Otools.Net.Sfe.Client.SfeJobState State { get; init; }
+  System.Boolean IsFinished { get; }
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeJobItem> Results { get; init; }
+  System.DateTimeOffset Started { get; init; }
+  System.DateTimeOffset? Finished { get; init; }
+  System.Int32 Done { get; init; }
+  System.Int32 Id { get; init; }
+  System.Int32 Total { get; init; }
+  System.Int64 BytesDone { get; init; }
+  System.Int64 BytesTotal { get; init; }
+  System.String Target { get; init; }
+  System.String? Current { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeJobWaitOptions
+  System.Func<Otools.Net.Sfe.Client.SfeJobConflict, System.Threading.CancellationToken, System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeConflictAnswer>>? OnConflict { get; set; }
+  System.IProgress<Otools.Net.Sfe.Client.SfeJobStatus>? Progress { get; set; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeLibraries
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeLibrary?> GetCurrentAsync(System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeLibrary>> ListAsync(System.Threading.CancellationToken cancellationToken = default)
+sealed class Otools.Net.Sfe.Client.SfeLibrary
+  System.Int32 Id { get; init; }
+  System.String Name { get; init; }
+  System.String Slug { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeListOptions
+  Otools.Net.Sfe.Client.SfeSortField Sort { get; set; }
+  System.Boolean Descending { get; set; }
+  System.Int32 PageSize { get; set; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeNotFoundException : Otools.Net.Sfe.Client.SfeApiException
+  ctor(System.Int32 statusCode, Otools.Net.Sfe.Client.SfeProblem problem)
+sealed class Otools.Net.Sfe.Client.SfeNotSupportedException : Otools.Net.Sfe.Client.SfeException
+  Otools.Net.Sfe.Client.SfeFunction Function { get; }
+  System.String ServerVersion { get; }
+  ctor(Otools.Net.Sfe.Client.SfeFunction function, System.String serverVersion)
+static class Otools.Net.Sfe.Client.SfePath
+  const System.String Root = ""
+  static System.String Combine(params System.String?[] parts)
+  static System.String Name(System.String path)
+  static System.String Normalize(System.String? path)
+  static System.String Parent(System.String path)
+sealed class Otools.Net.Sfe.Client.SfeProblem
+  System.Collections.Generic.IReadOnlyDictionary<System.String, System.String[]> Errors { get; init; }
+  System.String? Detail { get; init; }
+  System.String? Title { get; init; }
+  System.String? Type { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeProperties
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeFolderCount> CountAsync(System.String folder, System.IProgress<Otools.Net.Sfe.Client.SfeFolderCount>? progress = null, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeFolderTotals> GetTotalsAsync(System.String folder, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeItemProperties> GetAsync(System.String path, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.String> ChecksumAsync(System.String path, Otools.Net.Sfe.Client.SfeChecksumAlgorithm algorithm = Sha256, System.IProgress<System.Int64>? progress = null, System.Threading.CancellationToken cancellationToken = default)
+sealed class Otools.Net.Sfe.Client.SfeRateLimitedException : Otools.Net.Sfe.Client.SfeApiException
+  System.TimeSpan? RetryAfter { get; }
+  ctor(System.Int32 statusCode, Otools.Net.Sfe.Client.SfeProblem problem, System.TimeSpan? retryAfter)
+sealed class Otools.Net.Sfe.Client.SfeRefusedException : Otools.Net.Sfe.Client.SfeApiException
+  ctor(System.Int32 statusCode, Otools.Net.Sfe.Client.SfeProblem problem)
+sealed class Otools.Net.Sfe.Client.SfeSearch
+  System.Collections.Generic.IAsyncEnumerable<Otools.Net.Sfe.Client.SfeItem> QueryAsync(System.String query, Otools.Net.Sfe.Client.SfeSearchOptions? options, System.Threading.CancellationToken cancellationToken = default)
+  System.Collections.Generic.IAsyncEnumerable<Otools.Net.Sfe.Client.SfeItem> QueryAsync(System.String query, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeSearchCount> CountAsync(System.String query, System.String folder = "", System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeSearchPage> GetPageAsync(System.String query, Otools.Net.Sfe.Client.SfeSearchOptions? options = null, System.String? after = null, System.Threading.CancellationToken cancellationToken = default)
+sealed class Otools.Net.Sfe.Client.SfeSearchCount
+  System.Boolean Capped { get; }
+  System.Int32 Count { get; }
+sealed class Otools.Net.Sfe.Client.SfeSearchOptions
+  Otools.Net.Sfe.Client.SfeSearchSort Sort { get; set; }
+  System.Boolean Descending { get; set; }
+  System.Int32 PageSize { get; set; }
+  System.String Folder { get; set; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeSearchPage
+  System.Boolean HasMore { get; init; }
+  System.Boolean TotalCapped { get; init; }
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeItem> Items { get; init; }
+  System.Int32? Total { get; init; }
+  System.String? Next { get; init; }
+  ctor()
+enum Otools.Net.Sfe.Client.SfeSearchSort
+  Duration = 5
+  Modified = 2
+  Name = 1
+  Path = 0
+  Resolution = 6
+  Size = 3
+  Type = 4
+sealed class Otools.Net.Sfe.Client.SfeServer
+  System.Threading.Tasks.Task RequireAsync(Otools.Net.Sfe.Client.SfeFunction function, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeServerInfo> GetInfoAsync(System.Threading.CancellationToken cancellationToken = default)
+sealed class Otools.Net.Sfe.Client.SfeServerInfo
+  Otools.Net.Sfe.Client.SfeLibrary? Library { get; }
+  Otools.Net.Sfe.Client.SfeServerMode Mode { get; }
+  System.Boolean HasRight(System.String right)
+  System.Boolean Supports(Otools.Net.Sfe.Client.SfeFunction function)
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeLibrary> Libraries { get; }
+  System.Collections.Generic.IReadOnlyList<System.String> Rights { get; }
+  System.String Version { get; }
+  System.String? Commit { get; }
+  System.Version? ParsedVersion { get; }
+enum Otools.Net.Sfe.Client.SfeServerMode
+  External = 2
+  Local = 1
+  Unknown = 0
+sealed class Otools.Net.Sfe.Client.SfeServerNotReadyException : Otools.Net.Sfe.Client.SfeApiException
+  ctor(System.Int32 statusCode, Otools.Net.Sfe.Client.SfeProblem problem)
+static class Otools.Net.Sfe.Client.SfeServiceCollectionExtensions
+  static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder AddSfeClient(Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Otools.Net.Sfe.Client.SfeClientOptions> configure)
+enum Otools.Net.Sfe.Client.SfeSortField
+  Modified = 1
+  Name = 0
+  Size = 2
+  Type = 3
+sealed class Otools.Net.Sfe.Client.SfeTag
+  System.Boolean IsBuiltIn { get; init; }
+  System.Boolean IsCategory { get; init; }
+  System.Boolean IsHidden { get; init; }
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeTagSummary> Parents { get; init; }
+  System.Collections.Generic.IReadOnlyList<System.String> Aliases { get; init; }
+  System.Int32 FileCount { get; init; }
+  System.Int32 Id { get; init; }
+  System.Int32? DisambiguationId { get; init; }
+  System.String DisplayName { get; init; }
+  System.String Name { get; init; }
+  System.String? Color { get; init; }
+  System.String? Shorthand { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeTagChangeResult
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeFileTags> Files { get; }
+  System.Int32 Added { get; }
+  System.Int32 Removed { get; }
+sealed class Otools.Net.Sfe.Client.SfeTagDraft
+  System.Boolean IsCategory { get; set; }
+  System.Boolean IsHidden { get; set; }
+  System.Collections.Generic.IList<System.Int32> ParentIds { get; set; }
+  System.Collections.Generic.IList<System.String> Aliases { get; set; }
+  System.Int32? DisambiguationId { get; set; }
+  System.String Name { get; set; }
+  System.String? Color { get; set; }
+  System.String? Shorthand { get; set; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeTagGroup
+  Otools.Net.Sfe.Client.SfeTagSummary? Category { get; init; }
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeTagSummary> Tags { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeTagSearch
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeTag> Descendants { get; init; }
+  System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeTag> Matches { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeTagSummary
+  System.Boolean IsCategory { get; init; }
+  System.Boolean IsHidden { get; init; }
+  System.Int32 Id { get; init; }
+  System.String DisplayName { get; init; }
+  System.String Name { get; init; }
+  System.String? Color { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeTags
+  System.Threading.Tasks.Task DeleteAsync(System.Int32 id, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeFileTags> GetFileTagsAsync(System.String path, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeTag> CreateAsync(Otools.Net.Sfe.Client.SfeTagDraft draft, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeTag> GetAsync(System.Int32 id, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeTag> UpdateAsync(System.Int32 id, Otools.Net.Sfe.Client.SfeTagDraft draft, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeTagChangeResult> AddAsync(System.Collections.Generic.IEnumerable<System.String> paths, System.Collections.Generic.IEnumerable<System.Int32> tagIds, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeTagChangeResult> ChangeAsync(System.Collections.Generic.IEnumerable<System.String> paths, System.Collections.Generic.IEnumerable<System.Int32> add, System.Collections.Generic.IEnumerable<System.Int32> remove, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeTagChangeResult> RemoveAsync(System.Collections.Generic.IEnumerable<System.String> paths, System.Collections.Generic.IEnumerable<System.Int32> tagIds, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeTagSearch> FindAsync(System.String text, System.Int32 limit = 100, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Otools.Net.Sfe.Client.SfeTag>> ListAsync(System.Threading.CancellationToken cancellationToken = default)
+sealed class Otools.Net.Sfe.Client.SfeTrash
+  System.Collections.Generic.IAsyncEnumerable<Otools.Net.Sfe.Client.SfeTrashItem> ListAsync(System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task DeleteAsync(System.Int32 id, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeItem> RestoreAsync(System.Int32 id, System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<Otools.Net.Sfe.Client.SfeTrashCount> CountAsync(System.Threading.CancellationToken cancellationToken = default)
+  System.Threading.Tasks.Task<System.Int32> EmptyAsync(System.Threading.CancellationToken cancellationToken = default)
+sealed class Otools.Net.Sfe.Client.SfeTrashCount
+  System.Boolean More { get; init; }
+  System.Int32 Count { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeTrashItem
+  System.Boolean IsFolder { get; init; }
+  System.DateTimeOffset DeletedAt { get; init; }
+  System.Int32 Id { get; init; }
+  System.Int32? Files { get; init; }
+  System.Int64? Size { get; init; }
+  System.String Name { get; init; }
+  System.String Path { get; init; }
+  System.String? DeletedBy { get; init; }
+  ctor()
+sealed class Otools.Net.Sfe.Client.SfeUploadOptions
+  Otools.Net.Sfe.Client.SfeConflictChoice Conflicts { get; set; }
+  System.Boolean Resume { get; set; }
+  System.DateTimeOffset? Modified { get; set; }
+  System.IProgress<System.Int64>? Progress { get; set; }
+  System.Int64? Size { get; set; }
+  ctor()

@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/Sfe.Client.Sample/Sfe.Client.Sample.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Sfe.Api/Sfe.Api.csproj" />
     <Project Path="src/Sfe.Client/Sfe.Client.csproj" />

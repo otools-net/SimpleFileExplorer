@@ -7,6 +7,7 @@
 #
 #   linux    artifacts/SFE-<version>-x86_64.AppImage (default target)
 #   windows  artifacts/SFE-<version>-win-x64.zip (cross-published; needs `zip`; not smoke-tested here)
+#   every target also packs the C# client library: artifacts/Sfe.Client.<version>.nupkg and .snupkg
 #
 # Needs the .NET 10 SDK, Node.js (npm builds the web client) and curl (appimagetool is downloaded once into artifacts/tools).
 set -euo pipefail
@@ -26,7 +27,7 @@ while [ $# -gt 0 ]; do
         --skip-tests) SKIP_TESTS=1; shift ;;
         --skip-smoke-test) SKIP_SMOKE=1; shift ;;
         --no-tests) SKIP_TESTS=1; SKIP_SMOKE=1; shift ;;
-        -h|--help) sed -n '2,11p' "$0"; exit 0 ;;
+        -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
         *) echo "unknown argument: $1" >&2; exit 2 ;;
     esac
 done
@@ -58,6 +59,11 @@ if [ "$SKIP_TESTS" = 0 ]; then
 fi
 
 RESULTS=()
+
+# The C# client library: the same version as the app, whatever the target (agents/docs/features/client-library.md).
+echo "==> Pack Sfe.Client"
+dotnet pack "$REPO/src/Sfe.Client/Sfe.Client.csproj" -c Release "-p:Version=$VERSION" -o "$ARTIFACTS" --nologo
+RESULTS+=("$ARTIFACTS/Sfe.Client.$VERSION.nupkg" "$ARTIFACTS/Sfe.Client.$VERSION.snupkg")
 
 if [ "$TARGET" = linux ] || [ "$TARGET" = all ]; then
     PUBLISH="$(publish linux-x64)"

@@ -25,5 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Sfe.Client\Sfe.Client.csproj" />
     <ProjectReference Include="..\Sfe.Tests\Sfe.Tests.csproj" />
+    <!-- The sample program, run in process by SampleTests. -->
+    <ProjectReference Include="..\..\samples\Sfe.Client.Sample\Sfe.Client.Sample.csproj" />
   </ItemGroup>
 </Project>

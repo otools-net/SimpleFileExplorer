@@ -69,6 +69,9 @@ Invoke-RestMethod -Headers ($headers + @{ "X-SFE-Tenant" = "2" }) -OutFile beach
 A listing gives `items`, `total`, `offset` and `limit`: ask again with `offset` moved on until it reaches `total`.
 Swagger UI (`/api/docs`) takes a token too: **Authorize**, then paste it.
 
+A .NET program can use the [C# client library](client-library.md) instead: the same calls as methods (paging,
+resumable uploads, jobs, retries and errors handled), from a package that comes with each release.
+
 ## Versions and compatibility
 
 The version is part of the address (`/api/v1`), so that pictures, videos and download links, which can't send

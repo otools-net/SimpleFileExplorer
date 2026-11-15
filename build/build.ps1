@@ -7,6 +7,7 @@
     Linux: an AppImage (artifacts/SFE-<version>-x86_64.AppImage). The .NET part is published here, the image is
     packed and tested in WSL (build/linux/make-appimage.sh, build/linux/smoke-test.sh). On a Linux machine, use
     build/build.sh instead.
+    Every target also packs the C# client library (artifacts/Sfe.Client.<version>.nupkg and its symbols .snupkg).
     Needs the .NET 10 SDK and Node.js (npm builds the web client); for Linux also WSL with curl (appimagetool is
     downloaded once into artifacts/tools).
 .EXAMPLE
@@ -36,6 +37,7 @@ if (-not (Get-Command npm -ErrorAction SilentlyContinue)) { throw 'npm not found
 $repo = Split-Path -Parent $PSScriptRoot
 $artifacts = Join-Path $repo 'artifacts'
 $project = Join-Path $repo 'src\Sfe.Api\Sfe.Api.csproj'
+$clientProject = Join-Path $repo 'src\Sfe.Client\Sfe.Client.csproj'
 
 function Invoke-Native([string] $what, [scriptblock] $command) {
     Write-Host "==> $what" -ForegroundColor Cyan
@@ -83,6 +85,13 @@ if (-not $SkipTests) {
 }
 
 $results = @()
+
+# The C# client library: the same version as the app, whatever the target (agents/docs/features/client-library.md).
+Invoke-Native 'Pack Sfe.Client' {
+    dotnet pack $clientProject -c Release "-p:Version=$Version" -o $artifacts --nologo
+}
+$results += Join-Path $artifacts "Sfe.Client.$Version.nupkg"
+$results += Join-Path $artifacts "Sfe.Client.$Version.snupkg"
 
 if ($Target -in 'all', 'windows') {
     $publish = Publish-Portable 'win-x64'

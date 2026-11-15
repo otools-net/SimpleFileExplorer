@@ -207,3 +207,4 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [duplicates](agents/docs/features/duplicates.md) | duplicate groups and removal | `DuplicateFinder`, `DuplicateRemover` |
 | [similar-videos](agents/docs/features/similar-videos.md) | video fingerprints and matching | `VideoFingerprint`, `VideoMatcher` |
 | [system-info](agents/docs/features/system-info.md) | System › About, Playback › Video streams | `api/system/info` |
+| [client-library](agents/docs/features/client-library.md) | the C# package `Sfe.Client`: facade over its own JSON calls, `Raw` (Kiota) for the rest, errors, retries, jobs, uploads, search, tags, public API snapshot, sample, packing | `src/Sfe.Client/`, `tests/Sfe.Client.Tests/`, `samples/Sfe.Client.Sample/` |

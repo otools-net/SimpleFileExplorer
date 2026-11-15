@@ -10,6 +10,8 @@ dotnet run --project src/Sfe.Api                                      # :5080, D
 dotnet tool restore                                                   # once: dotnet-ef, CSharpier, Kiota (dotnet-tools.json)
 dotnet csharpier format .                                             # C# layout; checks: readability.md#checking
 node agents/tools/client-generation/generate.mjs [--check]            # C# client's Generated/ from the v1 baseline
+dotnet pack src/Sfe.Client -c Release -o <folder>                     # the C# client package alone (build.ps1 packs it too)
+SFE_PUBLIC_API=write dotnet test tests/Sfe.Client.Tests --filter FullyQualifiedName~PublicApiTests  # its API snapshot
 dotnet ef migrations add <Name> --context SfeDbContext --project src/Sfe.Core --output-dir Data/Migrations
 dotnet ef migrations add <Name> --context AccessDbContext --project src/Sfe.Core --output-dir Data/AccessMigrations
 build/build.ps1 [-Target windows|linux] [-Version 1.2.0] [-SkipTests] [-SkipSmokeTest] [-NoTests]  # -> artifacts/

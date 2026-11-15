@@ -31,7 +31,8 @@ const LIMITS = {
 const isSpec = file => file.endsWith('.spec.ts') || file.includes('/testing/');
 // Left as their tools write them: EF Core migrations, the C# client library's Kiota code (client-generation).
 const isGenerated = file => /Migrations\//.test(file) || /^src\/Sfe\.Client\/Generated\//.test(file);
-const isServerCode = file => /^src\/.*\.cs$/.test(file) && !isGenerated(file);
+// The C# client library's sample counts as server code: it is read as an example.
+const isServerCode = file => /^(src|samples)\/.*\.cs$/.test(file) && !isGenerated(file);
 const isServerTest = file => /^tests\/Sfe(\.Client)?\.Tests\/.*\.cs$/.test(file);
 const isClientCode = file => /^src\/Sfe\.Web\/src\/.*\.ts$/.test(file);
 

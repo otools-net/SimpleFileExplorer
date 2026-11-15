@@ -61,6 +61,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | [Settings by level](reference/settings-levels.md) | Environment, server, space and user values; locks |
 | [Search syntax](reference/search-syntax.md) | Every search term, with the fine print |
 | [API](reference/api.md) | The JSON API: its address (`/api/v1`), what stays compatible, the old addresses, error types, its documentation |
+| [C# client library](reference/client-library.md) | The `Sfe.Client` package for .NET programs: installing it, the token, examples (files, uploads, jobs, search, tags), errors, versions |
 | [Changes from the .NET Framework version](reference/changes-from-netfx.md) | What the port changed |
 
 ## Words used in these pages

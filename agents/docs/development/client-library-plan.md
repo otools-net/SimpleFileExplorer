@@ -165,8 +165,19 @@ against the real server in process, and a server change that would break it fail
 
 ### Phase 4: search and tags
 
-- [ ] `Search.QueryAsync` (query text as the app's language, sorts, cursor paging as `IAsyncEnumerable`, count)
-- [ ] `Tags` (list, tags of files, add and remove on files)
+- [x] `Search.QueryAsync` (query text as the app's language, sorts, cursor paging as `IAsyncEnumerable`, count)
+  - As built (2026-11-15): `SfeSearch.QueryAsync(query, SfeSearchOptions)` (`Folder`, `Sort` = `SfeSearchSort`: path,
+    name, modified, size, type, duration, resolution; `Descending`, `PageSize` 500) pages `GET search` by its
+    cursor (`next` → `after`); `GetPageAsync` answers one page with `Next`, `Total`, `TotalCapped` for a program that
+    pages itself; `CountAsync` asks a page of 1 (the count comes with the first page only). Trap: a folder that isn't
+    there finds nothing (no 404); only one the caller doesn't see is 404. `SfeItem.Tags` added (browse and search
+    answer them). Tests index the library first (`TokenServer.IndexAsync`: `POST scan` and wait).
+- [x] `Tags` (list, tags of files, add and remove on files)
+  - As built: `SfeTags`: `ListAsync` (all, up to the server's 1000: the route has no paging), `FindAsync(text)`
+    (`Matches`, `Descendants`), `GetAsync`, `CreateAsync` / `UpdateAsync(SfeTagDraft)`, `DeleteAsync`,
+    `GetFileTagsAsync`, `AddAsync` / `RemoveAsync` / `ChangeAsync` (batches of 1000 files, the server's limit; a sum
+    of the answers). Scope tagging (`file-tags/scope`), folder default tags, the sidebar and the viewed files stay
+    with `Raw` (named in `FacadeCoverageTests`).
 
 ### Phase 5: connections (moved here from the connections plan, closed 2026-11-14)
 
@@ -195,12 +206,25 @@ The server side is built ([connections](../features/connections.md)); the facade
 
 ### Phase 6: compatibility, sample, packaging
 
-- [ ] Public API snapshot test (`PublicApiAnalyzers`, or a text snapshot of the public surface)
-- [ ] `samples/Sfe.Client.Sample` (console: list, upload, download, move); run by a test as a smoke test
-- [ ] `dotnet pack` in `build/build.ps1` and `build/build.sh`; the package among the artifacts
+- [x] Public API snapshot test (`PublicApiAnalyzers`, or a text snapshot of the public surface)
+  - As built: a text snapshot, no analyzer package: `Compatibility/PublicApiWriter` writes the exported types and
+    their public/protected members by reflection (nullable annotations, defaults, declared interfaces only: the
+    runtime's own vary), the generated namespace left out; `PublicApiTests` compares it with the committed
+    `Compatibility/PublicApi.txt` and lists what is gone and new; `SFE_PUBLIC_API=write` rewrites it. It reads the
+    `net8.0` asset (the tests run on net10).
+- [x] `samples/Sfe.Client.Sample` (console: list, upload, download, move); run by a test as a smoke test
+  - As built: `Program.Main` (address and token as arguments or `SFE_URL` / `SFE_TOKEN`) over `SampleRun.RunAsync(sfe,
+    folder, output)`, which `SampleTests` calls with the in-process server's client, twice (a second run replaces
+    what the first left). In `Sfe.slnx` under `/samples/`; `measure.mjs` measures `samples/` as server code.
+- [x] `dotnet pack` in `build/build.ps1` and `build/build.sh`; the package among the artifacts
   ([portable-build](../environment/portable-build.md))
-- [ ] `docs/reference/client-library.md` (install from the file, token, examples, errors, versions); package README
+  - As built: both scripts pack for every target into `artifacts/` with the build's version, and list the `.nupkg`
+    and `.snupkg` with the packages.
+- [x] `docs/reference/client-library.md` (install from the file, token, examples, errors, versions); package README
+  - As built: linked from `docs/reference/api.md` and `docs/README.md`; `src/Sfe.Client/README.md` is the package's
+    (`PackageReadmeFile`).
 - [ ] New note `agents/docs/features/client-library.md`; this plan deleted
+  - The note is written (2026-11-15); the plan goes once phase 5 is done.
 
 ## Rules for the facade
 

@@ -26,6 +26,10 @@ public sealed class FacadeCoverageTests
         "/files/trash",
         "/files/properties",
         "/files/archive",
+        "/search",
+        "/tags",
+        "/file-tags",
+        "/folder-default-tags",
     ];
 
     /// <summary>
@@ -71,6 +75,21 @@ public sealed class FacadeCoverageTests
         ["DELETE /files/properties/jobs/{id}"] = "Properties.CountAsync, Properties.ChecksumAsync (cancelled)",
         ["POST /files/archive"] = "Archives.DownloadZipAsync",
         ["GET /files/archive/{token}"] = "Archives.DownloadZipAsync",
+        ["GET /search"] = "Search.QueryAsync, Search.GetPageAsync, Search.CountAsync",
+        ["GET /tags"] = "Tags.ListAsync, Tags.FindAsync",
+        ["POST /tags"] = "Tags.CreateAsync",
+        ["GET /tags/sidebar"] = "Raw: the web page's tag sidebar",
+        ["DELETE /tags/history"] = "Raw: the sidebar's history of searched and viewed tags",
+        ["GET /tags/{id}"] = "Tags.GetAsync",
+        ["PUT /tags/{id}"] = "Tags.UpdateAsync",
+        ["DELETE /tags/{id}"] = "Tags.DeleteAsync",
+        ["GET /file-tags"] = "Tags.GetFileTagsAsync",
+        ["POST /file-tags"] = "Tags.AddAsync, Tags.RemoveAsync, Tags.ChangeAsync",
+        ["GET /file-tags/scope"] = "Raw: tags of a whole folder or search (the web page's scope dialog)",
+        ["POST /file-tags/scope"] = "Raw: tagging a whole folder or search",
+        ["POST /file-tags/viewed"] = "Raw: the web page's last viewed files",
+        ["GET /folder-default-tags"] = "Raw: default tags of folders (folder administration)",
+        ["PUT /folder-default-tags"] = "Raw: default tags of folders (folder administration)",
     };
 
     [TestMethod]
