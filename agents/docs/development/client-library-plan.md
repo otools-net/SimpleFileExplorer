@@ -94,23 +94,74 @@ against the real server in process, and a server change that would break it fail
 
 ### Phase 2: core of the facade
 
-- [ ] `SfeClient`, `SfeClientOptions` (base address, token, library, timeouts, retries), `AddSfeClient` for DI
+- [x] `SfeClient`, `SfeClientOptions` (base address, token, library, timeouts, retries), `AddSfeClient` for DI
   (`IHttpClientFactory`)
-- [ ] Errors: `SfeApiException` (status, `type` word, detail) with subclasses for not found, refused, conflict,
+  - As built (2026-11-15): the facade does **not** go through Kiota: `Http/SfeTransport` sends hand-written JSON
+    calls (System.Text.Json, `Http/SfeJson`: camelCase, numbers from strings, unknown enum words read as `Unknown`
+    by `TolerantEnumConverter`) on the one `HttpClient`, so retries, timeouts and errors are in one place and the
+    public models are the facade's own (`SfeItem`, `SfeJobStatus`…), not the generated ones. `Raw` (the Kiota
+    client) shares the `HttpClient`, with `SfeAuthenticationProvider` (Kiota's bearer provider refuses `http`); it
+    has no retries and throws Kiota's `ApiException`. The token and `X-SFE-Tenant` go on each request, never on
+    the `HttpClient` (one from a factory stays shareable). Three constructors: `(Uri, token)` and `(options)` make
+    and dispose their own client (`Timeout` infinite: `RequestTimeout` covers until headers only, so downloads
+    may last); `(HttpClient, options)` leaves it open. `AddSfeClient` registers it transient over a named client
+    (`SfeClient.HttpClientName`) and answers the `IHttpClientBuilder`; adds `Microsoft.Extensions.Http` 8.0.1.
+    Options are copied at construction. Upload chunk size is `internal` (`InternalsVisibleTo` the tests).
+- [x] Errors: `SfeApiException` (status, `type` word, detail) with subclasses for not found, refused, conflict,
   rate limited, server not ready (`setup-required`, `migration-required`, `local-only`)
-- [ ] Retries on 429 and 503 honouring `Retry-After`; cancellation tokens on every call; no retry of non-idempotent
+  - As built: `SfeException` base; `SfeApiException` (`StatusCode`, `ProblemType` = the word only, a link type
+    reads as null, `Title`, `Detail`, `Errors` of a 400); `SfeNotFoundException` (404), `SfeRefusedException`
+    (401/403), `SfeConflictException` (409), `SfeRateLimitedException` (429, `RetryAfter`),
+    `SfeServerNotReadyException` (by word first, whatever the status). `ProblemReader` tolerates a non-JSON body.
+    Also `SfeJobConflictException` (a job waits on a clash nobody answers).
+- [x] Retries on 429 and 503 honouring `Retry-After`; cancellation tokens on every call; no retry of non-idempotent
   calls without an id the server knows
-- [ ] `sfe.Server.GetInfoAsync()` (version, functions on) read once; `SfeNotSupportedException` when a function is
+  - As built: `SfeRequest.CanRetry`: GET, HEAD, DELETE, plus calls marked safe (`uploads/check`, chunk `PUT`s whose
+    offset the server checks); every `POST` else never. `Retry-After` longer than `MaxRetryDelay` fails at once;
+    without it, `RetryDelay` doubled. A 503 with a not-ready word is never retried. Tested on a stub handler
+    (`TransportTests`): the real server hardly gives these statuses.
+- [x] `sfe.Server.GetInfoAsync()` (version, functions on) read once; `SfeNotSupportedException` when a function is
   missing on that server
+  - As built: from `GET config` (version, commit, mode, rights, current and reachable libraries), kept after the
+    first read (a failed read is tried again). `SfeFunction`: `Thumbnails`, `Trickplay`, `Connections`,
+    `AccessTokens` from the configuration's parts; `Server.RequireAsync` throws. No phase-3 method needs it (all
+    its routes are in every v1 server); phase 5 checks `Connections` with it.
 
 ### Phase 3: files
 
-- [ ] `Libraries`, `Files.ListAsync` (`IAsyncEnumerable`, pages fetched as read), `GetAsync`, `ExistsAsync`
-- [ ] `DownloadAsync` (to a stream, ranges, resume), `OpenReadAsync`
-- [ ] `UploadAsync` (resumable chunks, progress, resume after a failure, conflict choice), folder uploads
-- [ ] `CreateFolderAsync`, `RenameAsync`, `MoveAsync`, `CopyAsync`, `DeleteAsync`; `SfeJob` (`WaitAsync`, progress,
+- [x] `Libraries`, `Files.ListAsync` (`IAsyncEnumerable`, pages fetched as read), `GetAsync`, `ExistsAsync`
+  - As built: `Libraries.ListAsync` / `GetCurrentAsync` read `config` each time (not the kept info). `ListAsync`
+    pages `browse` by offset (`SfeListOptions`: sort, descending, page size 500); `GetAsync`/`ExistsAsync` use
+    `files/properties` (right `files.browse`). `SfePath`: `Normalize`, `Combine`, `Parent`, `Name` (a `\` stays a
+    name character). `netstandard2.0` gets `Microsoft.Bcl.AsyncInterfaces` 8.0.0 and an `IsExternalInit` polyfill.
+- [x] `DownloadAsync` (to a stream, ranges, resume), `OpenReadAsync`
+  - As built: `SfeDownloadOptions` (`Offset`, `Length`, `Progress`); a body cut off goes on with `Range` from the
+    bytes written and `If-Range` with the first answer's `Last-Modified` (a 200 then means the file changed: fails);
+    resuming a partial file is `Offset = destination.Length`. Tested with `CuttingHandler` in front of the real
+    server. `OpenReadAsync` answers a stream that disposes the answer.
+- [x] `UploadAsync` (resumable chunks, progress, resume after a failure, conflict choice), folder uploads
+  - As built: `Uploads/FileUploads` + `UploadChunks`: one byte-array buffer of 8 MB (each chunk a `ByteArrayContent`,
+    so no target streams a body of unknown length: the .NET Framework trap), 413 halves it to 256 KB, a chunk cut off
+    asks `GET uploads/{id}` and goes on from `received`, a 409 at an offset goes on from the server's. `Ask` checks
+    the name first (`uploads/check`) and throws `file-exists` before sending; `Skip` answers null. `Resume`
+    (default on, seekable streams): an unfinished upload of the same folder, name, size and date (2 s) is found in
+    `GET uploads` and continued. Cancelled: the upload is deleted; failed: kept for a later call. Bounded memory is
+    tested on net10 only (a 24 MB non-seekable stream never read more than a chunk ahead of the progress); the
+    `netstandard2.0` asset is built, not run. `UploadFolderAsync`: a folder of its name in the target, the files'
+    dates kept, progress over all files; empty folders are not made.
+- [x] `CreateFolderAsync`, `RenameAsync`, `MoveAsync`, `CopyAsync`, `DeleteAsync`; `SfeJob` (`WaitAsync`, progress,
   conflicts answered by a callback or a fixed choice, cancel)
-- [ ] `Trash`, `Properties` (totals, checksums), `Archives` (zip of several items to a stream)
+  - As built: `DeleteAsync` / `DeletePermanentlyAsync` (no flag), batches of 1000, a result per path. `SfeJobOptions`
+    (`Conflicts`, `KeepAccess`, `KeepTags` default false as the API). `SfeJob`: `Status`, `RefreshAsync`,
+    `WaitAsync(SfeJobWaitOptions)` (`Progress`, `OnConflict` callback; none: `SfeJobConflictException`, the job
+    keeps waiting), `AnswerAsync` (a 409 = nothing asked now, ignored), `CancelAsync`. Trap: the server takes an
+    answer at once but its job leaves `waiting` a moment later (the continuation runs asynchronously):
+    `AnswerAsync` asks again for up to 1 s until it doesn't wait, else a second wait would see the old clash.
+- [x] `Trash`, `Properties` (totals, checksums), `Archives` (zip of several items to a stream)
+  - As built: `Trash` (`ListAsync` paged by `before`, `CountAsync`, `RestoreAsync`, `DeleteAsync`, `EmptyAsync`);
+    `Properties` (`GetAsync`, `GetTotalsAsync`, `CountAsync` and `ChecksumAsync` follow their background job and
+    stop it when cancelled); `Archives.DownloadZipAsync` (the one-time link never retried). Routes of these areas
+    not in the facade are named in `FacadeCoverageTests` (the test of the rules below).
 
 ### Phase 4: search and tags
 
