@@ -292,6 +292,12 @@ namespace Otools.Net.Sfe.Core.Data.Migrations
                         .HasMaxLength(260)
                         .HasColumnType("nvarchar(260)");
 
+                    b.Property<string>("NameKey")
+                        .HasMaxLength(400)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(400)")
+                        .UseCollation("Latin1_General_BIN2");
+
                     b.Property<long?>("ParentId")
                         .HasColumnType("bigint");
 
@@ -320,6 +326,8 @@ namespace Otools.Net.Sfe.Core.Data.Migrations
                     b.HasIndex("ConnectionId", "ProviderId");
 
                     b.HasIndex("ConnectionId", "Removed");
+
+                    b.HasIndex("ConnectionId", "ParentId", "NameKey", "FullName", "Removed");
 
                     b.ToTable("RemoteDirectories", "SFE");
                 });
@@ -375,6 +383,12 @@ namespace Otools.Net.Sfe.Core.Data.Migrations
                         .HasMaxLength(260)
                         .HasColumnType("nvarchar(260)");
 
+                    b.Property<string>("NameKey")
+                        .HasMaxLength(400)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(400)")
+                        .UseCollation("Latin1_General_BIN2");
+
                     b.Property<int>("Pass")
                         .HasColumnType("int");
 
@@ -422,6 +436,14 @@ namespace Otools.Net.Sfe.Core.Data.Migrations
                     b.HasIndex("ConnectionId", "Removed");
 
                     b.HasIndex("ConnectionId", "Size");
+
+                    b.HasIndex("ConnectionId", "DirectoryId", "Extension", "NameKey", "FullName");
+
+                    b.HasIndex("ConnectionId", "DirectoryId", "LastWriteTime", "NameKey", "FullName");
+
+                    b.HasIndex("ConnectionId", "DirectoryId", "NameKey", "FullName", "Removed");
+
+                    b.HasIndex("ConnectionId", "DirectoryId", "Size", "NameKey", "FullName");
 
                     b.ToTable("RemoteFiles", "SFE");
                 });

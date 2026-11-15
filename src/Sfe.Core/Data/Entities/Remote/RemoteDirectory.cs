@@ -32,6 +32,12 @@ public sealed class RemoteDirectory
     /// <summary>The folder's name as the provider spells it.</summary>
     public string Name { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The name (with its extension) as listings sort it (<see cref="Library.NaturalComparer.KeyOf"/>): ordinal order
+    /// of this key is the natural order of the names. Null on rows indexed before it existed, until a sync fills it.
+    /// </summary>
+    public string? NameKey { get; set; }
+
     /// <summary>UTC; null when the provider keeps no date for folders (Dropbox).</summary>
     public DateTime? LastWriteTime { get; set; }
 

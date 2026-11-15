@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Otools.Net.Sfe.Core.Connections.Indexing;
@@ -28,17 +29,16 @@ public sealed class ConnectionIndexUpdates : IDisposable
     public async Task ApplyAsync(ConnectionItemChange change, CancellationToken cancellationToken)
     {
         var id = change.ConnectionId;
-        if (await _store.StateAsync(id, cancellationToken) is not { } state)
+        if (await _store.StateAsync(id, cancellationToken) is null)
             return;
-        // A folder copied by the provider is still to list (its items come with the next sync); anything else SFE
-        // made is complete.
-        var complete = change.Kind != ConnectionItemChangeKind.Copied;
-        var scope = new RemoteIndexScope(id, change.Capabilities.CaseInsensitiveNames, state.Pass, complete);
         List<string> tooLong = [];
         await _store.WriteAsync(
             id,
             async (db, token) =>
             {
+                // Read under the connection's lock: a listing pass begins or ends between two of its batches only.
+                var state = await db.RemoteIndexes.AsNoTracking().FirstAsync(s => s.ConnectionId == id, token);
+                var scope = ScopeOf(change, state);
                 var writer = new RemoteIndexWriter(db, scope);
                 await WriteAsync(db, writer, (scope, change), token);
                 tooLong = writer.TooLong;
@@ -71,6 +71,20 @@ public sealed class ConnectionIndexUpdates : IDisposable
             await writer.RemoveAsync(change.Path, cancellationToken);
         await writer.PutAsync(item, cancellationToken);
     }
+
+    /// <summary>
+    /// A folder copied by the provider is still to list (its items come with the next sync); anything else SFE made is
+    /// complete.
+    /// </summary>
+    private static RemoteIndexScope ScopeOf(ConnectionItemChange change, Data.RemoteIndexState state) =>
+        new(
+            change.ConnectionId,
+            change.Capabilities.CaseInsensitiveNames,
+            state.Pass,
+            Following: change.Kind != ConnectionItemChangeKind.Copied,
+            BySfe: true,
+            PassUnderWay: state.Phase == Data.RemoteIndexPhase.Listing
+        );
 
     private static bool SameKey(RemoteIndexScope scope, string one, string other) =>
         RemoteIndexKeys.Key(one, scope.CaseInsensitive) == RemoteIndexKeys.Key(other, scope.CaseInsensitive);

@@ -3031,7 +3031,7 @@
         "tags": [
           "Files"
         ],
-        "summary": "Server-sent events: `changed` with `{ path, origin }` (and `connection` for a connection's folder) each time a folder is changed through SFE; `keepAlive` with `{ state }`; `trash`; `ping`.",
+        "summary": "Server-sent events: `changed` with `{ path, origin }` (and `connection` for a connection's) each time a folder is changed through SFE; `keepAlive` with `{ state }`; `trash`; `ping`.",
         "description": "Open with `EventSource`; `origin` is the `X-SFE-Tab` header of the request that changed it (a tab\nskips its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or\nnothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete or\nfiles.deletePermanently) when something came into or left the trash: ask its count again. A `ping` event\nafter 25 s without anything keeps it open; it ends after\n10 minutes and the browser opens it again. 12 at once per\ncaller (429).",
         "operationId": "FolderChanges",
         "responses": {
@@ -8305,7 +8305,7 @@
           "Connections"
         ],
         "summary": "Lists a folder of a connection (folders first).",
-        "description": "The listing of `GET api/browse` (`listing`), with how far the session uses the connection (`access`) and\nwhat its provider can do (`capabilities`). The first page (`offset` 0) reads the folder from the provider;\nthe next ones reuse that read for a few minutes. A folder too large to read whole comes in the provider's\norder (`sorted` false) and `hasMore` tells that the next pages read on. A connection whose sign-in the\nprovider no longer accepts answers 409 `connection-needs-reconnecting`; the provider asking to wait, 429\n`connection-rate-limited` with `Retry-After`; the provider unreachable, 502 `connection-unavailable`.",
+        "description": "The listing of `GET api/browse` (`listing`), with how far the session uses the connection (`access`) and\nwhat its provider can do (`capabilities`). A folder the library's index holds whole (synced recently, the\nfolder listed) is read from the index: sorted by the database, counted, any size. Otherwise the first page\n(`offset` 0) reads the folder from the provider and the next ones reuse that read for a few minutes; items\nthe index doesn't hold yet have `indexed` false. A folder too large to read whole from the provider comes in\nits order (`sorted` false) and `hasMore` tells that the next pages read on. A connection whose sign-in the\nprovider no longer accepts answers 409 `connection-needs-reconnecting`; the provider asking to wait, 429\n`connection-rate-limited` with `Retry-After`; the provider unreachable, 502 `connection-unavailable`.",
         "operationId": "BrowseConnection",
         "parameters": [
           {

@@ -35,6 +35,12 @@ public sealed class RemoteFile
     /// <summary>Extension including the leading dot (e.g. <c>.mp4</c>); empty for a file without one.</summary>
     public string Extension { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The name (with its extension) as listings sort it (<see cref="Library.NaturalComparer.KeyOf"/>): ordinal order
+    /// of this key is the natural order of the names. Null on rows indexed before it existed, until a sync fills it.
+    /// </summary>
+    public string? NameKey { get; set; }
+
     public long Size { get; set; }
 
     /// <summary>UTC, as the provider tells it (Dropbox: the date on its server).</summary>

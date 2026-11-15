@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Connections;
@@ -147,13 +148,34 @@ public sealed class RuledConnection : IAsyncDisposable
     }
 
     /// <summary>
-    /// The library's index of the connection synced once (it lists every folder, hidden ones too, as the server's
-    /// own job), so that the routes' calls are the only ones the tests then see: opening it soon after starts none.
+    /// The library's index of the connection as in the middle of a full listing: its listings come from the
+    /// provider (as when the provider reset its cursor), its folders' rows stay.
     /// </summary>
-    private async Task IndexAsync(CancellationToken cancellationToken)
+    public async Task ListFromProviderAsync(CancellationToken cancellationToken)
+    {
+        var factory = await LibraryAsync<IDbContextFactory<SfeDbContext>>(cancellationToken);
+        await using var db = await factory.CreateDbContextAsync(cancellationToken);
+        await db
+            .RemoteIndexes.Where(s => s.ConnectionId == Id)
+            .ExecuteUpdateAsync(s => s.SetProperty(i => i.Phase, RemoteIndexPhase.Listing), cancellationToken);
+    }
+
+    /// <summary>A service of the library's own container.</summary>
+    public async Task<T> LibraryAsync<T>(CancellationToken cancellationToken)
+        where T : notnull
     {
         var host = await Get<Otools.Net.Sfe.Api.Tenancy.TenantRegistry>().GetAsync(TenantId, cancellationToken);
-        var indexes = host!.Services.GetRequiredService<Otools.Net.Sfe.Core.Connections.Indexing.ConnectionIndexes>();
+        return host!.Services.GetRequiredService<T>();
+    }
+
+    /// <summary>
+    /// The library's index of the connection synced (it lists every folder, hidden ones too, as the server's own
+    /// job): once when set up, so that the routes' calls are the only ones the tests then see (opening it soon after
+    /// starts none), and again when a test changed the provider's files behind SFE's back.
+    /// </summary>
+    public async Task IndexAsync(CancellationToken cancellationToken)
+    {
+        var indexes = await LibraryAsync<Otools.Net.Sfe.Core.Connections.Indexing.ConnectionIndexes>(cancellationToken);
         Assert.IsTrue(await indexes.StartAsync(Id, Otools.Net.Sfe.Core.Tasks.TaskTrigger.Manual, null));
         var until = DateTime.UtcNow.AddSeconds(10);
         while ((await indexes.StatusAsync(Id, cancellationToken)) is { Running: true } or { LastSync: null })

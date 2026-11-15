@@ -139,6 +139,32 @@ public sealed class ConnectionIndexerTests
     }
 
     [TestMethod]
+    public async Task AnUploadIntoAFolderAPassHasNotReachedKeepsTheFolderToListAndItsFilesTags()
+    {
+        await SyncAsync();
+        var tagged = await TagAsync("docs/big/1.txt");
+        _account.ResetCursors = true;
+        // The cursor reset lists everything again; the server stops after the root's first page.
+        var stopped = new RecordingIndexSource(_storage) { FailAfter = 1 };
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(() => SyncAsync(stopped));
+        _account.ResetCursors = false;
+
+        var uploaded = await PutAsync("Docs/Big/6.txt");
+        await _services
+            .Get<ConnectionIndexUpdates>()
+            .ApplyAsync(ConnectionItemChange.Put(Id, _provider.Capabilities, uploaded), Token);
+        var result = await SyncAsync();
+
+        Assert.AreEqual((11L, 5L), (result.Files, result.Folders));
+        foreach (var key in new[] { "docs/notes.md", "docs/big/1.txt", "docs/big/5.txt", "docs/big/6.txt" })
+            Assert.IsNotNull(await FindAsync(key), key);
+        Assert.AreEqual(tagged, (await FileAsync("docs/big/1.txt")).Id);
+        Assert.AreEqual(1, await TagCountAsync());
+        await using var db = Db();
+        Assert.IsTrue(await db.RemoteDirectories.AllAsync(d => d.Listed && !d.Pending && !d.Removed, Token));
+    }
+
+    [TestMethod]
     public async Task AListingStoppedByARestartGoesOnFromTheLastPageWritten()
     {
         // Pages of 2: the root, Docs, Photos, then Docs/Big's first page… the 5th page throws.
@@ -291,6 +317,13 @@ public sealed class ConnectionIndexerTests
         db.RemoteFileTags.Add(new RemoteFileTag { FileId = row.Id, TagId = BuiltInTags.Favorite });
         await db.SaveChangesAsync(Token);
         return row.Id;
+    }
+
+    /// <summary>A file made at the provider through SFE (an upload); the item as the provider answers it.</summary>
+    private async Task<RemoteItem> PutAsync(string path)
+    {
+        _account.WithFile(path, "uploaded through SFE");
+        return await _storage.GetAsync(path, Token) ?? throw new AssertFailedException($"No {path}.");
     }
 
     private async Task<int> TagCountAsync()

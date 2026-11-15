@@ -6,8 +6,8 @@ at Dropbox once; then people with the rights connect their Dropbox, or one for a
 Connections are made, signed in to again and managed here; their files are browsed and downloaded
 ([browsing a connection](#browsing-a-connection)), changed and uploaded to where you may, copied and moved between a
 connection and the library ([below](#between-the-library-and-a-connection)), and a space narrows what its groups do
-in some folders with [folder rules](#folder-rules-of-a-connection). A connection's files are not indexed: no search,
-tags or folder pictures there yet.
+in some folders with [folder rules](#folder-rules-of-a-connection). There is no search, tags or folder pictures in a
+connection yet.
 
 ## Levels
 
@@ -79,8 +79,7 @@ A sign-in lasts 10 minutes and works once, for the account that started it.
 ### The index of a connection
 
 Each space keeps an index of the connections opened in it: the names, sizes and dates the storage tells (nothing is
-downloaded for it). Searching and tagging a connection's files will use it; for now it is only built and kept up to
-date.
+downloaded for it). Listings use it (below); searching and tagging a connection's files will.
 
 - It begins the first time someone opens the connection in the space, and is brought up to date again when the
   connection is opened and its index is more than 10 minutes old.
@@ -132,7 +131,13 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
   typed there searches the library.
 - **Download** saves a file; several, or a folder, come as one zip, written while it downloads (as in the library;
   what has no content, a Dropbox Paper document, is listed in `SFE - left out.txt` inside).
-- A folder of more than 20,000 items is listed in Dropbox's order, the sort off.
+- Once the space's [index](#the-index-of-a-connection) holds a folder whole, the folder is listed from it, without
+  asking Dropbox: at once, sorted whatever its size, and what you change through SFE shows at once; what was changed
+  in Dropbox itself shows after the next sync (at most about 10 minutes while the connection is in use). Names sort
+  as in the library (`file2` before `file10`).
+- Until then (the first sync still under way, or the index not synced for more than 30 minutes), the folder is read
+  from Dropbox, and items not in the index yet are faded, as files not scanned are in the library. A folder of more
+  than 20,000 items read from Dropbox is listed in its order, the sort off.
 - **Properties** (item menu) shows a file's or folder's size, date (Dropbox keeps none for folders), path and
   Dropbox's content hash; on your own connection, the Dropbox account too.
 - Where the connection gives you **reads and changes**: **New folder**, **Rename** (F2) and batch rename, **Delete**

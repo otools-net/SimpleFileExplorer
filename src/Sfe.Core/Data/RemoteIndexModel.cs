@@ -22,6 +22,7 @@ internal static class RemoteIndexModel
         ConfigureDirectories(modelBuilder);
         ConfigureFiles(modelBuilder, isSqlServer);
         ConfigureTags(modelBuilder);
+        ConfigureNameKeys(modelBuilder, isSqlServer);
         modelBuilder.Entity<RemoteIndexState>(entity =>
         {
             entity.ToTable("RemoteIndexes");
@@ -47,6 +48,15 @@ internal static class RemoteIndexModel
             // The next folder a listing goes to, and what a sync drops when it ends.
             entity.HasIndex(d => new { d.ConnectionId, d.Pending });
             entity.HasIndex(d => new { d.ConnectionId, d.Removed });
+            // A folder's subfolders in a listing, by name, and their count (RemoteIndexListings).
+            entity.HasIndex(d => new
+            {
+                d.ConnectionId,
+                d.ParentId,
+                d.NameKey,
+                d.FullName,
+                d.Removed,
+            });
             // A folder's rows are deleted before their parent's (RemoteIndexCleanup): one cascade path on SQL Server.
             entity
                 .HasOne(d => d.Parent)
@@ -88,12 +98,77 @@ internal static class RemoteIndexModel
             entity.HasIndex(f => new { f.ConnectionId, f.Duration });
             entity.HasIndex(f => new { f.ConnectionId, f.Pixels });
             entity.HasIndex(f => new { f.ConnectionId, f.Removed });
+            ConfigureListingIndexes(entity);
             entity
                 .HasOne(f => f.Directory)
                 .WithMany(d => d.Files)
                 .HasForeignKey(f => f.DirectoryId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+    /// <summary>
+    /// A folder's files in each order of a listing (RemoteIndexListings): walked from a page's last row, never sorted
+    /// whole. The name index ends with <c>Removed</c> so that the counts read it alone (rows marked removed are few,
+    /// skipped as the walk meets them: a leading <c>Removed</c> is no seek, SQLite's <c>NOT "Removed"</c> not being an
+    /// equality). Each index goes on with the name key and the key, the ties of its sort: the ties after a row (every
+    /// picture of a folder for the type sort) are a seek too. New since 1.86 (migration
+    /// <c>ConnectionIndexListings</c>).
+    /// </summary>
+    private static void ConfigureListingIndexes(
+        Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<RemoteFile> entity
+    )
+    {
+        entity.HasIndex(f => new
+        {
+            f.ConnectionId,
+            f.DirectoryId,
+            f.NameKey,
+            f.FullName,
+            f.Removed,
+        });
+        entity.HasIndex(f => new
+        {
+            f.ConnectionId,
+            f.DirectoryId,
+            f.LastWriteTime,
+            f.NameKey,
+            f.FullName,
+        });
+        entity.HasIndex(f => new
+        {
+            f.ConnectionId,
+            f.DirectoryId,
+            f.Size,
+            f.NameKey,
+            f.FullName,
+        });
+        entity.HasIndex(f => new
+        {
+            f.ConnectionId,
+            f.DirectoryId,
+            f.Extension,
+            f.NameKey,
+            f.FullName,
+        });
+    }
+
+    /// <summary>
+    /// The names as listings sort them (<see cref="Library.NaturalComparer.KeyOf"/>): hex, compared byte by byte
+    /// (a binary collation on SQL Server; SQLite compares text that way). New since 1.86, nullable: rows indexed
+    /// before it are filled by the next sync (<see cref="Connections.Indexing.RemoteNameKeys"/>).
+    /// </summary>
+    private static void ConfigureNameKeys(ModelBuilder modelBuilder, bool isSqlServer)
+    {
+        var files = modelBuilder.Entity<RemoteFile>().Property(f => f.NameKey);
+        var folders = modelBuilder.Entity<RemoteDirectory>().Property(d => d.NameKey);
+        foreach (var key in new[] { files.Metadata, folders.Metadata })
+        {
+            key.SetMaxLength(Library.NaturalComparer.MaxKeyLength);
+            key.SetIsUnicode(false);
+            if (isSqlServer)
+                key.SetCollation("Latin1_General_BIN2");
+        }
+    }
 
     private static void ConfigureTags(ModelBuilder modelBuilder) =>
         modelBuilder.Entity<RemoteFileTag>(entity =>

@@ -106,12 +106,14 @@ public sealed record ConnectionItemProperties(
     bool Downloadable
 );
 
-/// <summary>What the listing of a connection's folder uses (bound with <c>[AsParameters]</c>).</summary>
+/// <summary>What the listing of a connection's folder uses (bound with <c>[AsParameters]</c>): the provider's
+/// reads (<paramref name="Listings"/>) or the library's index of it (<paramref name="IndexListings"/>).</summary>
 internal sealed record ConnectionBrowseServices(
     RemoteListings Listings,
     MediaClassifier Classifier,
     Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> Options,
-    Otools.Net.Sfe.Core.Connections.Indexing.ConnectionIndexes Indexes
+    Otools.Net.Sfe.Core.Connections.Indexing.ConnectionIndexes Indexes,
+    Otools.Net.Sfe.Core.Connections.Indexing.RemoteIndexListings IndexListings
 );
 
 /// <summary>What the zips of a connection's files use (bound with <c>[AsParameters]</c>).</summary>

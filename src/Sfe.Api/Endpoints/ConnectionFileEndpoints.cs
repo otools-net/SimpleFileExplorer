@@ -18,9 +18,11 @@ public static class ConnectionFileEndpoints
 {
     private const string BrowseDescription = """
         The listing of `GET api/browse` (`listing`), with how far the session uses the connection (`access`) and
-        what its provider can do (`capabilities`). The first page (`offset` 0) reads the folder from the provider;
-        the next ones reuse that read for a few minutes. A folder too large to read whole comes in the provider's
-        order (`sorted` false) and `hasMore` tells that the next pages read on. A connection whose sign-in the
+        what its provider can do (`capabilities`). A folder the library's index holds whole (synced recently, the
+        folder listed) is read from the index: sorted by the database, counted, any size. Otherwise the first page
+        (`offset` 0) reads the folder from the provider and the next ones reuse that read for a few minutes; items
+        the index doesn't hold yet have `indexed` false. A folder too large to read whole from the provider comes in
+        its order (`sorted` false) and `hasMore` tells that the next pages read on. A connection whose sign-in the
         provider no longer accepts answers 409 `connection-needs-reconnecting`; the provider asking to wait, 429
         `connection-rate-limited` with `Retry-After`; the provider unreachable, 502 `connection-unavailable`.
         """;
@@ -97,18 +99,8 @@ public static class ConnectionFileEndpoints
         var page = browse.Options.CurrentValue.Browse;
         var limit = Math.Clamp(query.Limit ?? page.DefaultPageSize, 1, Math.Max(1, page.MaxPageSize));
         var asked = new RemoteListingQuery(id, path, Math.Max(0, query.Offset), limit, sort, query.Desc);
-        var filter = open.Folders.ListingFilterOf(path, here);
-        return await files.RunAsync(open, async storage =>
-        {
-            var read = await browse.Listings.ListAsync(storage, asked, filter, cancellationToken);
-            if (!IsSeenWhereListed(open, path, read))
-                return TypedResults.NotFound();
-            // Items renamed or moved outside SFE: the rules set on them elsewhere, by their ids.
-            var listing = open.Folders.WithoutHiddenByIds(read);
-            var page = ConnectionListings.Of(open, path, listing, limit, browse.Classifier);
-            var view = open.Folders.ViewOf(path, here, listing.Items);
-            return TypedResults.Ok(page with { Listing = page.Listing with { Access = view } });
-        });
+        var request = new ConnectionBrowseRequest(open, here, asked, open.Folders.ListingFilterOf(path, here));
+        return await ConnectionBrowsing.PageAsync(request, files, browse, cancellationToken);
     }
 
     private static async Task<IResult> Raw(
@@ -252,18 +244,6 @@ public static class ConnectionFileEndpoints
         if (await storage.GetAsync(path, cancellationToken) is not { IsFolder: false } item)
             return TypedResults.NotFound();
         return OpenConnection.AnswerOf(open.Check(path, item, Rights.ViewFiles));
-    }
-
-    /// <summary>
-    /// The folder where the provider listed it (another case of its name, a name it folds) is one the session sees
-    /// too: an empty page tells nothing.
-    /// </summary>
-    private static bool IsSeenWhereListed(OpenConnection open, string path, RemoteListing listing)
-    {
-        if (listing.Items.Count == 0 || path.Length == 0)
-            return true;
-        var listed = RemotePaths.Parent(listing.Items[0].Path);
-        return listed == path || open.At(listed).IsVisible;
     }
 
     /// <summary>The provider's account of an account-level connection the caller owns; null for any other.</summary>

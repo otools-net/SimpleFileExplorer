@@ -34,8 +34,12 @@ public sealed class ConnectionFolderAccessRouteTests
     public async Task CleanupAsync() => await _world.DisposeAsync();
 
     [TestMethod]
-    public async Task AHiddenFolderIsInNoListingTotalOrLaterPage()
+    [DataRow(true, DisplayName = "from the index")]
+    [DataRow(false, DisplayName = "from the provider")]
+    public async Task AHiddenFolderIsInNoListingTotalOrLaterPage(bool indexed)
     {
+        if (!indexed)
+            await _world.ListFromProviderAsync(Cancel);
         var pages = new List<ConnectionListing>();
         for (var offset = 0; offset < 10; offset++)
             pages.Add(await BrowseAsync("", offset, limit: 1));
@@ -50,6 +54,43 @@ public sealed class ConnectionFolderAccessRouteTests
         CollectionAssert.AreEqual(new[] { "Open" }, lead.Listing.Items.Select(i => i.Name).ToArray());
         Assert.IsTrue(lead.Listing.Access!.PathOnly);
         Assert.IsFalse(_world.Called("rivate") || _world.Called("Hidden"), "never asked of the provider");
+        Assert.AreEqual(!indexed, _world.Account.Calls.Count > 0, "the index answers without the provider");
+        var marks = pages.SelectMany(p => p.Listing.Items).Concat(mixed.Listing.Items).Select(i => i.Indexed);
+        Assert.IsTrue(marks.All(m => m == true), "every item shown is in the index");
+    }
+
+    [TestMethod]
+    [DataRow(true, DisplayName = "from the index")]
+    [DataRow(false, DisplayName = "from the provider")]
+    public async Task AFolderRenamedOutsideSfeStaysHiddenByItsRuleInEveryPageAndTotal(bool indexed)
+    {
+        ConnectionRuleInput[] rules =
+        [
+            _world.Rule("Private", FolderLevel.Hidden) with
+            {
+                ItemId = _world.Account.Find("Private")!.Id,
+            },
+            _world.Rule("Mixed/Hidden", FolderLevel.Hidden),
+            _world.Rule("ReadOnly", FolderLevel.Read),
+            _world.Rule("Lead", FolderLevel.Hidden),
+            _world.Rule("Lead/Open", FolderLevel.Write),
+        ];
+        await _world.Get<ConnectionRuleService>().SetAsync(_world.Id, _world.TenantId, rules, null, Cancel);
+        var storage = new FakeStorage(_world.Account, "", _world.Provider.Capabilities);
+        await storage.MoveAsync("Private", "Renamed", RemoteConflict.Fail, Cancel);
+        await _world.IndexAsync(Cancel);
+        if (!indexed)
+            await _world.ListFromProviderAsync(Cancel);
+
+        var pages = new List<ConnectionListing>();
+        for (var offset = 0; offset < 6; offset++)
+            pages.Add(await BrowseAsync("", offset, limit: 1));
+        var whole = await BrowseAsync("");
+
+        var names = pages.SelectMany(p => p.Listing.Items).Select(i => i.Name).ToArray();
+        CollectionAssert.DoesNotContain(names, "Renamed");
+        CollectionAssert.DoesNotContain(whole.Listing.Items.Select(i => i.Name).ToArray(), "Renamed");
+        Assert.AreEqual(4, whole.Listing.Total);
     }
 
     [TestMethod]

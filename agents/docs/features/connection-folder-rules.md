@@ -58,6 +58,10 @@ Code: Core `Data/Entities/Access/ConnectionFolderRule.cs`, `AccessMigrations/202
   their places; a filter naming what wasn't watched reads the folder anew. A path-only folder (seen only to reach a
   visible one below) is not listed: its leading children are asked one by one (`GetAsync`).
   `DirectoryListing.Access` is filled for restricted subjects.
+- Listings read from the library's index (`RemoteIndexListings`): the same `ListingFilter` and the ids
+  `ConnectionFolders.HiddenIds()` (rule places that hide) become conditions of the queries (`IndexListingFilter`),
+  so counts and later pages never hold them; every page, from either source, then passes `ConnectionFolders.Seen`
+  (each item by path and id).
 - Zips: chosen paths checked (404/403) at both steps; the walk skips what isn't viewable and downloadable without
   naming it in the left-out entry.
 - Transfers: `TransferOpening` checks the target folder at once; the job's `RemoteTransferEndpoint` checks every item

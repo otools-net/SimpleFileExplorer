@@ -49,13 +49,7 @@ internal sealed class ConnectionIndexJob(
 
         await using (storage)
         {
-            var target = new ConnectionIndexTarget(
-                id,
-                info.RootPath,
-                AccountKeyOf(info.Account),
-                provider.Capabilities,
-                Private: info.Level == ConnectionLevel.Account
-            );
+            var target = ConnectionIndexTarget.Of(info, provider.Capabilities);
             var source = new GatedIndexSource(storage, sources.Calls, id);
             return await TrySyncAsync(target, source, sync, cancellationToken);
         }

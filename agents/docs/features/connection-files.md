@@ -1,9 +1,10 @@
 # Files of a connection: browse, read, change, upload, properties
 
 Code: Api `ConnectionFileEndpoints` (browse, raw, thumbnails, properties), `ConnectionFileServices` (`OpenAsync`,
-`RunAsync`), `ConnectionArchiveEndpoints`, `ConnectionWriteEndpoints`, `ConnectionWriteChecks`,
+`RunAsync`), `ConnectionBrowsing`, `ConnectionArchiveEndpoints`, `ConnectionWriteEndpoints`, `ConnectionWriteChecks`,
 `ConnectionUploadEndpoints` (`ConnectionUploadSteps`, `ConnectionUploadNames`), `ConnectionProblems`, `OpenConnection`,
 `RemoteFileResult`, `RemoteRanges`; Core `Connections/RemoteListings` (`RemoteSnapshot`, `RemoteSort`),
+`Connections/Indexing/RemoteIndexListings`,
 `RemoteArchives`, `RemoteUploads`, `ConnectionGates`. Client `library/connection-pages.ts`, `place-files.ts`,
 `place-transfers.ts`, `place-properties.ts`, `upload-places.ts`, `files/drag-items.ts`, `file-clipboard.ts`. Tests:
 `ConnectionFileRouteTests`, `ConnectionWriteRouteTests`, `ConnectionUploadRouteTests`, `ConnectionGatesTests`,
@@ -31,6 +32,12 @@ it: [connection-folder-rules](connection-folder-rules.md); copies with the libra
 
 - `GET api/connections/{id}/browse` answers `ConnectionListing`: the library's `DirectoryListing` plus `access`,
   `sorted`, `hasMore`, `capabilities`.
+- `ConnectionBrowsing` picks the source per page: the library's index when it holds the folder whole
+  (`RemoteIndexListings`: synced within 30 minutes, past its full listing, of the current root and account, the
+  folder listed; sorted and counted by the database, paged by key from the last row of the page before; no provider
+  call, no gate turn), else the provider below, its items marked `indexed` when the index has them. Later pages of a
+  provider read stay with it (`RemoteListings.Holds`). Details:
+  [connections-index-plan](../development/connections-index-plan.md#phase-2-listing-from-the-index).
 - `RemoteListings` (singleton): offset 0 reads the whole folder (up to 20,000 items) and sorts it as `LibraryBrowser`
   does; later pages reuse that snapshot for 5 minutes (16 snapshots at most); a larger folder comes in the provider's
   order through a window that reads forward (`hasMore`, sorting off). Providers list unordered and in pages of their

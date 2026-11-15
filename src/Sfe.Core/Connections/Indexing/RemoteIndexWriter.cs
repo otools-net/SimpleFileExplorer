@@ -111,12 +111,31 @@ internal sealed class RemoteIndexWriter(SfeDbContext db, RemoteIndexScope scope)
             folder ??= await NewFolderAsync(path, key, cancellationToken);
             _folders[key] = folder;
         }
-        if (folder.Removed || folder.Pass != scope.Pass)
-        {
-            folder.Removed = false;
+        folder.Removed = false;
+        if (scope is { BySfe: true, PassUnderWay: true })
+            await ReachedBySfeAsync(folder, cancellationToken);
+        else
             folder.Pass = scope.Pass;
-        }
         return folder;
+    }
+
+    /// <summary>
+    /// A folder SFE wrote in (or on the way to) while a full listing goes on: it is not "seen by the pass", which
+    /// would then not list it and mark its other items removed when it ends. Only a folder whose parent the pass has
+    /// already listed (it came there after, or the index lacked it) is given to the pass to list.
+    /// </summary>
+    private async Task ReachedBySfeAsync(RemoteDirectory folder, CancellationToken cancellationToken)
+    {
+        if (folder.Pass == scope.Pass)
+            return;
+        var parent = folder.Parent
+            ?? (
+                folder.ParentId is { } parentId
+                    ? await db.RemoteDirectories.FindAsync([parentId], cancellationToken)
+                    : null
+            );
+        if (parent is { Pending: false } && parent.Pass == scope.Pass)
+            (folder.Pass, folder.Pending) = (scope.Pass, true);
     }
 
     private async Task<RemoteDirectory> NewFolderAsync(string path, string key, CancellationToken cancellationToken)
@@ -128,9 +147,11 @@ internal sealed class RemoteIndexWriter(SfeDbContext db, RemoteIndexScope scope)
             FullName = key,
             DisplayPath = path,
             Name = RemotePaths.NameOf(path),
+            NameKey = Library.NaturalComparer.KeyOf(RemotePaths.NameOf(path)),
             Parent = parent,
-            Pass = scope.Pass,
-            Listed = scope.Following,
+            // Made on SFE's way to an item: neither listed nor seen by a pass going on (see ReachedBySfeAsync).
+            Pass = scope is { BySfe: true, PassUnderWay: true } ? 0 : scope.Pass,
+            Listed = scope.Following && !scope.BySfe,
         };
         db.RemoteDirectories.Add(folder);
         return folder;
@@ -145,15 +166,29 @@ internal sealed class RemoteIndexWriter(SfeDbContext db, RemoteIndexScope scope)
             folder.Parent = await FolderAsync(RemotePaths.Parent(item.Path), cancellationToken);
         folder.DisplayPath = item.Path;
         folder.Name = RemotePaths.NameOf(item.Path);
+        folder.NameKey = Library.NaturalComparer.KeyOf(folder.Name);
         folder.ProviderId = RemoteIndexKeys.IdOf(item) ?? folder.ProviderId;
         folder.LastWriteTime = item.Modified is { } date ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : null;
+        if (scope.BySfe)
+            MadeBySfe(folder);
         // A full listing goes into each folder it meets once; the changes bring a folder's items with it.
-        if (!scope.Following && !seenBefore)
+        else if (!scope.Following && !seenBefore)
             folder.Pending = true;
-        if (scope.Following)
+        else if (scope.Following)
             folder.Listed = true;
         if (_byKey.GetValueOrDefault(key) is { Removed: false } file)
             await ParkAsync(file, cancellationToken);
+    }
+
+    /// <summary>
+    /// A folder SFE made is whole (empty, or its items written with it) and there now; one it moved keeps what it
+    /// was; one the provider copied is listed by the next sync (<see cref="RemoteIndexScope.Following"/> false).
+    /// </summary>
+    private void MadeBySfe(RemoteDirectory folder)
+    {
+        if (folder.Id != 0 || !scope.Following)
+            return;
+        (folder.Listed, folder.Pending, folder.Pass) = (true, false, scope.Pass);
     }
 
     private async Task PutFileAsync(RemoteItem item, CancellationToken cancellationToken)

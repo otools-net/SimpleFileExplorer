@@ -43,6 +43,7 @@ public static class RemoteIndexKeys
         var (name, extension) = Split(RemotePaths.NameOf(item.Path));
         row.Name = name;
         row.Extension = extension;
+        row.NameKey = Library.NaturalComparer.KeyOf(name + extension);
         row.DisplayPath = item.Path;
         row.Size = item.Size ?? 0;
         row.LastWriteTime = item.Modified is { } modified ? DateTime.SpecifyKind(modified, DateTimeKind.Utc) : default;

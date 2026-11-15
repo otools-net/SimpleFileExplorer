@@ -97,10 +97,29 @@ public sealed class ConnectionFolders(
     /// <see cref="ListingFilterOf"/> for a page read: <paramref name="listing"/> without the items a rule set on them
     /// at another path hides (found by their id), its counts lowered by them.
     /// </summary>
-    public RemoteListing WithoutHiddenByIds(RemoteListing listing)
+    public RemoteListing WithoutHiddenByIds(RemoteListing listing) =>
+        rulePlaces is not { Count: > 0 } ? listing : WithoutUnseen(listing);
+
+    /// <summary>
+    /// <paramref name="listing"/> with only the items the subject sees, each checked by its path and its id (the
+    /// last check of a page, whatever its source filtered already): its counts lowered by those left out.
+    /// </summary>
+    public RemoteListing Seen(RemoteListing listing) => policy.IsUnrestricted ? listing : WithoutUnseen(listing);
+
+    /// <summary>
+    /// The provider's ids of the items a rule set on them at another path hides (they were renamed or moved outside
+    /// SFE): a listing read from the index leaves them out in its query.
+    /// </summary>
+    public IReadOnlySet<string> HiddenIds() =>
+        rulePlaces is not { Count: > 0 }
+            ? new HashSet<string>()
+            : rulePlaces
+                .Where(rule => rule.Value.Any(place => !At(place).IsVisible))
+                .Select(rule => rule.Key)
+                .ToHashSet(StringComparer.Ordinal);
+
+    private RemoteListing WithoutUnseen(RemoteListing listing)
     {
-        if (rulePlaces is not { Count: > 0 })
-            return listing;
         var hidden = listing.Items.Where(item => !At(item.Path, item.Id).IsVisible).ToList();
         if (hidden.Count == 0)
             return listing;

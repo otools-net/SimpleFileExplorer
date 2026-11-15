@@ -162,6 +162,57 @@ public sealed class ConnectionIndexRouteTests
         Assert.AreEqual(0, await db.RemoteIndexes.CountAsync(Token));
     }
 
+    [TestMethod]
+    public async Task AFolderTheIndexHoldsIsListedFromItWithWhatSfeChangedAtOnce()
+    {
+        using (await _admin.GetAsync($"{V1}/connections/{_id}/browse", Token)) { }
+        await SyncedAsync();
+        var account = _provider.Account("acct");
+        account.WithFile("Photos/behind.txt", "made at the provider, not synced yet");
+        account.Calls.Clear();
+
+        await PostFilesAsync("folders", new CreateFolderRequest("Photos", "New"));
+        var photos = await BrowseAsync("Photos");
+
+        CollectionAssert.AreEqual(
+            new[] { "New", "Trips", "a.txt" },
+            photos.Listing.Items.Select(i => i.Name).ToArray()
+        );
+        Assert.AreEqual((3, 2), (photos.Listing.Total, photos.Listing.DirectoryCount));
+        Assert.IsTrue(photos.Listing.Items.All(i => i.Indexed == true));
+        Assert.IsFalse(account.Calls.Any(c => c.StartsWith("list", StringComparison.Ordinal)), "no listing asked");
+    }
+
+    [TestMethod]
+    public async Task DuringAFullListingTheProviderIsReadAndWhatTheIndexLacksIsMarked()
+    {
+        using (await _admin.GetAsync($"{V1}/connections/{_id}/browse", Token)) { }
+        await SyncedAsync();
+        _provider.Account("acct").WithFile("Photos/behind.txt", "not in the index").WithFolder("Photos/Later");
+        await using (var db = Library<IDbContextFactory<SfeDbContext>>().CreateDbContext())
+        {
+            await db.RemoteIndexes.ExecuteUpdateAsync(
+                s => s.SetProperty(i => i.Phase, RemoteIndexPhase.Listing),
+                Token
+            );
+        }
+
+        var photos = await BrowseAsync("Photos");
+
+        var marks = photos.Listing.Items.ToDictionary(i => i.Name, i => i.Indexed);
+        Assert.HasCount(4, marks);
+        Assert.AreEqual((true, true), (marks["Trips"], marks["a.txt"]));
+        Assert.AreEqual((false, false), (marks["Later"], marks["behind.txt"]));
+    }
+
+    private async Task<ConnectionListing> BrowseAsync(string path)
+    {
+        var url = $"{V1}/connections/{_id}/browse?path={Uri.EscapeDataString(path)}";
+        using var answer = await _admin.GetAsync(url, Token);
+        Assert.AreEqual(HttpStatusCode.OK, answer.StatusCode);
+        return (await answer.Content.ReadFromJsonAsync<ConnectionListing>(Json, Token))!;
+    }
+
     private async Task<int> CreateAsync(ConnectionDraft draft)
     {
         var made = await _factory

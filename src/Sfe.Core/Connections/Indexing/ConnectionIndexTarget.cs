@@ -15,4 +15,14 @@ public sealed record ConnectionIndexTarget(
 )
 {
     public bool CaseInsensitive => Capabilities.CaseInsensitiveNames;
+
+    /// <summary>The connection as its index is made from it now.</summary>
+    public static ConnectionIndexTarget Of(ConnectionInfo info, ProviderCapabilities capabilities) =>
+        new(
+            info.Id,
+            info.RootPath,
+            ConnectionIndexJob.AccountKeyOf(info.Account),
+            capabilities,
+            Private: info.Level == ConnectionLevel.Account
+        );
 }

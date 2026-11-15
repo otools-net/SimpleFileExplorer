@@ -71,6 +71,17 @@ public sealed class RemoteListings(TimeProvider clock, int maxItems = RemoteList
         }
     }
 
+    /// <summary>
+    /// A read of the folder in this order is recent: its next pages come from it (an index listing of the same
+    /// folder would sort it otherwise).
+    /// </summary>
+    public bool Holds(RemoteListingQuery query)
+    {
+        var key = new RemoteSnapshotKey(query.ConnectionId, query.Path, query.Sort, query.Descending);
+        lock (_gate)
+            return _snapshots.Any(s => s.Key == key && s.Read != default && clock.GetUtcNow() - s.Read <= Lifetime);
+    }
+
     /// <summary>Drops the snapshots of a connection: its files changed through SFE, or it was removed.</summary>
     public void Forget(int connectionId)
     {

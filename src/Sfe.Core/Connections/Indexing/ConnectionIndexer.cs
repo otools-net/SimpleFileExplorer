@@ -31,6 +31,7 @@ public sealed class ConnectionIndexer(
     )
     {
         var state = await PrepareAsync(target, source, cancellationToken);
+        await RemoteNameKeys.FillAsync(store, target.ConnectionId, cancellationToken);
         var listed = false;
         // A provider forgetting its cursors at once again would list for ever: the second reset of a sync ends it.
         for (var resets = 0; ; resets++)

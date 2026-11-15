@@ -199,10 +199,67 @@ As built (2026-11-15; code `Core/Connections/Indexing/`, `Data/Entities/Remote/`
 
 ### Phase 2: listing from the index
 
-- [ ] Listings of a connection read the index when it is complete for that folder (sorts, counts, paging as the
+- [x] Listings of a connection read the index when it is complete for that folder (sorts, counts, paging as the
   library's), the provider otherwise; files not in the index yet shown as the library does
   ([not-indexed-marks](../features/not-indexed-marks.md))
-- [ ] Folder rules filter remote rows (`Visible()` on queries, `Seen()` on shown items) through `ConnectionAccess`
+- [x] Folder rules filter remote rows (`Visible()` on queries, `Seen()` on shown items) through `ConnectionAccess`
+
+As built (2026-11-15; code `Indexing/RemoteIndexListings`, `IndexListing*`, Api `ConnectionBrowsing`; tests
+`RemoteIndexListingsTests` (+ `…SqlServerTests` on LocalDB), `ConnectionIndexRouteTests`,
+`ConnectionFolderAccessRouteTests`):
+
+- **Complete for a folder** (`RemoteIndexListings.CompleteFolderAsync`): the index state is of the connection's
+  current root and account (`ConnectionIndexTarget.Of`), in phase `Following`, synced within `MaxAge` (30 min,
+  3 × `SyncAfter`), and the folder's row is `Listed`, not `Pending`, not `Removed`. Why: during a full listing
+  (first, cursor reset, provider without cursor) rows the pass hasn't met again may be gone at the provider and the
+  changes since the pass began are not applied yet, so the folder's own `Listed` is not enough; `Listed` alone
+  survives from older passes. The age bound keeps an index left behind (server off, syncs failing) from being shown
+  as current: opening starts the catch-up, the next listing reads the index. A folder SFE made, or one the changes
+  brought, is `Listed` at once; a folder copied by the provider is not (its items come with the next sync).
+- Order: folders first (by name in the direction asked; size and type sorts list them by ascending name as
+  `RemoteSort`; by date for the date sort), then files by the sort's value, then by name, then by key, **all in the
+  same direction** (ties of the library are ascending: here one index is walked one way). Names sort by `NameKey`
+  (both tables): `NaturalComparer.KeyOf` = the hex of `CompareInfo.GetSortKey(name, IgnoreCase | NumericOrdering)`
+  (invariant culture), whose ordinal order is exactly `NaturalComparer`'s (test
+  `NamesComeInTheOrderOfTheLibrarysListings…`: digits, case, accents, punctuation); cut at 400 characters (longer
+  names tie, the key breaks it); `Latin1_General_BIN2` on SQL Server, SQLite's default compares text bytewise.
+  Without culture data (invariant globalization, e.g. the AppImage on a system without ICU) the key falls back to
+  the upper-cased name. Nullable (rows indexed before it): `RemoteNameKeys` fills them in batches at the start of
+  each sync; a folder with a row lacking it is listed from the provider. The keys depend on the ICU version: after
+  an ICU upgrade old and new rows may order slightly apart until a sync rewrites them (never wrong pages: paging
+  reads the stored keys).
+- Paging: the route keeps `offset`/`limit` (no API change); `IndexListingPlaces` (per library, 1024 places, 5 min)
+  remembers the last row of each page by (connection, folder row, sort, filter, next offset), so the next page reads
+  after it in up to three seeks (same value and name with a later key, same value with a later name, a later value:
+  an `OR` is not a seek on SQL Server). A page
+  without a place (a jump, a restored position) is read by `OFFSET` (cost of the offset, rare). One row more than
+  the page tells whether the folder goes on: `total` is the count read with the first page, corrected at the end.
+  Counts are read at the first page (and on a miss), on the name index alone.
+- Indexes (migration `20261115092916_ConnectionIndexListings`, SQLite through `DatabaseSchema`): files
+  `(ConnectionId, DirectoryId, NameKey, FullName, Removed)` (also the counts, covering), `(…, LastWriteTime,
+  NameKey, FullName)`, `(…, Size, NameKey, FullName)`, `(…, Extension, NameKey, FullName)` (at most 1452 bytes of
+  key on SQL Server); folders `(ConnectionId, ParentId, NameKey, FullName, Removed)`. `Removed` is not a leading
+  column: EF writes `NOT "Removed"` on SQLite, no equality, so the planner then took `(ConnectionId, FullName)` and
+  walked the connection; checked with `EXPLAIN QUERY PLAN` (every page query a seek, no temp sort). Folders sorted
+  by date have no index (subfolders are few).
+- A page read from the provider while a listing goes on: `ProviderPaging` (`RemoteListings.Holds`) keeps its later
+  pages from the provider's snapshot, so one scroll never mixes the two orders; the other way (index then provider)
+  only when the index stops being complete mid-scroll (a cursor reset): duplicates are dropped by the client.
+- Marks: a provider page gets `indexed` per item (`IndexedAsync`: one query per page by keys; a folder counts when
+  `Listed`); none when the library has no index of the connection; an index page is all `true`.
+- Rules: `IndexListingFilter` turns `ListingFilter` (hidden children, or the only ones a path-only folder shows)
+  into key conditions and `ConnectionFolders.HiddenIds()` (items a rule set at another path hides, by provider id)
+  into a `ProviderId` condition: totals, counts and later pages never hold them. Every shown item, from either
+  source, then goes through `ConnectionFolders.Seen` (path and id); a key the lowering and the rules' comparison
+  fold apart (exotic Unicode) would only be caught there, its count left one too high. Account-level connections
+  stay their owner's: the route opens them through `ConnectionAccess` before any read.
+- The index path takes no gate turn and calls no provider: it answers while the provider asks to wait.
+- Fixed in phase 1's writer (found here): SFE's changes during a full listing set the folders on their way to the
+  current `Pass`, so the listing took them as met, never listed them, and marked their other items removed at its
+  end (tags lost when purged). Now (`RemoteIndexScope.BySfe` / `PassUnderWay`, read under the connection's lock)
+  such a folder keeps its pass; one whose parent the pass has already listed is given to the pass (`Pending`); a
+  folder SFE made is whole and current; folders made only on the way to an item are not `Listed` (test
+  `AnUploadIntoAFolderAPassHasNotReachedKeepsTheFolderToListAndItsFilesTags`).
 
 ### Phase 3: search
 
