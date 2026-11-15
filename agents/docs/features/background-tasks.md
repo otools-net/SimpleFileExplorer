@@ -17,3 +17,6 @@ wording). Schedules: [schedules.md](schedules.md).
 - A new job: give it a trigger + `Begin`/`CompleteAsync` and a case in `BackgroundTasks`.
 - Bodyless start routes take inputs from the query (`POST api/tasks/{task}/start?path=`,
   [api-routes.md](../development/api-routes.md)).
+- `ConnectionIndex` (2026-11-15): one run per connection synced (`ConnectionIndexes`, `ConnectionIndexJob`); Path =
+  the connection's name, null for an account's own; Run now / schedules sync every connection the library indexes
+  ([connections-index-plan](../development/connections-index-plan.md)).

@@ -91,6 +91,8 @@ public static class ConnectionFileEndpoints
         if (open.At(path) is not { IsVisible: true } here)
             return TypedResults.NotFound();
 
+        // Opened in this library: its index begins (or catches up when old) in the background.
+        await browse.Indexes.OpenedAsync(id, cancellationToken);
         var sort = Enum.TryParse<SortField>(query.Sort, ignoreCase: true, out var parsed) ? parsed : SortField.Name;
         var page = browse.Options.CurrentValue.Browse;
         var limit = Math.Clamp(query.Limit ?? page.DefaultPageSize, 1, Math.Max(1, page.MaxPageSize));

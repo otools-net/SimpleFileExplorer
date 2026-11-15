@@ -260,6 +260,249 @@ namespace Otools.Net.Sfe.Core.Data.Migrations
                     b.ToTable("MissingFileTags", "SFE");
                 });
 
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.RemoteDirectory", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("ConnectionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DisplayPath")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<DateTime?>("LastWriteTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Listed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<long?>("ParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Pass")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Pending")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ProviderId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("ConnectionId", "FullName")
+                        .IsUnique();
+
+                    b.HasIndex("ConnectionId", "Pending");
+
+                    b.HasIndex("ConnectionId", "ProviderId");
+
+                    b.HasIndex("ConnectionId", "Removed");
+
+                    b.ToTable("RemoteDirectories", "SFE");
+                });
+
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.RemoteFile", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("ConnectionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContentHash")
+                        .HasMaxLength(128)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(128)");
+
+                    b.Property<long>("DirectoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("DisplayPath")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<bool>("Downloadable")
+                        .HasColumnType("bit");
+
+                    b.Property<double?>("Duration")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Extension")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastWriteTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<int>("Pass")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("Pixels")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bigint")
+                        .HasComputedColumnSql("CAST([Width] AS bigint) * [Height]", false);
+
+                    b.Property<string>("ProviderId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DirectoryId");
+
+                    b.HasIndex("ConnectionId", "DirectoryId");
+
+                    b.HasIndex("ConnectionId", "Duration");
+
+                    b.HasIndex("ConnectionId", "Extension");
+
+                    b.HasIndex("ConnectionId", "FullName")
+                        .IsUnique();
+
+                    b.HasIndex("ConnectionId", "LastWriteTime");
+
+                    b.HasIndex("ConnectionId", "Name");
+
+                    b.HasIndex("ConnectionId", "Pixels");
+
+                    b.HasIndex("ConnectionId", "ProviderId")
+                        .IsUnique()
+                        .HasFilter("[ProviderId] IS NOT NULL");
+
+                    b.HasIndex("ConnectionId", "Removed");
+
+                    b.HasIndex("ConnectionId", "Size");
+
+                    b.ToTable("RemoteFiles", "SFE");
+                });
+
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.RemoteFileTag", b =>
+                {
+                    b.Property<long>("FileId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("FileId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("RemoteFileTags", "SFE");
+                });
+
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.RemoteIndexState", b =>
+                {
+                    b.Property<int>("ConnectionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AccountKey")
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<string>("ChangeCursor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CursorTaken")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("Files")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Folders")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("LastSync")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ListingStarted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Pass")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Phase")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(16)");
+
+                    b.Property<string>("RootPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TooLong")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WalkCursor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("WalkFolderId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ConnectionId");
+
+                    b.ToTable("RemoteIndexes", "SFE");
+                });
+
             modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Tag", b =>
                 {
                     b.Property<int>("Id")
@@ -694,6 +937,46 @@ namespace Otools.Net.Sfe.Core.Data.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.RemoteDirectory", b =>
+                {
+                    b.HasOne("Otools.Net.Sfe.Core.Data.RemoteDirectory", "Parent")
+                        .WithMany("Directories")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.RemoteFile", b =>
+                {
+                    b.HasOne("Otools.Net.Sfe.Core.Data.RemoteDirectory", "Directory")
+                        .WithMany("Files")
+                        .HasForeignKey("DirectoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Directory");
+                });
+
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.RemoteFileTag", b =>
+                {
+                    b.HasOne("Otools.Net.Sfe.Core.Data.RemoteFile", "File")
+                        .WithMany("TagLinks")
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("File");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("Otools.Net.Sfe.Core.Data.Tag", b =>
                 {
                     b.HasOne("Otools.Net.Sfe.Core.Data.Tag", "Disambiguation")
@@ -777,6 +1060,18 @@ namespace Otools.Net.Sfe.Core.Data.Migrations
                 });
 
             modelBuilder.Entity("Otools.Net.Sfe.Core.Data.MissingFile", b =>
+                {
+                    b.Navigation("TagLinks");
+                });
+
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.RemoteDirectory", b =>
+                {
+                    b.Navigation("Directories");
+
+                    b.Navigation("Files");
+                });
+
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.RemoteFile", b =>
                 {
                     b.Navigation("TagLinks");
                 });

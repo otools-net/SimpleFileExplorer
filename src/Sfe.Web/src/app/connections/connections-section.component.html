@@ -78,7 +78,7 @@
                         data-manage
                         title="Rename, read only, turn off, who uses it, remove"
                         [attr.aria-expanded]="openId() === connection.id"
-                        (click)="togglePanel(connection.id)"
+                        (click)="togglePanel(connection.id, item.manage)"
                         >Manage</button
                     >
                 </div>
@@ -115,6 +115,19 @@
                                     <span class="field-hint">kept, with who uses it, but nobody opens it</span></span
                                 >
                             </label>
+                        }
+                        @if (index(); as status) {
+                            <h4>Index in this space</h4>
+                            <p class="field-hint" data-index-status>{{ describeIndex(status) }}</p>
+                            <button
+                                type="button"
+                                class="button small"
+                                data-sync-now
+                                title="Read what changed in the storage now and update this space's index of it"
+                                [disabled]="status.running"
+                                (click)="syncNow(connection.id)"
+                                >Sync now</button
+                            >
                         }
                         @if (item.manage && connection.level === 'server') {
                             <h4>Spaces it is offered to</h4>

@@ -9,6 +9,7 @@ using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.FolderRules;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Folders;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Groups;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.IndexNamespace;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Libraries;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Reauthorize;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails;
@@ -55,6 +56,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Groups.GroupsRequestBuilder Groups
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Groups.GroupsRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The index property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.IndexNamespace.IndexRequestBuilder Index
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.IndexNamespace.IndexRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The libraries property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Libraries.LibrariesRequestBuilder Libraries

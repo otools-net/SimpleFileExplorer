@@ -282,6 +282,8 @@ describe('ChangeFeed', () => {
 
         feed.changed({ path: 'Media', origin: TAB_ID });
         feed.changed({ path: 'Elsewhere', origin: null });
+        // The folder of the same name in a connection is another folder.
+        feed.changed({ path: 'Media', origin: null, connection: 7 });
         await settle(450);
         expect(api.browse).toHaveBeenCalledTimes(1);
 

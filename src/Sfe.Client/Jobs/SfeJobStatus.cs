@@ -46,6 +46,12 @@ public sealed class SfeJobStatus
     /// <summary>When it finished; null while it runs.</summary>
     public DateTimeOffset? Finished { get; init; }
 
+    /// <summary>A transfer's connection it reads from; null for the library.</summary>
+    public int? FromConnection { get; init; }
+
+    /// <summary>A transfer's connection it writes into; null for the library.</summary>
+    public int? ToConnection { get; init; }
+
     /// <summary>Whether it has finished, done or cancelled.</summary>
     [JsonIgnore]
     public bool IsFinished => Finished is not null || State is SfeJobState.Completed or SfeJobState.Cancelled;

@@ -89,7 +89,7 @@ internal sealed class TransferOpening
         {
             FolderGone = (folder, token) => rules.RemoveFolderAsync(id, folder, comparison, token),
         };
-        return (new RemoteTransferEndpoint(side, _transfers.Calls, _transfers.Listings), null);
+        return (new RemoteTransferEndpoint(side, _transfers.Calls, _transfers.Listings, _transfers.Written), null);
     }
 
     /// <summary>The person's access to connection <paramref name="id"/>, read again as the job goes.</summary>

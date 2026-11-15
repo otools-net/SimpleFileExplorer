@@ -125,6 +125,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<FileJobs>();
         services.AddSingleton<Transfers.LibraryTransfers>();
         services.AddSingleton<Transfers.TransferJobs>();
+        AddConnectionIndex(services);
         services.AddSingleton<Uploads>();
         services.AddSingleton<Archives>();
         // Shared by every library (the application's instance, handed to each one), like FfmpegLimits.
@@ -157,6 +158,21 @@ public static class ServiceCollectionExtensions
     /// The log levels set for the categories named <c>Sfe…</c> before the namespaces became <c>Otools.Net.Sfe.*</c>
     /// still apply (<see cref="LegacyLogCategories"/>): in the server's container and in each library's.
     /// </summary>
+    /// <summary>
+    /// The library's index of connections' files (agents/docs/development/connections-index-plan.md); the server's
+    /// part (<see cref="Connections.Indexing.ConnectionIndexSources"/>) is handed to each library by its host.
+    /// </summary>
+    private static void AddConnectionIndex(IServiceCollection services)
+    {
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<Connections.Indexing.ConnectionIndexLocks>();
+        services.AddSingleton<Connections.Indexing.RemoteIndexTransactions>();
+        services.AddSingleton<Connections.Indexing.RemoteIndexCleanup>();
+        services.AddSingleton<Connections.Indexing.ConnectionIndexer>();
+        services.AddSingleton<Connections.Indexing.ConnectionIndexes>();
+        services.AddSingleton<Connections.Indexing.ConnectionIndexUpdates>();
+    }
+
     private static void AddLegacyLogCategories(IServiceCollection services) =>
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IPostConfigureOptions<LoggerFilterOptions>, LegacyLogCategories>()
@@ -243,6 +259,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ConnectionGates>();
         services.AddSingleton<Transfers.TransferCalls>();
         services.AddSingleton<RemoteUploads>();
+        // What SFE changes in connections, told to every library's index of them and to the change feeds.
+        services.AddSingleton<ConnectionChanges>();
+        services.AddSingleton<Connections.Indexing.ConnectionIndexSources>();
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();
         services.AddSingleton<BackupWriter>();

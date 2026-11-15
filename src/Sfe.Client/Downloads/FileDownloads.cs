@@ -10,10 +10,11 @@ using Otools.Net.Sfe.Client.Http;
 namespace Otools.Net.Sfe.Client.Downloads;
 
 /// <summary>
-/// Files read from the server (<c>files/raw/{path}</c>): whole, from an offset, or a range, going on where a cut-off
-/// answer stopped as long as the file hasn't changed (<c>If-Range</c> with its date).
+/// Files read from the server (<c>files/raw/{path}</c> of the library or of a connection): whole, from an offset, or
+/// a range, going on where a cut-off answer stopped as long as the file hasn't changed (<c>If-Range</c> with its
+/// date), up to <paramref name="maxResumes"/> times (0 where the place serves no ranges).
 /// </summary>
-internal sealed class FileDownloads(SfeTransport transport)
+internal sealed class FileDownloads(SfeTransport transport, FilePlace place, int maxResumes)
 {
     private const int BufferBytes = 81920;
 
@@ -28,7 +29,7 @@ internal sealed class FileDownloads(SfeTransport transport)
         CancellationToken cancellationToken
     )
     {
-        var route = Routes.WithPathSegments("files/raw", path);
+        var route = place.WithPathSegments("files/raw", path);
         var cursor = new Cursor(options.Offset, options.Length);
         for (var failures = 0; ; failures++)
         {
@@ -40,7 +41,7 @@ internal sealed class FileDownloads(SfeTransport transport)
                     .ConfigureAwait(false);
                 return cursor.Written;
             }
-            catch (Exception cut) when (IsCutOff(cut, cancellationToken) && failures < transport.Options.MaxRetries)
+            catch (Exception cut) when (IsCutOff(cut, cancellationToken) && failures < maxResumes)
             {
                 var wait = RetryDelays.Backoff(failures, transport.Options.RetryDelay);
                 await Task.Delay(wait, cancellationToken).ConfigureAwait(false);
@@ -51,7 +52,7 @@ internal sealed class FileDownloads(SfeTransport transport)
     /// <summary>The content of <paramref name="path"/> from <paramref name="offset"/>, as it comes.</summary>
     public async Task<Stream> OpenReadAsync(string path, long offset, CancellationToken cancellationToken)
     {
-        var route = Routes.WithPathSegments("files/raw", path);
+        var route = place.WithPathSegments("files/raw", path);
         var response = await OpenAsync(route, new Cursor(offset, null), cancellationToken).ConfigureAwait(false);
         var body = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         return new ResponseStream(response, body);

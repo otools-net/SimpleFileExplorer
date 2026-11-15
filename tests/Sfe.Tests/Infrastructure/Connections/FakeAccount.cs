@@ -23,6 +23,9 @@ public sealed class FakeAccount(FakeProvider provider)
     /// <summary>For <see cref="RemoteErrorKind.RateLimited"/>: the wait asked.</summary>
     public TimeSpan? RetryAfter { get; set; }
 
+    /// <summary>The next call for changes answers that the cursor is no longer known (Dropbox's `reset`).</summary>
+    public bool ResetCursors { get; set; }
+
     /// <summary>Items per page of a listing: small, so paging is always met.</summary>
     public int PageSize { get; set; } = 2;
 
@@ -117,7 +120,8 @@ public sealed class FakeAccount(FakeProvider provider)
     internal IEnumerable<FakeEntry> TreeOf(string path) =>
         _entries.Values.Where(e => RemotePaths.IsInTree(e.Path, path, RemotePaths.ComparisonOf(provider.Capabilities)));
 
-    internal FakeEntry PutFolder(string path)
+    /// <param name="id">The id it keeps (an item moved, as Dropbox keeps them); a new one when null.</param>
+    internal FakeEntry PutFolder(string path, string? id = null)
     {
         if (path.Length == 0)
             return new FakeEntry("", null, null, "id:root");
@@ -125,13 +129,14 @@ public sealed class FakeAccount(FakeProvider provider)
             return existing;
 
         PutFolder(RemotePaths.Parent(path));
-        return Put(new FakeEntry(path, null, null, NextId()));
+        return Put(new FakeEntry(path, null, null, id ?? NextId()));
     }
 
-    internal FakeEntry PutFile(string path, byte[] content, DateTime? modified = null)
+    /// <param name="id">The id it keeps (an item moved); else the one at that path, or a new one.</param>
+    internal FakeEntry PutFile(string path, byte[] content, DateTime? modified = null, string? id = null)
     {
         PutFolder(RemotePaths.Parent(path));
-        return Put(new FakeEntry(path, content, modified ?? DateTime.UtcNow, Find(path)?.Id ?? NextId()));
+        return Put(new FakeEntry(path, content, modified ?? DateTime.UtcNow, id ?? Find(path)?.Id ?? NextId()));
     }
 
     internal void Remove(string path)

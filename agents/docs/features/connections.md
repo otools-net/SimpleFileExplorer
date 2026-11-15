@@ -14,8 +14,8 @@ User docs: [docs/administration/connections.md](../../../docs/administration/con
 
 Related notes: [connection-files](connection-files.md) (browse, read, change, upload, properties),
 [transfers](transfers.md) (between the library and a connection), [connection-folder-rules](connection-folder-rules.md),
-[connection-providers](connection-providers.md) (adding a kind), [dropbox](dropbox.md). Still planned: the C# facade
-([client-library-plan](../development/client-library-plan.md)), index and search
+[connection-providers](connection-providers.md) (adding a kind), [dropbox](dropbox.md), the C# facade
+([client-library](client-library.md#connections)). Still planned: index and search
 ([connections-index-plan](../development/connections-index-plan.md)). Security vectors:
 [security](../development/security.md#connections).
 

@@ -107,6 +107,7 @@ import {
 } from './task.models';
 import {
     ConnectionChange,
+    ConnectionIndexStatus,
     ConnectionInfo,
     ConnectionListing,
     ConnectionRule,
@@ -345,10 +346,7 @@ export class Api {
     signOut = () => this.post<SessionInfo>('session/logout', null, undefined, false);
     /** Browses `tenant` (a slug) as a visitor without an account. */
     browseAsGuest = (tenant: string) => this.post<SessionInfo>('session/guest', { tenant }, undefined, false);
-    /**
-     * Has the server show a one-time code for `userName` where it runs (console, recovery file); same answer for any
-     * name.
-     */
+    /** Has the server show a one-time code for `userName` where it runs (console, recovery file); same for any name. */
     requestRecovery = (userName: string) =>
         this.post<{ minutes: number }>('session/recovery', { userName }, undefined, false);
     /** A new password with the code: unlocks the account and signs it in. */
@@ -657,6 +655,8 @@ export class Api {
     setConnectionRules = (id: number, rules: ConnectionRule[]) =>
         this.put<ConnectionRuleView[]>(`connections/${id}/folder-rules`, { rules });
     connectionFolders = (id: number, path: string) => this.get<FolderPicker>(`connections/${id}/folders`, { path });
+    connectionIndex = (id: number) => this.get<ConnectionIndexStatus>(`connections/${id}/index`);
+    syncConnectionIndex = (id: number) => this.post<ConnectionIndexStatus>(`connections/${id}/index/sync`);
     authorizeConnection = (request: ConnectRequest) => this.post<SignInBegun>('connections/authorize', request);
     reauthorizeConnection = (id: number, method: SignInKindName, fields: Record<string, string> = {}) =>
         this.post<SignInBegun>(`connections/${id}/reauthorize`, { method, fields });

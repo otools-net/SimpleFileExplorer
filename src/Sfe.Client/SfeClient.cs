@@ -8,8 +8,9 @@ using Otools.Net.Sfe.Client.Http;
 namespace Otools.Net.Sfe.Client;
 
 /// <summary>
-/// A program's way into an SFE server: files, jobs, trash, properties, zips, search and tags through the facade,
-/// and every v1 route through <see cref="Raw"/>. Thread-safe; one <see cref="HttpClient"/> for all its calls.
+/// A program's way into an SFE server: files, jobs, trash, properties, zips, search, tags and connections through
+/// the facade, and every v1 route through <see cref="Raw"/>. Thread-safe; one <see cref="HttpClient"/> for all its
+/// calls.
 /// </summary>
 /// <example>
 /// <code>
@@ -64,6 +65,7 @@ public sealed class SfeClient : IDisposable
         Archives = new SfeArchives(_transport);
         Search = new SfeSearch(_transport);
         Tags = new SfeTags(_transport);
+        Connections = new SfeConnections(_transport, Server);
         Raw = CreateRawClient(httpClient, kept, _transport.BaseAddress);
     }
 
@@ -90,6 +92,9 @@ public sealed class SfeClient : IDisposable
 
     /// <summary>Tags: listed, made, and given to or taken from files.</summary>
     public SfeTags Tags { get; }
+
+    /// <summary>Connections to storage outside the libraries (Dropbox…): their files, and transfers.</summary>
+    public SfeConnections Connections { get; }
 
     /// <summary>
     /// The client generated from the v1 document: every route, administration included, with the same token and

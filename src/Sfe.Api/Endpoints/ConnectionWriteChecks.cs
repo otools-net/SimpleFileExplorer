@@ -67,4 +67,29 @@ internal static class ConnectionWriteChecks
             PathVerdict.Forbidden => FileOperationStatus.Forbidden,
             _ => FileOperationStatus.NotFound,
         };
+
+    /// <summary>
+    /// An item's status for what the provider refused about it; null for what stops the whole request (the
+    /// sign-in ended, a wait, the provider unreachable), answered by <see cref="ConnectionFileServices.RunAsync"/>.
+    /// </summary>
+    public static FileOperationStatus? StatusOf(RemoteErrorKind kind) =>
+        kind switch
+        {
+            RemoteErrorKind.NotFound => FileOperationStatus.NotFound,
+            RemoteErrorKind.Exists => FileOperationStatus.Exists,
+            RemoteErrorKind.InvalidName => FileOperationStatus.Invalid,
+            RemoteErrorKind.Refused => FileOperationStatus.Forbidden,
+            RemoteErrorKind.TooLarge or RemoteErrorKind.NotSupported => FileOperationStatus.Failed,
+            _ => null,
+        };
+
+    /// <summary>The conflict choice as written (<c>fail</c> when none); null for another word.</summary>
+    public static RemoteConflict? ConflictOf(string? value) =>
+        value switch
+        {
+            null or "fail" => RemoteConflict.Fail,
+            "keepBoth" => RemoteConflict.KeepBoth,
+            "replace" => RemoteConflict.Replace,
+            _ => null,
+        };
 }

@@ -9,6 +9,7 @@ import { IconComponent } from '../shared/icon.component';
 import { ConnectDialog, ConnectPurpose, problemOf } from './connect.dialog';
 import {
     ConnectionChange,
+    ConnectionIndexStatus,
     ConnectionInfo,
     ConnectionsView,
     FolderLevelName,
@@ -19,6 +20,7 @@ import { ProviderSetupComponent } from './provider-setup.component';
 import { UserInfo } from '../access/access.models';
 import { FolderAccessComponent } from '../access/folder-access.component';
 import { ConnectionRules } from '../access/folder-rules-source';
+import { describeIndex } from './connection-index';
 
 /**
  * Administration › My account › Connections (`mine`: the account's own) and Administration › Connections
@@ -47,12 +49,15 @@ export class ConnectionsSectionComponent {
     protected readonly renaming = signal<{ id: number; name: string } | null>(null);
     /** The connection whose folder rules are open in its panel. */
     protected readonly folderRules = signal<{ id: number; source: ConnectionRules } | null>(null);
+    /** Where the index of the connection whose panel is open stands in this space (null: not shown). */
+    protected readonly index = signal<ConnectionIndexStatus | null>(null);
     /** The space's accounts, for rules of one account (with `tenant.members`; else rules of groups only). */
     protected readonly members = signal<UserInfo[]>([]);
 
     protected readonly levelNames = LEVEL_NAMES;
     protected readonly value = valueOf;
     protected readonly checked = checkedOf;
+    protected readonly describeIndex = describeIndex;
 
     /** The connections of this page. */
     protected readonly shown = computed(() => {
@@ -108,8 +113,28 @@ export class ConnectionsSectionComponent {
         return this.config.config()?.connections?.kinds.find((k) => k.kind === kind)?.name ?? kind;
     }
 
-    protected togglePanel(id: number): void {
+    protected togglePanel(id: number, manage: boolean): void {
         this.openId.update((open) => (open === id ? null : id));
+        this.index.set(null);
+        if (manage && this.openId() === id) void this.loadIndex(id);
+    }
+
+    /** Syncs the connection's index in this space now (in the background); its status shows it running. */
+    protected async syncNow(id: number): Promise<void> {
+        try {
+            const answer = await this.api.syncConnectionIndex(id);
+            const problem = problemOf(answer);
+            if (problem) this.toasts.error(`Could not sync it: ${problem}`);
+            else this.index.set(answer);
+        } catch (error) {
+            this.toasts.error(`Could not sync it: ${(error as Error).message}`);
+        }
+    }
+
+    /** Not shown when the server doesn't tell (a connection this space doesn't use). */
+    private async loadIndex(id: number): Promise<void> {
+        const status = await this.api.connectionIndex(id).catch(() => null);
+        if (this.openId() === id) this.index.set(status);
     }
 
     protected startRename(connection: ConnectionInfo): void {

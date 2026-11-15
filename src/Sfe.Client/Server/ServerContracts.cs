@@ -14,7 +14,7 @@ internal sealed class ConfigAnswer
     public SfeLibrary? Tenant { get; init; }
     public List<SfeLibrary> Tenants { get; init; } = [];
     public ConfigFeatures? Features { get; init; }
-    public object? Connections { get; init; }
+    public ConfigConnections? Connections { get; init; }
     public ConfigTokens? AccessTokens { get; init; }
 }
 
@@ -23,6 +23,19 @@ internal sealed class ConfigFeatures
 {
     public bool Thumbnails { get; init; }
     public bool Trickplay { get; init; }
+}
+
+/// <summary>The <c>connections</c> of the configuration: the kinds offered, with their capabilities.</summary>
+internal sealed class ConfigConnections
+{
+    public List<ConfigConnectionKind> Kinds { get; init; } = [];
+}
+
+/// <summary>One of <see cref="ConfigConnections.Kinds"/>.</summary>
+internal sealed class ConfigConnectionKind
+{
+    public string Kind { get; init; } = "";
+    public SfeConnectionCapabilities? Capabilities { get; init; }
 }
 
 /// <summary>The <c>accessTokens</c> of the configuration.</summary>

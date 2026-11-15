@@ -245,12 +245,44 @@ describe('Connections', () => {
             el().querySelector<HTMLButtonElement>('[data-manage]')!.click();
             await settle();
             expect(el().querySelector('[data-sign-in-again]')).toBeNull();
+            expect(api.connectionIndex).not.toHaveBeenCalled();
+            expect(el().querySelector('[data-sync-now]')).toBeNull();
             expect(el().textContent).not.toContain('Read only');
             vi.spyOn(window, 'confirm').mockReturnValue(true);
             api.removeConnection.mockResolvedValue(undefined);
             el().querySelector<HTMLButtonElement>('[data-remove]')!.click();
             await settle();
             expect(api.removeConnection).toHaveBeenCalledWith(9);
+        });
+
+        it("shows where the connection's index stands in the space and syncs it now", async () => {
+            api.connections.mockResolvedValue(
+                view({ managed: [{ connection: connection(), manage: true, remove: true }] }),
+            );
+            const known = {
+                indexed: true,
+                running: false,
+                listing: false,
+                files: 3,
+                folders: 2,
+                lastSync: new Date().toISOString(),
+                tooLong: 0,
+                lastError: null,
+                activity: null,
+            };
+            api.connectionIndex.mockResolvedValue(known);
+            api.syncConnectionIndex.mockResolvedValue({ ...known, running: true, activity: 'Reading the changes' });
+            await create('mine');
+            el().querySelector<HTMLButtonElement>('[data-manage]')!.click();
+            await settle();
+            expect(api.connectionIndex).toHaveBeenCalledWith(7);
+            expect(el().querySelector('[data-index-status]')!.textContent).toContain('3 files and 2 folders');
+
+            el().querySelector<HTMLButtonElement>('[data-sync-now]')!.click();
+            await settle();
+            expect(api.syncConnectionIndex).toHaveBeenCalledWith(7);
+            expect(el().querySelector('[data-index-status]')!.textContent).toContain('Reading the changes');
+            expect(el().querySelector<HTMLButtonElement>('[data-sync-now]')!.disabled).toBe(true);
         });
 
         it("gives a server connection to the space's groups", async () => {

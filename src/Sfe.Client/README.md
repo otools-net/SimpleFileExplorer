@@ -1,8 +1,8 @@
 # Sfe.Client
 
 The C# client of the HTTP API (v1) of **SFE — Simple File Explorer**: list, read, upload, move, copy and delete the
-files of an SFE server, search its index and tag files, without knowing routes, headers, upload chunks or job polling.
-Targets `netstandard2.0` and `net8.0`.
+files of an SFE server and of its connections (Dropbox…), search its index and tag files, without knowing routes,
+headers, upload chunks or job polling. Targets `netstandard2.0` and `net8.0`.
 
 ```csharp
 using Otools.Net.Sfe.Client;
@@ -23,8 +23,9 @@ await foreach (var video in sfe.Search.QueryAsync("holiday e:mp4"))
 ```
 
 - **Token:** made on the server's page My account › Access tokens (`sfe_…`), sent as `Authorization: Bearer`.
-- **Facade:** `Files`, `Search`, `Tags`, `Trash`, `Properties`, `Archives`, `Libraries`, `Server`; retries of 429
-  and 503 honouring `Retry-After`; refusals as `SfeApiException` (`SfeNotFoundException`, `SfeRefusedException`,
+- **Facade:** `Files`, `Search`, `Tags`, `Trash`, `Properties`, `Archives`, `Libraries`, `Server`, `Connections`
+  (`sfe.Connections[id].Files`, transfers with the library as jobs); retries of 429 and 503 honouring
+  `Retry-After`; refusals as `SfeApiException` (`SfeNotFoundException`, `SfeRefusedException`,
   `SfeConflictException`, `SfeRateLimitedException`…) with the problem's `type` word.
 - **Every other route** (administration included): `sfe.Raw`, a client generated from the v1 OpenAPI document.
 - **Services:** `services.AddSfeClient(options => { options.BaseAddress = …; options.Token = …; })`.

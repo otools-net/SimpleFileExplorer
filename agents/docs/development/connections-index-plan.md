@@ -35,7 +35,8 @@ Files: `src/Sfe.Core/Data/SfeDbContext.cs`, `Data/Migrations/`, `DatabaseInitial
   what its thumbnail API covers (formats, sizes, batch)
 - [x] Sizes: a first sync of a large Dropbox (calls, time, rows per batch); the cursor after long pauses (reset)
 - [ ] A person confirms the sync numbers below on a real large Dropbox with
-  [dropbox-check](../../tools/dropbox-check/README.md) before the release (no account was available in phase 0)
+  [dropbox-check](../../tools/dropbox-check/README.md#index-of-a-large-dropbox) before the release (no account was
+  available in phase 0; the owner runs it by hand, 2026-11-15)
 
 As built (2026-11-15; tool: [connection-index-measure](../../tools/connection-index-measure/README.md)):
 
@@ -127,7 +128,7 @@ docs.dropboxapi.com/dropbox-api/docs/performance)
 - To confirm by a person with a real account: seconds per page of 2000, recursive on a large tree (or its errors),
   thumbnails of videos, `media_info` from `get_thumbnail_v2`, and a `reset` after a pause of weeks.
 
-**Caches: one store per connection, server-wide** (decides the cache trap below)
+**Caches: one store per connection, server-wide** (decides the cache trap below; confirmed by the owner 2026-11-15)
 
 - Connection ids are server-wide (the access database), and a remote file's bytes and thumbnails are the same in
   every library: a `ConnectionCache` keyed by connection, provider id and `rev`, under `{CacheDirectory}/connections
@@ -139,17 +140,62 @@ docs.dropboxapi.com/dropbox-api/docs/performance)
 
 ### Phase 1: tables and sync
 
-- [ ] Entities and both upgrade paths (SQL Server migration; SQLite tables **and indexes** created in existing
+- [x] Entities and both upgrade paths (SQL Server migration; SQLite tables **and indexes** created in existing
   files); path columns within `SfeDbContext.MaxPathLength`, longer remote paths reported, not truncated
-- [ ] `ConnectionIndexer`: first listing in batches (resumable after a restart: cursor and progress stored), then
+- [x] `ConnectionIndexer`: first listing in batches (resumable after a restart: cursor and progress stored), then
   changes by cursor; renames keep rows (provider ids) so tags stay on their files; cursor reset = a full pass that
   keeps tags by id
-- [ ] A background task per connection and library ("Connection index"), with a schedule, run history and logs
+- [x] A background task per connection and library ("Connection index"), with a schedule, run history and logs
   ([background-tasks](../features/background-tasks.md), [schedules](../features/schedules.md)); started at first
   open; a "Sync now" action
-- [ ] Changes made through SFE (upload, rename, move, delete, transfers) update the rows at once; the change feed
+- [x] Changes made through SFE (upload, rename, move, delete, transfers) update the rows at once; the change feed
   tells open listings ([change-feed](../features/change-feed.md))
-- [ ] Removing a connection, or its offer to a library, removes its rows there (batched)
+- [x] Removing a connection, or its offer to a library, removes its rows there (batched)
+
+As built (2026-11-15; code `Core/Connections/Indexing/`, `Data/Entities/Remote/`, `Data/RemoteIndexModel`):
+
+- Tables `RemoteDirectories`, `RemoteFiles`, `RemoteFileTags` and a fourth, `RemoteIndexes` (the sync's state per
+  connection: phase `Listing`/`Following`, pass number, change cursor and its date, the folder and page cursor a
+  listing stopped at, counts, `TooLong`, `LastError`, root path and a SHA-256 of the provider's account: another
+  root or account drops the rows). SQL Server migration `20261115023255_ConnectionIndex`, checked on LocalDB by
+  `RemoteIndexUpgradeTests` (migrated from the previous migration with a row kept; inconclusive without LocalDB);
+  SQLite through `DatabaseSchema` (nothing to add), tested on a file without the tables. Indexes of phase 0, plus
+  `(ConnectionId, Removed)` on both tables and `(ConnectionId, Pending)` / `(ConnectionId, ProviderId)` on folders.
+  `RemoteFile` has the `ISearchableFile` names (`Name` without the extension, as `FileEntry`; `FullName` the key,
+  lowered when the provider ignores case; `DisplayPath`); the interface itself is phase 3's.
+- Paths over 260 characters are left out on **both** providers (not only SQL Server), counted in
+  `RemoteIndexes.TooLong` and logged per path (100 a sync; an account's own connection: the count only). Ids over 200
+  and hashes over 128 characters are not kept.
+- Folders are keyed by path (only files carry tags): a folder renamed at the provider is a new row, its files
+  re-pointed by id. Files: by provider id first, then path; a row at a path another file now holds is set aside
+  (`RemoteIndexKeys.Parked`, removed) so a swap or a later sighting of its id keeps it. Deletes mark rows
+  `Removed`; they are deleted (batches of 1000, folders deepest first) when the sync ends. `Removed` must be filtered
+  out by phases 2 and 3.
+- Listing: folder by folder through `IRemoteStorage.ListAsync` (Dropbox pages of 500, **not** the recursive 2000 of
+  the phase 0 estimate: one call per folder more); the change cursor is taken before the walk; pending folders are
+  rows (`Pending`), so memory holds one page; each page in one transaction with `WalkFolderId` / `WalkCursor`; a
+  page cursor the provider refuses on resume lists that folder again from its start. A full pass marks unseen rows
+  (`Pass`) removed at its end. A second reset within one sync fails it. A provider without `ChangeCursor` lists in
+  full at each sync. Provider calls go through `TransferCalls` (gates, waits, retries: `GatedIndexSource`).
+- Task `BackgroundTaskKind.ConnectionIndex` ("Connection index"): one history run per connection synced (`Path` =
+  its name; null for an account's own); Run now and schedules sync every connection the library indexes, one after
+  the other; started by the browse route (`ConnectionIndexes.OpenedAsync`: first open, or older than 10 minutes,
+  state read at most once a minute per connection). Routes `GET api/v1/connections/{id}/index` and `POST …/sync`:
+  rights `connections.own|library|server` + `ConnectionManagers.MayManage` + the library uses it (404 otherwise; an
+  account's connection is never its library's administrators'). Client: the connection's **Manage** panel
+  (`connection-index.ts`). Log lines: Debug per page (entries, ms read, ms written), resume of a listing, cursor
+  reset with its age, under `Otools.Net.Sfe.Core.Connections.Indexing.ConnectionIndexer`.
+- SFE's changes: `ConnectionChanges` (server-wide) is told by the write routes, uploads and transfer endpoints
+  (`Put`, `Copied`, `Moved`, `Removed`); each library's `ConnectionIndexUpdates` writes them when it indexes the
+  connection (a folder moved: its rows rewritten by prefix in a few statements); the change feed sends `changed`
+  with `connection` to feeds whose caller uses it and sees the folder (`ConnectionFeed`). A folder copied by the
+  provider is added unlisted; its items come with the next sync.
+- Removal: `ConnectionIndexWorker` (per library) prunes the connections the library no longer reaches whenever
+  `AccessChanges.Version` moved (checked every 30 s), batched. Account-level connections stay indexed while they
+  exist (the owner's membership of the library is not checked).
+- Left: the recursive Dropbox listing (an optional `IRemoteStorage` tree listing; fewer calls on large trees);
+  case-sensitive providers on SQL Server (the key columns' collation ignores case); one listing pass shared by two
+  libraries indexing the same connection (each lists alone today).
 
 ### Phase 2: listing from the index
 

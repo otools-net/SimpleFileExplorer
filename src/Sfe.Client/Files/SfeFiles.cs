@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -20,9 +19,6 @@ namespace Otools.Net.Sfe.Client;
 /// </summary>
 public sealed class SfeFiles
 {
-    /// <summary>Paths one delete request may name.</summary>
-    private const int DeleteBatch = 1000;
-
     private readonly SfeTransport _transport;
     private readonly SfeProperties _properties;
     private readonly FileDownloads _downloads;
@@ -32,8 +28,8 @@ public sealed class SfeFiles
     {
         _transport = transport;
         _properties = properties;
-        _downloads = new FileDownloads(transport);
-        _uploads = new FileUploads(transport);
+        _downloads = new FileDownloads(transport, FilePlace.Library, transport.Options.MaxRetries);
+        _uploads = new FileUploads(transport, FilePlace.Library, transport.Options.UploadChunkBytes);
     }
 
     /// <summary>A folder's items, folders first, by name; fetched a page at a time as they are read.</summary>
@@ -60,7 +56,7 @@ public sealed class SfeFiles
         var offset = 0;
         while (true)
         {
-            var route = PageRoute(SfePath.Normalize(folder), offset, options);
+            var route = FilePlace.Library.PageRoute(SfePath.Normalize(folder), offset, options);
             var page = await _transport
                 .ReadAsync<ListingPage>(SfeRequest.Get(route), cancellationToken)
                 .ConfigureAwait(false);
@@ -236,24 +232,16 @@ public sealed class SfeFiles
         CancellationToken cancellationToken = default
     ) => DeleteAsync(paths, permanent: true, cancellationToken);
 
-    private async Task<IReadOnlyList<SfeDeleteResult>> DeleteAsync(
+    private Task<IReadOnlyList<SfeDeleteResult>> DeleteAsync(
         IEnumerable<string> paths,
         bool permanent,
         CancellationToken cancellationToken
-    )
-    {
-        var results = new List<SfeDeleteResult>();
-        var all = paths.Select(SfePath.Normalize).ToList();
-        for (var first = 0; first < all.Count; first += DeleteBatch)
+    ) => PathBatches.CollectAsync(paths, async batch =>
         {
-            var batch = new DeleteRequest(all.Skip(first).Take(DeleteBatch).ToList(), permanent);
-            var answer = await _transport
-                .ReadAsync<DeleteAnswer>(SfeRequest.Post(Routes.V1("files/delete"), batch), cancellationToken)
-                .ConfigureAwait(false);
-            results.AddRange(answer.Items);
-        }
-        return results;
-    }
+            var request = SfeRequest.Post(Routes.V1("files/delete"), new DeleteRequest(batch, permanent));
+            var answer = await _transport.ReadAsync<DeleteAnswer>(request, cancellationToken).ConfigureAwait(false);
+            return (IEnumerable<SfeDeleteResult>)answer.Items;
+        });
 
     private async Task<SfeJob> StartJobAsync(
         SfeJobKind kind,
@@ -276,13 +264,5 @@ public sealed class SfeFiles
             .ReadAsync<SfeJobStatus>(SfeRequest.Post(Routes.V1("files/jobs"), body), cancellationToken)
             .ConfigureAwait(false);
         return new SfeJob(_transport, status);
-    }
-
-    private static string PageRoute(string folder, int offset, SfeListOptions options)
-    {
-        var sort = options.Sort.ToString().ToLowerInvariant();
-        var descending = options.Descending ? "true" : "false";
-        var paging = string.Format(CultureInfo.InvariantCulture, "&offset={0}&limit={1}", offset, options.PageSize);
-        return Routes.WithPath("browse", folder) + $"{paging}&sort={sort}&desc={descending}";
     }
 }

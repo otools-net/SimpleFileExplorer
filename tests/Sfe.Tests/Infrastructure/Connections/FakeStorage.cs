@@ -135,6 +135,11 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
     public Task<RemoteChanges> ChangesAsync(string? cursor, CancellationToken cancellationToken) =>
         Call("changes", cursor ?? "", () =>
         {
+            if (cursor is not null && account.ResetCursors)
+            {
+                account.ResetCursors = false;
+                return new RemoteChanges([], cursor, Reset: true);
+            }
             var from = cursor is null ? int.MaxValue : int.Parse(cursor, CultureInfo.InvariantCulture);
             var (paths, position) = account.ChangesSince(from);
             var comparison = RemotePaths.ComparisonOf(capabilities);
@@ -170,10 +175,12 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
         foreach (var item in tree)
         {
             var path = target + item.Path[source.Length..];
+            // A move keeps the items' ids (as Dropbox does); a copy gets new ones.
+            var id = move ? item.Id : null;
             if (item.Content is { } bytes)
-                account.PutFile(path, bytes, item.Modified);
+                account.PutFile(path, bytes, item.Modified, id);
             else
-                account.PutFolder(path);
+                account.PutFolder(path, id);
         }
         return ToItem(account.Find(target)!);
     }

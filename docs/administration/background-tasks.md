@@ -17,6 +17,9 @@ exact time, how long until then, and why (which schedule, or trickplay's own per
   again by the listings.
 - **Schedule** opens a new schedule for that task.
 - Thumbnails can't be started or scheduled: listings ask for them.
+- **Connection index** brings the space's index of each [connection](connections.md#the-index-of-a-connection)
+  opened in it up to date with the storage's files; **Run now** and schedules sync every one of them, one after the
+  other. It also runs by itself when a connection is opened, and with **Sync now** on the connection.
 - **Trash purge** deletes for good what has been in the [trash](file-management.md#trash) longer than the space's
   **Days in the trash**. It also runs by itself when the trash is used (at most twice a day).
 

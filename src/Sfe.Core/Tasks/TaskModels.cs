@@ -23,6 +23,13 @@ public enum BackgroundTaskKind
     /// history per job; not in the task list, neither started, cancelled nor scheduled here (the file jobs' routes).
     /// </summary>
     Transfer,
+
+    /// <summary>
+    /// Syncs of the index of connections' files (<see cref="Connections.Indexing.ConnectionIndexes"/>): one run of
+    /// the history per connection synced; started from the list or a schedule, it syncs every connection the
+    /// library indexes.
+    /// </summary>
+    ConnectionIndex,
 }
 
 public enum TaskState
@@ -117,7 +124,8 @@ public enum TaskStartResult
     Unavailable,
 }
 
-/// <param name="Path">Folder a scan covers, relative to the library root; null for the other tasks.</param>
+/// <param name="Path">Folder a scan covers, relative to the library root; the connection synced (its name, null for an
+/// account's own) for the connection index; null for the other tasks.</param>
 /// <param name="ScheduleId">Schedule that started the run.</param>
 public record TaskRunSummary(
     long Id,

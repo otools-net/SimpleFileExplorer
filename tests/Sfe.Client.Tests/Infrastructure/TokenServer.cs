@@ -1,10 +1,12 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using Otools.Net.Sfe.Api.Endpoints;
 using Otools.Net.Sfe.Client.Generated;
 using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
 using Otools.Net.Sfe.Core.Indexing;
 using Otools.Net.Sfe.Tests.Infrastructure;
 
@@ -27,6 +29,9 @@ public sealed class TokenServer : IDisposable
         Token = token;
     }
 
+    /// <summary>The administrator's account (the token's).</summary>
+    public int AdminId { get; private init; }
+
     /// <summary>The library the server shows (its files are under <see cref="TestLibrary.Root"/>).</summary>
     public TestLibrary Library { get; }
 
@@ -43,20 +48,55 @@ public sealed class TokenServer : IDisposable
 
     /// <summary>
     /// Starts a server (<c>Sfe:Mode=External</c>, as <see cref="TestLibrary.Settings"/> sets it: the test client has
-    /// no remote address) and makes a token of its administrator.
+    /// no remote address) and makes a token of its administrator; with <paramref name="provider"/>, the server knows
+    /// its kind of connection (<see cref="ConnectAsync"/>).
     /// </summary>
     public static async Task<TokenServer> StartAsync(
         CancellationToken cancellationToken,
-        Action<IDictionary<string, string?>>? configure = null
+        Action<IDictionary<string, string?>>? configure = null,
+        FakeProvider? provider = null
     )
     {
         var library = new TestLibrary();
         var factory = ApiClients.CreateFactory(library, configure);
+        if (provider is not null)
+        {
+            factory = factory.WithWebHostBuilder(builder =>
+                builder.ConfigureServices(services => services.AddSingleton<IConnectionProvider>(provider))
+            );
+        }
         using var admin = await ApiClients.SetUpAsync(factory, cancellationToken);
         var session = await TokenClients.GetAsync<SessionInfo>(admin, $"{V1}/session", cancellationToken);
         var draft = new AccessTokenDraft("Client library tests");
         var token = await TokenClients.CreateAsync(factory, session.User!.Id, draft, cancellationToken);
-        return new TokenServer(library, factory, TokenClients.Bearer(factory, token.Secret), token.Secret);
+        var bearer = TokenClients.Bearer(factory, token.Secret);
+        return new TokenServer(library, factory, bearer, token.Secret) { AdminId = session.User.Id };
+    }
+
+    /// <summary>
+    /// Makes a connection of the <see cref="FakeProvider"/> given at the start to its account
+    /// <paramref name="account"/> (whole), as the sign-in would: the administrator's own, or the library's.
+    /// </summary>
+    public async Task<int> ConnectAsync(string account, ConnectionLevel level, CancellationToken cancellationToken)
+    {
+        var tenant = level == ConnectionLevel.Library ? (await TenantAsync(cancellationToken)) : (int?)null;
+        var owner = level == ConnectionLevel.Account ? AdminId : (int?)null;
+        var made = await Factory
+            .Services.GetRequiredService<ConnectionService>()
+            .CreateAsync(
+                new(FakeProvider.FakeKind, $"Files of {account}", level, OwnerId: owner, TenantId: tenant),
+                new ConnectionGrant(account, $"{account}@fake", $"id:{account}"),
+                AdminId,
+                cancellationToken
+            );
+        return made.Value!.Id;
+    }
+
+    /// <summary>The library's id (the server has one).</summary>
+    public async Task<int> TenantAsync(CancellationToken cancellationToken)
+    {
+        var accounts = Factory.Services.GetRequiredService<AccessService>();
+        return (await accounts.GetTenantsAsync(cancellationToken)).Single().Id;
     }
 
     /// <summary>

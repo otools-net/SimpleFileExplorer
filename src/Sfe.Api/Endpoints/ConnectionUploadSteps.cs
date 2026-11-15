@@ -75,6 +75,8 @@ internal static class ConnectionUploadSteps
             var item = await storage.FinishUploadAsync(upload.Session, target, cancellationToken);
             services.Uploads.Remove(upload);
             services.Listings.Forget(open.Connection.Id);
+            var made = ConnectionItemChange.Put(open.Connection.Id, open.Capabilities, item);
+            await services.Changes.ReportAsync(made, CancellationToken.None);
             return TypedResults.Ok(ConnectionListings.ToItem(item, services.Classifier));
         });
     }

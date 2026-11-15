@@ -84,7 +84,6 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [readability-handover](agents/docs/development/readability-handover.md) | handover of the readability refactoring: where it stands, how to resume, checks per commit, patterns set, traps | `agents/tools/readability/` |
 | [readability-refactoring-plan](agents/docs/development/readability-refactoring-plan.md) | plan: bringing existing code to the readability rules, phase by phase (starting numbers, checks per step, traps, final checks in CI) | `agents/tools/readability/` |
 | [namespaces](agents/docs/development/namespaces.md) | C# namespaces `Otools.Net.Sfe.*` (projects and assemblies keep `Sfe.*`), strings that keep the old text, old log-level keys | `LegacyLogCategories`, `agents/tools/namespace-rename/` |
-| [client-library-plan](agents/docs/development/client-library-plan.md) | plan 4: `Sfe.Client` C# package (generated client + hand-written facade), tests, packaging | `src/Sfe.Client/` |
 | [connections-index-plan](agents/docs/development/connections-index-plan.md) | plan 6: index, search ("Everywhere"), tags and previews of connection files, content cache | `SfeDbContext`, `Core/Search/`, `Core/Tagging/` |
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
@@ -207,4 +206,4 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [duplicates](agents/docs/features/duplicates.md) | duplicate groups and removal | `DuplicateFinder`, `DuplicateRemover` |
 | [similar-videos](agents/docs/features/similar-videos.md) | video fingerprints and matching | `VideoFingerprint`, `VideoMatcher` |
 | [system-info](agents/docs/features/system-info.md) | System › About, Playback › Video streams | `api/system/info` |
-| [client-library](agents/docs/features/client-library.md) | the C# package `Sfe.Client`: facade over its own JSON calls, `Raw` (Kiota) for the rest, errors, retries, jobs, uploads, search, tags, public API snapshot, sample, packing | `src/Sfe.Client/`, `tests/Sfe.Client.Tests/`, `samples/Sfe.Client.Sample/` |
+| [client-library](agents/docs/features/client-library.md) | the C# package `Sfe.Client`: facade over its own JSON calls, `Raw` (Kiota) for the rest, errors, retries, jobs, uploads, search, tags, connections, public API snapshot, sample, packing | `src/Sfe.Client/`, `tests/Sfe.Client.Tests/`, `samples/Sfe.Client.Sample/` |

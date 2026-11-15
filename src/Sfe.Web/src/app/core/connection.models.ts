@@ -212,3 +212,20 @@ export interface ConnectionRuleView extends ConnectionRule {
     id: number;
     name: string;
 }
+
+/** `GET api/connections/{id}/index`: where the index of a connection stands in the session's library. */
+export interface ConnectionIndexStatus {
+    /** The library has begun indexing it (it was opened here). */
+    indexed: boolean;
+    running: boolean;
+    /** A full listing is under way: the index doesn't hold everything yet. */
+    listing: boolean;
+    files: number;
+    folders: number;
+    lastSync: string | null;
+    /** Items left out: their path is longer than the index stores. */
+    tooLong: number;
+    lastError: string | null;
+    /** What the running sync is doing, in words. */
+    activity: string | null;
+}

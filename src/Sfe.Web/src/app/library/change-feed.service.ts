@@ -22,6 +22,8 @@ export const HIDDEN_GRACE = 30_000;
 export interface FolderChange {
     path: string;
     origin: string | null;
+    /** The connection whose folder it is; absent for the library's. */
+    connection?: number;
 }
 
 /**
@@ -183,11 +185,16 @@ export class ChangeFeed {
         return () => this.listeners.delete(listener);
     }
 
-    /** A change of the folder listed, made elsewhere: refreshed once the changes settle. */
+    /**
+     * A change of the folder listed (the library's, or the connection's shown), made elsewhere: refreshed once the
+     * changes settle. Listeners hear the library's folders only.
+     */
     changed(change: FolderChange): void {
-        if (change.origin !== TAB_ID) this.listeners.forEach((listener) => listener(change));
+        const connection = change.connection ?? null;
+        if (change.origin !== TAB_ID && connection === null) this.listeners.forEach((listener) => listener(change));
         const route = this.store.route();
         if (change.origin === TAB_ID || route.q || change.path !== route.path) return;
+        if (connection !== (route.c ?? null)) return;
         clearTimeout(this.timer);
         this.timer = setTimeout(() => void this.store.refresh(), SETTLE);
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Otools.Net.Sfe.Client;
@@ -19,6 +20,7 @@ public class SfeApiException : SfeException
         Title = problem.Title;
         Detail = problem.Detail;
         Errors = problem.Errors;
+        ConnectionProblem = ConnectionProblemOf(problem.Word);
     }
 
     /// <summary>The HTTP status of the answer (404, 409…).</summary>
@@ -38,6 +40,25 @@ public class SfeApiException : SfeException
 
     /// <summary>For a refused input (400), the reasons by field name; empty otherwise.</summary>
     public IReadOnlyDictionary<string, string[]> Errors { get; }
+
+    /// <summary>
+    /// For a call on a connection that failed because of it or its provider (a <c>connection-…</c> word): why, and so
+    /// what to do; null for any other problem.
+    /// </summary>
+    public SfeConnectionProblem? ConnectionProblem { get; }
+
+    private static SfeConnectionProblem? ConnectionProblemOf(string? word) =>
+        word switch
+        {
+            "connection-needs-reconnecting" => SfeConnectionProblem.NeedsReconnecting,
+            "connection-rate-limited" => SfeConnectionProblem.RateLimited,
+            "connection-unavailable" => SfeConnectionProblem.Unavailable,
+            "connection-refused" => SfeConnectionProblem.Refused,
+            "connection-not-supported" => SfeConnectionProblem.NotSupported,
+            "connection-unusable" => SfeConnectionProblem.Unusable,
+            { } other when other.StartsWith("connection-", StringComparison.Ordinal) => SfeConnectionProblem.Unknown,
+            _ => null,
+        };
 
     private static string MessageOf(int statusCode, SfeProblem problem)
     {

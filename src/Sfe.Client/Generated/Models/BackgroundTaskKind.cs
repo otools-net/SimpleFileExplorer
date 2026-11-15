@@ -32,5 +32,9 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         #pragma warning disable CS1591
         Transfer,
         #pragma warning restore CS1591
+        [EnumMember(Value = "connectionIndex")]
+        #pragma warning disable CS1591
+        ConnectionIndex,
+        #pragma warning restore CS1591
     }
 }

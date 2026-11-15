@@ -11,10 +11,11 @@ using Otools.Net.Sfe.Client.Http;
 namespace Otools.Net.Sfe.Client.Uploads;
 
 /// <summary>
-/// Resumable uploads (agents/docs/features/uploads.md): the name checked, the upload started (or an unfinished one
-/// found again), its bytes sent in chunks, then finished into its folder.
+/// Resumable uploads (agents/docs/features/uploads.md) into the library or a connection (the same routes below
+/// <paramref name="place"/>): the name checked, the upload started (or an unfinished one found again), its bytes sent
+/// in chunks of at most <paramref name="chunkBytes"/>, then finished into its folder.
 /// </summary>
-internal sealed class FileUploads(SfeTransport transport)
+internal sealed class FileUploads(SfeTransport transport, FilePlace place, int chunkBytes)
 {
     /// <summary>
     /// Within this, the date of an unfinished upload is the same as the one given (as the web page does).
@@ -44,7 +45,7 @@ internal sealed class FileUploads(SfeTransport transport)
             content.Position = origin + upload.Received;
         try
         {
-            var chunks = new UploadChunks(transport, upload);
+            var chunks = new UploadChunks(transport, place, upload, chunkBytes);
             await chunks.SendAsync(content, origin, options.Progress, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
@@ -100,7 +101,7 @@ internal sealed class FileUploads(SfeTransport transport)
     /// </summary>
     private async Task RefuseTakenAsync(string target, string name, CancellationToken cancellationToken)
     {
-        var request = new SfeRequest(HttpMethod.Post, Routes.V1("files/uploads/check"))
+        var request = new SfeRequest(HttpMethod.Post, place.Route("files/uploads/check"))
         {
             Content = () => SfeJson.Content(new UploadCheckRequest(target, [name])),
             // A question: asking it twice changes nothing.
@@ -123,14 +124,14 @@ internal sealed class FileUploads(SfeTransport transport)
         if (resume && await FindUnfinishedAsync(start, cancellationToken).ConfigureAwait(false) is { } unfinished)
             return unfinished;
         return await transport
-            .ReadAsync<UploadInfo>(SfeRequest.Post(Routes.V1("files/uploads"), start), cancellationToken)
+            .ReadAsync<UploadInfo>(SfeRequest.Post(place.Route("files/uploads"), start), cancellationToken)
             .ConfigureAwait(false);
     }
 
     private async Task<UploadInfo?> FindUnfinishedAsync(UploadStart start, CancellationToken cancellationToken)
     {
         var unfinished = await transport
-            .ReadAsync<List<UploadInfo>>(SfeRequest.Get(Routes.V1("files/uploads")), cancellationToken)
+            .ReadAsync<List<UploadInfo>>(SfeRequest.Get(place.Route("files/uploads")), cancellationToken)
             .ConfigureAwait(false);
         return unfinished.FirstOrDefault(upload => IsSameFile(upload, start));
     }
@@ -153,7 +154,7 @@ internal sealed class FileUploads(SfeTransport transport)
         CancellationToken cancellationToken
     )
     {
-        var request = SfeRequest.Post(Routes.V1($"files/uploads/{id}/finish"), new UploadFinish(conflicts));
+        var request = SfeRequest.Post(place.Route($"files/uploads/{id}/finish"), new UploadFinish(conflicts));
         using var response = await transport.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.NoContent)
             return null;
@@ -166,7 +167,7 @@ internal sealed class FileUploads(SfeTransport transport)
         try
         {
             // Not the caller's token: it is cancelled already, and the removal must still be sent.
-            var request = SfeRequest.Delete(Routes.V1($"files/uploads/{id}"));
+            var request = SfeRequest.Delete(place.Route($"files/uploads/{id}"));
             await transport.RunAsync(request, CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is SfeException or HttpRequestException or TimeoutException)

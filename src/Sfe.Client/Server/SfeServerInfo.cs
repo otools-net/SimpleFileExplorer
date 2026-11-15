@@ -19,6 +19,10 @@ public sealed class SfeServerInfo
         Library = config.Tenant;
         Libraries = config.Tenants;
         _functions = FunctionsOf(config);
+        ConnectionKinds = (config.Connections?.Kinds ?? [])
+            .Where(kind => kind.Capabilities is not null)
+            .GroupBy(kind => kind.Kind, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First().Capabilities!, StringComparer.Ordinal);
     }
 
     /// <summary>The server's version (<c>1.85.1</c>).</summary>
@@ -42,6 +46,9 @@ public sealed class SfeServerInfo
     /// <summary>The server's version as a number, when it reads as one (a pre-release keeps its numbers).</summary>
     public Version? ParsedVersion =>
         System.Version.TryParse(Version.Split('-', '+')[0], out var parsed) ? parsed : null;
+
+    /// <summary>The capabilities of the providers of the connection kinds offered, by kind.</summary>
+    internal IReadOnlyDictionary<string, SfeConnectionCapabilities> ConnectionKinds { get; }
 
     /// <summary>Whether the server offers <paramref name="function"/> to the caller.</summary>
     /// <param name="function">The function asked for.</param>

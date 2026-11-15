@@ -9,16 +9,16 @@ using Otools.Net.Sfe.Client.Http;
 namespace Otools.Net.Sfe.Client.Uploads;
 
 /// <summary>
-/// Sends an upload's bytes in chunks (<c>PUT files/uploads/{id}?offset=</c>), one buffer in memory whatever the size
-/// (each chunk a byte array, so that no target streams a request body of unknown length). A chunk cut off on the way
-/// is sent again from what the server has; a chunk refused as too large (413, a proxy's limit) is halved, down to
-/// 256 KB, as the web page does.
+/// Sends an upload's bytes in chunks (<c>PUT files/uploads/{id}?offset=</c> of the library or a connection), one
+/// buffer in memory whatever the size (each chunk a byte array, so that no target streams a request body of unknown
+/// length). A chunk cut off on the way is sent again from what the server has; a chunk refused as too large (413, a
+/// proxy's limit) is halved, down to 256 KB, as the web page does.
 /// </summary>
-internal sealed class UploadChunks(SfeTransport transport, UploadInfo upload)
+internal sealed class UploadChunks(SfeTransport transport, FilePlace place, UploadInfo upload, int chunkBytes)
 {
     private const int SmallestChunk = 256 * 1024;
 
-    private int _chunkBytes = transport.Options.UploadChunkBytes;
+    private int _chunkBytes = chunkBytes;
     private int _failures;
 
     /// <summary>
@@ -120,7 +120,7 @@ internal sealed class UploadChunks(SfeTransport transport, UploadInfo upload)
         CancellationToken cancellationToken
     )
     {
-        var route = Routes.V1($"files/uploads/{upload.Id}?offset={offset.ToString(CultureInfo.InvariantCulture)}");
+        var route = place.Route($"files/uploads/{upload.Id}?offset={offset.ToString(CultureInfo.InvariantCulture)}");
         var request = new SfeRequest(HttpMethod.Put, route)
         {
             Content = () => new ByteArrayContent(buffer, index, count),
@@ -133,7 +133,7 @@ internal sealed class UploadChunks(SfeTransport transport, UploadInfo upload)
 
     private async Task<long> ReceivedAsync(CancellationToken cancellationToken)
     {
-        var route = Routes.V1($"files/uploads/{upload.Id}");
+        var route = place.Route($"files/uploads/{upload.Id}");
         var info = await transport
             .ReadAsync<UploadInfo>(SfeRequest.Get(route), cancellationToken)
             .ConfigureAwait(false);

@@ -85,37 +85,44 @@ afternoon; most of it is waiting.
 4. A file to note results in: date, SFE version, database, Dropbox entries (files and folders), and each number
    asked for below.
 5. Make the index's logs visible: in the scratch install's `appsettings.json`, under `Logging:LogLevel`, set
-   `"Otools.Net.Sfe.Core.Connections": "Debug"`; restart.
+   `"Otools.Net.Sfe.Core.Connections": "Debug"`; restart. The index's lines come from
+   `Otools.Net.Sfe.Core.Connections.Indexing.ConnectionIndexer`: one per page (entries, ms reading, ms writing), one
+   when a sync resumes after a restart, one on a cursor reset (with the cursor's age).
 
 ### Steps
 
 1. **Connect.** Set the app key of the Full Dropbox app (Administration › Connections › Settings), then My account ›
    Connections › Add, and allow at Dropbox. Note the time.
-2. **First sync.** Open the connection once: its "Connection index" task starts (Administration › Tasks shows it
-   running, with its progress). Don't use the connection meanwhile. Note:
+2. **First sync.** Open the connection once: the "Connection index" task starts (Administration › Tasks shows it
+   running, with a line like "Listing “X”: N files, M folders"; the connection's **Manage** panel shows the index's
+   status). Don't use the connection meanwhile. Note:
    - [ ] the total time, and the entries indexed (the task's run history or log gives both);
-   - [ ] seconds per page of 2000 entries: the log's lines per page, first, middle and last pages (the estimate
-     says 1–2 s; much more makes 1 M files take hours);
+   - [ ] seconds per page: the sync lists **folder by folder, in pages of 500** (one call per folder, plus one per
+     500 entries), not one recursive listing. Note the log's ms per page on first, middle and last pages, and the
+     number of folders: with many small folders, calls ≈ folders; the plan's estimate (~525 calls of 2000) assumed
+     a recursive listing, so expect more calls and note the total time against it;
    - [ ] any 429 (rate limited) in the log, with its `Retry-After`, and whether the sync went on by itself;
    - [ ] the server's memory every few minutes (Task Manager, or `Get-Process Sfe.Api` in PowerShell, column
      `WS`): it must stay flat, not grow with the entries;
    - [ ] the database file's size after the sync (`.sfe/sfe.db` in the library, or the SQL Server database):
      about 0.5 KB a row on SQLite, 1 KB on SQL Server;
-   - [ ] whether the recursive listing failed on the large tree (an error in the log naming `list_folder`): the
-     SDK warns it can; if so, what the sync did next.
+   - [ ] any error in the log naming `list_folder` on a very large folder (50 000 entries or more).
 3. **Restart halfway.** Sync again from scratch (remove the connection, add it back), and stop the server
-   (Ctrl+C) when the task shows about half done. Start it again and open the connection:
+   (Ctrl+C) when the task's counts are about half of step 2's. Start it again and open the connection (or press
+   **Sync now** in its Manage panel, under My account › Connections or Administration › Connections):
    - [ ] the task goes on from where it stopped (its progress doesn't start at 0, the log says it resumed);
    - [ ] at the end, the entry count equals step 2's (no rows twice, none missing).
 4. **Changes** *(writes: use the App folder app)*. Index the App folder app's connection with a few hundred files.
-   Tag three files in SFE. Then on Dropbox's web page: add a file, rename a tagged file, move a tagged folder,
-   delete a tagged file. Press **Sync now**:
-   - [ ] the new file is listed, the deleted one gone;
-   - [ ] the renamed and moved files keep their tags (rows follow Dropbox's ids);
-   - [ ] the sync took seconds (by cursor), not a full pass.
+   Then on Dropbox's web page: add a file, rename a file, move a folder, delete a file. Press **Sync now** in the
+   connection's Manage panel:
+   - [ ] the status's counts follow (one file more, one less), and the log names the changes;
+   - [ ] the sync took seconds (by cursor), not a full pass;
+   - [ ] once tags on connection files exist (plan 6, phase 4): tag three files first, and check the renamed and
+     moved ones keep their tags (rows follow Dropbox's ids).
 5. **A long pause.** Leave the install of step 2 off for **two weeks or more**, start it and press **Sync now**:
    - [ ] the log says whether Dropbox reset the cursor, and how old it was;
-   - [ ] after a reset, a full pass ran and tags on files still there are kept.
+   - [ ] after a reset, a full pass ran (the counts end as before), and, once tags exist, tags on files still
+     there are kept.
 6. **Search** (once phase 3 is built): a name, a type and a size on the large connection; note the time to the
    first page and to the count (the plan's table, measured locally on 3 M rows, says what to expect).
 7. **Previews** (once phase 5 is built): open a folder of photos and one of videos:

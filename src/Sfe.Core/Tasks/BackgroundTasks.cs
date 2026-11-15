@@ -1,3 +1,4 @@
+using Otools.Net.Sfe.Core.Connections.Indexing;
 using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.FileTracking;
 using Otools.Net.Sfe.Core.Indexing;
@@ -17,7 +18,8 @@ public sealed class BackgroundTasks(
     SimilarVideoFinder similarVideos,
     ThumbnailService thumbnails,
     Trash trash,
-    TaskHistory history
+    TaskHistory history,
+    ConnectionIndexes connectionIndexes
 )
 {
     /// <summary>The tasks schedules can start.</summary>
@@ -45,6 +47,7 @@ public sealed class BackgroundTasks(
             BackgroundTaskKind.Trickplay => DescribeTrickplay(last),
             BackgroundTaskKind.SimilarVideos => DescribeSimilarVideos(last),
             BackgroundTaskKind.TrashPurge => DescribeTrashPurge(last),
+            BackgroundTaskKind.ConnectionIndex => DescribeConnectionIndex(last),
             _ => DescribeThumbnails(last),
         };
 
@@ -208,6 +211,36 @@ public sealed class BackgroundTasks(
         );
     }
 
+    private TaskInfo DescribeConnectionIndex(TaskRunSummary? last)
+    {
+        var running = connectionIndexes.Running;
+        var busy = running.Count > 0;
+        var state =
+            !connectionIndexes.IsAvailable ? TaskState.Unavailable
+            : busy ? TaskState.Running
+            : TaskState.Idle;
+        var detail = state switch
+        {
+            TaskState.Unavailable => "Connections are not available here.",
+            TaskState.Running => string.Join("; ", running.Select(r => r.Describe())),
+            _ => last is null ? "Starts when a connection is first opened in this library." : LastResult(last),
+        };
+        return new TaskInfo(
+            BackgroundTaskKind.ConnectionIndex,
+            state,
+            null,
+            busy ? running[0].Started : null,
+            null,
+            detail,
+            CanStart: connectionIndexes.IsAvailable,
+            CanCancel: busy,
+            CanSchedule: true,
+            null,
+            null,
+            last
+        );
+    }
+
     private static string LastResult(TaskRunSummary? last) =>
         last switch
         {
@@ -239,6 +272,8 @@ public sealed class BackgroundTasks(
                 return trash.TryStartPurge(trigger, scheduleId)
                     ? TaskStartResult.Started
                     : TaskStartResult.AlreadyRunning;
+            case BackgroundTaskKind.ConnectionIndex:
+                return connectionIndexes.StartAll(trigger, scheduleId);
             default:
                 return TaskStartResult.Unavailable;
         }
@@ -253,6 +288,7 @@ public sealed class BackgroundTasks(
             BackgroundTaskKind.SimilarVideos => similarVideos.Cancel(),
             BackgroundTaskKind.TrashPurge => trash.CancelPurge(),
             BackgroundTaskKind.Transfer => false,
+            BackgroundTaskKind.ConnectionIndex => connectionIndexes.Cancel(),
             _ => thumbnails.CancelAll(),
         };
 }

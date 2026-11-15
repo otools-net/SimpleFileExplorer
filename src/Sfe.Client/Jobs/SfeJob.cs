@@ -8,8 +8,9 @@ using Otools.Net.Sfe.Client.Jobs;
 namespace Otools.Net.Sfe.Client;
 
 /// <summary>
-/// A move or copy running on the server: followed until it ends, its name clashes answered, or stopped. The server
-/// keeps a job in memory (the last 50 finished): a restart of the server forgets it.
+/// A move or copy running on the server (in the library, or a transfer with a connection): followed until it ends,
+/// its name clashes answered, or stopped. The server keeps a job in memory (the last 50 finished): a restart of the
+/// server forgets it.
 /// </summary>
 public sealed class SfeJob
 {
@@ -98,14 +99,40 @@ public sealed class SfeJob
         await WaitPastAnswerAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>Stops the job: what is done stays, nothing half copied does.</summary>
+    /// <summary>
+    /// Stops the job (what is done stays, nothing half copied does), then asks where it stands
+    /// (<see cref="Status"/>): a job waiting on a clash leaves its waiting a moment later, so a
+    /// <see cref="WaitAsync"/> right after sees it end rather than the old clash.
+    /// </summary>
     /// <param name="cancellationToken">Stops waiting for the server.</param>
-    public Task CancelAsync(CancellationToken cancellationToken = default) =>
-        _transport.RunAsync(SfeRequest.Post(Route("/cancel")), cancellationToken);
+    public async Task CancelAsync(CancellationToken cancellationToken = default)
+    {
+        await _transport.RunAsync(SfeRequest.Post(Route("/cancel")), cancellationToken).ConfigureAwait(false);
+        await WaitPastAnswerAsync(cancellationToken).ConfigureAwait(false);
+    }
 
     /// <summary>
-    /// Asks where the job stands until it no longer waits: the server takes the answer at once but the job leaves its
-    /// waiting a moment later. Bounded, as a next clash may come that soon; <see cref="WaitAsync"/> then asks it.
+    /// Starts again, as a new job, the items of an ended transfer with a connection that failed or were not reached
+    /// (the same places and clash choice; a file already there of the same size counts as done), and answers that
+    /// job. The server keeps what to retry 24 hours after the job ended, while it runs.
+    /// </summary>
+    /// <param name="cancellationToken">Stops waiting for the server (not the job).</param>
+    /// <exception cref="SfeConflictException"><c>job-running</c>: it hasn't ended; <c>nothing-to-retry</c>: nothing
+    /// failed, or it was started again already, or is too old.</exception>
+    /// <exception cref="SfeNotFoundException">Not a transfer of the caller's (moves and copies inside one place are
+    /// not retried).</exception>
+    public async Task<SfeJob> RetryAsync(CancellationToken cancellationToken = default)
+    {
+        var status = await _transport
+            .ReadAsync<SfeJobStatus>(SfeRequest.Post(Route("/retry")), cancellationToken)
+            .ConfigureAwait(false);
+        return new SfeJob(_transport, status);
+    }
+
+    /// <summary>
+    /// Asks where the job stands until it no longer waits: the server takes an answer (or a cancel) at once but the
+    /// job leaves its waiting a moment later. Bounded, as a next clash may come that soon; <see cref="WaitAsync"/>
+    /// then asks it.
     /// </summary>
     private async Task WaitPastAnswerAsync(CancellationToken cancellationToken)
     {

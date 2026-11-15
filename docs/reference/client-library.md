@@ -1,7 +1,7 @@
 # C# client library
 
 `Sfe.Client` is a .NET package for programs that work with an SFE server: list, read, upload, move, copy and delete
-files, search the index and tag files, without knowing the [API](api.md)'s routes, headers, upload chunks or job
+files (in the library and in its [connections](../administration/connections.md)), search the index and tag files, without knowing the [API](api.md)'s routes, headers, upload chunks or job
 polling. It targets `netstandard2.0` (.NET Framework 4.6.2 and later, .NET Core, Mono) and `net8.0` and later.
 
 ## Installing it from the release
@@ -130,6 +130,38 @@ await sfe.Tags.AddAsync(["Videos/holiday.mp4"], [holiday.Id]);
 var fileTags = await sfe.Tags.GetFileTagsAsync("Videos/holiday.mp4");
 ```
 
+**Connections** (Dropbox…, made on the web page: their sign-in needs a browser) are places of their own beside the
+library. `sfe.Connections.ListAsync()` lists those the token may use, with what each one's provider can do;
+`sfe.Connections[id].Files` has the file methods of `sfe.Files`, with paths from the connection's root folder:
+
+```csharp
+var dropbox = (await sfe.Connections.ListAsync()).First(c => c.Kind == "dropbox");
+var files = sfe.Connections[dropbox.Id].Files;
+await foreach (var item in files.ListAsync("Camera Uploads"))
+    Console.WriteLine(item.Name);
+await files.UploadAsync("Backup/notes.txt", File.OpenRead("notes.txt"));
+await files.DownloadAsync("Camera Uploads/beach.jpg", File.Create("beach.jpg"));
+var moved = await files.MoveAsync(["Camera Uploads/beach.jpg"], "Photos");   // done by the provider, at once
+```
+
+Deletes go to the provider's own trash, not SFE's. Moves and copies inside a connection answer a result per item;
+between the library and a connection, or two connections, they are jobs like the library's, which `RetryAsync` starts
+again for what failed once they ended:
+
+```csharp
+var connection = sfe.Connections[dropbox.Id];
+var job = await connection.CopyFromLibraryAsync(["Photos/2026"], "Backup");
+var done = await job.WaitAsync();
+if (done.Results.Any(r => r.Status != SfeItemStatus.Done))
+    done = await (await job.RetryAsync()).WaitAsync();
+await connection.MoveToLibraryAsync(["Camera Uploads/beach.jpg"], "Inbox");
+await connection.CopyToAsync(["Shared"], sfe.Connections[otherId], "From Dropbox");
+```
+
+What a provider can't do (a part of a file, uploads, moves or copies on its side: `GetCapabilitiesAsync`) throws
+`SfeNotSupportedException` with its `Capability` before anything is sent. A library connection's folder rules are
+administration: `sfe.Raw.Api.V1.Connections[id].FolderRules`.
+
 **Everything else** (scans, settings, accounts, logs…) is reached through `sfe.Raw`, a client of every v1 route
 generated from the [OpenAPI document](api.md): `await sfe.Raw.Api.V1.Scan.GetAsync()`. Its calls are not retried, and
 its errors are Kiota's `ApiException`.
@@ -147,8 +179,13 @@ A refusal of the server is thrown as an `SfeApiException` with the HTTP `StatusC
 | `SfeConflictException` | 409: a name taken, a job still running… |
 | `SfeRateLimitedException` | 429 after the retries (`RetryAfter`) |
 | `SfeServerNotReadyException` | the server waits for its setup or update, or is a Local server answering its own computer only |
-| `SfeNotSupportedException` | the server doesn't offer that function (older, or turned off) |
+| `SfeNotSupportedException` | the server doesn't offer that function (older, or turned off), or a connection's provider can't do it (`Capability`) |
 | `SfeJobConflictException` | a job waits on a name clash and nothing answers it |
+
+A connection's failures keep these classes and add `ConnectionProblem`, from their `connection-…` word:
+`NeedsReconnecting` (409: its manager signs in again on the web page), `RateLimited` (429: the provider asks to wait;
+retried as any 429), `Unavailable` (502: the provider can't be reached), `Refused` (403), `NotSupported` (409),
+`Unusable` (409: the connection is off).
 
 Answers 429 and 503 are tried again (as told by `Retry-After`, else after a growing delay) when sending the request
 twice does no harm: reads, deletes, upload chunks; never a move, a copy or a new folder. Every method takes a

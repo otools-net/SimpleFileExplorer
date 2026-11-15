@@ -58,10 +58,13 @@ public sealed class TenantHost : IAsyncDisposable
         // File management moves the folder rules and quick links of what it renames (the accounts' database).
         services.AddSingleton(application.GetRequiredService<FolderRuleService>());
         services.AddSingleton(application.GetRequiredService<QuickLinkService>());
+        // The index of connections' files: the connections, their gates and what SFE changes in them.
+        services.AddSingleton(application.GetRequiredService<Core.Connections.Indexing.ConnectionIndexSources>());
         services.AddSfeCore(tenantConfiguration, contentRootPath, tenant.Id);
         services.AddSingleton<IHostedService, TrickplayWorker>();
         services.AddSingleton<IHostedService, TaskScheduleWorker>();
         services.AddSingleton<IHostedService, KeepAliveWorker>();
+        services.AddSingleton<IHostedService, ConnectionIndexWorker>();
         var provider = services.BuildServiceProvider();
 
         try

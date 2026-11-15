@@ -1,8 +1,9 @@
 namespace Otools.Net.Sfe.Client;
 
 /// <summary>
-/// The server this client calls lacks a function (an older version, or one turned off there or for this account):
-/// thrown before calling it, rather than a refusal the program would have to read.
+/// The server this client calls lacks a function (an older version, or one turned off there or for this account),
+/// or a connection's provider can't do what is asked (<see cref="Capability"/>): thrown before calling it, rather
+/// than a refusal the program would have to read.
 /// </summary>
 public sealed class SfeNotSupportedException : SfeException
 {
@@ -17,9 +18,22 @@ public sealed class SfeNotSupportedException : SfeException
         ServerVersion = serverVersion;
     }
 
-    /// <summary>The function missing.</summary>
+    /// <summary>Connection <paramref name="connectionId"/>'s provider lacks <paramref name="capability"/>.</summary>
+    /// <param name="capability">What the call needs of the provider.</param>
+    /// <param name="connectionId">The connection's id.</param>
+    public SfeNotSupportedException(SfeConnectionCapability capability, int connectionId)
+        : base($"The provider of connection {connectionId} can't do this: it lacks {capability}.")
+    {
+        Function = SfeFunction.Connections;
+        Capability = capability;
+    }
+
+    /// <summary>The function missing (<see cref="SfeFunction.Connections"/> for a provider's capability).</summary>
     public SfeFunction Function { get; }
 
-    /// <summary>The server's version, as it tells it.</summary>
-    public string ServerVersion { get; }
+    /// <summary>The server's version, as it tells it; null when a provider's capability is missing.</summary>
+    public string? ServerVersion { get; }
+
+    /// <summary>What a connection's provider can't do; null when the server lacks a function.</summary>
+    public SfeConnectionCapability? Capability { get; }
 }

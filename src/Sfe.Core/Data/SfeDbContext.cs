@@ -29,6 +29,10 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
     public DbSet<TaskRun> TaskRuns => Set<TaskRun>();
     public DbSet<TrashEntry> TrashEntries => Set<TrashEntry>();
     public DbSet<TrashTag> TrashTags => Set<TrashTag>();
+    public DbSet<RemoteDirectory> RemoteDirectories => Set<RemoteDirectory>();
+    public DbSet<RemoteFile> RemoteFiles => Set<RemoteFile>();
+    public DbSet<RemoteFileTag> RemoteFileTags => Set<RemoteFileTag>();
+    public DbSet<RemoteIndexState> RemoteIndexes => Set<RemoteIndexState>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -87,6 +91,7 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
         ConfigureMissingFiles(modelBuilder, isSqlServer);
         ConfigureTrash(modelBuilder);
         ConfigureTasks(modelBuilder);
+        RemoteIndexModel.Configure(modelBuilder, isSqlServer);
     }
 
     /// <summary>

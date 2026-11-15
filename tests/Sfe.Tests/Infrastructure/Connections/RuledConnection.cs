@@ -13,7 +13,7 @@ namespace Otools.Net.Sfe.Tests.Infrastructure;
 /// A library-level connection with folder rules, for the attack matrix of the connections' routes: bob uses it
 /// through his group Writers (row Write), whose rules hide <c>Private</c>, <c>Mixed/Hidden</c> and <c>Lead</c>
 /// (but for <c>Lead/Open</c>, which <c>Lead</c> only leads to) and only let him read <c>ReadOnly</c>. The fake
-/// provider's account records every call (<see cref="FakeAccount.Calls"/>, emptied once set up).
+/// provider's account records every call (<see cref="FakeAccount.Calls"/>, emptied once set up and its index synced).
 /// </summary>
 public sealed class RuledConnection : IAsyncDisposable
 {
@@ -142,6 +142,25 @@ public sealed class RuledConnection : IAsyncDisposable
         Id = (await Get<ConnectionService>().CreateAsync(draft, grant, null, cancellationToken)).Value!.Id;
         await ShareAsync(new() { [WritersId] = FolderLevel.Write }, cancellationToken);
         await SetRulesAsync(cancellationToken);
+        await IndexAsync(cancellationToken);
         Account.Calls.Clear();
+    }
+
+    /// <summary>
+    /// The library's index of the connection synced once (it lists every folder, hidden ones too, as the server's
+    /// own job), so that the routes' calls are the only ones the tests then see: opening it soon after starts none.
+    /// </summary>
+    private async Task IndexAsync(CancellationToken cancellationToken)
+    {
+        var host = await Get<Otools.Net.Sfe.Api.Tenancy.TenantRegistry>().GetAsync(TenantId, cancellationToken);
+        var indexes = host!.Services.GetRequiredService<Otools.Net.Sfe.Core.Connections.Indexing.ConnectionIndexes>();
+        Assert.IsTrue(await indexes.StartAsync(Id, Otools.Net.Sfe.Core.Tasks.TaskTrigger.Manual, null));
+        var until = DateTime.UtcNow.AddSeconds(10);
+        while ((await indexes.StatusAsync(Id, cancellationToken)) is { Running: true } or { LastSync: null })
+        {
+            if (DateTime.UtcNow > until)
+                throw new AssertFailedException("The connection's index was not synced.");
+            await Task.Delay(20, cancellationToken);
+        }
     }
 }

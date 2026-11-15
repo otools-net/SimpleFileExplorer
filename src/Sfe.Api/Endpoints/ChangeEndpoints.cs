@@ -68,7 +68,8 @@ public static class ChangeEndpoints
             .FolderScoped("only folders the caller sees (files.browse) are told")
             .WithName("FolderChanges")
             .WithSummary(
-                "Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; "
+                "Server-sent events: `changed` with `{ path, origin }` (and `connection` for a connection's) each "
+                    + "time a folder is changed through SFE; "
                     + "`keepAlive` with `{ state }`; `trash`; `ping`."
             )
             .WithDescription(FolderChangesDescription);
@@ -82,7 +83,8 @@ public static class ChangeEndpoints
         Trash trash,
         LibraryPaths paths,
         CurrentAccess current,
-        IHttpContextAccessor accessor
+        IHttpContextAccessor accessor,
+        [AsParameters] ChangeFeedConnections connections
     )
     {
         var state = await current.GetAsync();
@@ -117,6 +119,7 @@ public static class ChangeEndpoints
         void OnTrash() => changes.Writer.TryWrite(new TrashSignal());
 
         browser.FolderChanged += OnChanged;
+        using var connectionFeed = new ConnectionFeed(connections, state, changes.Writer, accessor);
         keepAlive.StateChanged += OnKeepAlive;
         if (seesTrash)
             trash.EntriesChanged += OnTrash;
@@ -169,9 +172,11 @@ public static class ChangeEndpoints
                         && state.Check(paths, change.Path, Rights.Browse) == PathVerdict.Allowed
                     )
                     {
-                        text.Append("event: changed\ndata: ")
-                            .Append(JsonSerializer.Serialize(change, Json))
-                            .Append("\n\n");
+                        text.Append(ChangedEvent(change));
+                    }
+                    else if (item is ConnectionFolderChange remote && await connectionFeed.SeesAsync(remote, token))
+                    {
+                        text.Append(ChangedEvent(remote));
                     }
                 }
                 if (trashChanged)
@@ -198,6 +203,10 @@ public static class ChangeEndpoints
             Leave(caller);
         }
     }
+
+    /// <summary>`changed`, with a library folder (`path`, `origin`) or a connection's (and its `connection`).</summary>
+    private static string ChangedEvent(object change) =>
+        $"event: changed\ndata: {JsonSerializer.Serialize(change, change.GetType(), Json)}\n\n";
 
     private static string KeepAliveEvent(KeepAliveSignal signal) =>
         $"event: keepAlive\ndata: {JsonSerializer.Serialize(signal, Json)}\n\n";

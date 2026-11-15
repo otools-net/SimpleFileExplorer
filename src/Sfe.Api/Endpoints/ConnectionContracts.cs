@@ -110,7 +110,8 @@ public sealed record ConnectionItemProperties(
 internal sealed record ConnectionBrowseServices(
     RemoteListings Listings,
     MediaClassifier Classifier,
-    Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> Options
+    Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> Options,
+    Otools.Net.Sfe.Core.Connections.Indexing.ConnectionIndexes Indexes
 );
 
 /// <summary>What the zips of a connection's files use (bound with <c>[AsParameters]</c>).</summary>
@@ -122,13 +123,15 @@ internal sealed record ConnectionArchiveServices(
 
 /// <summary>What the routes changing a connection's files use besides the connection (bound with
 /// <c>[AsParameters]</c>); <paramref name="Rules"/>, <paramref name="Accounts"/> and <paramref name="Loggers"/> for
-/// the folder rules following a move (<see cref="ConnectionMoves"/>).</summary>
+/// the folder rules following a move (<see cref="ConnectionMoves"/>); <paramref name="Changes"/> tells the indexes and
+/// the open listings what changed.</summary>
 internal sealed record ConnectionWriteServices(
     RemoteListings Listings,
     MediaClassifier Classifier,
     ConnectionRuleService Rules,
     Otools.Net.Sfe.Core.Access.AccessService Accounts,
-    ILoggerFactory Loggers
+    ILoggerFactory Loggers,
+    ConnectionChanges Changes
 );
 
 /// <summary>Files and folders of a connection moved or copied into one of its folders.</summary>
@@ -173,7 +176,8 @@ internal sealed record ConnectionUploadServices(
     RemoteUploads Uploads,
     RemoteListings Listings,
     MediaClassifier Classifier,
-    Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> Options
+    Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> Options,
+    ConnectionChanges Changes
 );
 
 /// <summary>An upload into a connection being changed by a request, its gate held.</summary>

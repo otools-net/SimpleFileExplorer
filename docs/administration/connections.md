@@ -72,7 +72,30 @@ A sign-in lasts 10 minutes and works once, for the account that started it.
   changes; for a server connection, the **spaces it is offered to** (every space, or some), then each space's
   administrators choose their groups.
 - **Folder rules…** (space and server connections, for those who manage the space's connections): see below.
+- **Index in this space**: where the space's index of the connection stands (files and folders, when it was last
+  synced, a first listing still under way, what stopped the last sync), and **Sync now**. See below.
 - **Remove**: the connection goes with who used it and its folder rules; the files stay in the storage.
+
+### The index of a connection
+
+Each space keeps an index of the connections opened in it: the names, sizes and dates the storage tells (nothing is
+downloaded for it). Searching and tagging a connection's files will use it; for now it is only built and kept up to
+date.
+
+- It begins the first time someone opens the connection in the space, and is brought up to date again when the
+  connection is opened and its index is more than 10 minutes old.
+- The first sync lists every folder; a large Dropbox takes a while (about 10 to 20 minutes for a million files). It
+  goes on where it stopped after a restart. Later syncs only read what changed since (Dropbox tells it).
+- What you change through SFE (new folders, uploads, renames, moves, deletes, copies with the library) is in the
+  index at once. A folder copied inside the connection gets its contents at the next sync.
+- If Dropbox forgets where the index was (after a long pause, for example), the next sync lists everything again;
+  renamed files keep their place in the index.
+- Paths longer than 260 characters are left out of the index, and counted in its status.
+- **Sync now** (in **Manage**, for those who manage the connection) syncs it at once in the background. Every sync
+  is a run of the **Connection index** task of [Background tasks](background-tasks.md): its history and log, and
+  schedules that sync every connection indexed in the space. A connection of someone's own account is not named in
+  the space's history, and only its owner sees where its index stands.
+- Removing a connection, or no longer offering a server connection to a space, removes its index there.
 
 ### Folder rules of a connection
 

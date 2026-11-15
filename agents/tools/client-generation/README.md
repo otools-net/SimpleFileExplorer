@@ -2,7 +2,7 @@
 
 `generate.mjs` makes the raw layer of the C# client library, `src/Sfe.Client/Generated/` (`SfeRawClient`, namespace
 `Otools.Net.Sfe.Client.Generated`), from the committed v1 document `tests/samples/openapi/v1.json` with Kiota
-(the local tool of `dotnet-tools.json`, pinned). Plan: `agents/docs/development/client-library-plan.md`.
+(the local tool of `dotnet-tools.json`, pinned). Note: `agents/docs/features/client-library.md`.
 
 ```sh
 node agents/tools/client-generation/generate.mjs             # rewrites src/Sfe.Client/Generated

@@ -13,6 +13,7 @@ export const TASK_NAMES: Record<TaskKind, string> = {
     thumbnails: 'Thumbnails',
     trashPurge: 'Trash purge',
     transfer: 'Transfer',
+    connectionIndex: 'Connection index',
 };
 
 export const TASK_PURPOSES: Record<TaskKind, string> = {
@@ -24,6 +25,9 @@ export const TASK_PURPOSES: Record<TaskKind, string> = {
         'Deletes for good what has been in the trash longer than its settings say. ' +
         'Also runs by itself when the trash is used.',
     transfer: 'Copies and moves between the library and connections.',
+    connectionIndex:
+        'Brings the index of each connection opened in this library up to date with its files (from their ' +
+        'names, sizes and dates; nothing is downloaded). Also runs when a connection is opened.',
 };
 
 export const TASK_ICONS: Record<TaskKind, string> = {
@@ -33,10 +37,11 @@ export const TASK_ICONS: Record<TaskKind, string> = {
     thumbnails: 'image',
     trashPurge: 'trash',
     transfer: 'copy',
+    connectionIndex: 'globe',
 };
 
 /** The tasks a schedule can start, in the order of the form's list. */
-export const SCHEDULABLE: TaskKind[] = ['scan', 'trickplay', 'similarVideos', 'trashPurge'];
+export const SCHEDULABLE: TaskKind[] = ['scan', 'trickplay', 'similarVideos', 'trashPurge', 'connectionIndex'];
 
 export const OUTCOMES: Record<TaskOutcome, string> = {
     running: 'Running',
@@ -80,8 +85,9 @@ export const WEEK_ORDER: number[] = (() => {
     return Array.from({ length: 7 }, (_, i) => (first + i) % 7);
 })();
 
-/** What a task covers: the folder of a scan. */
+/** What a task covers: the folder of a scan, the connection a sync of the index ran on (unnamed: a private one). */
 export function target(task: TaskKind, path: string | null | undefined): string | null {
+    if (task === 'connectionIndex') return path ? `“${path}”` : null;
     return task === 'scan' ? (path ? `“${path}”` : 'whole library') : null;
 }
 

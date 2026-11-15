@@ -102,7 +102,9 @@ public static class ConnectionWriteEndpoints
         {
             if (folder.Length > 0 && await storage.GetAsync(folder, cancellationToken) is not { IsFolder: true })
                 return TypedResults.NotFound();
-            return await ChangeAsync(id, writes, () => storage.CreateFolderAsync(path, cancellationToken));
+            return await ChangeAsync(id, writes, async () =>
+                await ReportedAsync(open, writes, await storage.CreateFolderAsync(path, cancellationToken))
+            );
         });
     }
 
@@ -151,9 +153,10 @@ public static class ConnectionWriteEndpoints
                     () => storage.MoveAsync(path, to, RemoteConflict.Fail, cancellationToken),
                     cancellationToken
                 );
-                return item is null
-                    ? ConnectionMoves.AnswerOf(refused!)
-                    : TypedResults.Ok(ConnectionListings.ToItem(item, writes.Classifier));
+                if (item is null)
+                    return ConnectionMoves.AnswerOf(refused!);
+                await ReportAsync(writes, ConnectionItemChange.Moved(id, open.Capabilities, path, item));
+                return TypedResults.Ok(ConnectionListings.ToItem(item, writes.Classifier));
             });
         });
     }
@@ -176,7 +179,7 @@ public static class ConnectionWriteEndpoints
             try
             {
                 foreach (var asked in (request.Paths ?? []).Distinct(StringComparer.Ordinal).Take(MaxItems))
-                    results.Add(await DeleteOneAsync(open, asked, cancellationToken));
+                    results.Add(await DeleteOneAsync((open, writes), asked, cancellationToken));
             }
             finally
             {
@@ -187,11 +190,12 @@ public static class ConnectionWriteEndpoints
     }
 
     private static async Task<DeletedItem> DeleteOneAsync(
-        OpenConnection open,
+        (OpenConnection Open, ConnectionWriteServices Writes) on,
         string asked,
         CancellationToken cancellationToken
     )
     {
+        var open = on.Open;
         if (RemotePaths.Normalize(asked) is not { Length: > 0 } path)
             return new DeletedItem(asked, FileOperationStatus.NotFound);
         var verdict = open.CheckThroughout(path, Rights.DeleteFiles);
@@ -200,6 +204,8 @@ public static class ConnectionWriteEndpoints
         try
         {
             await open.Storage.DeleteAsync(path, cancellationToken);
+            var id = open.Connection.Id;
+            await ReportAsync(on.Writes, ConnectionItemChange.Removed(id, open.Capabilities, path));
             return new DeletedItem(asked, FileOperationStatus.Done);
         }
         catch (RemoteStorageException error) when (StatusOf(error.Kind) is { } status)
@@ -224,7 +230,7 @@ public static class ConnectionWriteEndpoints
         };
         if (move is null)
             return Invalid("kind", "Move or copy.");
-        if (ConflictOf(request.Conflict) is not { } conflict)
+        if (ConnectionWriteChecks.ConflictOf(request.Conflict) is not { } conflict)
             return Invalid("conflict", "Fail, keepBoth or replace.");
         var right = move.Value ? Rights.MoveFiles : Rights.CopyFiles;
         var (open, answer) = await files.OpenAsync(id, right, write: true, cancellationToken);
@@ -256,7 +262,7 @@ public static class ConnectionWriteEndpoints
             try
             {
                 foreach (var asked in paths)
-                    results.Add(await TransferOneAsync(step, asked, cancellationToken));
+                    results.Add(await TransferOneAsync(step, asked, writes.Changes, cancellationToken));
             }
             finally
             {
@@ -269,6 +275,7 @@ public static class ConnectionWriteEndpoints
     private static async Task<ConnectionTransferItem> TransferOneAsync(
         ConnectionTransferStep step,
         string asked,
+        ConnectionChanges changes,
         CancellationToken cancellationToken
     )
     {
@@ -278,12 +285,13 @@ public static class ConnectionWriteEndpoints
         if (ItemStatus(step, path, to) is { } stopped)
             return stopped with { Path = asked };
 
-        var storage = step.Open.Storage;
+        var (storage, id, capabilities) = (step.Open.Storage, step.Open.Connection.Id, step.Open.Capabilities);
         try
         {
             if (!step.Move)
             {
                 var copy = await storage.CopyAsync(path, to, step.Conflict, cancellationToken);
+                await changes.ReportAsync(ConnectionItemChange.Copied(id, capabilities, copy), CancellationToken.None);
                 return new(asked, FileOperationStatus.Done, Item: ConnectionListings.ToItem(copy, step.Classifier));
             }
             var (place, conflict) = await step.Moves.PlaceAsync(path, to, step.Conflict, cancellationToken);
@@ -293,14 +301,33 @@ public static class ConnectionWriteEndpoints
                 () => storage.MoveAsync(path, place, conflict, cancellationToken),
                 cancellationToken
             );
-            return item is null
-                ? new(asked, ConnectionMoves.StatusOf(refused!), refused!.Problem)
-                : new(asked, FileOperationStatus.Done, Item: ConnectionListings.ToItem(item, step.Classifier));
+            if (item is null)
+                return new(asked, ConnectionMoves.StatusOf(refused!), refused!.Problem);
+            await changes.ReportAsync(ConnectionItemChange.Moved(id, capabilities, path, item), CancellationToken.None);
+            return new(asked, FileOperationStatus.Done, Item: ConnectionListings.ToItem(item, step.Classifier));
         }
         catch (RemoteStorageException error) when (StatusOf(error.Kind) is { } status)
         {
             return new(asked, status, error.Message);
         }
+    }
+
+    /// <summary>
+    /// Tells the connection's indexes and open listings what changed (<see cref="ConnectionChanges"/>): the change
+    /// is made at the provider, so a request cut short still writes it.
+    /// </summary>
+    private static Task ReportAsync(ConnectionWriteServices writes, ConnectionItemChange change) =>
+        writes.Changes.ReportAsync(change, CancellationToken.None);
+
+    /// <summary>A new item, told (<see cref="ReportAsync"/>), as its answer.</summary>
+    private static async Task<RemoteItem> ReportedAsync(
+        OpenConnection open,
+        ConnectionWriteServices writes,
+        RemoteItem made
+    )
+    {
+        await ReportAsync(writes, ConnectionItemChange.Put(open.Connection.Id, open.Capabilities, made));
+        return made;
     }
 
     /// <summary>
@@ -354,30 +381,7 @@ public static class ConnectionWriteEndpoints
             .Select(path => (From: path, To: RemotePaths.Combine(step.Target, RemotePaths.NameOf(path))))
             .Where(move => ItemStatus(step, move.From, move.To) is null);
 
-    /// <summary>
-    /// An item's status for what the provider refused about it; null for what stops the whole request (the
-    /// sign-in ended, a wait, the provider unreachable), answered by <see cref="ConnectionFileServices.RunAsync"/>.
-    /// </summary>
-    private static FileOperationStatus? StatusOf(RemoteErrorKind kind) =>
-        kind switch
-        {
-            RemoteErrorKind.NotFound => FileOperationStatus.NotFound,
-            RemoteErrorKind.Exists => FileOperationStatus.Exists,
-            RemoteErrorKind.InvalidName => FileOperationStatus.Invalid,
-            RemoteErrorKind.Refused => FileOperationStatus.Forbidden,
-            RemoteErrorKind.TooLarge or RemoteErrorKind.NotSupported => FileOperationStatus.Failed,
-            _ => null,
-        };
-
-    /// <summary>The conflict choice as written (<c>fail</c> when none); null for another word.</summary>
-    private static RemoteConflict? ConflictOf(string? value) =>
-        value switch
-        {
-            null or "fail" => RemoteConflict.Fail,
-            "keepBoth" => RemoteConflict.KeepBoth,
-            "replace" => RemoteConflict.Replace,
-            _ => null,
-        };
+    private static FileOperationStatus? StatusOf(RemoteErrorKind kind) => ConnectionWriteChecks.StatusOf(kind);
 
     private static IResult InvalidName(string message) => Invalid("name", message);
 

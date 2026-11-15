@@ -9,12 +9,17 @@ namespace Otools.Net.Sfe.Core.Transfers;
 /// <summary>
 /// A connection's side of a transfer: <see cref="IRemoteStorage"/> through <see cref="TransferCalls"/> (waits
 /// instead of failing on the provider's limits, retries, one write at a time). Deletes go to the provider's own
-/// trash; what was written drops the connection's listing snapshots. Disposing it disposes the storage. The
-/// person's folder access is checked at every item before the provider is called (<see cref="RemoteTransferChecks"/>):
-/// a hidden item is not found, nor listed; a hidden name is taken.
+/// trash; what was written drops the connection's listing snapshots and is told to the indexes and open listings
+/// (<paramref name="changes"/>). Disposing it disposes the storage. The person's folder access is checked at every
+/// item before the provider is called (<see cref="RemoteTransferChecks"/>): a hidden item is not found, nor listed; a
+/// hidden name is taken.
 /// </summary>
-public sealed class RemoteTransferEndpoint(RemoteTransferSide side, TransferCalls calls, RemoteListings listings)
-    : ITransferEndpoint
+public sealed class RemoteTransferEndpoint(
+    RemoteTransferSide side,
+    TransferCalls calls,
+    RemoteListings listings,
+    ConnectionChanges? changes = null
+) : ITransferEndpoint
 {
     private const int SkipBuffer = 81920;
 
@@ -116,6 +121,7 @@ public sealed class RemoteTransferEndpoint(RemoteTransferSide side, TransferCall
                 cancellationToken
             );
             listings.Forget(_connectionId);
+            await ReportAsync(ConnectionItemChange.Put(_connectionId, _capabilities, made));
             return EntryOf(made);
         }
         catch (RemoteStorageException failure) when (failure.Kind == RemoteErrorKind.Exists)
@@ -202,6 +208,7 @@ public sealed class RemoteTransferEndpoint(RemoteTransferSide side, TransferCall
             token => _storage.FinishUploadAsync(upload, target, token),
             cancellationToken
         );
+        await ReportAsync(ConnectionItemChange.Put(_connectionId, _capabilities, item));
         return EntryOf(item);
     }
 
@@ -209,7 +216,12 @@ public sealed class RemoteTransferEndpoint(RemoteTransferSide side, TransferCall
     {
         await calls.WriteAsync(_connectionId, token => _storage.DeleteAsync(path, token), cancellationToken);
         listings.Forget(_connectionId);
+        await ReportAsync(ConnectionItemChange.Removed(_connectionId, _capabilities, path));
     }
+
+    /// <summary>Told once done at the provider, whatever becomes of the job.</summary>
+    private Task ReportAsync(ConnectionItemChange change) =>
+        changes?.ReportAsync(change, CancellationToken.None) ?? Task.CompletedTask;
 
     /// <summary>The name, then <c>name (2).ext</c>, <c>name (3).ext</c>… as the library numbers them.</summary>
     private static IEnumerable<string> Candidates(string name, bool isFolder)

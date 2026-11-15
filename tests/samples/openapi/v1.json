@@ -3031,7 +3031,7 @@
         "tags": [
           "Files"
         ],
-        "summary": "Server-sent events: `changed` with `{ path, origin }` each time a folder is changed through SFE; `keepAlive` with `{ state }`; `trash`; `ping`.",
+        "summary": "Server-sent events: `changed` with `{ path, origin }` (and `connection` for a connection's folder) each time a folder is changed through SFE; `keepAlive` with `{ state }`; `trash`; `ping`.",
         "description": "Open with `EventSource`; `origin` is the `X-SFE-Tab` header of the request that changed it (a tab\nskips its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or\nnothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete or\nfiles.deletePermanently) when something came into or left the trash: ask its count again. A `ping` event\nafter 25 s without anything keeps it open; it ends after\n10 minutes and the browser opens it again. 12 at once per\ncaller (429).",
         "operationId": "FolderChanges",
         "responses": {
@@ -8685,6 +8685,94 @@
         ]
       }
     },
+    "/api/v1/connections/{id}/index": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Where the index of a connection's files stands in the request's library: files and folders, last sync, a full listing under way, what stopped the last sync, what the running one does.",
+        "description": "For who manages the connection (404 otherwise, and for a server's connection not offered to the library). Nothing is indexed before the connection is first opened in the library.",
+        "operationId": "GetConnectionIndex",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionIndexStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.own",
+            "connections.library",
+            "connections.server"
+          ]
+        ]
+      }
+    },
+    "/api/v1/connections/{id}/index/sync": {
+      "post": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Syncs the index of a connection's files in the request's library now (in the background).",
+        "description": "202 with the status (`running` already true when a sync was running: none is added). 409 `connection-unusable` for a connection that is off. Each sync is a run of the \"Connection index\" task (history and log).",
+        "operationId": "SyncConnectionIndex",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionIndexStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.own",
+            "connections.library",
+            "connections.server"
+          ]
+        ]
+      }
+    },
     "/api/v1/connections/{id}/files/uploads/check": {
       "post": {
         "tags": [
@@ -9804,7 +9892,8 @@
           "similarVideos",
           "thumbnails",
           "trashPurge",
-          "transfer"
+          "transfer",
+          "connectionIndex"
         ]
       },
       "BackupLink": {
@@ -10512,6 +10601,74 @@
             "additionalProperties": {
               "$ref": "#/components/schemas/FolderLevel"
             }
+          }
+        }
+      },
+      "ConnectionIndexStatus": {
+        "required": [
+          "indexed",
+          "running",
+          "listing",
+          "files",
+          "folders",
+          "lastSync",
+          "tooLong",
+          "lastError",
+          "activity"
+        ],
+        "type": "object",
+        "properties": {
+          "indexed": {
+            "type": "boolean"
+          },
+          "running": {
+            "type": "boolean"
+          },
+          "listing": {
+            "type": "boolean"
+          },
+          "files": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "folders": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "lastSync": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "tooLong": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "lastError": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "activity": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

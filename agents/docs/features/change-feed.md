@@ -43,3 +43,8 @@ Code: `LibraryBrowser.FolderChanged` (raised by `Invalidate`, after the cache is
   per entry); no origin filter, so the deleting tab hears it too. Client: `ChangeFeed.trashChanges` (a counter), which
   the sidebar watches to read the count again ([trash.md](trash.md)).
 - Proxies must not buffer it (`X-Accel-Buffering: no` for nginx); documented in `docs/installation.md`.
+- Connections' folders (2026-11-15): `ConnectionChanges.FolderChanged` (server-wide, told by the connection write
+  routes, uploads and transfer endpoints) queues a `ConnectionFolderChange`; `ConnectionFeed` sends it as `changed`
+  with `connection` to feeds whose caller uses that connection in its library and sees the folder (folder rules),
+  read once per connection per feed. The client refreshes only when `connection` matches the place shown
+  (`route.c`); `listen` listeners hear library folders only.
