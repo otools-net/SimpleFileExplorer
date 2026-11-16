@@ -45,6 +45,10 @@ in each plan's `## Progress` checklist; this board is the summary.
 
 **Session log** (newest first; one line per session: date, what was done, anything left half-way):
 
+- 2026-11-15/16 (ninth session, continued): client-library phases 0 to 6 (plan deleted); connections-index phases
+  0 to 5 (index, listings, search and Everywhere, tags, previews); search refactoring committed apart. **Paused** at
+  the owner's request after phase 5: see [connections-index-handover](connections-index-handover.md). Next: plan 6
+  phase 6, then the epic finalized.
 - 2026-11-15: client-library phase 5 (connections in the facade: `sfe.Connections`, `SfeConnectionFiles`,
   transfers with the library and between connections as jobs, retry, connection problems, capabilities; tests on the
   `FakeProvider`); plan deleted, what stays true in `client-library`. No server route changed. Next: connections-index.

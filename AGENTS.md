@@ -85,6 +85,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [readability-refactoring-plan](agents/docs/development/readability-refactoring-plan.md) | plan: bringing existing code to the readability rules, phase by phase (starting numbers, checks per step, traps, final checks in CI) | `agents/tools/readability/` |
 | [namespaces](agents/docs/development/namespaces.md) | C# namespaces `Otools.Net.Sfe.*` (projects and assemblies keep `Sfe.*`), strings that keep the old text, old log-level keys | `LegacyLogCategories`, `agents/tools/namespace-rename/` |
 | [connections-index-plan](agents/docs/development/connections-index-plan.md) | plan 6: index, search ("Everywhere"), tags and previews of connection files, content cache | `SfeDbContext`, `Core/Search/`, `Core/Tagging/` |
+| [connections-index-handover](agents/docs/development/connections-index-handover.md) | **epic paused 2026-11-16**: where it stands, plan 6 phase 6 left to do, what waits on the owner, decisions taken, known gaps, how the work was run | `Core/Connections/Indexing/`, `Core/Connections/Previews/` |
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
