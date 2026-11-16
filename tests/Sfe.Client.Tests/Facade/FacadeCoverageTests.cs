@@ -109,6 +109,10 @@ public sealed class FacadeCoverageTests
         ["GET /connections/{id}/browse"] = "SfeConnectionFiles.ListAsync, SfeConnection.GetCapabilitiesAsync",
         ["GET /connections/{id}/files/raw/{path}"] = "SfeConnectionFiles.DownloadAsync, OpenReadAsync",
         ["GET /connections/{id}/thumbnails/{path}"] = "Raw: previews (the library's thumbnails are Raw too)",
+        ["GET /connections/{id}/files/text"] =
+            "Raw: a connection file as text (the web viewer's; files are read whole)",
+        ["GET /connections/{id}/streaming/probe"] = "Raw: videos converted for the web player (as the library's)",
+        ["GET /connections/{id}/streaming/play"] = "Raw: videos converted for the web player (as the library's)",
         ["GET /connections/{id}/files/properties"] = "SfeConnectionFiles.GetPropertiesAsync, GetAsync, ExistsAsync",
         ["POST /connections/{id}/files/folders"] = "SfeConnectionFiles.CreateFolderAsync",
         ["POST /connections/{id}/files/rename"] = "SfeConnectionFiles.RenameAsync",

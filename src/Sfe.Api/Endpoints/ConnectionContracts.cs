@@ -114,7 +114,8 @@ internal sealed record ConnectionBrowseServices(
     Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> Options,
     Otools.Net.Sfe.Core.Connections.Indexing.ConnectionIndexes Indexes,
     Otools.Net.Sfe.Core.Connections.Indexing.RemoteIndexListings IndexListings,
-    Otools.Net.Sfe.Core.Connections.Indexing.RemoteFileTags Tags
+    Otools.Net.Sfe.Core.Connections.Indexing.RemoteFileTags Tags,
+    Otools.Net.Sfe.Core.Connections.Indexing.RemoteMediaRows Media
 );
 
 /// <summary>What the zips of a connection's files use (bound with <c>[AsParameters]</c>).</summary>

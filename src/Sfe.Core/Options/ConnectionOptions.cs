@@ -31,4 +31,7 @@ public sealed class ConnectionOptions
     public bool AllowPrivateAddresses { get; set; }
 
     public DropboxOptions Dropbox { get; set; } = new();
+
+    /// <inheritdoc cref="ConnectionCacheOptions"/>
+    public ConnectionCacheOptions Cache { get; set; } = new();
 }

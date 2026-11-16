@@ -101,6 +101,26 @@ public sealed class Ffmpeg
         return input;
     }
 
+    /// <summary>
+    /// <see cref="LibraryInputAsync"/> for a file of a connection in the connections' cache: only a file inside that
+    /// cache's folder, and only when its bytes, read again now, are a picture, video or audio file
+    /// (<see cref="Connections.Previews.MediaSniffer"/>): a playlist, a script or a page named as media never
+    /// reaches ffmpeg.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">The file is outside the cache or not media.</exception>
+    public Task<IReadOnlyList<string>> ConnectionInputAsync(Connections.Previews.CachedContent content)
+    {
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(content.Root)) + Path.DirectorySeparatorChar;
+        var full = Path.GetFullPath(content.FullPath);
+        if (!full.StartsWith(root, Paths.LibraryPaths.PathComparison))
+            throw new InvalidOperationException("Only files of the connections' cache are given to ffmpeg here.");
+        if (content.Media is null || Connections.Previews.MediaSniffer.DetectFile(full) is null)
+            throw new InvalidOperationException(
+                "The file is not a picture, video or audio file: ffmpeg won't open it."
+            );
+        return LibraryInputAsync(full);
+    }
+
     private readonly Lazy<Task<string?>> _allowedFormats;
 
     private async Task<string?> ReadAllowedFormatsAsync()

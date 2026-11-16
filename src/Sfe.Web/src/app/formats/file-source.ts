@@ -43,10 +43,18 @@ export const FILE_SOURCE = new InjectionToken<FileSource>('FILE_SOURCE', {
         const api = inject(Api);
         const config = inject(ConfigService);
         return {
-            library: true,
-            // As the views asked before: no encoding argument unless one is chosen.
-            textFile: (item, signal, encoding) =>
-                encoding === undefined ? api.textFile(item.path, signal) : api.textFile(item.path, signal, encoding),
+            // A connection's file (the listing's place) is read whole, read only.
+            get library() {
+                return config.place() === null;
+            },
+            textFile: (item, signal, encoding) => {
+                const place = config.place();
+                if (place) return api.textFile(item.path, signal, encoding, place.id);
+                // As the views asked before: no encoding argument unless one is chosen.
+                return encoding === undefined
+                    ? api.textFile(item.path, signal)
+                    : api.textFile(item.path, signal, encoding);
+            },
             original: (item) => config.urls()!.original(item.path),
             download: (item) => config.urls()?.download(item.path) ?? null,
         };

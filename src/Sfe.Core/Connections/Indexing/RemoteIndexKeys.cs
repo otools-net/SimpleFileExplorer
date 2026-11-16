@@ -37,9 +37,14 @@ public static class RemoteIndexKeys
         return (fileName[..^extension.Length], extension);
     }
 
-    /// <summary>Fills a file's row from the provider's item (path and folder aside).</summary>
+    /// <summary>
+    /// Fills a file's row from the provider's item (path and folder aside). Another content (hash or size) forgets
+    /// its size in pixels and its length: the next pass through the cache or a thumbnail tells them again.
+    /// </summary>
     public static void Describe(RemoteFile row, RemoteItem item)
     {
+        if (row.ContentHash != HashOf(item) || row.Size != (item.Size ?? 0))
+            (row.Width, row.Height, row.Duration) = (null, null, null);
         var (name, extension) = Split(RemotePaths.NameOf(item.Path));
         row.Name = name;
         row.Extension = extension;

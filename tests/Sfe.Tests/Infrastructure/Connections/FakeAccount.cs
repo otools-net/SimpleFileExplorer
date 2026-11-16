@@ -31,6 +31,9 @@ public sealed class FakeAccount(FakeProvider provider)
 
     public long TotalSpace { get; set; } = 1024 * 1024;
 
+    /// <summary>Reads wait until this lets them through (a slow download), when set.</summary>
+    public SemaphoreSlim? HoldReads { get; set; }
+
     /// <summary>Files are told with a hash that is not their content's (a file damaged at the provider).</summary>
     public bool WrongHashes { get; set; }
 
@@ -56,6 +59,18 @@ public sealed class FakeAccount(FakeProvider provider)
         Locked(() => PutFile(path, System.Text.Encoding.UTF8.GetBytes(content), modified));
         return this;
     }
+
+    public FakeAccount WithBytes(string path, byte[] content, DateTime? modified = null)
+    {
+        Locked(() => PutFile(path, content, modified));
+        return this;
+    }
+
+    /// <summary>
+    /// Files the provider makes thumbnails of (full paths, as first spelled), with what it tells of them; any other
+    /// file has none. Read when the provider has <see cref="ProviderCapabilities.Thumbnails"/>.
+    /// </summary>
+    public Dictionary<string, RemoteMedia?> Thumbnailed { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     public string? TextOf(string path) =>
         Locked(() => Find(path) is { Content: { } bytes } ? System.Text.Encoding.UTF8.GetString(bytes) : null);

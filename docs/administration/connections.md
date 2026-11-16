@@ -125,12 +125,11 @@ A screenshot of the card on a connection comes with the release check.
 ## Browsing a connection
 
 The connections you may use are listed in the sidebar under **Connections**, under the quick links. One opens its files
-in the usual listing: folders first, sorted as you choose, pictures and videos shown with Dropbox's thumbnails.
+in the usual listing: folders first, sorted as you choose, pictures and videos shown with their thumbnails.
 
-- Pictures, videos, audio and PDF files open in the viewer; videos seek as usual. Other files are downloaded. Videos
-  the browser can't play aren't converted, and there is no external player or trickplay there. A search typed there
-  searches the connection ([below](#searching-a-connection)); files show their tags
-  ([below](#tags-on-a-connections-files)).
+- Pictures, videos, audio, PDF files, text files and the text formats (Markdown, JSON, CSV, subtitles) open in the
+  viewer ([previews](#previews-of-a-connections-files)). A search typed there searches the connection
+  ([below](#searching-a-connection)); files show their tags ([below](#tags-on-a-connections-files)).
 - **Download** saves a file; several, or a folder, come as one zip, written while it downloads (as in the library;
   what has no content, a Dropbox Paper document, is listed in `SFE - left out.txt` inside).
 - Once the space's [index](#the-index-of-a-connection) holds a folder whole, the folder is listed from it, without
@@ -153,6 +152,26 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
 - When Dropbox no longer accepts the connection's sign-in, the listing says so and the connection shows **Sign in
   again** for whoever manages it. When Dropbox asks to wait (too many requests), wait a moment and try again.
 
+## Previews of a connection's files
+
+- **Thumbnails** come from Dropbox (asked 25 at a time) and are kept on the server, so a folder seen again shows them
+  at once without asking Dropbox; a file changed in Dropbox gets a new one. Pictures Dropbox doesn't thumbnail (photos
+  over 20 MB, formats it doesn't know) are made by the server from the file itself, when the server has ffmpeg.
+- **Videos** the browser plays are played straight from Dropbox, seeking as usual. Others (HEVC, AVI, MKV…) are
+  converted by the server, as in the library, when the space converts videos
+  ([Playback](playback.md)): the server first downloads the whole file into its cache, so the first play of a large
+  video waits for that download; files over the cache's largest file size are not converted.
+- **Text files** (and Open as text), Markdown, JSON, CSV and subtitles open read only, up to 10 MB: no editing, no
+  Follow, no parts of larger files. EPUB books, Flash movies and archives don't open in the viewer there: download
+  them. Pictures and text can't be saved back to a connection from the editors.
+- **Width, height and duration** of a file are learnt when it passes through the server: a thumbnail from Dropbox
+  that tells them, or a file downloaded for a preview. They then show in the listing and `w:`, `h:`, `r:`, `d:`
+  find the file. Nothing downloads everything to learn them.
+- **The cache** (Administration › Settings › Connections, server administrators): one for the whole server, under
+  the thumbnail cache folder (`connections`): its size (4096 MB; 0 turns previews made by the server off), the
+  largest file downloaded (2048 MB) and how long unused files stay (30 days). Removing a connection removes its
+  cache. Each person downloads only a couple of files into it at once ("try again in a moment" otherwise).
+
 ## Searching a connection
 
 The search box searches the connection you are browsing, from the space's [index](#the-index-of-a-connection) of it:
@@ -163,7 +182,8 @@ sorts and count. Dropbox is not asked: results come at once, even while Dropbox 
   hasn't been synced for more than 30 minutes) the results say they may be incomplete; a connection never opened in
   the space isn't indexed yet: searching it starts its index.
 - Dropbox doesn't tell the width, height or duration of files when listing them: `w:`, `h:`, `r:` and `d:` find
-  almost nothing in a connection for now, and the **Duration** and **Resolution** sorts list files by path.
+  only files whose [previews](#previews-of-a-connections-files) told them, and the **Duration** and **Resolution**
+  sorts list the others by path.
 - Names sort as in the connection's folders (`file2` before `file10`).
 - Folder rules apply: files of folders hidden from you are in no result and no count.
 - **Everywhere** (the chip at the end of the search box) searches the library and each connection you use, the

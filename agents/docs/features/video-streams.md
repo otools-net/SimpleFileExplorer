@@ -17,4 +17,6 @@ Code: `src/Sfe.Core/Streaming/` (`VideoStreamer`, `VideoStreams`), `Thumbnails/F
   `pendingSeek`).
 - Make the `VideoStream` once per item (`computed`): a new object resets the player.
 - Safari may refuse it (no ranges).
+- A connection's videos: `api/connections/{id}/streaming/probe|play?path=&t=&player=` from the content cache
+  (`VideoStreamer.ProbeCachedAsync` / `TryBeginCached`, [connection-previews](connection-previews.md)).
 - Playback › Video streams polls `api/streaming/sessions` ([system-info.md](system-info.md)).

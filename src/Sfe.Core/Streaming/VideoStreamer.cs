@@ -90,6 +90,50 @@ public sealed partial class VideoStreamer(
     }
 
     /// <summary>
+    /// Describes a video of a connection in the connections' cache; null when its bytes are not a video.
+    /// </summary>
+    public async Task<VideoProbe?> ProbeCachedAsync(
+        Connections.Previews.CachedContent content,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!IsAvailable || content.Media != ItemKind.Video)
+            return null;
+        if (_probes.TryGetValue(content.FullPath, out var cached))
+            return cached.Probe;
+        var probe = Parse(await media.ProbeAsync(await ffmpeg.ConnectionInputAsync(content), cancellationToken));
+        if (_probes.Count >= ProbeCacheSize)
+            _probes.Clear();
+        _probes[content.FullPath] = (content.Size, default, probe);
+        return probe;
+    }
+
+    /// <summary>
+    /// <see cref="TryBegin"/> for a video of a connection in the connections' cache: the stream holds
+    /// <paramref name="content"/> until it ends (disposed with it, or now when the server converts too many).
+    /// </summary>
+    /// <param name="label">What the list of streams shows of it.</param>
+    public VideoStream? TryBeginCached(
+        Connections.Previews.CachedContent content,
+        (VideoProbe Probe, double Start, string Label) asked,
+        StreamViewer viewer,
+        string? client
+    )
+    {
+        var settings = options.CurrentValue.Streaming;
+        var probe = asked.Probe;
+        var transcoded = !(settings.CopyVideo && probe.BrowserPictures);
+        var start = Math.Max(0, probe.Duration is { } duration ? Math.Min(asked.Start, duration) : asked.Start);
+        var lease = streams.TryBegin(client, settings.MaxStreams, asked.Label, viewer, start, transcoded);
+        if (lease is null)
+        {
+            content.Dispose();
+            return null;
+        }
+        return new VideoStream(content.FullPath, start, transcoded, lease, content);
+    }
+
+    /// <summary>
     /// Converts the video into <paramref name="output"/> until it ends, the viewer leaves
     /// (<paramref name="cancellationToken"/>) or the same player asks for another position. Disposes of the stream's
     /// registration.
@@ -97,8 +141,11 @@ public sealed partial class VideoStreamer(
     public async Task RunAsync(VideoStream stream, VideoProbe probe, Stream output, CancellationToken cancellationToken)
     {
         using var lease = stream.Lease;
+        using var cached = stream.Cached;
         using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lease.Stopping);
-        var input = await ffmpeg.LibraryInputAsync(stream.FullPath);
+        var input = cached is null
+            ? await ffmpeg.LibraryInputAsync(stream.FullPath)
+            : await ffmpeg.ConnectionInputAsync(cached);
         var arguments = Arguments(input, stream.Start, probe, stream.Transcoded, options.CurrentValue.Streaming);
         try
         {

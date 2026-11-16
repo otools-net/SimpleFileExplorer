@@ -174,6 +174,7 @@ api.MapConnectionProviderEndpoints();
 api.MapConnectionSignInEndpoints();
 api.MapConnectionEndpoints();
 api.MapConnectionFileEndpoints();
+api.MapConnectionPreviewEndpoints();
 api.MapConnectionWriteEndpoints();
 api.MapConnectionIndexEndpoints();
 api.MapConnectionSearchEndpoints();

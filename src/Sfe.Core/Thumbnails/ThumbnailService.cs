@@ -214,14 +214,8 @@ public sealed class ThumbnailService
     {
         try
         {
-            var image = await RenderAsync(
-                source,
-                kind == ItemKind.Video ? Options.VideoSeekSeconds : null,
-                cancellationToken
-            );
-            // Clips shorter than the seek position produce no frame: fall back to the first one.
-            if (image.Length == 0 && kind == ItemKind.Video && Options.VideoSeekSeconds > 0)
-                image = await RenderAsync(source, 0, cancellationToken);
+            var input = await _ffmpeg.LibraryInputAsync(source);
+            var image = await RenderFrameAsync(input, source, kind, cancellationToken);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cacheFile)!);
             var temp = cacheFile + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -240,12 +234,59 @@ public sealed class ThumbnailService
         }
     }
 
-    private async Task<byte[]> RenderAsync(string source, int? seekSeconds, CancellationToken cancellationToken)
+    /// <summary>
+    /// The thumbnail of a connection's file in the connections' cache (a picture its provider doesn't thumbnail, a
+    /// video played there), in a turn of the server's thumbnail runs; empty when ffmpeg makes none. Only media by
+    /// its bytes reaches ffmpeg (<see cref="Ffmpeg.ConnectionInputAsync"/>).
+    /// </summary>
+    public async Task<byte[]> RenderCachedAsync(
+        Connections.Previews.CachedContent content,
+        ItemKind kind,
+        CancellationToken cancellationToken
+    )
+    {
+        if (!IsAvailable || content.Media is null)
+            return [];
+        var input = await _ffmpeg.ConnectionInputAsync(content);
+        var concurrency = Concurrency();
+        await concurrency.WaitAsync(cancellationToken);
+        try
+        {
+            return await RenderFrameAsync(input, content.Key.Name, kind, cancellationToken);
+        }
+        finally
+        {
+            concurrency.Release();
+        }
+    }
+
+    /// <summary>A picture, or a video's frame at <c>VideoSeekSeconds</c> (else its first), as JPEG.</summary>
+    private async Task<byte[]> RenderFrameAsync(
+        IReadOnlyList<string> input,
+        string label,
+        ItemKind kind,
+        CancellationToken cancellationToken
+    )
+    {
+        var seek = kind == ItemKind.Video ? Options.VideoSeekSeconds : (int?)null;
+        var image = await RenderAsync(input, label, seek, cancellationToken);
+        // Clips shorter than the seek position produce no frame: fall back to the first one.
+        if (image.Length == 0 && seek > 0)
+            image = await RenderAsync(input, label, 0, cancellationToken);
+        return image;
+    }
+
+    private async Task<byte[]> RenderAsync(
+        IReadOnlyList<string> input,
+        string source,
+        int? seekSeconds,
+        CancellationToken cancellationToken
+    )
     {
         List<string> arguments = ["-hide_banner", "-loglevel", "error", "-nostdin"];
         if (seekSeconds is > 0)
             arguments.AddRange(["-ss", seekSeconds.Value.ToString()]);
-        arguments.AddRange(await _ffmpeg.LibraryInputAsync(source));
+        arguments.AddRange(input);
         arguments.AddRange([
             "-frames:v",
             "1",

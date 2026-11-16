@@ -6,6 +6,7 @@
  * set in the server's configuration files.
  */
 
+import { CONNECTION_SETTINGS } from '../connections/connection-settings';
 import { TOKEN_SETTINGS } from '../tokens/token-settings';
 
 export type GroupAction = 'clearHistory' | 'clearSearchHistory' | 'trickplayStatus' | 'browserTheme';
@@ -1221,57 +1222,7 @@ export const TABS: SettingTab[] = [
             },
         ],
     },
-    {
-        id: 'connections',
-        title: 'Connections',
-        intro:
-            'Connections to storage outside the libraries (Dropbox). The server itself calls the provider, ' +
-            "so these are the whole server's settings; Sfe:Locked (connections.*) in the configuration fixes them.",
-        groups: [
-            {
-                title: 'What is allowed',
-                fields: [
-                    {
-                        key: 'connections.enabled',
-                        label: 'Allow connections',
-                        type: 'checkbox',
-                        hint:
-                            'Off: no connection is listed, opened or made, whatever the rights say. ' +
-                            'Those already made are kept.',
-                    },
-                    {
-                        key: 'connections.providers',
-                        label: 'Kinds allowed',
-                        type: 'list',
-                        placeholder: 'dropbox',
-                        hint: 'One per line; empty allows every kind this server knows.',
-                    },
-                    {
-                        key: 'connections.levels',
-                        label: 'Levels allowed',
-                        type: 'list',
-                        placeholder: 'account\nlibrary\nserver',
-                        hint:
-                            'One per line: account (private to who made it), library (a space and its groups), ' +
-                            'server (offered to spaces). Connections of a level taken out are kept but not usable.',
-                    },
-                ],
-            },
-            {
-                title: 'Dropbox',
-                fields: [
-                    {
-                        key: 'connections.dropbox.appKey',
-                        label: 'App key',
-                        type: 'text',
-                        hint:
-                            "The key of the app you registered in Dropbox's App Console; empty: Dropbox is not " +
-                            'offered. Its secret, optional, is set apart and never shown again.',
-                    },
-                ],
-            },
-        ],
-    },
+    CONNECTION_SETTINGS,
     {
         id: 'tags',
         title: 'Tags',

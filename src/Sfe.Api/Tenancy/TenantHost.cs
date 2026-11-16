@@ -50,16 +50,7 @@ public sealed class TenantHost : IAsyncDisposable
         // marks the library's entries with it.
         foreach (var output in application.GetServices<ILoggerProvider>())
             services.AddSingleton(output is AuditLogProvider log ? log.ForTenant(tenant.Id) : output);
-        services.AddSingleton(application.GetRequiredService<SettingsStore>());
-        services.AddSingleton(application.GetRequiredService<SettingLayers>());
-        services.AddSingleton(application.GetRequiredService<FfmpegLimits>());
-        services.AddSingleton(application.GetRequiredService<VideoStreams>());
-        services.AddSingleton(application.GetRequiredService<Otools.Net.Sfe.Core.Files.Compression.ArchiveBuildGate>());
-        // File management moves the folder rules and quick links of what it renames (the accounts' database).
-        services.AddSingleton(application.GetRequiredService<FolderRuleService>());
-        services.AddSingleton(application.GetRequiredService<QuickLinkService>());
-        // The index of connections' files: the connections, their gates and what SFE changes in them.
-        services.AddSingleton(application.GetRequiredService<Core.Connections.Indexing.ConnectionIndexSources>());
+        AddServerServices(services, application);
         services.AddSfeCore(tenantConfiguration, contentRootPath, tenant.Id);
         services.AddSingleton<IHostedService, TrickplayWorker>();
         services.AddSingleton<IHostedService, TaskScheduleWorker>();
@@ -94,6 +85,28 @@ public sealed class TenantHost : IAsyncDisposable
         foreach (var worker in workers)
             await worker.StartAsync(cancellationToken);
         return new TenantHost(tenant, provider, workers);
+    }
+
+    /// <summary>
+    /// What the whole server shares with each library (registered in the application, handed as instances):
+    /// agents/docs/architecture/tenants.md.
+    /// </summary>
+    private static void AddServerServices(ServiceCollection services, IServiceProvider application)
+    {
+        services.AddSingleton(application.GetRequiredService<SettingsStore>());
+        services.AddSingleton(application.GetRequiredService<SettingLayers>());
+        services.AddSingleton(application.GetRequiredService<FfmpegLimits>());
+        services.AddSingleton(application.GetRequiredService<VideoStreams>());
+        services.AddSingleton(application.GetRequiredService<Otools.Net.Sfe.Core.Files.Compression.ArchiveBuildGate>());
+        // File management moves the folder rules and quick links of what it renames (the accounts' database).
+        services.AddSingleton(application.GetRequiredService<FolderRuleService>());
+        services.AddSingleton(application.GetRequiredService<QuickLinkService>());
+        // The index of connections' files: the connections, their gates and what SFE changes in them.
+        services.AddSingleton(application.GetRequiredService<Core.Connections.Indexing.ConnectionIndexSources>());
+        // The connections' cache: one for the server, whatever library previews their files.
+        services.AddSingleton(application.GetRequiredService<Core.Connections.Previews.ConnectionThumbnailStore>());
+        services.AddSingleton(application.GetRequiredService<Core.Connections.Previews.ConnectionContentCache>());
+        services.AddSingleton(application.GetRequiredService<Core.Connections.Previews.RemoteThumbnailBatches>());
     }
 
     /// <summary>

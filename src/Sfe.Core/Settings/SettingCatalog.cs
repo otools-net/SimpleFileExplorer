@@ -31,6 +31,9 @@ public static class SettingCatalog
         "connections.providers",
         "connections.levels",
         "connections.dropbox.appKey",
+        "connections.cache.maxSizeMegabytes",
+        "connections.cache.maxFileMegabytes",
+        "connections.cache.maxAgeDays",
         // Programs calling the API as an account: whoever runs the server decides.
         "security.accessTokens.enabled",
         "security.accessTokens.maxLifetimeDays",

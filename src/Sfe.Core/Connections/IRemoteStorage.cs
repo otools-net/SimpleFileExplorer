@@ -50,6 +50,33 @@ public interface IRemoteStorage : IAsyncDisposable
     Task<RemoteContent?> ThumbnailAsync(string path, int size, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Small pictures of several files at once (a provider asking for them in one call: Dropbox takes 25), in the
+    /// order of <paramref name="paths"/>; null for a file without one. By default one
+    /// <see cref="ThumbnailAsync"/> after the other, without what the provider tells of the files.
+    /// </summary>
+    async Task<IReadOnlyList<RemoteThumbnail?>> ThumbnailsAsync(
+        IReadOnlyList<string> paths,
+        int size,
+        CancellationToken cancellationToken
+    )
+    {
+        var thumbnails = new List<RemoteThumbnail?>(paths.Count);
+        foreach (var path in paths)
+        {
+            await using var content = await ThumbnailAsync(path, size, cancellationToken);
+            if (content is null)
+            {
+                thumbnails.Add(null);
+                continue;
+            }
+            using var bytes = new MemoryStream();
+            await content.Stream.CopyToAsync(bytes, cancellationToken);
+            thumbnails.Add(new RemoteThumbnail(bytes.ToArray(), content.ContentType ?? "image/jpeg"));
+        }
+        return thumbnails;
+    }
+
+    /// <summary>
     /// What changed under the root since <paramref name="cursor"/>; with null, a cursor for "now" and no change.
     /// </summary>
     Task<RemoteChanges> ChangesAsync(string? cursor, CancellationToken cancellationToken);

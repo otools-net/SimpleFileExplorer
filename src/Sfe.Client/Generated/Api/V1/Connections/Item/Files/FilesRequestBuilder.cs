@@ -7,6 +7,7 @@ using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Folders;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Properties;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Raw;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Rename;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Text;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Transfer;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Uploads;
 using System.Collections.Generic;
@@ -45,6 +46,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Rename.RenameRequestBuilder Rename
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Rename.RenameRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The text property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Text.TextRequestBuilder Text
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Text.TextRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The transfer property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Transfer.TransferRequestBuilder Transfer

@@ -14,6 +14,7 @@ using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.IndexNamespace;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Libraries;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Reauthorize;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Search;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Streaming;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails;
 using Otools.Net.Sfe.Client.Generated.Models;
 using System.Collections.Generic;
@@ -83,6 +84,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Search.SearchRequestBuilder Search
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Search.SearchRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The streaming property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Streaming.StreamingRequestBuilder Streaming
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Streaming.StreamingRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The thumbnails property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails.ThumbnailsRequestBuilder Thumbnails

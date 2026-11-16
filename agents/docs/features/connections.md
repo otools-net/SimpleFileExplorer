@@ -116,15 +116,16 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
 - Sidebar: `ConnectionLinksComponent` lists the usable ones under the quick links; they take drops onto their root.
 - The place: `LibraryRoute.c` (`?c=7&path=…`) lists a connection's folder through `connectionPage`
   (`library/connection-pages.ts`), which sets `ConfigService.place`. `config` is then `atPlace(config, place)`: file
-  rights are those the connection's `access` and capabilities give back; tags, index, data server, streaming,
-  external player, trickplay, covers and animated hover are gone, so every component already hiding what a session
+  rights are those the connection's `access` and capabilities give back; default tags, index, data server,
+  external player, trickplay, covers and animated hover are gone (streaming and thumbnails stay:
+  [connection-previews](connection-previews.md)), so every component already hiding what a session
   may not do hides them (no code per component). `urls` give the connection's addresses
   (`api/connections/{id}/files/raw/…`); player and view pages carry `c` too (`enterPlace`).
 - Leaving the place: a search (`navigate` with `q` drops `c`), quick links (`libraryParams`, `config.libraryUrls`),
   the SFE link, `reveal`; the library page clears the place when destroyed (admin pages show library files). Adding
   quick links is hidden there (`QuickLinksService.addable`: links are library paths).
-- `setRawFormatsOnly` (formats.ts): only image, video, audio and PDF open (no text, archive, EPUB or Flash reader on
-  the server for a connection); the viewer's "open in a tab" gives the file itself.
+- `setPlaceFormatsOnly` (formats.ts): every format but EPUB, Flash and archives (they read files through library
+  routes); text formats read only through `FILE_SOURCE` ([connection-previews](connection-previews.md)).
 - Requests are `Api` methods (`connections`, `authorizeConnection`, …); specs mock them with `mockApi()`. `Api`
   answers a 409 with its problem body instead of throwing: `problemOf` tells it apart.
 

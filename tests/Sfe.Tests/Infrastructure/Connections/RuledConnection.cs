@@ -60,11 +60,15 @@ public sealed class RuledConnection : IAsyncDisposable
     /// <summary>The connection's routes, <c>/api/v1/connections/{id}</c>.</summary>
     public string Base => $"{V1}/connections/{Id}";
 
-    public static async Task<RuledConnection> CreateAsync(CancellationToken cancellationToken)
+    /// <param name="configure">Changes to the server's configuration.</param>
+    public static async Task<RuledConnection> CreateAsync(
+        CancellationToken cancellationToken,
+        Action<IDictionary<string, string?>>? configure = null
+    )
     {
         var world = new RuledConnection(null!);
         world.Factory = ApiClients
-            .CreateFactory(world._library)
+            .CreateFactory(world._library, configure)
             .WithWebHostBuilder(builder =>
                 builder.ConfigureServices(services => services.AddSingleton<IConnectionProvider>(world.Provider))
             );

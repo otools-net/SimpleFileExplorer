@@ -33,8 +33,17 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
             : account.Find(Full(path)) is { } entry ? ToItem(entry)
             : null);
 
-    public Task<RemoteContent> OpenReadAsync(string path, RemoteRange? range, CancellationToken cancellationToken) =>
-        Call("read", path, () =>
+    public async Task<RemoteContent> OpenReadAsync(string path, RemoteRange? range, CancellationToken cancellationToken)
+    {
+        if (account.HoldReads is { } hold)
+        {
+            await hold.WaitAsync(cancellationToken);
+            hold.Release();
+        }
+        return await ReadAsync(path, range);
+    }
+
+    private Task<RemoteContent> ReadAsync(string path, RemoteRange? range) => Call("read", path, () =>
         {
             if (account.Find(Full(path)) is not { Content: { } bytes })
                 throw NotFound(path);
@@ -131,6 +140,29 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
                 ? throw NotFound(path)
                 : throw new RemoteStorageException(RemoteErrorKind.NotSupported, "No thumbnails.")
         );
+
+    /// <summary>One call for all (as Dropbox's batch): <c>thumbnails a|b|c</c>.</summary>
+    public Task<IReadOnlyList<RemoteThumbnail?>> ThumbnailsAsync(
+        IReadOnlyList<string> paths,
+        int size,
+        CancellationToken cancellationToken
+    ) => Call<IReadOnlyList<RemoteThumbnail?>>("thumbnails", string.Join("|", paths), () =>
+        {
+            if (!capabilities.Thumbnails)
+                throw new RemoteStorageException(RemoteErrorKind.NotSupported, "No thumbnails.");
+            return
+            [
+                .. paths.Select(path =>
+                    account.Thumbnailed.TryGetValue(Full(path), out var media) && account.Find(Full(path)) is { } entry
+                        ? new RemoteThumbnail(ThumbnailOf(entry), "image/jpeg", media)
+                        : null
+                ),
+            ];
+        });
+
+    /// <summary>A fake thumbnail: its file's hash, so a test tells the versions apart.</summary>
+    private byte[] ThumbnailOf(FakeEntry entry) =>
+        System.Text.Encoding.UTF8.GetBytes($"thumbnail of {entry.Path} {HashOf(entry.Content ?? [])}");
 
     public Task<RemoteChanges> ChangesAsync(string? cursor, CancellationToken cancellationToken) =>
         Call("changes", cursor ?? "", () =>

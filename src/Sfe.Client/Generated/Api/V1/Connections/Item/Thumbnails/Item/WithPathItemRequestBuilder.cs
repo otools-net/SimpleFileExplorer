@@ -33,7 +33,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails.Ite
         {
         }
         /// <summary>
-        /// JPEG preview of a picture or video of a connection, made by its provider.
+        /// The provider&apos;s thumbnail when it makes one (asked together with others arriving at the same moment), keptin the server&apos;s cache under the file&apos;s id and version: a file changed at the provider gets a new one. Apicture the provider doesn&apos;t thumbnail (Dropbox: over 20 MB) is made by ffmpeg from the file downloaded intothe server&apos;s content cache, when ffmpeg is there and the file not over the cache&apos;s limit; a video only whenit is in that cache already (played converted). 404 when the file has none.
         /// </summary>
         /// <returns>A <see cref="Stream"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -51,7 +51,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails.Ite
             return await RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// JPEG preview of a picture or video of a connection, made by its provider.
+        /// The provider&apos;s thumbnail when it makes one (asked together with others arriving at the same moment), keptin the server&apos;s cache under the file&apos;s id and version: a file changed at the provider gets a new one. Apicture the provider doesn&apos;t thumbnail (Dropbox: over 20 MB) is made by ffmpeg from the file downloaded intothe server&apos;s content cache, when ffmpeg is there and the file not over the cache&apos;s limit; a video only whenit is in that cache already (played converted). 404 when the file has none.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -78,7 +78,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails.Ite
             return new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails.Item.WithPathItemRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// JPEG preview of a picture or video of a connection, made by its provider.
+        /// The provider&apos;s thumbnail when it makes one (asked together with others arriving at the same moment), keptin the server&apos;s cache under the file&apos;s id and version: a file changed at the provider gets a new one. Apicture the provider doesn&apos;t thumbnail (Dropbox: over 20 MB) is made by ffmpeg from the file downloaded intothe server&apos;s content cache, when ffmpeg is there and the file not over the cache&apos;s limit; a video only whenit is in that cache already (played converted). 404 when the file has none.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class WithPathItemRequestBuilderGetQueryParameters 

@@ -7,6 +7,22 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Previews of connections' files**: thumbnails come from the provider (Dropbox: 25 asked at once) and are kept on
+  the server under the file's id and version, so folders seen again show them without asking the provider and a file
+  changed there gets a new one; pictures the provider doesn't thumbnail (Dropbox: photos over 20 MB) are made by
+  ffmpeg from the file. Videos the browser can't play are converted while they play, as in the library. Text files,
+  Markdown, JSON, CSV and subtitles open in the viewer, read only (up to 10 MB). Width, height and duration are
+  learnt when a file passes through the server (a thumbnail's answer, a file downloaded for a preview): they show in
+  listings and `w:` `h:` `r:` `d:` find them; nothing downloads everything to learn them. New routes
+  `GET api/v1/connections/{id}/files/text`, `…/streaming/probe`, `…/streaming/play` (the library's, with `player` for
+  `id`); new problem type `connection-cache-busy` (429).
+- **Cache of connections' previews**: one for the whole server (`{Thumbnails:CacheDirectory}/connections`), with its
+  size, largest file and age as server settings (`connections.cache.maxSizeMegabytes` 4096, `maxFileMegabytes` 2048,
+  `maxAgeDays` 30; Administration › Settings › Connections); the files used longest ago go first; each person
+  downloads two files into it at once at most, the server four; one download per file whoever asks; removed with its
+  connection; off when its folder is inside a library or the web root. ffmpeg reads a file of it only when its bytes
+  are a picture, video or audio file (never a playlist or script named as one).
+
 - **Tags on connections' files**: a connection's files take the space's tags with the library's dialogs (a file, a
   selection, a whole folder or every result of a search, a tag's menu on a file); the tags are kept in the space's
   index of the connection, never at the provider, and follow files renamed or moved there (also in Dropbox itself).

@@ -18,6 +18,12 @@ public static class ProblemTypes
     /// <summary>422: the archive (or one of its entries) can't be read: damaged, or of a kind not read.</summary>
     public const string ArchiveUnreadable = "archive-unreadable";
 
+    /// <summary>
+    /// 429 with <c>Retry-After</c>: the server already downloads as many files of connections as it may (for this
+    /// caller, or in all) into its cache; try again in a moment.
+    /// </summary>
+    public const string ConnectionCacheBusy = "connection-cache-busy";
+
     /// <summary>409: the provider no longer accepts the connection's sign-in; its manager signs in again.</summary>
     public const string ConnectionNeedsReconnecting = "connection-needs-reconnecting";
 
@@ -111,6 +117,7 @@ public static class ProblemTypes
         AccessGains,
         ArchiveReading,
         ArchiveUnreadable,
+        ConnectionCacheBusy,
         ConnectionNeedsReconnecting,
         ConnectionNotIndexed,
         ConnectionNotSupported,

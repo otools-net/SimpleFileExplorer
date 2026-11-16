@@ -57,14 +57,6 @@ public static class ConnectionFileEndpoints
             .WithDescription("`download=true` asks the browser to save it, which needs the right `files.download`.");
 
         connections
-            .MapGet("/thumbnails/{**path}", Thumbnail)
-            .RequireRateLimiting(RequestLimits.Media)
-            .RequireRight(Rights.UseConnections)
-            .FolderScoped("files.view; 404 for a connection the subject may not use")
-            .WithName("GetConnectionThumbnail")
-            .WithSummary("JPEG preview of a picture or video of a connection, made by its provider.");
-
-        connections
             .MapGet("/files/properties", Properties)
             .RequireRateLimiting(RequestLimits.Connections)
             .RequireRight(Rights.UseConnections)
@@ -143,43 +135,6 @@ public static class ConnectionFileEndpoints
         });
     }
 
-    private static async Task<IResult> Thumbnail(
-        int id,
-        string path,
-        [AsParameters] ConnectionFileServices files,
-        int size = 256,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (RemotePaths.Normalize(path) is not { Length: > 0 } normalized)
-            return TypedResults.NotFound();
-        var (open, answer) = await files.OpenAsync(id, Rights.ViewFiles, cancellationToken);
-        if (open is null)
-            return answer!;
-        if (!open.Capabilities.Thumbnails)
-            return TypedResults.NotFound();
-        if (OpenConnection.AnswerOf(open.Check(normalized, Rights.ViewFiles)) is { } refused)
-            return refused;
-
-        return await files.RunAsync(open, async storage =>
-        {
-            // Where the provider says the file is, for a session folder rules restrict (one more call).
-            if (
-                !open.Folders.IsUnrestricted
-                && await SeenThereAsync(open, storage, normalized, cancellationToken) is { } there
-            )
-            {
-                return there;
-            }
-
-            var thumbnail = await storage.ThumbnailAsync(normalized, Math.Clamp(size, 32, 1024), cancellationToken);
-            if (thumbnail is null)
-                return TypedResults.NotFound();
-            files.Context.Response.Headers.CacheControl = "no-store";
-            return TypedResults.Stream(thumbnail.Stream, thumbnail.ContentType ?? "image/jpeg");
-        });
-    }
-
     private static async Task<IResult> Properties(
         int id,
         [AsParameters] ConnectionFileServices files,
@@ -229,22 +184,6 @@ public static class ConnectionFileEndpoints
         Stricter(open.Check(asked, item, Rights.ViewFiles), open.Check(asked, item, right));
 
     private static PathVerdict Stricter(PathVerdict one, PathVerdict other) => one > other ? one : other;
-
-    /// <summary>
-    /// The file where the provider says it is: not found when it isn't there or the session doesn't see it there,
-    /// 403 when it may not view it; null when it may.
-    /// </summary>
-    private static async Task<IResult?> SeenThereAsync(
-        OpenConnection open,
-        IRemoteStorage storage,
-        string path,
-        CancellationToken cancellationToken
-    )
-    {
-        if (await storage.GetAsync(path, cancellationToken) is not { IsFolder: false } item)
-            return TypedResults.NotFound();
-        return OpenConnection.AnswerOf(open.Check(path, item, Rights.ViewFiles));
-    }
 
     /// <summary>The provider's account of an account-level connection the caller owns; null for any other.</summary>
     private static async Task<string?> OwnAccountAsync(

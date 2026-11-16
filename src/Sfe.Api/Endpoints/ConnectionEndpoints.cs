@@ -131,6 +131,7 @@ public static class ConnectionEndpoints
         int id,
         CurrentAccess current,
         ConnectionService connections,
+        Core.Connections.Previews.ConnectionCacheStore cache,
         CancellationToken cancellationToken
     )
     {
@@ -139,9 +140,11 @@ public static class ConnectionEndpoints
         if (connection is null || !ConnectionManagers.MayRemove(state, connection))
             return TypedResults.NotFound();
 
-        return await connections.RemoveAsync(id, state.User?.Id, cancellationToken) == AccessStatus.Ok
-            ? TypedResults.NoContent()
-            : TypedResults.NotFound();
+        if (await connections.RemoveAsync(id, state.User?.Id, cancellationToken) != AccessStatus.Ok)
+            return TypedResults.NotFound();
+        // Its thumbnails and files go with it (the cache's sweep takes what this misses).
+        cache.Forget(id);
+        return TypedResults.NoContent();
     }
 
     private static async Task<Results<Ok<ConnectionInfo>, ValidationProblem, NotFound>> SetLibraries(

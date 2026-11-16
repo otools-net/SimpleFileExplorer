@@ -37,8 +37,8 @@ const FILE_RIGHTS = /^(files|tags|index|tracking|trickplay)\./;
 /**
  * The configuration as the pages see it while the listing shows a connection (agents/docs/features/connections.md):
  * what its files can't do is hidden where the app already hides what a session may not do. No default tags, index, data
- * server, conversion, external player, trickplay, folder pictures or animated hover (they read the library); thumbnails
- * when its provider makes them.
+ * server, external player, trickplay, folder pictures or animated hover (they read the library); thumbnails when its
+ * provider or the server makes them; videos converted as in the library (from the server's cache of connections).
  */
 export function atPlace(config: ClientConfig, place: ConnectionPlace | null): ClientConfig {
     if (!place) return config;
@@ -47,13 +47,18 @@ export function atPlace(config: ClientConfig, place: ConnectionPlace | null): Cl
         ...config,
         rootName: place.name || config.rootName,
         rights: config.rights.filter((right) => !FILE_RIGHTS.test(right) || kept.has(right)),
-        features: { thumbnails: place.thumbnails, trickplay: false },
+        // The server makes thumbnails of pictures (and of videos played) when its provider doesn't.
+        features: { thumbnails: place.thumbnails || config.features.thumbnails, trickplay: false },
         dataServer: null,
         externalPlayer: null,
-        streaming: null,
         folderPictures: 0,
         animatedHover: false,
     };
+}
+
+/** The routes (below `API_BASE`) of a connection's files (`connections/{id}/`), or of the library's (empty). */
+export function placeRoute(connection?: number | null): string {
+    return connection ? `connections/${connection}/` : '';
 }
 
 /**

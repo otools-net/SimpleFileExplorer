@@ -86,7 +86,7 @@ import {
     FolderExclusions,
     FolderPicker,
 } from './models';
-import { tagsRoute, uploadsRoute } from './connection-place';
+import { placeRoute, tagsRoute, uploadsRoute } from './connection-place';
 import { SettingLevel, SettingsValues, SettingsView } from './setting.models';
 import {
     FileTagChangeResult,
@@ -325,8 +325,9 @@ export class Api {
     /** Forgets one missing file, or all of them when `id` is omitted. */
     forgetMissingFiles = (id?: number) => this.delete<void>(id === undefined ? 'missing-files' : `missing-files/${id}`);
 
-    /** Whether `path` can be played converted by the server, and its length; 404 when it can't. */
-    streamProbe = (path: string) => this.get<StreamProbe>('streaming/probe', { path });
+    /** Whether `path` (of a connection when given) plays converted by the server, and its length; 404 if not. */
+    streamProbe = (path: string, connection?: number | null) =>
+        this.get<StreamProbe>(`${placeRoute(connection)}streaming/probe`, { path });
     /** The videos the server converts now, in every library. */
     streamingStatus = () => this.get<StreamingStatus>('streaming/sessions');
 
@@ -541,10 +542,9 @@ export class Api {
      */
     unlockArchive = (path: string, password: string) =>
         this.post<ArchiveUnlockAnswer>('files/explore/unlock', { path, password });
-    /** A text file's content (413 `too-large`, 415 `not-text`). */
-    /** `encoding`: read it in that encoding rather than the one it seems to have (Reopen with encoding). */
-    textFile = (path: string, signal?: AbortSignal, encoding?: string | null) =>
-        this.get<TextFile>('files/text', { path, encoding }, signal);
+    /** A text file (413 `too-large`, 415 `not-text`), in `encoding` if given; a connection's (read only) if given. */
+    textFile = (path: string, signal?: AbortSignal, encoding?: string | null, connection?: number | null) =>
+        this.get<TextFile>(`${placeRoute(connection)}files/text`, { path, encoding }, signal);
     /** About `length` bytes of a text file of any size from `offset` (-1: its end), cut at whole lines. */
     textPart = (path: string, offset: number, length?: number | null, encoding?: string | null, signal?: AbortSignal) =>
         this.get<TextPart>('files/text/part', { path, offset, length, encoding }, signal);

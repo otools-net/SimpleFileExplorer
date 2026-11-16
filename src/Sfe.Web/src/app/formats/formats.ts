@@ -593,14 +593,11 @@ export function isContainer(item: LibraryItem): boolean {
     );
 }
 
-/** The formats that read the file through its own address alone: those of a connection's files. */
-const RAW_FORMATS: readonly FileFormat[] = [IMAGE_FORMAT, VIDEO_FORMAT, AUDIO_FORMAT, PDF_FORMAT];
+/** Only `PLACE_FORMATS` open: a connection is listed. */
+const placeFormatsOnly = signal(false);
 
-/** Only `RAW_FORMATS` open: a connection is listed, whose files have no reader on the server (text, archives...). */
-const rawFormatsOnly = signal(false);
-
-export function setRawFormatsOnly(only: boolean): void {
-    rawFormatsOnly.set(only);
+export function setPlaceFormatsOnly(only: boolean): void {
+    placeFormatsOnly.set(only);
 }
 
 /** Every format, any order (the priority decides). */
@@ -620,6 +617,9 @@ export const FORMATS: readonly FileFormat[] = [
     ARCHIVE_FORMAT,
 ];
 
+/** A connection's files: no EPUB, Flash or archive reader (they read the file through the library's routes). */
+const PLACE_FORMATS = FORMATS.filter((format) => ![EPUB_FORMAT, FLASH_FORMAT, ARCHIVE_FORMAT].includes(format));
+
 /**
  * How `item` is shown, or null when it isn't (downloaded, or opened in a tab). `asText` shows any file as text
  * ("Open as text"): the server refuses what isn't; `asArchive` a container as an archive ("Open as archive").
@@ -629,13 +629,13 @@ export function formatOf(
     options?: { asText?: boolean; asArchive?: boolean },
 ): FileFormat | null {
     if (!item || item.kind === 'directory') return null;
-    const rawOnly = rawFormatsOnly();
-    if (options?.asArchive && !rawOnly && isContainer(item)) return ARCHIVE_FORMAT;
+    const placeOnly = placeFormatsOnly();
+    if (options?.asArchive && !placeOnly && isContainer(item)) return ARCHIVE_FORMAT;
     let best: FileFormat | null = null;
-    for (const format of rawOnly ? RAW_FORMATS : FORMATS) {
+    for (const format of placeOnly ? PLACE_FORMATS : FORMATS) {
         if ((best === null || format.priority > best.priority) && format.matches(item)) best = format;
     }
-    return best ?? (options?.asText && !rawOnly && item.kind === 'file' ? TEXT_FORMAT : null);
+    return best ?? (options?.asText && item.kind === 'file' ? TEXT_FORMAT : null);
 }
 
 /** The file has a viewer: a click opens it there and it is among the files the viewer steps through. */

@@ -87,4 +87,24 @@ internal sealed record ConnectionFileServices(
             return await ConnectionProblems.OfAsync(error, id, Context, Connections);
         }
     }
+
+    /// <summary>
+    /// Runs work that calls the provider in turns of its own (the thumbnails' batches, the content cache's
+    /// downloads): the provider's errors and the cache's refusals as their answers.
+    /// </summary>
+    public async Task<IResult> CatchAsync(OpenConnection open, Func<Task<IResult>> work)
+    {
+        try
+        {
+            return await work();
+        }
+        catch (RemoteStorageException error)
+        {
+            return await ConnectionProblems.OfAsync(error, open.Connection.Id, Context, Connections);
+        }
+        catch (Core.Connections.Previews.ConnectionCacheException refused)
+        {
+            return ConnectionCacheProblems.Of(refused, Context);
+        }
+    }
 }

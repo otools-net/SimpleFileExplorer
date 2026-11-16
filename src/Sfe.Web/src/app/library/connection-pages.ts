@@ -2,7 +2,7 @@ import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { ConnectionListing, ConnectionPlace } from '../core/connection.models';
 import { DirectoryListing } from '../core/models';
-import { setRawFormatsOnly } from '../formats/formats';
+import { setPlaceFormatsOnly } from '../formats/formats';
 import { LibraryRoute } from './library-route';
 import { ConnectionSearchResults, SearchAsk, SearchCoverage, SearchResults, SortField } from './library.models';
 
@@ -92,5 +92,5 @@ export function enterPlace(config: ConfigService, id: number | null): void {
 
 function setPlace(config: ConfigService, place: ConnectionPlace | null): void {
     config.place.set(place);
-    setRawFormatsOnly(place !== null);
+    setPlaceFormatsOnly(place !== null);
 }

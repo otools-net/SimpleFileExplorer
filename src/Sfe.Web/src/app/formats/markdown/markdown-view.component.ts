@@ -154,9 +154,15 @@ export class MarkdownViewComponent {
         : {
               file: (path) => this.config.urls()!.file(path),
               view: (path) => this.config.urls()!.view(path),
-              folder: (path) => `./?${new URLSearchParams({ path })}`,
+              folder: (path) => `./?${new URLSearchParams(this.folderQuery(path))}`,
               viewable: (path) => formatOf(itemAt(path)) !== null,
           };
+
+    /** A folder's listing: in the connection listed, when it is one. */
+    private folderQuery(path: string): Record<string, string> {
+        const place = this.config.place();
+        return place ? { c: String(place.id), path } : { path };
+    }
 
     /** The path its relative links are resolved from: its own, or its place in its archive. */
     private documentPath(item: LibraryItem): string {

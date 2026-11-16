@@ -47,7 +47,8 @@ with the library: [transfers](transfers.md).
 - `files/raw/{**path}` serves one range (`RemoteRanges`; 416 past the end) under the library's sandbox
   (`RemoteFileResult`: `FilePolicy`, attachment for types a page could run); a provider without `RangedReads` serves
   the whole file with 200 and no `Accept-Ranges`.
-- `thumbnails/{**path}` only when the provider makes them (`Thumbnails`).
+- `thumbnails/{**path}`, `files/text`, `streaming/probe|play`: [connection-previews](connection-previews.md)
+  (provider thumbnails in batches, the server-wide content cache, ffmpeg on cached media only).
 - Zips: `POST api/connections/{id}/archive` and its one-time link (`ArchiveLinks` with scope `connection:{id}`: the
   library's route never takes such a link, nor uses it up), written from the provider by `RemoteArchives`; a file
   without content (Dropbox Paper) is named in `SFE - left out.txt`.

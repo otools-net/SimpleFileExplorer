@@ -25,10 +25,30 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
     /// audio) and, for a video or audio file, its duration; null when it cannot tell now (ffmpeg missing or timed out,
     /// file locked), so that the next scan tries again.
     /// </returns>
-    public async Task<MediaProperties?> ReadAsync(
+    public Task<MediaProperties?> ReadAsync(
         string fullPath,
         ItemKind kind,
         CancellationToken cancellationToken = default
+    ) => ReadAsync(fullPath, kind, () => ffmpeg.LibraryInputAsync(fullPath), cancellationToken);
+
+    /// <summary>
+    /// <see cref="ReadAsync(string, ItemKind, CancellationToken)"/> for a connection's file in the connections' cache:
+    /// only when its bytes are media, and ffmpeg opens it through <see cref="Ffmpeg.ConnectionInputAsync"/>.
+    /// </summary>
+    public Task<MediaProperties?> ReadCachedAsync(
+        Connections.Previews.CachedContent content,
+        ItemKind kind,
+        CancellationToken cancellationToken = default
+    ) =>
+        content.Media is null
+            ? Task.FromResult<MediaProperties?>(null)
+            : ReadAsync(content.FullPath, kind, () => ffmpeg.ConnectionInputAsync(content), cancellationToken);
+
+    private async Task<MediaProperties?> ReadAsync(
+        string fullPath,
+        ItemKind kind,
+        Func<Task<IReadOnlyList<string>>> input,
+        CancellationToken cancellationToken
     )
     {
         try
@@ -60,7 +80,7 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
 
             if (!ffmpeg.IsAvailable)
                 return null;
-            var output = await ProbeAsync(fullPath, cancellationToken);
+            var output = await ProbeAsync(await input(), cancellationToken);
             return kind switch
             {
                 ItemKind.Image => new MediaProperties(ParseFfmpegOutput(output)),
@@ -78,10 +98,14 @@ public sealed partial class MediaDimensions(Ffmpeg ffmpeg, ILogger<MediaDimensio
     /// <summary>
     /// What ffmpeg tells about the file's container and streams (its error output when given no output file).
     /// </summary>
-    internal async Task<string> ProbeAsync(string fullPath, CancellationToken cancellationToken)
+    internal async Task<string> ProbeAsync(string fullPath, CancellationToken cancellationToken) =>
+        await ProbeAsync(await ffmpeg.LibraryInputAsync(fullPath), cancellationToken);
+
+    /// <summary>What ffmpeg tells of the file <paramref name="input"/> opens (<see cref="Ffmpeg"/>'s inputs).</summary>
+    internal async Task<string> ProbeAsync(IReadOnlyList<string> input, CancellationToken cancellationToken)
     {
         // No output file: ffmpeg describes the input, then fails with "At least one output file must be specified".
-        string[] arguments = ["-hide_banner", "-nostdin", .. await ffmpeg.LibraryInputAsync(fullPath)];
+        string[] arguments = ["-hide_banner", "-nostdin", .. input];
         var (_, errors) = await ffmpeg.RunAsync(arguments, FfmpegTimeout, cancellationToken: cancellationToken);
         return errors;
     }

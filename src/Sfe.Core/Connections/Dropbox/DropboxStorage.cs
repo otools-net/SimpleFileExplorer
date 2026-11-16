@@ -75,20 +75,17 @@ public sealed class DropboxStorage : IRemoteStorage
 
     public async Task<RemoteContent?> ThumbnailAsync(string path, int size, CancellationToken cancellationToken)
     {
-        try
-        {
-            var thumbnail = await DropboxErrors.CallAsync(() =>
-                _client.Files.GetThumbnailAsync(DropboxPath(path), ThumbnailFormat.Jpeg.Instance, SizeOf(size))
-            );
-            var bytes = await thumbnail.GetContentAsByteArrayAsync();
-            return new RemoteContent(new MemoryStream(bytes), bytes.Length, bytes.Length, ContentType: "image/jpeg");
-        }
-        catch (RemoteStorageException error) when (error.Kind is RemoteErrorKind.Refused or RemoteErrorKind.NotFound)
-        {
-            // Not a picture or a video Dropbox makes thumbnails of.
+        if (await DropboxThumbnails.OneAsync(_client, DropboxPath(path), size) is not { } thumbnail)
             return null;
-        }
+        var bytes = thumbnail.Bytes;
+        return new RemoteContent(new MemoryStream(bytes), bytes.Length, bytes.Length, ContentType: "image/jpeg");
     }
+
+    public Task<IReadOnlyList<RemoteThumbnail?>> ThumbnailsAsync(
+        IReadOnlyList<string> paths,
+        int size,
+        CancellationToken cancellationToken
+    ) => DropboxThumbnails.GetAsync(_client, [.. paths.Select(DropboxPath)], size);
 
     public async Task<RemoteChanges> ChangesAsync(string? cursor, CancellationToken cancellationToken)
     {
@@ -311,16 +308,6 @@ public sealed class DropboxStorage : IRemoteStorage
         );
         return ToItem(result.Metadata);
     }
-
-    private static ThumbnailSize SizeOf(int size) =>
-        size switch
-        {
-            <= 64 => ThumbnailSize.W64h64.Instance,
-            <= 128 => ThumbnailSize.W128h128.Instance,
-            <= 256 => ThumbnailSize.W256h256.Instance,
-            <= 640 => ThumbnailSize.W640h480.Instance,
-            _ => ThumbnailSize.W1024h768.Instance,
-        };
 
     /// <summary>
     /// Sends a part; Dropbox's <c>incorrect_offset</c> as <see cref="RemoteErrorKind.WrongOffset"/> with the

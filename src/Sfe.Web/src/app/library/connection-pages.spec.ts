@@ -98,10 +98,11 @@ describe('a connection in the listing', () => {
         expect(config.can(Rights.viewTags) && config.can(Rights.assignTags)).toBe(true);
         // Rights of the account, not of the files, stay.
         expect(config.can(Rights.useConnections)).toBe(true);
+        // The library converts no video here (streaming off in it): nor in the connection.
         expect(config.videoStream('clip.mp4')).toBeNull();
-        // Only what reads the file through its address opens: no text reader on the server for it.
-        expect(isViewable(item('Sunrise.jpg'))).toBe(true);
-        expect(isViewable(item('notes.txt'))).toBe(false);
+        // Media and the text formats open (read only: connection-previews.spec.ts); no EPUB nor archive reader.
+        expect(isViewable(item('Sunrise.jpg')) && isViewable(item('notes.txt'))).toBe(true);
+        expect(isViewable(item('book.epub'))).toBe(false);
         // The library's quick links keep their addresses.
         expect(config.libraryUrls()!.file('a.jpg')).toBe('api/v1/files/raw/a.jpg');
     });

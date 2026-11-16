@@ -179,6 +179,31 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<Connections.Indexing.RemoteIndexSearch>();
         services.AddSingleton<Connections.Indexing.RemoteFileTags>();
         services.AddSingleton<Connections.Indexing.RemoteScopeTagger>();
+        // Previews of connections' files; their cache is the server's (AddConnectionCache), handed to each library.
+        services.AddSingleton<Connections.Indexing.RemoteMediaRows>();
+        services.AddSingleton<Connections.Previews.ConnectionPreviews>();
+    }
+
+    /// <summary>
+    /// The connections' cache (agents/docs/features/connection-previews.md): one for the server, in
+    /// <c>{Thumbnails:CacheDirectory}/connections</c> of the configuration (not a library's own cache folder).
+    /// </summary>
+    private static void AddConnectionCache(IServiceCollection services, IConfigurationSection section, string root)
+    {
+        var cache = section.GetSection(nameof(SfeOptions.Thumbnails)).Get<ThumbnailOptions>()?.CacheDirectory
+            is { Length: > 0 } configured
+            ? configured
+            : new ThumbnailOptions().CacheDirectory;
+        var folder = Path.Combine(ThumbnailOptions.ResolveCacheDirectory(cache, root), "connections");
+        services.AddSingleton(sp => new Connections.Previews.ConnectionCacheStore(
+            folder,
+            sp.GetRequiredService<SettingLayers>(),
+            sp.GetRequiredService<TimeProvider>(),
+            sp.GetRequiredService<ILogger<Connections.Previews.ConnectionCacheStore>>()
+        ));
+        services.AddSingleton<Connections.Previews.ConnectionThumbnailStore>();
+        services.AddSingleton<Connections.Previews.ConnectionContentCache>();
+        services.AddSingleton<Connections.Previews.RemoteThumbnailBatches>();
     }
 
     private static void AddLegacyLogCategories(IServiceCollection services) =>
@@ -270,6 +295,7 @@ public static class ServiceCollectionExtensions
         // What SFE changes in connections, told to every library's index of them and to the change feeds.
         services.AddSingleton<ConnectionChanges>();
         services.AddSingleton<Connections.Indexing.ConnectionIndexSources>();
+        AddConnectionCache(services, section, contentRootPath ?? Directory.GetCurrentDirectory());
         // The version the install belongs to (read before anything else at start-up), and its backups.
         services.AddSingleton<InstalledVersion>();
         services.AddSingleton<BackupWriter>();

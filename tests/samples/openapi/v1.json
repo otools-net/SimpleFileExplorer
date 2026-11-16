@@ -8514,12 +8514,52 @@
         ]
       }
     },
+    "/api/v1/connections/{id}/files/properties": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "The properties of a file or folder of a connection (`path` empty: its root folder).",
+        "description": "The item as a listing shows it (`item`; the root folder named after the connection), the provider's kind,\nthe content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file has\ncontent to download. `account` (the provider's account) is given only on the caller's own connection.",
+        "operationId": "GetConnectionItemProperties",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.use"
+          ]
+        ]
+      }
+    },
     "/api/v1/connections/{id}/thumbnails/{path}": {
       "get": {
         "tags": [
           "Connections"
         ],
-        "summary": "JPEG preview of a picture or video of a connection, made by its provider.",
+        "summary": "JPEG preview of a picture or video of a connection.",
+        "description": "The provider's thumbnail when it makes one (asked together with others arriving at the same moment), kept\nin the server's cache under the file's id and version: a file changed at the provider gets a new one. A\npicture the provider doesn't thumbnail (Dropbox: over 20 MB) is made by ffmpeg from the file downloaded into\nthe server's content cache, when ffmpeg is there and the file not over the cache's limit; a video only when\nit is in that cache already (played converted). 404 when the file has none.",
         "operationId": "GetConnectionThumbnail",
         "parameters": [
           {
@@ -8566,14 +8606,14 @@
         ]
       }
     },
-    "/api/v1/connections/{id}/files/properties": {
+    "/api/v1/connections/{id}/files/text": {
       "get": {
         "tags": [
           "Connections"
         ],
-        "summary": "The properties of a file or folder of a connection (`path` empty: its root folder).",
-        "description": "The item as a listing shows it (`item`; the root folder named after the connection), the provider's kind,\nthe content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file has\ncontent to download. `account` (the provider's account) is given only on the caller's own connection.",
-        "operationId": "GetConnectionItemProperties",
+        "summary": "A file of a connection as text, read only (its encoding and line ending told).",
+        "description": "`api/files/text` for a connection's file, read only: at most 10 MB\n(413 `too-large`), 415 (`not-text`) for a file that isn't text; `encoding`\nreads it in another one. `access` never offers to save; `version` is the provider's content hash, else its\nsize and date.",
+        "operationId": "GetConnectionTextFile",
         "parameters": [
           {
             "name": "id",
@@ -8587,6 +8627,114 @@
           },
           {
             "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "encoding",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.use"
+          ]
+        ]
+      }
+    },
+    "/api/v1/connections/{id}/streaming/probe": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "Whether a video of a connection can be played converted by the server, and its length.",
+        "description": "`api/streaming/probe` for a connection's video. The first call downloads the file into the server's cache\n(it answers when the file is there): 413 (`too-large`) over the cache's file limit, 429\n(`connection-cache-busy`) while the server downloads as many files as it may. 404 when streaming is off,\nffmpeg is missing, or the file's bytes are not a video.",
+        "operationId": "ProbeConnectionVideoStream",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.use"
+          ]
+        ]
+      }
+    },
+    "/api/v1/connections/{id}/streaming/play": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "A video of a connection converted by ffmpeg while it plays, from `t` seconds.",
+        "description": "`api/streaming/play` for a connection's video, from the server's cache. `player` names the player: a new\nrequest with the same `player` stops its earlier stream. 503 while the server converts\n`Streaming:MaxStreams` videos already.",
+        "operationId": "PlayConnectionVideoStream",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "T",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double",
+              "default": 0
+            }
+          },
+          {
+            "name": "Player",
             "in": "query",
             "schema": {
               "type": "string"
@@ -10747,6 +10895,35 @@
         ],
         "default": "ask"
       },
+      "ConnectionCacheSettings": {
+        "type": "object",
+        "properties": {
+          "maxSizeMegabytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxFileMegabytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxAgeDays": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "ConnectionChange": {
         "type": "object",
         "properties": {
@@ -11260,6 +11437,9 @@
           },
           "dropbox": {
             "$ref": "#/components/schemas/DropboxSettings"
+          },
+          "cache": {
+            "$ref": "#/components/schemas/ConnectionCacheSettings"
           }
         }
       },
@@ -19215,6 +19395,7 @@
     "access-gains",
     "archive-reading",
     "archive-unreadable",
+    "connection-cache-busy",
     "connection-needs-reconnecting",
     "connection-not-indexed",
     "connection-not-supported",

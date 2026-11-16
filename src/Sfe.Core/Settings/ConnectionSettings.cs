@@ -27,6 +27,8 @@ public sealed partial class ConnectionSettings
 
     public DropboxSettings Dropbox { get; set; } = new();
 
+    public ConnectionCacheSettings Cache { get; set; } = new();
+
     public static ConnectionSettings From(ConnectionOptions options) =>
         new()
         {
@@ -34,6 +36,7 @@ public sealed partial class ConnectionSettings
             Providers = [.. options.Providers],
             Levels = [.. options.Levels],
             Dropbox = new() { AppKey = options.Dropbox.AppKey },
+            Cache = ConnectionCacheSettings.From(options.Cache),
         };
 
     public void ApplyTo(ConnectionOptions options)
@@ -42,6 +45,7 @@ public sealed partial class ConnectionSettings
         options.Providers = [.. Providers];
         options.Levels = [.. Levels];
         options.Dropbox.AppKey = Dropbox.AppKey;
+        Cache.ApplyTo(options.Cache);
     }
 
     /// <summary>Lower case, trimmed, each word once.</summary>
@@ -66,6 +70,8 @@ public sealed partial class ConnectionSettings
             yield return ("connections.levels", $"The levels are: {string.Join(", ", KnownLevels)}.");
         if (Dropbox.AppKey is { } key && !AppKey().IsMatch(key))
             yield return ("connections.dropbox.appKey", "An app key is letters and digits, as Dropbox shows it.");
+        foreach (var error in Cache.Errors())
+            yield return error;
     }
 
     private static List<string> Words(IEnumerable<string>? words) =>

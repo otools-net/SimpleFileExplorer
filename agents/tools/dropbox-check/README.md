@@ -129,11 +129,24 @@ afternoon; most of it is waiting.
      (`t:<tag>` in the connection finds them all).
 6. **Search** (once phase 3 is built): a name, a type and a size on the large connection; note the time to the
    first page and to the count (the plan's table, measured locally on 3 M rows, says what to expect).
-7. **Previews** (once phase 5 is built): open a folder of photos and one of videos:
-   - [ ] photos get Dropbox's thumbnails; note whether **videos** get one (Dropbox doesn't document it);
-   - [ ] open a photo and a video: afterwards their width, height and duration are filled (properties, or
-     `w:` / `d:` searches find them);
-   - [ ] a photo over 20 MB gets a thumbnail made by SFE (Dropbox makes none).
+7. **Previews** (built in phase 5: [connection-previews](../../docs/features/connection-previews.md)). Before:
+   ffmpeg configured on the scratch install (Installation page), Playback › Video streams on (Fallback), and
+   `Otools.Net.Sfe.Core.Connections` at `Debug` in the logs. Then open a folder of photos and one of videos:
+   - [ ] photos get Dropbox's thumbnails at once; with the log at Debug, a folder of 100 photos makes about 4
+     `get_thumbnail_batch` calls (25 each), not 100; reopening the folder asks Dropbox nothing (thumbnails from
+     `{cache}/connections/{id}/`);
+   - [ ] note whether **videos** get a thumbnail from Dropbox (not documented): with none, a video's tile shows a
+     thumbnail only after it was played converted once (SFE makes it from the cached file);
+   - [ ] **`media_info`**: open one photo alone (a folder with one photo, so it goes through `get_thumbnail`, not the
+     batch): its width and height show in the listing afterwards, and `w:` finds it; note whether Dropbox answered
+     `media_info` or `pending` (a photo uploaded minutes ago may be pending);
+   - [ ] play a video the browser can't play (HEVC, MKV): the first play waits for the download into the cache, then
+     converts; afterwards its duration shows and `d:` finds it; a second play starts at once;
+   - [ ] a **photo over 20 MB** gets a thumbnail made by SFE (Dropbox makes none): the server log shows one download
+     of it, the cache folder holds its `.bin`;
+   - [ ] Markdown, JSON, a `.txt` open read only in the viewer; a file over 10 MB says it is too large;
+   - [ ] Administration › Settings › Connections: set the cache to 100 MB and play a few videos: the cache folder
+     stays under it; remove the connection: its folder under `connections/` is gone.
 
 ### Afterwards
 

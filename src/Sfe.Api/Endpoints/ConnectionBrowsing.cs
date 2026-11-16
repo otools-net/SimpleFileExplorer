@@ -88,6 +88,9 @@ internal static class ConnectionBrowsing
             : [.. page.Listing.Items.Select(item => item with { Indexed = indexed(item.Path) })];
         if (index.Target is { } target && request.Here.Has(Rights.ViewTags))
             items = await browse.Tags.AttachAsync(RemoteTagPlace.Of(target), items, cancellationToken);
+        // Sizes and lengths a thumbnail or the content cache told (agents/docs/features/connection-previews.md).
+        if (index.Target is { } known)
+            items = await browse.Media.AttachAsync(RemoteTagPlace.Of(known), items, cancellationToken);
         return TypedResults.Ok(page with { Listing = page.Listing with { Access = view, Items = items } });
     }
 

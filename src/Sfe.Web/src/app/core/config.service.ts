@@ -121,8 +121,10 @@ export function createUrls(config: ClientConfig, place: ConnectionPlace | null =
         },
         externalName: config.externalPlayer?.name ?? null,
         stream: (path, start, id) => {
-            const query = new URLSearchParams({ path, t: String(Math.max(0, Math.round(start * 1000) / 1000)), id });
-            return `${API_BASE}streaming/play?${query}`;
+            const t = String(Math.max(0, Math.round(start * 1000) / 1000));
+            // A connection's route has the connection's id in its path: the player is `player` there.
+            const query = new URLSearchParams(place ? { path, t, player: id } : { path, t, id });
+            return `${base}streaming/play?${query}`;
         },
     };
 }
@@ -231,8 +233,13 @@ export class ConfigService {
         return {
             always: streaming.always,
             url: (start) => this.links.stream(path, start, id),
-            probe: () => this.api.streamProbe(path).catch(() => null),
+            probe: () => this.probe(path).catch(() => null),
         };
+    }
+
+    private probe(path: string): Promise<StreamProbe> {
+        const place = this.place();
+        return place ? this.api.streamProbe(path, place.id) : this.api.streamProbe(path);
     }
 
     /** The loaded configuration, for code that only runs once it is there. */

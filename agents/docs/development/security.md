@@ -16,7 +16,8 @@ library by others). Keep these rules when changing it.
   serving library content takes its type from `LibraryEndpoints.ContentTypeOf` (`LibraryContent.SafeType`) and is
   marked `.NeverRunByPages()` (`.NeverRunByPagesButStyled()` for a book's files).
 - ffmpeg gets a library file only through `Ffmpeg.LibraryInputAsync` (disk only, real media formats only), never a
-  bare `-i`.
+  bare `-i`; a connection's file only from the connections' cache through `Ffmpeg.ConnectionInputAsync` (inside the
+  cache's folder, media by its bytes: `MediaSniffer`).
 - A limit per network address uses `AddressKeys.Of` (an IPv6 visitor is its /64), never `RemoteIpAddress` whole.
 - A file holding a secret is written with `SecretFiles.WriteAllText`, its folder made with
   `SecretFiles.CreatePrivateDirectory`.
@@ -166,6 +167,10 @@ content served under the library's sandbox (`RemoteFileResult`).
 | Remote content: `.html` / `.svg` served from a connection (sandboxed, attachment); a script loaded by a page | `ConnectionFileRouteTests.AFileIsServedWholeOrInPartSandboxed` (`.html`; the rest shares `FilePolicy` with the library) |
 | Floods: listings and reads as one caller; a provider asking to wait; a transfer of millions of items (bounded memory: pages, depth first) | `ConnectionGatesTests`, `ConnectionFileRouteTests.WhileTheProviderAsksToWaitNobodyCallsIt`, `TransferCallsTests`; per-caller limit `RequestLimits.Connections` and the transfer's memory: by review only |
 | Outbound: a host outside the provider's rule, http, a redirect; later providers: an address typed by a person pointing at loopback or the LAN, a redirect to one | `OutboundPolicyTests` |
+| Previews of a hidden folder (thumbnails, text, video streams; another case of its name), another account's private connection: 404, no provider call; cache keys never from the request (id and version from the index row or the provider) | `ConnectionPreviewRouteTests.NoThumbnailOfAHiddenFileOrOfAnotherAccountsConnection`, `TextIsReadOnlyAndRefusedWhereTheFolderIsHidden`, `AVideoOfAHiddenFolderIsNeitherProbedNorPlayed` |
+| The content cache filled by one caller, a huge file (also one growing past its told size), many parallel previews of one file, a file changing while cached, a cache in a served folder | `ConnectionContentCacheTests` (`ACallerDownloadsOnlyAFewFilesAtOnce`, `AFileOverTheLimitIsNeverDownloaded`, `AProviderSendingMoreThanItToldIsCutOff`, `ManyRequestsForOneFileDownloadItOnce`, `AFileChangedAtTheProviderIsFetchedAgainAndItsOldVersionGoes`, `TheFilesUsedLongestAgoGoFirstButNotOneBeingRead`, `TheCacheTakesNothingWhenItIsOffOrInAFolderTheAppServes`), `ConnectionPreviewRouteTests.AFileChangedAtTheProviderGetsANewThumbnail` |
+| A remote playlist, concat script, page or SVG named as media given to ffmpeg (thumbnail, probe, stream, sizes) | `MediaSnifferTests`, `ConnectionContentCacheTests.AScriptNamedAsAVideoIsCachedButNeverGivenToFfmpeg`, `ConnectionPreviewFfmpegTests.AScriptNamedAsMediaIsNeitherThumbnailedNorPlayedAndNotFetchedTwice` (needs ffmpeg); served files keep `RemoteFileResult`'s sandbox |
+| A removed connection's cached thumbnails and files (removed by the route, with an account, while the server was off) | `ConnectionContentCacheTests.OldFilesAndRemovedConnectionsAreSweptAndARemovedConnectionLeavesNothing` (the route's `Forget`: by review) |
 | The client naming a provider's host (fully local) | `ApiTests.WebClientHasNoExternalResources` |
 | Local mode: connections for the administrators on this computer, nothing new answering other computers | not automated (the routes sit behind `RequestGuard` like every other) |
 | An access token limited in rights or library using connections | by review only: `ConnectionJobAccess` checks each item with the token's rights (`ConnectionJobSubject.Token`); routes go through `CurrentAccess` like every other |

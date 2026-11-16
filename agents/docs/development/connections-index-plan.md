@@ -358,15 +358,41 @@ As built (2026-11-15; code `Indexing/RemoteFileTags`, `RemoteScopeTagger`, `Remo
 
 ### Phase 5: previews
 
-- [ ] Thumbnails: the provider's, cached in the thumbnail cache under a key of connection, id and revision
+- [x] Thumbnails: the provider's, cached in the thumbnail cache under a key of connection, id and revision
   ([thumbnails](../features/thumbnails.md)); pictures the provider doesn't thumbnail made from the content cache
-- [ ] Content cache (`ConnectionContentCache`): size and age limits (settings), eviction, one download per file at a
+- [x] Content cache (`ConnectionContentCache`): size and age limits (settings), eviction, one download per file at a
   time, per-caller limits, never under a folder the app serves; ffmpeg reads it only through the checks of
   `Ffmpeg.LibraryInputAsync` (extended to this cache, real media formats only)
-- [ ] Viewer and player on a connection: pictures, video (direct when the browser plays it, else
+- [x] Viewer and player on a connection: pictures, video (direct when the browser plays it, else
   [video-streams](../features/video-streams.md) from the cache), audio, text read-only first, then the formats of
   `app/formats/` through `FILE_SOURCE`; each format listed with what works
-- [ ] Width, height and duration filled when a file passes through the cache (never by a pass downloading everything)
+- [x] Width, height and duration filled when a file passes through the cache (never by a pass downloading everything)
+
+As built (2026-11-16; code `Connections/Previews/`, `Dropbox/DropboxThumbnails`, `Indexing/RemoteMediaRows`, Api
+`ConnectionPreviewEndpoints`, `ConnectionTextEndpoint`, `ConnectionStreamingEndpoints`, `ConnectionCacheWorker`;
+details and the format table: [connection-previews](../features/connection-previews.md)):
+
+- The phase 0 cache decision as built: `ConnectionCacheStore` (root, `AddSfeAccess`) in
+  `{Thumbnails:CacheDirectory}/connections/{id}/` of the configuration, handed to each library
+  (`TenantHost.AddServerServices`). **Key: provider id + content hash** (else size and date) rather than `rev`: the
+  index rows hold the hash, and it changes exactly when the bytes do; from the index row or the provider, never the
+  request.
+- Thumbnails: cache, then `RemoteThumbnailBatches` (30 ms, 25 a call, one gate turn, its own storage), then ffmpeg
+  from the content cache for pictures (Dropbox: over 20 MB); a video only from a copy already cached. Dropbox: one file
+  through `get_thumbnail` (its `media_info`), several through `get_thumbnail_batch`.
+- Content cache: settings `connections.cache.maxSizeMegabytes` / `maxFileMegabytes` / `maxAgeDays` (server level,
+  right `server.settings`, tab moved to `connections/connection-settings.ts`; a new key needs no upgrade step),
+  eviction by last use (held files stay), one download per file, 2 per caller and 4 for the server (429
+  `connection-cache-busy`), stops when nobody waits; swept every 5 min (age, removed connections), removed with its
+  connection; off when inside the web root or a library. ffmpeg: `Ffmpeg.ConnectionInputAsync` (inside the cache,
+  bytes sniffed again by `MediaSniffer`, then `LibraryInputAsync`'s whitelists).
+- Viewer and player: pictures, direct video, audio, PDF as before; other videos through
+  `connections/{id}/streaming/probe|play` from the cache; text read only (`connections/{id}/files/text`) and Markdown,
+  JSON, CSV, subtitles through `FILE_SOURCE`; EPUB, Flash and archives not (library routes).
+- Width, height, duration: `RemoteMediaRows.FillAsync` from a thumbnail's `media_info` or a file read in the cache
+  (`.media` beside it for the other libraries), `AttachAsync` on listing pages; forgotten when the hash changes.
+- Left: video thumbnails from Dropbox and `media_info` on a real account (the [dropbox-check](../../tools/dropbox-check/README.md#index-of-a-large-dropbox)
+  step); EPUB, archives and Flash on connections; screenshots in `docs/`. E2e: `connection-viewer.spec.ts`.
 
 ### Phase 6: close
 

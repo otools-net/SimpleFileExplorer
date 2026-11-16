@@ -14,6 +14,14 @@ namespace Otools.Net.Sfe.Client.Generated.Models
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>The cache property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::Otools.Net.Sfe.Client.Generated.Models.ConnectionCacheSettings? Cache { get; set; }
+#nullable restore
+#else
+        public global::Otools.Net.Sfe.Client.Generated.Models.ConnectionCacheSettings Cache { get; set; }
+#endif
         /// <summary>The dropbox property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -65,6 +73,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "cache", n => { Cache = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectionCacheSettings>(global::Otools.Net.Sfe.Client.Generated.Models.ConnectionCacheSettings.CreateFromDiscriminatorValue); } },
                 { "dropbox", n => { Dropbox = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.DropboxSettings>(global::Otools.Net.Sfe.Client.Generated.Models.DropboxSettings.CreateFromDiscriminatorValue); } },
                 { "enabled", n => { Enabled = n.GetBoolValue(); } },
                 { "levels", n => { Levels = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
@@ -78,6 +87,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectionCacheSettings>("cache", Cache);
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.DropboxSettings>("dropbox", Dropbox);
             writer.WriteBoolValue("enabled", Enabled);
             writer.WriteCollectionOfPrimitiveValues<string>("levels", Levels);
