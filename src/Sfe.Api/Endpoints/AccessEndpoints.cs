@@ -346,14 +346,14 @@ public static class AccessEndpoints
     }
 
     private static async Task<Results<Ok<GroupInfo>, ValidationProblem, NotFound, ProblemHttpResult>> UpdateGroup(
-        AccessService accounts,
-        CurrentAccess current,
+        [AsParameters] AccessServices services,
         int id,
         GroupInput input,
         CancellationToken cancellationToken,
         int? tenant = null
     )
     {
+        var (accounts, current) = services;
         var state = await current.GetAsync();
         return SpaceOf(state, tenant) is not { } space
             ? TypedResults.NotFound()

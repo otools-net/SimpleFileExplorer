@@ -1,7 +1,7 @@
 {
   "files": {
     "src/Sfe.Api/AuditLogWorker.cs": {"deepFunctions":1},
-    "src/Sfe.Api/Endpoints/AccessEndpoints.cs": {"fileLines":448,"manyParameterFunctions":1},
+    "src/Sfe.Api/Endpoints/AccessEndpoints.cs": {"fileLines":448},
     "src/Sfe.Api/Endpoints/ArchiveEndpoints.cs": {"longFunctions":1},
     "src/Sfe.Api/Endpoints/ChangeEndpoints.cs": {"longFunctions":1,"deepFunctions":1,"manyParameterFunctions":1},
     "src/Sfe.Api/Endpoints/ConfigEndpoints.cs": {"longFunctions":1},

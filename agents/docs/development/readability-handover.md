@@ -94,6 +94,12 @@ node agents/tools/readability/measure.mjs --check ; node agents/tools/readabilit
 
 ## Environment traps that cost time
 
+- Feature work between sessions brings new warnings (2026-11-19: braces, unused usings, names, MSTest asserts,
+  EF1002 in the connections epic's code): run the three format checks first when resuming, and fix what they find in
+  their own commits (src, then tests) before the next item.
+- `dotnet test` took 19 minutes on 2026-11-19 (2056 tests): over 10, so it needs the cron progress report
+  ([long-runs](../environment/long-runs.md)).
+
 - `npm test` from Git Bash fails every suite ("Vitest failed to find the runner") after `cd /c/workspace/…`; use
   `cd C:/workspace/…` or PowerShell ([testing-client](testing-client.md)).
 - A background `dotnet test | grep` exits 0 when the build fails: `set -o pipefail`, and read the output.
