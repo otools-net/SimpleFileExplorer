@@ -171,7 +171,8 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `SetupEndpoints`: `SetupServices` (`CompleteSetup`; runs before anyone is signed in)
   - [x] `AccessEndpoints.UpdateGroup` (6): `AccessServices` (`accounts`, `current`); `tenant` stays last with its
     default
-  - [ ] `ExploreEndpoints.CatalogOf` (7, a private helper)
+  - [x] `ExploreEndpoints.CatalogOf` (7, a private helper): `ExploredArchive` (full, canonical, format: what every
+    call passes together); `ExploreServices` did not fit, one caller passes `static () => false` for `mayStart`
   - [ ] `ChangeEndpoints.StreamAsync` (7, also a long and nested function): with its item below
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`

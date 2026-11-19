@@ -31,10 +31,8 @@ What is still over the limits (`node agents/tools/readability/measure.mjs`):
 ## How to resume
 
 1. Read the plan's Progress list: take the **first unticked item of phase 5**, then the core functions in the order
-   listed. Tick each item in the commit that does it. Paused 2026-11-13 after `SetupEndpoints` (tree clean); next:
-   - `AccessEndpoints.UpdateGroup` (6): a record of `AccessService` and `CurrentAccess` gives 5 (`tenant` stays a
-     parameter, last, with its default).
-   - `ExploreEndpoints.CatalogOf` (7): a private helper, takes the `ExploreServices` its handlers already have.
+   listed. Tick each item in the commit that does it. Paused 2026-11-20 after `ExploreEndpoints.CatalogOf` (tree
+   clean); next:
    - `ChangeEndpoints.StreamAsync` (7, also over 60 lines and nested 4): its own plan item further down; do its
      parameters with it.
    - Then "EF: `AccessDbContext.OnModelCreating`…" (checks `--only ef`).
@@ -104,7 +102,7 @@ node agents/tools/readability/measure.mjs --check ; node agents/tools/readabilit
   `cd C:/workspace/…` or PowerShell ([testing-client](testing-client.md)).
 - A background `dotnet test | grep` exits 0 when the build fails: `set -o pipefail`, and read the output.
 - `dotnet test --no-build` lets you edit sources while it runs, but not build (the tests' DLLs are locked).
-- Runs over 10 minutes report every 10 minutes through a cron task ([long-runs](../environment/long-runs.md)).
+- Runs over 10 minutes report every 30 minutes through a cron task ([long-runs](../environment/long-runs.md)).
 - Python heredocs in Git Bash mangle `\n` and `\\`: write a script file, or use the editor's edit tool.
 - `git checkout -- <folder>` also undoes uncommitted work in it: commit or stash each step first.
 - One endpoints file per commit without waiting: while one file's `dotnet test --no-build` runs, apply the next

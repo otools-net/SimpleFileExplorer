@@ -215,7 +215,7 @@ public static class ExploreEndpoints
             ArchiveUnlocks.OwnerOf(context),
             full
         );
-        var state = CatalogOf(catalogs, full, canonical, format, unlock, password, limits.For(context));
+        var state = CatalogOf(catalogs, new(full, canonical, format), unlock, password, limits.For(context));
         if (state.Status == ArchiveCatalogStatus.Building)
             return TypedResults.Accepted((string?)null, new ArchiveReading(state.Read));
         if (state.Status == ArchiveCatalogStatus.Limited)
@@ -318,7 +318,7 @@ public static class ExploreEndpoints
             ArchiveUnlocks.OwnerOf(context),
             full
         );
-        var state = CatalogOf(catalogs, full, canonical, format, unlock, password, limits.For(context));
+        var state = CatalogOf(catalogs, new(full, canonical, format), unlock, password, limits.For(context));
         if (state.Status == ArchiveCatalogStatus.Building)
             return TypedResults.Accepted((string?)null, new ArchiveReading(state.Read));
         if (state.Status == ArchiveCatalogStatus.Limited)
@@ -384,14 +384,13 @@ public static class ExploreEndpoints
     /// </summary>
     private static ArchiveCatalogState CatalogOf(
         ArchiveCatalogs catalogs,
-        string full,
-        string canonical,
-        ArchiveFormat format,
+        ExploredArchive archive,
         string? unlock,
         string? password,
         Func<bool> mayStart
     )
     {
+        var (full, canonical, format) = archive;
         var state = catalogs.Get(full, canonical, format, mayStart);
         if (state.Catalog is { } catalog && password is not null && catalog.Summary().NeedsPassword)
             return catalogs.GetInMemory(full, canonical, format, unlock!, password);
@@ -450,9 +449,7 @@ public static class ExploreEndpoints
                 return NotExplorable();
             var catalogState = CatalogOf(
                 catalogs,
-                full,
-                canonical,
-                format,
+                new(full, canonical, format),
                 request.Unlock,
                 password,
                 limits.For(context)
@@ -857,7 +854,7 @@ public static class ExploreEndpoints
         if (
             FormatOf(full, options) is not { } format
             // An entry comes from a list already read: it never starts a read.
-            || CatalogOf(catalogs, full, canonical, format, unlock, password, static () => false)
+            || CatalogOf(catalogs, new(full, canonical, format), unlock, password, static () => false)
                 is not { Status: ArchiveCatalogStatus.Ready, Catalog: { } catalog }
             || (key.At is { } at ? catalog.FindFile(at) : catalog.Entry(key.Id ?? 0))
                 is not { Entry.Kind: ArchiveEntryKind.File } file
