@@ -115,9 +115,12 @@ public sealed class Ffmpeg
         if (!full.StartsWith(root, Paths.LibraryPaths.PathComparison))
             throw new InvalidOperationException("Only files of the connections' cache are given to ffmpeg here.");
         if (content.Media is null || Connections.Previews.MediaSniffer.DetectFile(full) is null)
+        {
             throw new InvalidOperationException(
                 "The file is not a picture, video or audio file: ffmpeg won't open it."
             );
+        }
+
         return LibraryInputAsync(full);
     }
 

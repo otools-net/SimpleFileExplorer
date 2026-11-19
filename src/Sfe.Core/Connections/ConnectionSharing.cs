@@ -36,10 +36,12 @@ public sealed class ConnectionSharing(
         if (connection is null)
             return AccessResult<ConnectionInfo>.Missing();
         if (connection.Level != ConnectionLevel.Server)
+        {
             return AccessResult<ConnectionInfo>.Invalid(
                 "level",
                 "Only a server-level connection is offered to libraries."
             );
+        }
 
         var wanted = tenantIds.ToHashSet();
         var known = await db.Tenants.Where(t => wanted.Contains(t.Id)).Select(t => t.Id).ToListAsync(cancellationToken);

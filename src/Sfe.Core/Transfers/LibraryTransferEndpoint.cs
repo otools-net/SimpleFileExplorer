@@ -143,11 +143,11 @@ public sealed class LibraryTransferEndpoint : ITransferEndpoint
             throw NotFound(folder);
         var exists = LibraryClashes.Taken(folderFull);
         // A name no route reaches (the work folder at the root) is taken too.
-        bool taken(string candidate) =>
+        bool Taken(string candidate) =>
             exists(candidate) || !Paths.TryResolve(LibraryClashes.Join(folderPath, candidate), out _);
-        if (!taken(name))
+        if (!Taken(name))
             return Task.FromResult(name);
-        return Task.FromResult(FileNames.KeepBoth(name, isFolder, taken) ?? throw Exists(name));
+        return Task.FromResult(FileNames.KeepBoth(name, isFolder, Taken) ?? throw Exists(name));
     }
 
     public async Task RemoveForReplaceAsync(TransferEntry existing, CancellationToken cancellationToken)

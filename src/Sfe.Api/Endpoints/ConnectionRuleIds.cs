@@ -69,7 +69,9 @@ internal static class ConnectionRuleIds
                         await storage.GetAsync(path, cancellationToken) is { IsFolder: true, Id: { } itemId }
                         && Fits(itemId)
                     )
+                    {
                         found[path] = itemId;
+                    }
                 }
             }
             catch (RemoteStorageException error)

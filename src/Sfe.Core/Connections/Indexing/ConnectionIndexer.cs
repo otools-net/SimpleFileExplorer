@@ -39,16 +39,24 @@ public sealed class ConnectionIndexer(
             if (state.Phase == RemoteIndexPhase.Following)
             {
                 if (!target.Capabilities.ChangeCursor)
+                {
                     state = await StartPassAsync(target, source, cancellationToken);
+                }
                 else if (await Changes().RunAsync(target, source, state, progress, cancellationToken))
+                {
                     return await CompleteAsync(target, listed, progress, cancellationToken);
+                }
                 else if (resets > 0)
+                {
                     throw new RemoteStorageException(
                         RemoteErrorKind.Unavailable,
                         "The provider reset its cursor again."
                     );
+                }
                 else
+                {
                     state = await StartPassAsync(target, source, cancellationToken);
+                }
             }
             await new RemoteListingPass(store, _report, logger).RunAsync(
                 target,

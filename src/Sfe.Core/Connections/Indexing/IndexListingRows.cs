@@ -74,9 +74,12 @@ internal sealed class IndexListingRows
             return await ReadAsync(_files, _fileSort, (last, 0, take), cancellationToken);
         var page = new List<IndexListingRow>(take);
         if (last is not null || offset < folders)
+        {
             page.AddRange(
                 await ReadAsync(_folders, _folderSort, (last, last is null ? offset : 0, take), cancellationToken)
             );
+        }
+
         if (page.Count >= take)
             return page;
         var skip = last is null && page.Count == 0 ? Math.Max(0, offset - folders) : 0;

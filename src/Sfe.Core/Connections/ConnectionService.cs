@@ -336,12 +336,18 @@ public sealed class ConnectionService(
             draft.Level == ConnectionLevel.Account
             && !await db.Users.AnyAsync(u => u.Id == draft.OwnerId, cancellationToken)
         )
+        {
             return ("ownerId", "No such account.");
+        }
+
         if (
             draft.Level == ConnectionLevel.Library
             && !await db.Tenants.AnyAsync(t => t.Id == draft.TenantId, cancellationToken)
         )
+        {
             return ("tenantId", "No such library.");
+        }
+
         return null;
     }
 

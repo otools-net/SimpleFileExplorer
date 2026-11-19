@@ -35,7 +35,10 @@ internal sealed class RemoteIndexWriter(SfeDbContext db, RemoteIndexScope scope)
                 .RemoteFiles.Where(f => f.ConnectionId == id && keys.Contains(f.FullName))
                 .ToListAsync(cancellationToken)
         )
+        {
             Know(row);
+        }
+
         if (ids.Count > 0)
         {
             foreach (
@@ -43,14 +46,18 @@ internal sealed class RemoteIndexWriter(SfeDbContext db, RemoteIndexScope scope)
                     .RemoteFiles.Where(f => f.ConnectionId == id && ids.Contains(f.ProviderId!))
                     .ToListAsync(cancellationToken)
             )
+            {
                 Know(row);
+            }
         }
         foreach (
             var folder in await db
                 .RemoteDirectories.Where(d => d.ConnectionId == id && folderKeys.Contains(d.FullName))
                 .ToListAsync(cancellationToken)
         )
+        {
             _folders[folder.FullName] = folder;
+        }
     }
 
     /// <summary>A change of the provider: the item as it is now, or gone.</summary>

@@ -47,7 +47,10 @@ internal sealed class RemoteListingPass(RemoteIndexTransactions store, RemoteInd
             state?.WalkFolderId is { } stopped
             && await folders.FirstOrDefaultAsync(d => d.Id == stopped, token) is { } at
         )
+        {
             return (at, state.WalkCursor);
+        }
+
         var first = await folders.OrderBy(d => d.Id).FirstOrDefaultAsync(token);
         return first is null ? null : (first, null);
     }

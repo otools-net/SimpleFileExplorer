@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Otools.Net.Sfe.Core.Data;
 using Otools.Net.Sfe.Core.Library;
 
 namespace Otools.Net.Sfe.Core.Connections.Indexing;

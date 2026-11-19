@@ -45,7 +45,10 @@ internal static class ConnectionTagChanges
             missing.Count > 0
             && await IndexAsync(files, (open, place), (tags, missing), cancellationToken) is { } failed
         )
+        {
             return failed;
+        }
+
         (rows, missing) = missing.Count > 0 ? await RowsAsync(tags.Tags, place, asked, cancellationToken) : (rows, []);
         if (missing.Count > 0)
             return Problem("paths", $"“{missing[0]}” is not a file of the connection.");

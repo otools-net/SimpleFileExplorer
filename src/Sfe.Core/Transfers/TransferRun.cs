@@ -239,9 +239,12 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
         if (await Target.GetAsync(LibraryClashes.Join(into, entry.Name), token) is not { } existing)
             return (entry.Name, null);
         if (start.Retry && WrittenBefore(entry, existing))
+        {
             return entry.IsFolder
                 ? (entry.Name, null)
                 : (null, new FileJobItem(path, existing.Path, FileOperationStatus.Done));
+        }
+
         var conflict = new FileJobConflict(Side(entry), Side(existing), CanReplace: true);
         return await job.ChooseAsync(conflict, token) switch
         {

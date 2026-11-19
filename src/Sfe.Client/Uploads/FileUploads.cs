@@ -81,7 +81,10 @@ internal sealed class FileUploads(SfeTransport transport, FilePlace place, int c
                 await UploadAsync(target, name, stream, fileOptions, cancellationToken).ConfigureAwait(false) is
                 { } item
             )
+            {
                 items.Add(item);
+            }
+
             before += stream.Length;
         }
         return items;

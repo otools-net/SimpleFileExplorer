@@ -69,11 +69,13 @@ public static class ConnectionIndexEndpoints
         if (await ManagedHereAsync(id, current, connections, cancellationToken) is not { } connection)
             return TypedResults.NotFound();
         if (connection.Disabled)
+        {
             return TypedResults.Problem(
                 ConnectionService.UnusableProblem,
                 statusCode: StatusCodes.Status409Conflict,
                 type: ConnectionProblems.UnusableType
             );
+        }
 
         await indexes.StartAsync(id, TaskTrigger.Manual, null);
         var status = await indexes.StatusAsync(id, cancellationToken);

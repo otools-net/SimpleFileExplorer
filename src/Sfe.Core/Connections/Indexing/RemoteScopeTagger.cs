@@ -53,10 +53,12 @@ public sealed class RemoteScopeTagger(RemoteIndexTransactions store, RemoteIndex
         await using var db = await store.ContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
         foreach (var unknown in adding.Concat(removing).Where(id => !graph.Contains(id)))
+        {
             return ScopeTagOutcome.Invalid(
                 adding.Contains(unknown) ? "add" : "remove",
                 $"Tag {unknown} does not exist."
             );
+        }
 
         var files = await FilesAsync(db, scope, cancellationToken);
         if (scope.Taggable is { IsEverything: false } taggable)

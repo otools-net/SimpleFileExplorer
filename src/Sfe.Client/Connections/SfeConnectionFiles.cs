@@ -127,9 +127,11 @@ public sealed class SfeConnectionFiles
         options ??= new SfeDownloadOptions();
         var capabilities = await _connection.GetCapabilitiesAsync(cancellationToken).ConfigureAwait(false);
         if (options.Offset > 0 || options.Length is not null)
+        {
             await _connection
                 .RequireAsync(SfeConnectionCapability.RangedReads, cancellationToken)
                 .ConfigureAwait(false);
+        }
         // Without ranges a cut-off can't go on: it fails rather than write the file again after its start.
         var resumes = capabilities.RangedReads ? _transport.Options.MaxRetries : 0;
         var downloads = new FileDownloads(_transport, Place, resumes);
@@ -146,9 +148,12 @@ public sealed class SfeConnectionFiles
     public async Task<Stream> OpenReadAsync(string path, long offset = 0, CancellationToken cancellationToken = default)
     {
         if (offset > 0)
+        {
             await _connection
                 .RequireAsync(SfeConnectionCapability.RangedReads, cancellationToken)
                 .ConfigureAwait(false);
+        }
+
         var downloads = new FileDownloads(_transport, Place, 0);
         return await downloads.OpenReadAsync(path, offset, cancellationToken).ConfigureAwait(false);
     }

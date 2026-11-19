@@ -122,7 +122,10 @@ internal sealed class ConnectionRuleMoves(
             foreach (
                 var rule in await db.ConnectionFolderRules.Where(r => ids.Contains(r.Id)).ToListAsync(cancellationToken)
             )
+            {
                 rule.Path = previous[rule.Id];
+            }
+
             await db.SaveChangesAsync(cancellationToken);
         }
         else
