@@ -70,7 +70,7 @@ public sealed class RemoteIndexUpgradeTests
             await using var db = Db(services);
             // The index as 1.85 made it, with a folder of the library in it.
             foreach (var table in new[] { "RemoteFileTags", "RemoteFiles", "RemoteDirectories", "RemoteIndexes" })
-                await db.Database.ExecuteSqlRawAsync($"DROP TABLE \"{table}\"", Token);
+                await ExecuteAsync(db, $"DROP TABLE \"{table}\"");
             db.Directories.Add(new DirectoryEntry { FullName = library.Root, Name = "root" });
             await db.SaveChangesAsync(Token);
         }
@@ -95,9 +95,9 @@ public sealed class RemoteIndexUpgradeTests
             await using var db = Db(services);
             // The connections' tables as the first step of the index made them, with a row.
             foreach (var index in (string[])[.. ListingIndexes, SearchIndex])
-                await db.Database.ExecuteSqlRawAsync($"DROP INDEX \"{index}\"", Token);
+                await ExecuteAsync(db, $"DROP INDEX \"{index}\"");
             foreach (var table in new[] { "RemoteFiles", "RemoteDirectories" })
-                await db.Database.ExecuteSqlRawAsync($"ALTER TABLE \"{table}\" DROP COLUMN \"NameKey\"", Token);
+                await ExecuteAsync(db, $"ALTER TABLE \"{table}\" DROP COLUMN \"NameKey\"");
             await db.Database.ExecuteSqlRawAsync(
                 "INSERT INTO \"RemoteIndexes\" (\"ConnectionId\", \"RootPath\", \"Phase\", \"Pass\", \"Files\", "
                     + "\"Folders\", \"TooLong\", \"Created\") "
@@ -217,9 +217,14 @@ public sealed class RemoteIndexUpgradeTests
         var read = await db.RemoteFiles.Include(f => f.TagLinks).SingleAsync(Token);
         Assert.AreEqual(12_000_000L, read.Pixels);
         Assert.HasCount(1, read.TagLinks);
-        await db.Database.ExecuteSqlRawAsync("DELETE FROM " + Table(db, "RemoteDirectories"), Token);
+        await ExecuteAsync(db, "DELETE FROM " + Table(db, "RemoteDirectories"));
         Assert.AreEqual(0, await db.RemoteFileTags.CountAsync(Token), "A folder's files and their tags go with it.");
     }
+
+    /// <summary>
+    /// Runs SQL the test builds from its own table and index names (identifiers, which cannot be parameters).
+    /// </summary>
+    private Task ExecuteAsync(SfeDbContext db, string sql) => db.Database.ExecuteSqlRawAsync(sql, Token);
 
     private static string Table(SfeDbContext db, string name) =>
         db.Database.IsSqlServer() ? $"[{SfeDbContext.Schema}].[{name}]" : $"\"{name}\"";

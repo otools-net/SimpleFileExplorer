@@ -168,13 +168,18 @@ public sealed class FacadeCoverageTests
                     route == area.TrimEnd('/') || route.StartsWith(area.TrimEnd('/') + "/", StringComparison.Ordinal)
                 )
             )
+            {
                 continue;
+            }
+
             foreach (
                 var method in path
                     .Value.EnumerateObject()
                     .Where(m => m.Name is "get" or "post" or "put" or "delete" or "patch")
             )
+            {
                 routes.Add($"{method.Name.ToUpperInvariant()} {route}");
+            }
         }
         return routes;
     }

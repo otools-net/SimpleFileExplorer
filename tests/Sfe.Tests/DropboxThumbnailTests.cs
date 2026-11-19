@@ -86,7 +86,7 @@ public sealed class DropboxThumbnailTests
 
         var thumbnails = await _storage.ThumbnailsAsync(paths, 256, Token);
 
-        Assert.AreEqual(30, thumbnails.Count);
+        Assert.HasCount(30, thumbnails);
         Assert.AreEqual(2, _dropbox.Requests.Count(r => r.Request.RequestUri!.AbsolutePath.EndsWith("_batch")));
         Assert.IsNull(thumbnails[1], "Dropbox made none");
         Assert.AreEqual("t", Encoding.ASCII.GetString(thumbnails[0]!.Bytes));

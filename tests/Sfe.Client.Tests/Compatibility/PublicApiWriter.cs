@@ -63,8 +63,11 @@ public static class PublicApiWriter
     private static IEnumerable<string> Members(Type type)
     {
         if (type.IsEnum)
+        {
             return type.GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Select(field => $"{field.Name} = {Convert.ToInt64(field.GetRawConstantValue())}");
+        }
+
         var members = type.GetMembers(Declared).Where(IsVisible);
         return members.Select(Member).OfType<string>();
     }

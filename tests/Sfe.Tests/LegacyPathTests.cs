@@ -13,7 +13,6 @@ using Microsoft.Extensions.Logging;
 using Otools.Net.Sfe.Api;
 using Otools.Net.Sfe.Api.Endpoints;
 using Otools.Net.Sfe.Api.Security;
-using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Tests.Infrastructure;
 
 namespace Otools.Net.Sfe.Tests;
@@ -130,9 +129,8 @@ public sealed partial class LegacyPathTests
         using var callback = await _admin.GetAsync($"{ApiRoutes.OAuthCallback}?state=x&code=y", Token);
         var setup = await _admin.GetFromJsonAsync<ProviderSetupView>("/api/v1/connections/providers/dropbox", Token);
 
-        Assert.AreEqual(ApiRoutes.LegacyBase + ConnectionProviderEndpoints.CallbackPath, ApiRoutes.OAuthCallback);
         Assert.AreEqual(
-            $"http://localhost{ApiRoutes.OAuthCallback}",
+            "http://localhost/api/connections/oauth/callback",
             setup!.ReturnAddress,
             "The address to register at the provider"
         );

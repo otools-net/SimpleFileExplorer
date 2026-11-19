@@ -119,7 +119,7 @@ public sealed class ConnectionContentCacheTests
         );
 
         Assert.AreEqual(CacheRefusal.TooLarge, refused.Reason);
-        Assert.IsFalse(_account.Calls.Contains("read huge.mp4"));
+        Assert.DoesNotContain("read huge.mp4", _account.Calls);
     }
 
     [TestMethod]

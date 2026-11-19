@@ -164,7 +164,9 @@ public sealed class ConnectionAccessTests
                 new Dictionary<string, string?> { ["Sfe:Connections:Providers:0"] = "dropbox" }
             )
         )
+        {
             Assert.IsNull(await otherKinds.Access.LevelAsync(_world.Subject(_world.Alice), own.Id, Token));
+        }
     }
 
     /// <summary>A level taken out of <c>Connections:Levels</c> leaves its connections unusable.</summary>

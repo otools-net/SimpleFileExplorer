@@ -92,11 +92,13 @@ public static class ApiContract
             Flow: Flow.Input
         );
         foreach (var (media, types) in Contents(body))
+        {
             facts[key + Separator + "body " + media] = new ApiFact(
                 FactKind.BodyContent,
                 Types: types,
                 Flow: Flow.Input
             );
+        }
     }
 
     private static void AddStatus(SortedDictionary<string, ApiFact> facts, string key, JsonProperty status)

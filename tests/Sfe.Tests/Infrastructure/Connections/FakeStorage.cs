@@ -198,7 +198,9 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
             && RemotePaths.IsInTree(Full(to), source, comparison)
             && !Full(to).Equals(source, comparison)
         )
+        {
             throw new RemoteStorageException(RemoteErrorKind.Refused, "A folder cannot go into itself.");
+        }
 
         // A rename that only changes the case meets itself: not a conflict.
         var sameItem = move && Full(to).Equals(source, comparison);

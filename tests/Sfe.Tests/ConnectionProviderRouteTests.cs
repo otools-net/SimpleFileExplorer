@@ -90,7 +90,7 @@ public sealed class ConnectionProviderRouteTests
     [TestMethod]
     public async Task TheSecretIsWrittenButNeverReadBack()
     {
-        const string secret = "very-secret-value";
+        const string Secret = "very-secret-value";
         await using var factory = Factory();
         var admin = await ApiClients.SetUpAsync(factory, Cancel);
 
@@ -100,7 +100,7 @@ public sealed class ConnectionProviderRouteTests
             new AppSecretInput("x"),
             Cancel
         );
-        using var set = await admin.PutAsJsonAsync($"{Dropbox}/secret", new AppSecretInput(secret), Cancel);
+        using var set = await admin.PutAsJsonAsync($"{Dropbox}/secret", new AppSecretInput(Secret), Cancel);
 
         Assert.AreEqual(HttpStatusCode.BadRequest, empty.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, fake.StatusCode);
@@ -108,10 +108,10 @@ public sealed class ConnectionProviderRouteTests
         var status = await admin.GetStringAsync(Dropbox, Cancel);
         StringAssert.Contains(status, $"\"{ProviderSetupView.SecretOnPage}\"");
         foreach (var answer in new[] { status, await admin.GetStringAsync($"{V1}/settings?level=server", Cancel) })
-            Assert.DoesNotContain(secret, answer);
-        Assert.IsFalse(File.Exists(_library.SettingsPath) && File.ReadAllText(_library.SettingsPath).Contains(secret));
+            Assert.DoesNotContain(Secret, answer);
+        Assert.IsFalse(File.Exists(_library.SettingsPath) && File.ReadAllText(_library.SettingsPath).Contains(Secret));
         var secrets = factory.Services.GetRequiredService<ProviderSecrets>();
-        Assert.AreEqual(secret, secrets.Get("dropbox"));
+        Assert.AreEqual(Secret, secrets.Get("dropbox"));
         Assert.IsTrue(secrets.Directory.StartsWith(_library.BasePath, StringComparison.OrdinalIgnoreCase));
 
         using var removed = await admin.DeleteAsync($"{Dropbox}/secret", Cancel);

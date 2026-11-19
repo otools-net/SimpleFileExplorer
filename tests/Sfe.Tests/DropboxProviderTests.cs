@@ -54,15 +54,15 @@ public sealed class DropboxProviderTests
     [TestMethod]
     public async Task TheRedirectSignInSendsPkceAndKeepsTheVerifierOnTheServer()
     {
-        const string back = "https://sfe.example/app/api/connections/oauth/callback";
-        var step = await _provider.BeginSignInAsync(Start(SignInKind.OAuthRedirect, back), Token);
+        const string Back = "https://sfe.example/app/api/connections/oauth/callback";
+        var step = await _provider.BeginSignInAsync(Start(SignInKind.OAuthRedirect, Back), Token);
 
         var address = new Uri(step.Address!);
         var query = HttpUtility.ParseQueryString(address.Query);
         Assert.AreEqual("www.dropbox.com", address.Host);
         Assert.AreEqual(Key, query["client_id"]);
         Assert.AreEqual("code", query["response_type"]);
-        Assert.AreEqual(back, query["redirect_uri"]);
+        Assert.AreEqual(Back, query["redirect_uri"]);
         Assert.AreEqual("the-state", query["state"]);
         Assert.AreEqual("offline", query["token_access_type"]);
         Assert.AreEqual("S256", query["code_challenge_method"]);
@@ -72,7 +72,7 @@ public sealed class DropboxProviderTests
         Assert.IsEmpty(step.Fields!);
 
         var grant = await _provider.CompleteSignInAsync(
-            Completion(SignInKind.OAuthRedirect, step.Pending, back),
+            Completion(SignInKind.OAuthRedirect, step.Pending, Back),
             Token
         );
 
@@ -80,7 +80,7 @@ public sealed class DropboxProviderTests
         var token = HttpUtility.ParseQueryString(_dropbox.Last("/oauth2/token").Body);
         Assert.AreEqual("the-code", token["code"]);
         Assert.AreEqual(step.Pending, token["code_verifier"]);
-        Assert.AreEqual(back, token["redirect_uri"]);
+        Assert.AreEqual(Back, token["redirect_uri"]);
         Assert.IsNull(token["client_secret"]);
         Assert.AreEqual("Bearer", _dropbox.Last("/2/users/get_current_account").Request.Headers.Authorization!.Scheme);
     }

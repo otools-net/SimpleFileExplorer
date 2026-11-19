@@ -1,7 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Otools.Net.Sfe.Core.Access;
-using Otools.Net.Sfe.Core.Connections;
 using Otools.Net.Sfe.Core.Connections.Indexing;
 using Otools.Net.Sfe.Core.Data;
 using Otools.Net.Sfe.Core.Library;

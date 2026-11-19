@@ -80,7 +80,7 @@ public sealed class OutboundPolicyTests
         Assert.AreEqual(1, transport.Requests);
         // The message goes to logs and answers: the host only, nothing of the path or the query.
         StringAssert.Contains(refused.Message, "evil.example");
-        Assert.IsFalse(refused.Message.Contains("SECRET-TOKEN"));
+        Assert.DoesNotContain("SECRET-TOKEN", refused.Message);
     }
 
     [TestMethod]

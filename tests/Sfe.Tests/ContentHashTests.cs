@@ -20,10 +20,10 @@ public sealed class ContentHashTests
     [TestMethod]
     public void AnEmptyFileHasTheHashOfNothing()
     {
-        const string nothing = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+        const string Nothing = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
-        Assert.AreEqual(nothing, Hash(ContentHashes.Dropbox, [], [0]));
-        Assert.AreEqual(nothing, Hash(ContentHashes.Sha256, [], [0]));
+        Assert.AreEqual(Nothing, Hash(ContentHashes.Dropbox, [], [0]));
+        Assert.AreEqual(Nothing, Hash(ContentHashes.Sha256, [], [0]));
         Assert.AreEqual("d41d8cd98f00b204e9800998ecf8427e", Hash(ContentHashes.Md5, [], [0]));
     }
 

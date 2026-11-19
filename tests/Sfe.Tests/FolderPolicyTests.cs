@@ -217,7 +217,7 @@ public sealed class FolderPolicyTests
 
         Assert.AreEqual(sensitive, policy.At("private/a.jpg", granted).Has(Rights.Browse));
         Assert.AreEqual(sensitive, policy.AllowsThroughout("PRIVATE", Rights.Browse, granted));
-        Assert.AreEqual(sensitive ? 0 : 1, policy.ChildrenWithRules("private", granted).Count);
+        Assert.HasCount(sensitive ? 0 : 1, policy.ChildrenWithRules("private", granted));
     }
 
     [TestMethod]
