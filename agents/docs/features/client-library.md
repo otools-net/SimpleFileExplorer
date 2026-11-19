@@ -5,7 +5,7 @@ Code: `src/Sfe.Client/` (`SfeClient`, `SfeClientOptions`, `SfeServiceCollectionE
 `Server/`, `Connections/`, `Errors/`, `Http/`; `Generated/` by Kiota), `samples/Sfe.Client.Sample/`,
 `tests/Sfe.Client.Tests/`, `agents/tools/client-generation/`, `build/build.ps1` / `build.sh` (pack). User docs:
 [client-library](../../../docs/reference/client-library.md). Part 4 of the
-[external-access epic](../development/external-access-epic-plan.md) (its plan done 2026-11-15 and deleted).
+external-access epic (plan done 2026-11-15, epic finalized 2026-11-19).
 
 ## Design
 
@@ -58,8 +58,17 @@ Code: `src/Sfe.Client/` (`SfeClient`, `SfeClientOptions`, `SfeServiceCollectionE
   resumed), `UploadsInParts` (chunks are also clamped to `MaxUploadPart`: the server refuses larger ones with 400),
   `ServerSideMove` / `ServerSideCopy`. Rename is not checked (the server doesn't). Thumbnails stay with `Raw`, as the
   library's do.
-- Folder rules (`connections/{id}/folder-rules`, `…/folders`), the index state, management and sign-in routes stay
-  with `Raw` (`FacadeCoverageTests` names each).
+- Search and tags in the library's index of a connection: `SfeConnection.Search` (`SfeConnectionSearch`: the
+  library's `SfeSearchOptions`, cursors and count; pages are `SfeConnectionSearchPage` / `SfeConnectionSearchCount`
+  with `Coverage` = `SfeIndexCoverage` None/Partial/Complete, read from the answer's `coverage` beside its `results`)
+  and `SfeConnection.Tags` (`SfeConnectionTags`: the library's file methods plus `GetScopeTagsAsync` /
+  `ChangeScopeAsync` on an `SfeTagScope`). The routes are built by `FilePlace` (`SearchRoute`) and the tag calls
+  shared with `SfeTags` (`Tags/FileTagCalls`). 409 `connection-not-indexed` is `ConnectionProblem.NotIndexed`.
+- `SfeConnection.GetIndexAsync` / `SyncIndexAsync` (`connections/{id}/index`, `…/index/sync`; for who manages the
+  connection) answer `SfeConnectionIndex`: a program waits for the first sync before tagging (the tests' wait:
+  `ConnectionSearchTests.SyncedAsync`). The library's scope tagging (`file-tags/scope`) stays with `Raw`.
+- Folder rules (`connections/{id}/folder-rules`, `…/folders`), text, streaming, thumbnails, management and sign-in
+  routes stay with `Raw` (`FacadeCoverageTests` names each).
 - Traps: an upload's target folder must exist (only a folder upload's names below it are made); a transfer's target
   folder must exist (items answer `NotFound`).
 

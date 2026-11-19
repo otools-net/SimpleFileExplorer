@@ -5,7 +5,7 @@ namespace Otools.Net.Sfe.Core.Data;
 /// <summary>
 /// The tables of the connections' index in a library's database (<see cref="RemoteDirectory"/>,
 /// <see cref="RemoteFile"/>, <see cref="RemoteFileTag"/>, <see cref="RemoteIndexState"/>): the shapes measured in
-/// phase 0 of agents/docs/development/connections-index-plan.md. Every index leads with the connection, so no query
+/// phase 0 of agents/docs/features/connection-index.md. Every index leads with the connection, so no query
 /// reads another connection's rows. New since 1.86: an existing SQLite index gets them from
 /// <see cref="DatabaseSchema"/>.
 /// </summary>

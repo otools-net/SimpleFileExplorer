@@ -10,8 +10,9 @@ Code: Core `Connections/Previews/` (`ConnectionCacheStore`, `ConnectionContentCa
 `ConnectionCacheWorker`; client `core/connection-place.ts` (`atPlace`, `placeRoute`), `formats/file-source.ts`,
 `formats/formats.ts` (`PLACE_FORMATS`), `connections/connection-settings.ts`. Tests: `ConnectionContentCacheTests`,
 `ConnectionPreviewRouteTests`, `ConnectionPreviewFfmpegTests` (need ffmpeg), `MediaSnifferTests`,
-`DropboxThumbnailTests`, `connection-previews.spec.ts`, e2e `connection-viewer.spec.ts`. Plan: [connections-index-plan](../development/connections-index-plan.md)
-(phase 5). User docs: [Previews of a connection's files](../../../docs/administration/connections.md#previews-of-a-connections-files).
+`DropboxThumbnailTests`, `connection-previews.spec.ts`, e2e `connection-viewer.spec.ts`. Index:
+[connection-index](connection-index.md). User docs: [Previews of a connection's
+files](../../../docs/administration/connections.md#previews-of-a-connections-files).
 
 ## The cache (one for the server)
 
@@ -72,7 +73,11 @@ Code: Core `Connections/Previews/` (`ConnectionCacheStore`, `ConnectionContentCa
 - A row of the index may be up to a sync behind the provider (≤ 10 min after a browse): its thumbnail is of the
   version the index knows.
 - Dropbox (`DropboxThumbnails`): one file through `get_thumbnail` (its `media_info` read), several through
-  `get_thumbnail_batch` (25 a call; base64; no `media_info` since 2019, read anyway); `unsupported_*` = none.
+  `get_thumbnail_batch` (25 a call; base64; no `media_info` since 2019, read anyway); `unsupported_*` = none. On a
+  real account (2026-11-19) videos got Dropbox thumbnails, `get_thumbnail` told no `media_info`, and requests landed
+  in calls of 1 or 2, not 25 (measures:
+  [connection-index](connection-index.md#measured-on-a-real-dropbox-2026-11-19)); a Debug line per call
+  (`RemoteThumbnailBatches`) counts them.
 
 ## Width, height, duration
 

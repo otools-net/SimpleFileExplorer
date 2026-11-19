@@ -25,6 +25,8 @@ Personal access tokens let a program call any v1 route with `Authorization: Bear
 - Rights `account.tokens` (own tokens) and `access.tokens` (see and revoke those of the spaces one administers):
   tenant rights, Write, Administrators group, never guests, `since` 16.
 - Room left for OAuth: the row has a nullable `ClientId` and a `Kind` (`Personal` only); nothing else is built.
+- Not built (decided with the owner, 2026-11-13): an OAuth 2 authorization server (apps asking people for consent),
+  and CORS (browser apps served from another site calling the API): third-party programs call with a token.
 
 ## Model and format
 

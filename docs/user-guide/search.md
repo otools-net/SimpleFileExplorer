@@ -68,6 +68,8 @@ administrator can remove the button for everyone ([Interface › Search](../admi
 **Everywhere** searches the library and every connection you may use with the same query, each on its own: the results
 come in groups, one per place, headed by its name and its count of matches, with its first results.
 
+![Everywhere: the library's matches, then a connection's](../images/search-everywhere.png)
+
 - **Show more** under a group loads more of that place; **Search here** opens the search of that place alone, with
   every sort, the viewer and the tag button.
 - Each group loads on its own: a place that is slow, unreachable or asks to wait shows its own message (and

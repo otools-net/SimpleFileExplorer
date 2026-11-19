@@ -49,7 +49,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
   [readability](agents/docs/development/readability.md) (120-character lines, 60-line functions, one type per file…);
   a refactoring changes no behaviour and is committed apart from features and fixes.
 - **Long runs:** a command expected to take more than 10 minutes runs in the background with a cron task reporting
-  its progress every 10 minutes, deleted when it ends ([long-runs](agents/docs/environment/long-runs.md)).
+  its progress every 30 minutes, deleted when it ends ([long-runs](agents/docs/environment/long-runs.md)).
 - **Agent tools:** put any reusable helper (scripts, drivers, generators) in `agents/tools/<job>/` with a `README.md`,
   never only in the scratchpad; work output goes to a temp folder, not the repo.
 
@@ -78,14 +78,11 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [paths](agents/docs/development/paths.md) | root-relative paths, case | `Core/Paths/LibraryPaths` |
 | [api-routes](agents/docs/development/api-routes.md) | minimal API conventions and gotchas | `Sfe.Api/Endpoints/` |
 | [api-versioning](agents/docs/development/api-versioning.md) | `/api/v1`, what is breaking, old paths as aliases, problem `type` words (`ProblemTypes`), the OpenAPI baseline and the test refusing breaks (command to write it) | `Program.cs`, `ApiRoutes`, `ProblemTypes`, `OpenApiBaselineTests` |
-| [external-access-epic-plan](agents/docs/development/external-access-epic-plan.md) | epic: versioned API, access tokens, C# client, external connections; **status board** (done / next) across sessions | its `*-plan.md` (plan 5 done) |
 | [code-style](agents/docs/development/code-style.md) | C# style | `.editorconfig` |
 | [readability](agents/docs/development/readability.md) | readable code: size limits (lines, functions, files, templates), names, comments, per-language rules, refactoring existing code without changing behaviour, checking tools | `.editorconfig`, `agents/tools/readability/` |
 | [readability-handover](agents/docs/development/readability-handover.md) | handover of the readability refactoring: where it stands, how to resume, checks per commit, patterns set, traps | `agents/tools/readability/` |
 | [readability-refactoring-plan](agents/docs/development/readability-refactoring-plan.md) | plan: bringing existing code to the readability rules, phase by phase (starting numbers, checks per step, traps, final checks in CI) | `agents/tools/readability/` |
 | [namespaces](agents/docs/development/namespaces.md) | C# namespaces `Otools.Net.Sfe.*` (projects and assemblies keep `Sfe.*`), strings that keep the old text, old log-level keys | `LegacyLogCategories`, `agents/tools/namespace-rename/` |
-| [connections-index-plan](agents/docs/development/connections-index-plan.md) | plan 6: index, search ("Everywhere"), tags and previews of connection files, content cache | `SfeDbContext`, `Core/Search/`, `Core/Tagging/` |
-| [connections-index-handover](agents/docs/development/connections-index-handover.md) | **epic paused 2026-11-16**: where it stands, plan 6 phase 6 left to do, what waits on the owner, decisions taken, known gaps, how the work was run | `Core/Connections/Indexing/`, `Core/Connections/Previews/` |
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
@@ -103,7 +100,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | Note | Covers |
 |---|---|
 | [commands](agents/docs/environment/commands.md) | build, test, run, migrations, packages |
-| [long-runs](agents/docs/environment/long-runs.md) | runs over 10 minutes: background + cron progress report every 10 minutes |
+| [long-runs](agents/docs/environment/long-runs.md) | runs over 10 minutes: background + cron progress report every 30 minutes |
 | [build](agents/docs/environment/build.md) | client build inside MSBuild, theme-boot, build errors, locked DLLs |
 | [portable-build](agents/docs/environment/portable-build.md) | portable zip, AppImage, smoke tests |
 | [docker](agents/docs/environment/docker.md) | the Docker image: stages, `/data` content root, environment, smoke test |
@@ -122,6 +119,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [connections](agents/docs/features/connections.md) | external storage: model, levels, who may use one (`ConnectionAccess`), credentials, sign-in, management, the client's place (`?c=`), audit lines, **open decisions (defaults taken)**, gotchas | `Core/Connections/`, `ConnectionCredentials`, `app/connections/`, `connection-pages.ts` |
 | [connection-files](agents/docs/features/connection-files.md) | a connection's files: browse (snapshots), raw, zips, gates and waits, problem types, create / rename / delete / move inside, uploads, properties | `ConnectionFileEndpoints`, `ConnectionWriteEndpoints`, `ConnectionUploadEndpoints`, `RemoteListings` |
 | [connection-providers](agents/docs/features/connection-providers.md) | adding a provider: `IConnectionProvider` / `IRemoteStorage`, `FakeStorageTests` as the contract, capabilities, error kinds, `OutboundPolicy`, `RemotePaths` | `Core/Connections/`, `FakeProvider` |
+| [connection-index](agents/docs/features/connection-index.md) | the index of connection files: tables, sync (folder by folder, resumable, change cursor, reset by id), listings from the index (`NameKey`), search and Everywhere, tags, measurements (local and on a real Dropbox), gotchas | `Connections/Indexing/`, `ConnectionIndexEndpoints`, `ConnectionSearchEndpoints`, `ConnectionTagEndpoints`, `library/everywhere/` |
 | [connection-previews](agents/docs/features/connection-previews.md) | previews of connection files: server-wide cache (keys, limits, eviction, sweep), content cache downloads, ffmpeg on cached media only (`MediaSniffer`), provider thumbnails in batches, width/height/duration on rows, viewer and player formats that work | `Connections/Previews/`, `ConnectionPreviewEndpoints`, `ConnectionStreamingEndpoints`, `connection-settings.ts` |
 | [dropbox](agents/docs/features/dropbox.md) | Dropbox: the SDK, rule hosts, scopes, app key / secret, PKCE, error mapping, temporary links, upload sessions, content hash, manual check list | `Connections/Dropbox/`, `agents/tools/dropbox-check/` |
 | [transfers](agents/docs/features/transfers.md) | copy / move between the library and a connection (or two): route, jobs, streaming, verification, retry, task history, trash default | `Core/Transfers/`, `TransferEndpoints`, `place-transfers.ts` |

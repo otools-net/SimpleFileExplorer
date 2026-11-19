@@ -1,7 +1,7 @@
 # Connection index measurements
 
 Measures the index of connection files planned in
-[connections-index-plan](../../docs/development/connections-index-plan.md) (phase 0) without the app: a throwaway
+[connection-index](../../docs/features/connection-index.md) (its phase 0 measurements) without the app: a throwaway
 `RemoteFiles` / `RemoteFileTags` pair (the planned columns and indexes) filled with synthetic rows in batches as a
 first sync would write them, then the search's typical queries (name contains, type plus size, a tag, a folder, sorted,
 a keyset page of 100, the match count capped at 10 001) on **SQLite and SQL Server LocalDB**. The predicates are

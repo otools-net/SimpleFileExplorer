@@ -43,4 +43,18 @@ internal sealed class FilePlace
         var paging = string.Format(CultureInfo.InvariantCulture, "&offset={0}&limit={1}", offset, options.PageSize);
         return WithPath("browse", folder) + $"{paging}&sort={sort}&desc={descending}";
     }
+
+    /// <summary>
+    /// A page of a search (<c>search</c>) of <paramref name="query"/>: the first one when <paramref name="after"/> is
+    /// null, else the one following that cursor.
+    /// </summary>
+    public string SearchRoute(string query, SfeSearchOptions options, string? after)
+    {
+        var sort = options.Sort.ToString().ToLowerInvariant();
+        var descending = options.Descending ? "true" : "false";
+        var limit = options.PageSize.ToString(CultureInfo.InvariantCulture);
+        var route = WithPath("search", SfePath.Normalize(options.Folder));
+        route += $"&q={Routes.Escape(query ?? "")}&limit={limit}&sort={sort}&desc={descending}";
+        return after is null ? route : route + $"&after={Routes.Escape(after)}";
+    }
 }

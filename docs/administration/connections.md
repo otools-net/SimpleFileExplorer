@@ -77,6 +77,8 @@ A sign-in lasts 10 minutes and works once, for the account that started it.
   synced, a first listing still under way, what stopped the last sync), and **Sync now**. See below.
 - **Remove**: the connection goes with who used it and its folder rules; the files stay in the storage.
 
+![Managing a space connection: its index and the groups using it](../images/connection-manage.png)
+
 ### The index of a connection
 
 Each space keeps an index of the connections opened in it: the names, sizes and dates the storage tells (nothing is
@@ -84,8 +86,9 @@ downloaded for it). Listings, searches and tags use it (below).
 
 - It begins the first time someone opens the connection in the space, and is brought up to date again when the
   connection is opened and its index is more than 10 minutes old.
-- The first sync lists every folder; a large Dropbox takes a while (about 10 to 20 minutes for a million files). It
-  goes on where it stopped after a restart. Later syncs only read what changed since (Dropbox tells it).
+- The first sync lists every folder, one after the other: Dropbox answers about three folders a second, and 500 files
+  of one folder in about half a second, so a million files in ten thousand folders take about an hour. It goes on
+  where it stopped after a restart. Later syncs only read what changed since (Dropbox tells it).
 - What you change through SFE (new folders, uploads, renames, moves, deletes, copies with the library) is in the
   index at once. A folder copied inside the connection gets its contents at the next sync.
 - If Dropbox forgets where the index was (after a long pause, for example), the next sync lists everything again;
@@ -120,12 +123,14 @@ accounts may do in some folders of a space or server connection: **Manage** › 
   restrictions where its listing shows it, and when opened (its subfolders follow the place it is in now). The card
   still shows the rule at the old place: re-point it there.
 
-A screenshot of the card on a connection comes with the release check.
+![The folder rules card of a connection](../images/connection-folder-rules.png)
 
 ## Browsing a connection
 
 The connections you may use are listed in the sidebar under **Connections**, under the quick links. One opens its files
 in the usual listing: folders first, sorted as you choose, pictures and videos shown with their thumbnails.
+
+![A Dropbox folder in SFE](../images/connection-listing.png)
 
 - Pictures, videos, audio, PDF files, text files and the text formats (Markdown, JSON, CSV, subtitles) open in the
   viewer ([previews](#previews-of-a-connections-files)). A search typed there searches the connection
@@ -178,6 +183,8 @@ The search box searches the connection you are browsing, from the space's [index
 the folder you are in and below, with the library's [query language](../user-guide/search.md#the-query-language),
 sorts and count. Dropbox is not asked: results come at once, even while Dropbox asks to wait.
 
+![A search in a Dropbox folder](../images/connection-search.png)
+
 - What is found is what the index holds. Until its first sync ends (or while it lists everything again, or when it
   hasn't been synced for more than 30 minutes) the results say they may be incomplete; a connection never opened in
   the space isn't indexed yet: searching it starts its index.
@@ -194,6 +201,8 @@ sorts and count. Dropbox is not asked: results come at once, even while Dropbox 
 A connection's files take the space's tags as the library's do, with the same dialogs: **Tags…** of a file or of the
 selection, the tag button of a folder or of a search, a tag's menu on a file. The tags are kept in the space's
 [index](#the-index-of-a-connection) of the connection, never in Dropbox: Dropbox and other spaces don't see them.
+
+![The tags of every file of a Dropbox folder](../images/connection-folder-tags.png)
 
 - The same rights as in the library (**See tags**, **Tag files**), where the connection's folder rules let you: files
   of folders hidden from you can't be tagged and their tags aren't shown. A folder you only read can be tagged:

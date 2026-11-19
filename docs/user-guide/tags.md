@@ -127,3 +127,5 @@ keep their tags too.
 Files of a connection (Dropbox) take the same tags with the same dialogs; the tags are kept by the space, never in
 Dropbox. Tag counts in the tag list and the sidebar count the library's files only. See
 [Tags on a connection's files](../administration/connections.md#tags-on-a-connections-files).
+
+![The tags of every file of a Dropbox folder](../images/connection-folder-tags.png)

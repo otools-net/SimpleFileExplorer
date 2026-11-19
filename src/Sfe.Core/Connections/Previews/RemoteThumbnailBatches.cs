@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
+
 namespace Otools.Net.Sfe.Core.Connections.Previews;
 
 /// <summary>
@@ -6,7 +9,11 @@ namespace Otools.Net.Sfe.Core.Connections.Previews;
 /// go in one call (<see cref="IRemoteStorage.ThumbnailsAsync"/>), in one turn of the connection's gate. The batch
 /// opens the connection itself, so that a request leaving doesn't end it for the others. Access is the routes'.
 /// </summary>
-public sealed class RemoteThumbnailBatches(ConnectionService connections, ConnectionGates gates)
+public sealed class RemoteThumbnailBatches(
+    ConnectionService connections,
+    ConnectionGates gates,
+    ILogger<RemoteThumbnailBatches> logger
+)
 {
     /// <summary>Thumbnails in one call to the provider (Dropbox: 25).</summary>
     public const int MaxBatch = 25;
@@ -81,7 +88,19 @@ public sealed class RemoteThumbnailBatches(ConnectionService connections, Connec
             ?? throw new RemoteStorageException(RemoteErrorKind.RateLimited, "The connection is busy.");
         try
         {
+            var started = Stopwatch.GetTimestamp();
             var thumbnails = await storage.ThumbnailsAsync(paths, size, CancellationToken.None);
+            // One line per provider call: the dropbox-check guide counts them (a folder of 100 photos: ~4).
+            logger.LogDebug(
+                "Connection {ConnectionId}: {Count} thumbnails of {Size} px asked in one call, {Made} made, {Sized} "
+                    + "telling the file's size or length, {Ms} ms",
+                connectionId,
+                paths.Count,
+                size,
+                thumbnails.Count(t => t is not null),
+                thumbnails.Count(t => t?.Media is not null),
+                (int)Stopwatch.GetElapsedTime(started).TotalMilliseconds
+            );
             return thumbnails.Count == paths.Count
                 ? thumbnails
                 : [.. paths.Select((_, i) => i < thumbnails.Count ? thumbnails[i] : null)];

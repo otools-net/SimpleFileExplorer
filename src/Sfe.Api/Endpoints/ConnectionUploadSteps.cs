@@ -34,6 +34,8 @@ internal static class ConnectionUploadSteps
             );
         }
 
+        // Read before the call: a provider may close the stream once sent (Dropbox's SDK does).
+        var length = part.Length;
         return await files.RunAsync(open, async storage =>
         {
             try
@@ -44,7 +46,7 @@ internal static class ConnectionUploadSteps
             {
                 return Realign(services.Uploads, upload, error.Offset);
             }
-            services.Uploads.Advance(upload, offset + part.Length);
+            services.Uploads.Advance(upload, offset + length);
             return TypedResults.Ok(upload.ToInfo());
         });
     }

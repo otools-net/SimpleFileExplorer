@@ -32,4 +32,10 @@ public enum SfeConnectionProblem
 
     /// <summary>409 <c>connection-unusable</c>: the connection is off, or its kind or level not allowed.</summary>
     Unusable,
+
+    /// <summary>
+    /// 409 <c>connection-not-indexed</c>: the library's index doesn't hold the connection's files yet (tags are kept
+    /// there); its sync has started: try again once it ends (<see cref="SfeConnection.GetIndexAsync"/>).
+    /// </summary>
+    NotIndexed,
 }

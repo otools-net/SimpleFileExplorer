@@ -129,13 +129,14 @@ public sealed class FacadeCoverageTests
         ["GET /connections/{id}/archive/{token}"] = "SfeConnectionFiles.DownloadZipAsync",
         ["GET /connections/{id}/folder-rules"] = "Raw: folder rules (administration of a library)",
         ["PUT /connections/{id}/folder-rules"] = "Raw: folder rules (administration of a library)",
-        ["GET /connections/{id}/index"] = "Raw: the state of a connection's index (administration)",
-        ["POST /connections/{id}/index/sync"] = "Raw: a connection's index synced now (administration)",
-        ["GET /connections/{id}/search"] = "Raw: a connection's index searched (facade: connections-index phase 6)",
-        ["GET /connections/{id}/file-tags"] = "Raw: a connection file's tags (facade: connections-index phase 6)",
-        ["POST /connections/{id}/file-tags"] = "Raw: a connection's files tagged (facade: connections-index phase 6)",
-        ["GET /connections/{id}/file-tags/scope"] = "Raw: tags of a connection's folder or search (facade: phase 6)",
-        ["POST /connections/{id}/file-tags/scope"] = "Raw: a connection's folder or search tagged (facade: phase 6)",
+        ["GET /connections/{id}/index"] = "SfeConnection.GetIndexAsync",
+        ["POST /connections/{id}/index/sync"] = "SfeConnection.SyncIndexAsync",
+        ["GET /connections/{id}/search"] =
+            "SfeConnectionSearch.QueryAsync, SfeConnectionSearch.GetPageAsync, SfeConnectionSearch.CountAsync",
+        ["GET /connections/{id}/file-tags"] = "SfeConnectionTags.GetFileTagsAsync",
+        ["POST /connections/{id}/file-tags"] = "SfeConnectionTags.AddAsync, RemoveAsync, ChangeAsync",
+        ["GET /connections/{id}/file-tags/scope"] = "SfeConnectionTags.GetScopeTagsAsync",
+        ["POST /connections/{id}/file-tags/scope"] = "SfeConnectionTags.ChangeScopeAsync",
         ["GET /connections/{id}/folders"] = "Raw: folders to put a rule on (administration of a library)",
     };
 

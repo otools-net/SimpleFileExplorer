@@ -65,7 +65,9 @@ Dropbox](../../../docs/administration/connections.md#setting-up-dropbox-server-a
   `Range` on it through the same policy-bound client. The link is never given to the browser.
 - Upload sessions (sequential): `upload_session/start`, `append_v2` (cursor with offset), `finish` (`CommitInfo`,
   `WriteMode.Add`); the SDK adds each part's `content_hash`. A request carries at most 150 MB.
-  `incorrect_offset` → `WrongOffset` with Dropbox's offset.
+  `incorrect_offset` → `WrongOffset` with Dropbox's offset. **The SDK closes the part's stream once sent**: callers
+  read its length before the call (every upload into a real Dropbox failed with a 500 until 2026-11-19; the
+  `FakeStorage` now closes it too, so the suites catch it).
 - Create, move, copy, delete server side; Replace deletes a file at the target first, never a folder; a case-only
   rename goes through a temporary name. Delete goes to Dropbox's deleted files.
 - Content hash: Dropbox's own (`dropbox`: SHA-256 of 4 MB blocks' SHA-256s), computed by `ContentHashes` while a
@@ -73,6 +75,28 @@ Dropbox](../../../docs/administration/connections.md#setting-up-dropbox-server-a
 - `too_many_write_operations` on parallel writes in one namespace: writes are serialised per connection
   (`TransferCalls`).
 - Team spaces and shared folders have their own roots (not handled specially).
+
+## Metadata, thumbnails, cursors, limits (SDK 7.4.0 docs, `files.stone`, the performance page)
+
+- Listing gives per file `id`, `path_lower`, `path_display`, `size`, `server_modified`, `client_modified`, `rev`,
+  `content_hash`, `is_downloadable`; folders have no date.
+- `media_info` (dimensions, `time_taken`, GPS, video `duration` in ms) is **not set by `list_folder` /
+  `continue` / `get_thumbnail_batch` since 2019-12-02** (`include_media_info` has no effect there); still given by
+  `get_metadata(include_media_info)` and `get_thumbnail(_v2)`, possibly `pending`. So the index never has sizes or
+  durations from the sync; never a `get_metadata` per file ([connection-previews](connection-previews.md)).
+- Thumbnails: `get_thumbnail(_v2)`, `get_thumbnail_batch` (**at most 25** a call, base64 in JSON); documented for
+  images only (jpg, jpeg, png, tiff, tif, gif, webp, ppm, bmp), none over **20 MB** (`unsupported_image`). **Seen on a
+  real account (2026-11-19)**: videos (WebM, MP4, MKV, AVI) and a 25 MB JPEG got thumbnails too; `get_thumbnail`
+  gave no `media_info` for any file
+  ([connection-index](connection-index.md#measured-on-a-real-dropbox-2026-11-19)). Formats jpeg,
+  png, webp; sizes 32×32 to 2048×1536; modes strict, bestfit, fitone_bestfit, original.
+- `list_folder`: `limit` 1–2000, approximate; `recursive` lists a whole tree (the SDK warns it may fail on very
+  large ones); pages chained by cursor (one listing is sequential).
+- Cursor: no documented lifetime; can be reset at any time (`reset`: maintenance, a moved app folder): then a full
+  pass matched by `id` ([connection-index](connection-index.md)). `list_folder/longpoll` (host
+  `notify.dropboxapi.com`, not in the rule hosts) is not used: the scheduled task polls `continue`.
+- Rate limits are not published (per linked user, per team for team apps): 429 `too_many_requests` with
+  `Retry-After` (→ `RateLimited`); `too_many_write_operations` for parallel writes in one namespace.
 
 ## Tests
 

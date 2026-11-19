@@ -8,7 +8,7 @@ using ConnectionInfo = Otools.Net.Sfe.Core.Connections.ConnectionInfo;
 namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
-/// The index of a connection's files in the request's library (agents/docs/development/connections-index-plan.md):
+/// The index of a connection's files in the request's library (agents/docs/features/connection-index.md):
 /// where its sync stands, and "Sync now". For who manages the connection (<see cref="ConnectionManagers"/>), and only
 /// where the library uses it; no route gives the index's rows yet (folder rules come first).
 /// </summary>

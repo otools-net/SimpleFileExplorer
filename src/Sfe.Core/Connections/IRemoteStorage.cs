@@ -27,7 +27,10 @@ public interface IRemoteStorage : IAsyncDisposable
     /// <summary>Starts an upload; the answer names it in the next calls.</summary>
     Task<string> BeginUploadAsync(CancellationToken cancellationToken);
 
-    /// <summary>Adds the next part of an upload, which starts at <paramref name="offset"/> of the file.</summary>
+    /// <summary>
+    /// Adds the next part of an upload, which starts at <paramref name="offset"/> of the file. The provider may
+    /// close <paramref name="part"/> once sent (Dropbox's SDK does): callers read nothing from it afterwards.
+    /// </summary>
     Task AppendUploadAsync(string upload, long offset, Stream part, CancellationToken cancellationToken);
 
     /// <summary>Makes the file of an upload whose parts are all sent.</summary>

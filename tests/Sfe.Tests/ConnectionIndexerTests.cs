@@ -178,9 +178,12 @@ public sealed class ConnectionIndexerTests
         }
 
         var resumed = new RecordingIndexSource(_storage);
-        var result = await SyncAsync(resumed);
+        var progress = new ConnectionIndexProgress();
+        var result = await SyncAsync(resumed, progress: progress);
 
         Assert.AreEqual((10L, 5L), (result.Files, result.Folders));
+        // The task's counts go on from what the stopped run met, not from 0 (seen on a real Dropbox, 2026-11-19).
+        Assert.AreEqual((10L, 5L), (progress.Files, progress.Folders));
         var pages = stopped.Calls.Concat(resumed.Calls).Count(c => c.StartsWith("list ", StringComparison.Ordinal));
         Assert.AreEqual(Pages(), pages, string.Join("\n", stopped.Calls.Concat(resumed.Calls)));
         Assert.DoesNotContain("list  @", resumed.Calls, "The root was not listed again.");
@@ -291,11 +294,12 @@ public sealed class ConnectionIndexerTests
 
     private Task<ConnectionIndexResult> SyncAsync(
         RecordingIndexSource? source = null,
-        ProviderCapabilities? capabilities = null
+        ProviderCapabilities? capabilities = null,
+        ConnectionIndexProgress? progress = null
     )
     {
         var target = new ConnectionIndexTarget(Id, "", "account", capabilities ?? _provider.Capabilities, false);
-        return Indexer.SyncAsync(target, source ?? new RecordingIndexSource(_storage), new(), Token);
+        return Indexer.SyncAsync(target, source ?? new RecordingIndexSource(_storage), progress ?? new(), Token);
     }
 
     private SfeDbContext Db() => _services.Get<IDbContextFactory<SfeDbContext>>().CreateDbContext();

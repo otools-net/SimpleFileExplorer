@@ -1,7 +1,7 @@
 namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
-/// A folder of a connection in a library's index (agents/docs/development/connections-index-plan.md), kept by
+/// A folder of a connection in a library's index (agents/docs/features/connection-index.md), kept by
 /// <see cref="Connections.Indexing.ConnectionIndexer"/>. Folders are known by their path: only files carry tags, so
 /// a folder renamed at the provider is a new row, its files following it by their provider ids.
 /// </summary>

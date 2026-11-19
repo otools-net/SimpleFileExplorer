@@ -4,7 +4,7 @@ using Otools.Net.Sfe.Core.Search;
 namespace Otools.Net.Sfe.Core.Data;
 
 /// <summary>
-/// A file of a connection in a library's index (agents/docs/development/connections-index-plan.md), from the
+/// A file of a connection in a library's index (agents/docs/features/connection-index.md), from the
 /// provider's metadata only. The search's columns have <see cref="FileEntry"/>'s names (<c>FullName</c>,
 /// <c>Name</c>, <c>Extension</c>, <c>Size</c>, <c>LastWriteTime</c>, <c>Width</c>, <c>Height</c>, <c>Duration</c>,
 /// <c>Pixels</c>, <c>TagLinks</c>), so that one search builder reads both. Known by the provider's id first: a file

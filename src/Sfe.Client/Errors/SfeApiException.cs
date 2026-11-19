@@ -56,6 +56,7 @@ public class SfeApiException : SfeException
             "connection-refused" => SfeConnectionProblem.Refused,
             "connection-not-supported" => SfeConnectionProblem.NotSupported,
             "connection-unusable" => SfeConnectionProblem.Unusable,
+            "connection-not-indexed" => SfeConnectionProblem.NotIndexed,
             { } other when other.StartsWith("connection-", StringComparison.Ordinal) => SfeConnectionProblem.Unknown,
             _ => null,
         };

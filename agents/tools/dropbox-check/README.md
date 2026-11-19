@@ -67,15 +67,17 @@ Dropbox.
 
 ## Index of a large Dropbox
 
-Confirms the estimates of [connections-index-plan](../../docs/development/connections-index-plan.md) ("First sync of
-1 M files") on a real account; the suites can't (no account, and Dropbox publishes no page times or rate limits).
+Confirms the numbers of [connection-index](../../docs/features/connection-index.md) (sync, search, memory) on a
+real account; the suites can't (no account, and Dropbox publishes no page times or rate limits).
 Run it once the connection index (plan 6, phase 1) is built, and again after phase 5 for the preview steps. Takes an
 afternoon; most of it is waiting.
 
 ### Before you start
 
 1. A Dropbox account holding **many files**: 100 000 at least, ideally 1 million, in deep and wide folders (one
-   folder of 50 000 files or more, and a tree 10 levels deep). Photos and a few videos for the preview steps.
+   folder of 50 000 files or more, and a tree 10 levels deep). Photos and a few videos for the preview steps. A test
+   account can be filled through SFE with `seed.mjs` (below): slow (about 1 file a second, Dropbox serialises writes
+   in one account), so a few thousand files, not a million.
 2. A Dropbox app **only for this check**, at the App Console: **Scoped access**, **Full Dropbox** (an App folder
    would only see what was copied into it), permissions `account_info.read`, `files.metadata.read`,
    `files.content.read` and nothing that writes: the check can't change a real account's files. The steps marked
@@ -132,26 +134,50 @@ afternoon; most of it is waiting.
 7. **Previews** (built in phase 5: [connection-previews](../../docs/features/connection-previews.md)). Before:
    ffmpeg configured on the scratch install (Installation page), Playback › Video streams on (Fallback), and
    `Otools.Net.Sfe.Core.Connections` at `Debug` in the logs. Then open a folder of photos and one of videos:
-   - [ ] photos get Dropbox's thumbnails at once; with the log at Debug, a folder of 100 photos makes about 4
-     `get_thumbnail_batch` calls (25 each), not 100; reopening the folder asks Dropbox nothing (thumbnails from
-     `{cache}/connections/{id}/`);
-   - [ ] note whether **videos** get a thumbnail from Dropbox (not documented): with none, a video's tile shows a
-     thumbnail only after it was played converted once (SFE makes it from the cached file);
+   - [ ] photos get Dropbox's thumbnails at once; with the log at Debug, `RemoteThumbnailBatches` writes one line
+     per call to Dropbox (thumbnails asked, made, telling sizes, ms): count them for a folder of 100 photos (the
+     browser's 6 requests at a time made calls of 1 or 2 on 2026-11-19, not 25); reopening the folder asks Dropbox
+     nothing (thumbnails from `{cache}/connections/{id}/`);
+   - [ ] note whether **videos** get a thumbnail from Dropbox (not documented; on 2026-11-19 WebM, MP4, MKV (HEVC)
+     and AVI all did);
    - [ ] **`media_info`**: open one photo alone (a folder with one photo, so it goes through `get_thumbnail`, not the
      batch): its width and height show in the listing afterwards, and `w:` finds it; note whether Dropbox answered
      `media_info` or `pending` (a photo uploaded minutes ago may be pending);
    - [ ] play a video the browser can't play (HEVC, MKV): the first play waits for the download into the cache, then
      converts; afterwards its duration shows and `d:` finds it; a second play starts at once;
-   - [ ] a **photo over 20 MB** gets a thumbnail made by SFE (Dropbox makes none): the server log shows one download
-     of it, the cache folder holds its `.bin`;
+   - [ ] a **photo over 20 MB**: Dropbox documents none (then SFE makes it: one "bytes of connection … cached" line,
+     a `.bin` in the cache folder); on 2026-11-19 a 25 MB, 7200×4800 JPEG got Dropbox's own;
    - [ ] Markdown, JSON, a `.txt` open read only in the viewer; a file over 10 MB says it is too large;
    - [ ] Administration › Settings › Connections: set the cache to 100 MB and play a few videos: the cache folder
      stays under it; remove the connection: its folder under `connections/` is gone.
 
+### Results
+
+- **2026-11-19**, `edge` after 1.85.1, SQLite, App folder account filled by `seed.mjs` (2 546 files, 76 folders;
+  one folder of 1 300, a tree 10 deep; photos, videos, text): the results are in
+  [connection-index](../../docs/features/connection-index.md#measured-on-a-real-dropbox-2026-11-19). Not run: an
+  account of 100 000 files or more, the two-week pause (step 5), SQL Server.
+
 ### Afterwards
 
-- Write the numbers in the release's notes, and in the plan's phase 0 table (or the feature note once the plan is
-  deleted) in place of the estimates; tick the plan's "A person confirms the sync numbers" item.
+- Write the numbers in the release's notes and under "Measured on a real Dropbox" in
+  [connection-index](../../docs/features/connection-index.md), with the date (and "Results" above).
 - Anything far from the estimates (pages over 3 s, memory growing, a resume starting over, tags lost) is a bug to
   fix before the release.
 - Remove both apps at Dropbox (Settings › Connected apps) and the scratch install.
+
+## Tools
+
+Both take an access token or account of the scratch install, never the Dropbox account's own secrets.
+
+- **`seed.mjs`** fills a connection through SFE's upload routes (so it also checks uploads, in parts over 8 MB):
+  `SFE_TOKEN=sfe_… node agents/tools/dropbox-check/seed.mjs --tenant=<library id> --connection=<id>
+  --root=sfe-seed --folders=60 --files=20 --big=1300 --depth=10 --add=<file>,<file>`; `--add` files go into
+  `<root>/media`. Writes only under `--root`; remove that folder to undo. In Git Bash, prefix `MSYS_NO_PATHCONV=1`
+  when `--add` names absolute paths (it mangles `C:/…` lists).
+- **`shots.mjs`** takes the connection screenshots of `docs/images/` (`connection-*.png`, `search-everywhere.png`)
+  from such an install, the account's e-mail replaced: `SFE_URL=http://localhost:5080 SFE_SHOTS_USER=…
+  SFE_SHOTS_PASSWORD=… node agents/tools/dropbox-check/shots.mjs [listing|manage|search|tags]`; `probe <url>` saves
+  one page to the temp folder and prints its buttons' titles. The account must use the connection (a group with a
+  level on it) and the seed must have run with `--add` of `tests/samples/library` photos; `search-everywhere.png` looks
+  for "summit" in the library too.

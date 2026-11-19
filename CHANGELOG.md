@@ -155,6 +155,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   leading out of a library can be browsed, played and downloaded, but nothing is created, changed, renamed, moved
   away or deleted there. For libraries other people can put links in outside SFE (a network share, SFTP). The default
   stays `Follow`; `Sfe:Security:LinkTargets` names folders links may still be written through.
+- **C# client library: search and tags on a connection**: `sfe.Connections[id].Search` searches the library's index
+  of a connection as `sfe.Search` does the library (sorts, a folder, cursor paging, the count), each page telling
+  how much of the connection the index holds (`Coverage`); `sfe.Connections[id].Tags` reads, adds and removes tags on
+  its files, or on every file of a folder or search (`SfeTagScope`); `GetIndexAsync` and `SyncIndexAsync` tell where
+  its index stands and sync it now; `connection-not-indexed` is `ConnectionProblem.NotIndexed`.
 
 ### Changed
 

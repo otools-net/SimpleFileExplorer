@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,7 +74,7 @@ public sealed class SfeSearch
         CancellationToken cancellationToken = default
     )
     {
-        var route = PageRoute(query, options ?? new SfeSearchOptions(), after);
+        var route = FilePlace.Library.SearchRoute(query, options ?? new SfeSearchOptions(), after);
         return _transport.ReadAsync<SfeSearchPage>(SfeRequest.Get(route), cancellationToken);
     }
 
@@ -93,15 +92,5 @@ public sealed class SfeSearch
         var options = new SfeSearchOptions { Folder = folder, PageSize = 1 };
         var page = await GetPageAsync(query, options, null, cancellationToken).ConfigureAwait(false);
         return new SfeSearchCount(page.Total ?? page.Items.Count, page.TotalCapped);
-    }
-
-    private static string PageRoute(string query, SfeSearchOptions options, string? after)
-    {
-        var sort = options.Sort.ToString().ToLowerInvariant();
-        var descending = options.Descending ? "true" : "false";
-        var limit = options.PageSize.ToString(CultureInfo.InvariantCulture);
-        var route = Routes.WithPath("search", SfePath.Normalize(options.Folder));
-        route += $"&q={Routes.Escape(query ?? "")}&limit={limit}&sort={sort}&desc={descending}";
-        return after is null ? route : route + $"&after={Routes.Escape(after)}";
     }
 }

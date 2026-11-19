@@ -162,6 +162,25 @@ What a provider can't do (a part of a file, uploads, moves or copies on its side
 `SfeNotSupportedException` with its `Capability` before anything is sent. A library connection's folder rules are
 administration: `sfe.Raw.Api.V1.Connections[id].FolderRules`.
 
+A connection's files are **searched and tagged** in the library's index of it, with the search language and the
+library's tags; nothing is asked of the provider. The index is filled by the connection's syncs (the first search
+starts the first one), so each page says how much of the connection it holds (`Coverage`: `None`, `Partial`,
+`Complete`), and tagging before the first sync has ended throws an `SfeConflictException` whose `ConnectionProblem`
+is `NotIndexed`. Who manages the connection reads where its index stands and syncs it now:
+
+```csharp
+var connection = sfe.Connections[dropbox.Id];
+await connection.SyncIndexAsync();
+while ((await connection.GetIndexAsync()) is { Running: true } or { LastSync: null })
+    await Task.Delay(1000);
+var options = new SfeSearchOptions { Folder = "Camera Uploads", Sort = SfeSearchSort.Modified };
+await foreach (var photo in connection.Search.QueryAsync("e:jpg s:>2mb", options))
+    Console.WriteLine(photo.Path);
+await connection.Tags.AddAsync(["Camera Uploads/beach.jpg"], [holiday.Id]);
+var trip = new SfeTagScope { Folder = "Camera Uploads/2026", Recursive = true };
+await connection.Tags.ChangeScopeAsync(trip, add: [holiday.Id], remove: []);   // every indexed file of the tree
+```
+
 **Everything else** (scans, settings, accounts, logs…) is reached through `sfe.Raw`, a client of every v1 route
 generated from the [OpenAPI document](api.md): `await sfe.Raw.Api.V1.Scan.GetAsync()`. Its calls are not retried, and
 its errors are Kiota's `ApiException`.
@@ -185,7 +204,8 @@ A refusal of the server is thrown as an `SfeApiException` with the HTTP `StatusC
 A connection's failures keep these classes and add `ConnectionProblem`, from their `connection-…` word:
 `NeedsReconnecting` (409: its manager signs in again on the web page), `RateLimited` (429: the provider asks to wait;
 retried as any 429), `Unavailable` (502: the provider can't be reached), `Refused` (403), `NotSupported` (409),
-`Unusable` (409: the connection is off).
+`Unusable` (409: the connection is off), `NotIndexed` (409: the library's index doesn't hold its files yet; try
+again once its sync has run).
 
 Answers 429 and 503 are tried again (as told by `Retry-After`, else after a growing delay) when sending the request
 twice does no harm: reads, deletes, upload chunks; never a move, a copy or a new folder. Every method takes a

@@ -103,5 +103,5 @@ Code: Core `Data/Entities/Access/ConnectionFolderRule.cs`, `AccessMigrations/202
   (`OpenConnection.Check(asked, item, right)`), the transfer job's listings and gets. Not below such a folder (its
   children's ids aren't the rule's), not on write routes (no `GetAsync`).
 - Not built: the "moved to X" mark of the management GET (no lookup by id in `IRemoteStorage`) and a manual Follow:
-  the rule is re-pointed by hand. Automatic following comes with the change cursor of
-  [connections-index-plan](../development/connections-index-plan.md).
+  the rule is re-pointed by hand. Automatic following by the change cursor of
+  [connection-index](connection-index.md) is not built (a later plan).

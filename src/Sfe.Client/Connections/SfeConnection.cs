@@ -8,8 +8,9 @@ using Otools.Net.Sfe.Client.Http;
 namespace Otools.Net.Sfe.Client;
 
 /// <summary>
-/// One connection: its files (<see cref="Files"/>), what its provider can do, and moves and copies between it and
-/// the library or another connection, as jobs. Paths are relative to the connection's root folder, with <c>/</c>.
+/// One connection: its files (<see cref="Files"/>), what its provider can do, its search (<see cref="Search"/>) and
+/// tags (<see cref="Tags"/>) in the library's index of it, and moves and copies between it and the library or another
+/// connection, as jobs. Paths are relative to the connection's root folder, with <c>/</c>.
 /// </summary>
 public sealed class SfeConnection
 {
@@ -24,6 +25,8 @@ public sealed class SfeConnection
         Id = id;
         Place = FilePlace.Connection(id);
         Files = new SfeConnectionFiles(transport, this);
+        Search = new SfeConnectionSearch(transport, this);
+        Tags = new SfeConnectionTags(transport, Place);
     }
 
     /// <summary>The connection's id.</summary>
@@ -31,6 +34,12 @@ public sealed class SfeConnection
 
     /// <summary>Its files and folders: listed, read, uploaded, made, renamed, moved, copied, deleted.</summary>
     public SfeConnectionFiles Files { get; }
+
+    /// <summary>Searches of its files in the library's index of it.</summary>
+    public SfeConnectionSearch Search { get; }
+
+    /// <summary>The library's tags on its files: read, given, taken.</summary>
+    public SfeConnectionTags Tags { get; }
 
     /// <summary>Where its file routes go.</summary>
     internal FilePlace Place { get; }
@@ -59,6 +68,31 @@ public sealed class SfeConnection
         _capabilities = info.Capabilities ?? await ReadCapabilitiesAsync(cancellationToken).ConfigureAwait(false);
         return _capabilities;
     }
+
+    /// <summary>
+    /// Where the library's index of its files stands (what <see cref="Search"/> finds and <see cref="Tags"/> may
+    /// tag): files and folders held, last sync, the one running. For who manages the connection.
+    /// </summary>
+    /// <param name="cancellationToken">Stops waiting for the server.</param>
+    /// <exception cref="SfeNotFoundException">
+    /// The caller doesn't manage it, or the library doesn't use it (or it isn't there).
+    /// </exception>
+    public Task<SfeConnectionIndex> GetIndexAsync(CancellationToken cancellationToken = default) =>
+        _transport.ReadAsync<SfeConnectionIndex>(SfeRequest.Get(Place.Route("index")), cancellationToken);
+
+    /// <summary>
+    /// Starts syncing the library's index of its files now, in the background (none is added while one runs), and
+    /// answers where the index stands then; <see cref="GetIndexAsync"/> tells when it ends. For who manages it.
+    /// </summary>
+    /// <param name="cancellationToken">Stops waiting for the server (not the sync).</param>
+    /// <exception cref="SfeNotFoundException">
+    /// The caller doesn't manage it, or the library doesn't use it (or it isn't there).
+    /// </exception>
+    /// <exception cref="SfeConflictException">
+    /// <see cref="SfeConnectionProblem.Unusable"/>: the connection is off.
+    /// </exception>
+    public Task<SfeConnectionIndex> SyncIndexAsync(CancellationToken cancellationToken = default) =>
+        _transport.ReadAsync<SfeConnectionIndex>(SfeRequest.Post(Place.Route("index/sync")), cancellationToken);
 
     /// <summary>
     /// Starts copying files and folders of the library into a folder of this connection, and answers the job

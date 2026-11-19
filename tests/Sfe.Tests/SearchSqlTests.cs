@@ -12,7 +12,7 @@ namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// The library's search sends the database the same SQL as before the search was made generic for the files of
-/// connections (agents/docs/development/connections-index-plan.md, phase 3): every command of a set of searches (terms,
+/// connections (agents/docs/features/connection-index.md, phase 3): every command of a set of searches (terms,
 /// sorts, cursors, a folder, folder rules) compared, as text, with the one committed in tests/samples/search-sql. A
 /// change meant to alter the library's SQL writes the file again: <see cref="UpdateCommand"/>.
 /// </summary>

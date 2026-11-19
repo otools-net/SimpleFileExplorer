@@ -15,8 +15,8 @@ User docs: [docs/administration/connections.md](../../../docs/administration/con
 Related notes: [connection-files](connection-files.md) (browse, read, change, upload, properties),
 [transfers](transfers.md) (between the library and a connection), [connection-folder-rules](connection-folder-rules.md),
 [connection-providers](connection-providers.md) (adding a kind), [dropbox](dropbox.md), the C# facade
-([client-library](client-library.md#connections)). Still planned: index and search
-([connections-index-plan](../development/connections-index-plan.md)). Security vectors:
+([client-library](client-library.md#connections)). Index, search and tags:
+[connection-index](connection-index.md); previews: [connection-previews](connection-previews.md). Security vectors:
 [security](../development/security.md#connections).
 
 ## Model
@@ -160,7 +160,7 @@ owner):
   security warning.
 - Folder rules: rules of a deleted folder are kept (shown as not found, to re-point).
 - Folder rules: a folder renamed outside SFE found by its provider id (`ItemId`), with a manual Follow (not built: the
-  rule is re-pointed by hand; automatic with [connections-index-plan](../development/connections-index-plan.md)).
+  rule is re-pointed by hand; following by the index's change cursor is left for a later plan).
 
 ## Gotchas
 

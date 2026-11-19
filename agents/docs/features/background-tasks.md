@@ -19,4 +19,4 @@ wording). Schedules: [schedules.md](schedules.md).
   [api-routes.md](../development/api-routes.md)).
 - `ConnectionIndex` (2026-11-15): one run per connection synced (`ConnectionIndexes`, `ConnectionIndexJob`); Path =
   the connection's name, null for an account's own; Run now / schedules sync every connection the library indexes
-  ([connections-index-plan](../development/connections-index-plan.md)).
+  ([connection-index](connection-index.md#sync-connectionindexer)).

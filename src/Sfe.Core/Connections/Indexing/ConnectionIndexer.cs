@@ -30,7 +30,7 @@ public sealed class ConnectionIndexer(
         CancellationToken cancellationToken
     )
     {
-        var state = await PrepareAsync(target, source, cancellationToken);
+        var state = await PrepareAsync(target, source, progress, cancellationToken);
         await RemoteNameKeys.FillAsync(store, target.ConnectionId, cancellationToken);
         var listed = false;
         // A provider forgetting its cursors at once again would list for ever: the second reset of a sync ends it.
@@ -71,6 +71,7 @@ public sealed class ConnectionIndexer(
     private async Task<RemoteIndexState> PrepareAsync(
         ConnectionIndexTarget target,
         IRemoteIndexSource source,
+        ConnectionIndexProgress progress,
         CancellationToken cancellationToken
     )
     {
@@ -100,8 +101,24 @@ public sealed class ConnectionIndexer(
                 going.Pass,
                 going.ListingStarted
             );
+            await CountMetAsync(id, going.Pass, progress, cancellationToken);
         }
         return going;
+    }
+
+    /// <summary>
+    /// A listing resumed: what its pass met before the restart, so the task's counts go on from there instead of 0.
+    /// Once per resumed sync (a count over the connection's rows), never per page.
+    /// </summary>
+    private async Task CountMetAsync(int id, int pass, ConnectionIndexProgress progress, CancellationToken token)
+    {
+        await using var db = await store.ContextAsync(token);
+        var folders = await db.RemoteDirectories.CountAsync(
+            d => d.ConnectionId == id && d.Pass == pass && !d.Pending && !d.Removed,
+            token
+        );
+        var files = await db.RemoteFiles.CountAsync(f => f.ConnectionId == id && f.Pass == pass && !f.Removed, token);
+        progress.Listed(folders, files);
     }
 
     private Task Begin(SfeDbContext db, ConnectionIndexTarget target)

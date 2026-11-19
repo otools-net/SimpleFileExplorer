@@ -4,7 +4,7 @@ Code: `src/Sfe.Api/ApiRoutes.cs`, `LegacyApiPaths.cs`, `LegacyPathLog.cs`, `Prog
 `src/Sfe.Api/Endpoints/*Endpoints.cs`, `ProblemTypes.cs`, `ApiDocument.cs`; client `core/api.service.ts`
 (`API_BASE`); tests `LegacyPathTests`, `OpenApiBaselineTests`, `ProblemTypesTests`. Route conventions are in
 [api-routes](api-routes.md); the user page is `docs/reference/api.md`. Set up 2026-11-13/14 (plan 1 of the
-[epic](external-access-epic-plan.md), done).
+external-access epic, finalized 2026-11-19).
 
 - Every `api/` path the server tests or hands out goes through `ApiRoutes`: `IsApi`/`IsServerEntry`/`IsDocs` in the
   middleware, `Link` (relative to the app's address, for links) and `Location` (absolute, for `Created`/`Accepted`).

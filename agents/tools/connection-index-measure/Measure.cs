@@ -2,7 +2,7 @@
 #:package Microsoft.EntityFrameworkCore.SqlServer@10.0.12
 #:property PublishAot=false
 #:property Nullable=enable
-// Measures the index of connection files planned in agents/docs/development/connections-index-plan.md (phase 0):
+// Measures the index of connection files planned in agents/docs/features/connection-index.md (phase 0):
 // a throwaway RemoteFiles / RemoteFileTags table pair filled with synthetic rows in batches (as a first sync would),
 // then the search's typical queries through predicates written once for any row type (ISearchableFile<T>), on SQLite
 // and SQL Server LocalDB. Temp databases only, dropped at the end. See README.md.
@@ -123,7 +123,10 @@ public sealed class MeasureDb(DbContextOptions<MeasureDb> options, bool sqlServe
             e.Property(f => f.ProviderId).HasMaxLength(64).IsUnicode(false);
             e.Property(f => f.ContentHash).HasMaxLength(64).IsUnicode(false);
             e.Property(f => f.Pixels)
-                .HasComputedColumnSql(sqlServer ? "CAST([Width] AS bigint) * [Height]" : "\"Width\" * \"Height\"", false);
+                .HasComputedColumnSql(
+                    sqlServer ? "CAST([Width] AS bigint) * [Height]" : "\"Width\" * \"Height\"",
+                    false
+                );
             if (!sqlServer)
             {
                 e.Property(f => f.Name).UseCollation("NOCASE");
@@ -144,7 +147,10 @@ public sealed class MeasureDb(DbContextOptions<MeasureDb> options, bool sqlServe
         {
             e.HasKey(l => new { l.FileId, l.TagId });
             e.HasIndex(l => l.TagId);
-            e.HasOne(l => l.File).WithMany(f => f.TagLinks).HasForeignKey(l => l.FileId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(l => l.File)
+                .WithMany(f => f.TagLinks)
+                .HasForeignKey(l => l.FileId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
@@ -197,19 +203,86 @@ public static class Run
 {
     private static readonly string[] Words =
     [
-        "beach", "sunset", "family", "party", "holiday", "garden", "city", "night", "snow", "lake", "forest", "dog",
-        "cat", "birthday", "wedding", "concert", "trip", "school", "work", "scan", "invoice", "report", "draft",
-        "final", "mountain", "river", "car", "train", "museum", "food", "market", "bridge", "portrait", "street",
-        "harbor", "island", "desert", "castle", "church", "festival", "game", "match", "rain", "spring", "summer",
-        "autumn", "winter", "morning", "evening", "kids", "friends", "home", "office", "project", "notes", "music",
-        "live", "studio", "demo", "mix", "cover", "clip", "screen", "record",
+        "beach",
+        "sunset",
+        "family",
+        "party",
+        "holiday",
+        "garden",
+        "city",
+        "night",
+        "snow",
+        "lake",
+        "forest",
+        "dog",
+        "cat",
+        "birthday",
+        "wedding",
+        "concert",
+        "trip",
+        "school",
+        "work",
+        "scan",
+        "invoice",
+        "report",
+        "draft",
+        "final",
+        "mountain",
+        "river",
+        "car",
+        "train",
+        "museum",
+        "food",
+        "market",
+        "bridge",
+        "portrait",
+        "street",
+        "harbor",
+        "island",
+        "desert",
+        "castle",
+        "church",
+        "festival",
+        "game",
+        "match",
+        "rain",
+        "spring",
+        "summer",
+        "autumn",
+        "winter",
+        "morning",
+        "evening",
+        "kids",
+        "friends",
+        "home",
+        "office",
+        "project",
+        "notes",
+        "music",
+        "live",
+        "studio",
+        "demo",
+        "mix",
+        "cover",
+        "clip",
+        "screen",
+        "record",
     ];
 
     private static readonly (string Ext, int Weight, string Top)[] Types =
     [
-        (".jpg", 40, "Photos"), (".png", 5, "Photos"), (".heic", 5, "Photos"), (".mp4", 15, "Videos"),
-        (".mov", 5, "Videos"), (".mkv", 2, "Videos"), (".mp3", 8, "Music"), (".flac", 2, "Music"),
-        (".pdf", 6, "Documents"), (".docx", 4, "Documents"), (".txt", 4, "Documents"), (".zip", 2, "Archive"),
+        (".jpg", 40, "Photos"),
+        (".png", 5, "Photos"),
+        (".heic", 5, "Photos"),
+        (".mp4", 15, "Videos"),
+        (".mov", 5, "Videos"),
+        (".mkv", 2, "Videos"),
+        (".mp3", 8, "Music"),
+        (".flac", 2, "Music"),
+        (".pdf", 6, "Documents"),
+        (".docx", 4, "Documents"),
+        (".txt", 4, "Documents"),
+        (".zip", 2, "Archive"),
         ("", 2, "Archive"),
     ];
 
@@ -227,7 +300,14 @@ public static class Run
     }
 
     public static async Task MeasureAsync(
-        string label, string cs, bool sqlServer, int rows, int batch, string work, Func<long>? size)
+        string label,
+        string cs,
+        bool sqlServer,
+        int rows,
+        int batch,
+        string work,
+        Func<long>? size
+    )
     {
         Console.WriteLine($"\n## {label}");
         await using (var db = Context(cs, sqlServer))
@@ -249,8 +329,11 @@ public static class Run
         else
         {
             await using var db = Context(cs, sqlServer);
-            var mb = await db.Database.SqlQueryRaw<long>(
-                "SELECT CAST(SUM(used_pages) * 8 / 1024 AS bigint) AS Value FROM sys.allocation_units").SingleAsync();
+            var mb = await db
+                .Database.SqlQueryRaw<long>(
+                    "SELECT CAST(SUM(used_pages) * 8 / 1024 AS bigint) AS Value FROM sys.allocation_units"
+                )
+                .SingleAsync();
             Console.WriteLine($"used space {mb:N0} MB");
         }
         await QueriesAsync(cs, sqlServer, label, work);
@@ -263,12 +346,15 @@ public static class Run
     private static (Func<List<RemoteFile>, Task> Write, Func<ValueTask> Dispose) EfWriter(string cs, bool sqlServer)
     {
         var db = Context(cs, sqlServer);
-        return (async files =>
-        {
-            db.RemoteFiles.AddRange(files);
-            await db.SaveChangesAsync();
-            db.ChangeTracker.Clear();
-        }, db.DisposeAsync);
+        return (
+            async files =>
+            {
+                db.RemoteFiles.AddRange(files);
+                await db.SaveChangesAsync();
+                db.ChangeTracker.Clear();
+            },
+            db.DisposeAsync
+        );
     }
 
     private static (Func<List<RemoteFile>, Task> Write, Func<ValueTask> Dispose) PreparedInsertAsync(string cs)
@@ -283,23 +369,39 @@ public static class Run
             """;
         var names = new[] { "$c", "$p", "$d", "$f", "$dp", "$n", "$e", "$s", "$m", "$h", "$w", "$ht", "$du" };
         var parameters = names.Select(n => command.Parameters.Add(new SqliteParameter { ParameterName = n })).ToArray();
-        return (files =>
-        {
-            using var transaction = connection.BeginTransaction();
-            command.Transaction = transaction;
-            command.Prepare();
-            foreach (var f in files)
+        return (
+            files =>
             {
-                object?[] values = [f.ConnectionId, f.ProviderId, f.DirectoryId, f.FullName, f.DisplayPath, f.Name,
-                    f.Extension, f.Size, f.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture),
-                    f.ContentHash, f.Width, f.Height, f.Duration];
-                for (var i = 0; i < values.Length; i++)
-                    parameters[i].Value = values[i] ?? DBNull.Value;
-                command.ExecuteNonQuery();
-            }
-            transaction.Commit();
-            return Task.CompletedTask;
-        }, () => connection.DisposeAsync());
+                using var transaction = connection.BeginTransaction();
+                command.Transaction = transaction;
+                command.Prepare();
+                foreach (var f in files)
+                {
+                    object?[] values =
+                    [
+                        f.ConnectionId,
+                        f.ProviderId,
+                        f.DirectoryId,
+                        f.FullName,
+                        f.DisplayPath,
+                        f.Name,
+                        f.Extension,
+                        f.Size,
+                        f.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture),
+                        f.ContentHash,
+                        f.Width,
+                        f.Height,
+                        f.Duration,
+                    ];
+                    for (var i = 0; i < values.Length; i++)
+                        parameters[i].Value = values[i] ?? DBNull.Value;
+                    command.ExecuteNonQuery();
+                }
+                transaction.Commit();
+                return Task.CompletedTask;
+            },
+            () => connection.DisposeAsync()
+        );
     }
 
     private static (Func<List<RemoteFile>, Task> Write, Func<ValueTask> Dispose) BulkCopyAsync(string cs)
@@ -307,26 +409,56 @@ public static class Run
         var connection = new SqlConnection(cs);
         connection.Open();
         var table = new System.Data.DataTable();
-        foreach (var (name, type) in new (string, Type)[]
-        {
-            ("ConnectionId", typeof(int)), ("ProviderId", typeof(string)), ("DirectoryId", typeof(long)),
-            ("FullName", typeof(string)), ("DisplayPath", typeof(string)), ("Name", typeof(string)),
-            ("Extension", typeof(string)), ("Size", typeof(long)), ("LastWriteTime", typeof(DateTime)),
-            ("ContentHash", typeof(string)), ("Width", typeof(int)), ("Height", typeof(int)), ("Duration", typeof(double)),
-        })
+        foreach (
+            var (name, type) in new (string, Type)[]
+            {
+                ("ConnectionId", typeof(int)),
+                ("ProviderId", typeof(string)),
+                ("DirectoryId", typeof(long)),
+                ("FullName", typeof(string)),
+                ("DisplayPath", typeof(string)),
+                ("Name", typeof(string)),
+                ("Extension", typeof(string)),
+                ("Size", typeof(long)),
+                ("LastWriteTime", typeof(DateTime)),
+                ("ContentHash", typeof(string)),
+                ("Width", typeof(int)),
+                ("Height", typeof(int)),
+                ("Duration", typeof(double)),
+            }
+        )
             table.Columns.Add(name, type);
-        return (async files =>
-        {
-            table.Clear();
-            foreach (var f in files)
-                table.Rows.Add(f.ConnectionId, f.ProviderId, f.DirectoryId, f.FullName, f.DisplayPath, f.Name, f.Extension,
-                    f.Size, f.LastWriteTime, f.ContentHash, (object?)f.Width ?? DBNull.Value,
-                    (object?)f.Height ?? DBNull.Value, (object?)f.Duration ?? DBNull.Value);
-            using var copy = new SqlBulkCopy(connection) { DestinationTableName = "RemoteFiles", BatchSize = files.Count };
-            foreach (System.Data.DataColumn column in table.Columns)
-                copy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
-            await copy.WriteToServerAsync(table);
-        }, () => connection.DisposeAsync());
+        return (
+            async files =>
+            {
+                table.Clear();
+                foreach (var f in files)
+                    table.Rows.Add(
+                        f.ConnectionId,
+                        f.ProviderId,
+                        f.DirectoryId,
+                        f.FullName,
+                        f.DisplayPath,
+                        f.Name,
+                        f.Extension,
+                        f.Size,
+                        f.LastWriteTime,
+                        f.ContentHash,
+                        (object?)f.Width ?? DBNull.Value,
+                        (object?)f.Height ?? DBNull.Value,
+                        (object?)f.Duration ?? DBNull.Value
+                    );
+                using var copy = new SqlBulkCopy(connection)
+                {
+                    DestinationTableName = "RemoteFiles",
+                    BatchSize = files.Count,
+                };
+                foreach (System.Data.DataColumn column in table.Columns)
+                    copy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                await copy.WriteToServerAsync(table);
+            },
+            () => connection.DisposeAsync()
+        );
     }
 
     /// <summary>The "ado" writer's tags, as MakeFile gives them: 5% of files, a fifth of them "holiday" (1-3).</summary>
@@ -335,17 +467,24 @@ public static class Run
         var watch = Stopwatch.StartNew();
         await using var db = Context(cs, sqlServer);
         db.Database.SetCommandTimeout(600);
-        await db.Database.ExecuteSqlRawAsync("""
+        await db.Database.ExecuteSqlRawAsync(
+            """
             INSERT INTO RemoteFileTags (FileId, TagId)
             SELECT Id, CASE WHEN Id % 100 = 0 THEN 1 + (Id / 100) % 3 ELSE 10 + Id % 200 END
             FROM RemoteFiles WHERE Id % 20 = 0
-            """);
+            """
+        );
         Console.WriteLine($"tag pass (one INSERT … SELECT) {watch.Elapsed.TotalSeconds:N1} s");
     }
 
     /// <summary>Batches as a sync would write them, no transaction across batches.</summary>
     private static async Task FillAsync(
-        string cs, bool sqlServer, int rows, int batch, (Func<List<RemoteFile>, Task> Write, Func<ValueTask> Dispose) writer)
+        string cs,
+        bool sqlServer,
+        int rows,
+        int batch,
+        (Func<List<RemoteFile>, Task> Write, Func<ValueTask> Dispose) writer
+    )
     {
         var random = new Random(42);
         var total = Stopwatch.StartNew();
@@ -367,16 +506,18 @@ public static class Run
             if ((done + n) % report == 0 || done + n == rows)
             {
                 Console.WriteLine(
-                    $"  {done + n,10:N0} rows, last part {report / window.Elapsed.TotalSeconds,8:N0} rows/s, "
-                    + $"managed heap {GC.GetTotalMemory(false) / 1048576.0,6:N0} MB, "
-                    + $"working set {Process.GetCurrentProcess().WorkingSet64 / 1048576.0,6:N0} MB");
+                    $"  {done + n, 10:N0} rows, last part {report / window.Elapsed.TotalSeconds, 8:N0} rows/s, "
+                        + $"managed heap {GC.GetTotalMemory(false) / 1048576.0, 6:N0} MB, "
+                        + $"working set {Process.GetCurrentProcess().WorkingSet64 / 1048576.0, 6:N0} MB"
+                );
                 window.Restart();
             }
         }
         Console.WriteLine(
             $"filled {rows:N0} rows in {total.Elapsed.TotalSeconds:N0} s ({rows / total.Elapsed.TotalSeconds:N0} rows/s), "
-            + $"{saving.Elapsed.TotalSeconds:N0} s writing, max managed heap {maxHeap / 1048576.0:N0} MB, peak working set "
-            + $"{Process.GetCurrentProcess().PeakWorkingSet64 / 1048576.0:N0} MB");
+                + $"{saving.Elapsed.TotalSeconds:N0} s writing, max managed heap {maxHeap / 1048576.0:N0} MB, peak working set "
+                + $"{Process.GetCurrentProcess().PeakWorkingSet64 / 1048576.0:N0} MB"
+        );
         await writer.Dispose();
     }
 
@@ -409,7 +550,9 @@ public static class Run
         var file = new RemoteFile
         {
             ConnectionId = connection,
-            ProviderId = "id:" + Convert.ToBase64String(BitConverter.GetBytes((long)index * 7919 + connection))
+            ProviderId =
+                "id:"
+                + Convert.ToBase64String(BitConverter.GetBytes((long)index * 7919 + connection))
                 + Convert.ToBase64String(Guid.NewGuid().ToByteArray())[..10],
             DirectoryId = folder,
             FullName = display.ToLowerInvariant(),
@@ -418,7 +561,8 @@ public static class Run
             Extension = type.Ext,
             Size = size,
             LastWriteTime = new DateTime(2005, 1, 1).AddSeconds(r.NextDouble() * 21 * 365 * 86400),
-            ContentHash = Convert.ToHexString(Guid.NewGuid().ToByteArray()) + Convert.ToHexString(Guid.NewGuid().ToByteArray()),
+            ContentHash =
+                Convert.ToHexString(Guid.NewGuid().ToByteArray()) + Convert.ToHexString(Guid.NewGuid().ToByteArray()),
             Width = known ? 1920 : null,
             Height = known ? 1080 : null,
             Duration = video && r.Next(10) == 0 ? r.NextDouble() * 3600 : null,
@@ -431,7 +575,14 @@ public static class Run
 
     private static bool Capitalized(Random r) => r.Next(2) == 0;
 
-    private sealed record Row(string FullName, string Name, string Extension, long Size, DateTime Modified, List<int> Tags);
+    private sealed record Row(
+        string FullName,
+        string Name,
+        string Extension,
+        long Size,
+        DateTime Modified,
+        List<int> Tags
+    );
 
     private static async Task QueriesAsync(string cs, bool sqlServer, string label, string work)
     {
@@ -446,32 +597,49 @@ public static class Run
         var firstByName = await Page(sunset.OrderBy(f => f.Name).ThenBy(f => f.FullName)).ToListAsync();
         var last = firstByName[^1];
         var video = Run.VideoExtensions.Select(Predicates.Extension<RemoteFile>).Aggregate(Predicates.Or);
-        var queries = new (string Name, IQueryable<RemoteFile> Matches, Func<IQueryable<RemoteFile>, IQueryable<RemoteFile>> Order)[]
+        var queries = new (
+            string Name,
+            IQueryable<RemoteFile> Matches,
+            Func<IQueryable<RemoteFile>, IQueryable<RemoteFile>> Order
+        )[]
         {
             ("name contains 'sunset', path sort", sunset, q => q.OrderBy(f => f.FullName)),
-            ("name contains 'sunset', name sort, 2nd page (keyset)",
+            (
+                "name contains 'sunset', name sort, 2nd page (keyset)",
                 sunset.Where(Predicates.AfterName<RemoteFile>(last.Name, last.FullName)),
-                q => q.OrderBy(f => f.Name).ThenBy(f => f.FullName)),
-            ("name contains 'qqzz' (no match), path sort", c1.Where(Predicates.NameContains<RemoteFile>("qqzz")),
-                q => q.OrderBy(f => f.FullName)),
-            ("type:video s:>3GB, size descending",
+                q => q.OrderBy(f => f.Name).ThenBy(f => f.FullName)
+            ),
+            ("name contains 'qqzz' (no match), path sort", c1.Where(Predicates.NameContains<RemoteFile>("qqzz")), q =>
+                q.OrderBy(f => f.FullName)
+            ),
+            (
+                "type:video s:>3GB, size descending",
                 c1.Where(video).Where(Predicates.SizeOver<RemoteFile>(3_000_000_000)),
-                q => q.OrderByDescending(f => f.Size).ThenBy(f => f.FullName)),
-            ("e:jpg, modified descending", c1.Where(Predicates.Extension<RemoteFile>(".jpg")),
-                q => q.OrderByDescending(f => f.LastWriteTime).ThenBy(f => f.FullName)),
-            ("t:holiday (3 tag ids), modified descending", c1.Where(Predicates.Tag<RemoteFile>([1, 2, 3])),
-                q => q.OrderByDescending(f => f.LastWriteTime).ThenBy(f => f.FullName)),
-            ("t:holiday + name contains 'beach', path sort",
+                q => q.OrderByDescending(f => f.Size).ThenBy(f => f.FullName)
+            ),
+            ("e:jpg, modified descending", c1.Where(Predicates.Extension<RemoteFile>(".jpg")), q =>
+                q.OrderByDescending(f => f.LastWriteTime).ThenBy(f => f.FullName)
+            ),
+            ("t:holiday (3 tag ids), modified descending", c1.Where(Predicates.Tag<RemoteFile>([1, 2, 3])), q =>
+                q.OrderByDescending(f => f.LastWriteTime).ThenBy(f => f.FullName)
+            ),
+            (
+                "t:holiday + name contains 'beach', path sort",
                 c1.Where(Predicates.Tag<RemoteFile>([1, 2, 3])).Where(Predicates.NameContains<RemoteFile>("beach")),
-                q => q.OrderBy(f => f.FullName)),
+                q => q.OrderBy(f => f.FullName)
+            ),
             // The tag term as phase 4 writes it on remote rows: from the TagId index (Id IN (SELECT FileId …)).
-            ("t:holiday as Id IN (SELECT FileId …), modified descending", c1.Where(TaggedIn(db, [1, 2, 3])),
-                q => q.OrderByDescending(f => f.LastWriteTime).ThenBy(f => f.FullName)),
-            ("t:holiday as IN + name contains 'beach', path sort",
+            ("t:holiday as Id IN (SELECT FileId …), modified descending", c1.Where(TaggedIn(db, [1, 2, 3])), q =>
+                q.OrderByDescending(f => f.LastWriteTime).ThenBy(f => f.FullName)
+            ),
+            (
+                "t:holiday as IN + name contains 'beach', path sort",
                 c1.Where(TaggedIn(db, [1, 2, 3])).Where(Predicates.NameContains<RemoteFile>("beach")),
-                q => q.OrderBy(f => f.FullName)),
-            ("folder /photos/2014 and below, path sort", c1.Where(Predicates.InTree<RemoteFile>("/photos/2014")),
-                q => q.OrderBy(f => f.FullName)),
+                q => q.OrderBy(f => f.FullName)
+            ),
+            ("folder /photos/2014 and below, path sort", c1.Where(Predicates.InTree<RemoteFile>("/photos/2014")), q =>
+                q.OrderBy(f => f.FullName)
+            ),
         };
 
         var sql = new List<(string Title, string Text)>();
@@ -501,8 +669,16 @@ public static class Run
     }
 
     private static IQueryable<Row> Page(IQueryable<RemoteFile> ordered) =>
-        ordered.Take(101).Select(f => new Row(
-            f.FullName, f.Name, f.Extension, f.Size, f.LastWriteTime, f.TagLinks.Select(l => l.TagId).ToList()));
+        ordered
+            .Take(101)
+            .Select(f => new Row(
+                f.FullName,
+                f.Name,
+                f.Extension,
+                f.Size,
+                f.LastWriteTime,
+                f.TagLinks.Select(l => l.TagId).ToList()
+            ));
 
     /// <summary>Median of 5 runs after one warm-up run.</summary>
     private static async Task<double> Median(Func<Task> action)
@@ -536,8 +712,12 @@ public static class Run
             {
                 var parts = p[".param set ".Length..].Split(' ', 2);
                 var value = parts[1].Trim();
-                command.Parameters.AddWithValue(parts[0],
-                    value.StartsWith('\'') ? value.Trim('\'').Replace("''", "'") : long.Parse(value, CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue(
+                    parts[0],
+                    value.StartsWith('\'')
+                        ? value.Trim('\'').Replace("''", "'")
+                        : long.Parse(value, CultureInfo.InvariantCulture)
+                );
             }
             plans.Add("-- " + title);
             await using var reader = await command.ExecuteReaderAsync();
@@ -552,14 +732,22 @@ public static class Run
     /// <summary>A predicate written over T gives the same SQL as one written on the entity itself.</summary>
     private static void SameSql(MeasureDb db)
     {
-        var generic = db.RemoteFiles.Where(Predicates.SizeOver<RemoteFile>(5)).Where(Predicates.NameContains<RemoteFile>("a"))
-            .OrderBy(f => f.FullName).ToQueryString();
+        var generic = db
+            .RemoteFiles.Where(Predicates.SizeOver<RemoteFile>(5))
+            .Where(Predicates.NameContains<RemoteFile>("a"))
+            .OrderBy(f => f.FullName)
+            .ToQueryString();
         var pattern = "%a%";
         var bytes = 5L;
-        var direct = db.RemoteFiles.Where(f => f.Size > bytes).Where(f => EF.Functions.Like(f.Name, pattern, "\\"))
-            .OrderBy(f => f.FullName).ToQueryString();
-        Console.WriteLine(generic == direct
-            ? "generic predicates give the same SQL as predicates on the entity"
-            : $"DIFFERENT SQL:\n{generic}\n---\n{direct}");
+        var direct = db
+            .RemoteFiles.Where(f => f.Size > bytes)
+            .Where(f => EF.Functions.Like(f.Name, pattern, "\\"))
+            .OrderBy(f => f.FullName)
+            .ToQueryString();
+        Console.WriteLine(
+            generic == direct
+                ? "generic predicates give the same SQL as predicates on the entity"
+                : $"DIFFERENT SQL:\n{generic}\n---\n{direct}"
+        );
     }
 }

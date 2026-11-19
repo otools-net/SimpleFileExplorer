@@ -162,7 +162,7 @@ public static class ServiceCollectionExtensions
     /// still apply (<see cref="LegacyLogCategories"/>): in the server's container and in each library's.
     /// </summary>
     /// <summary>
-    /// The library's index of connections' files (agents/docs/development/connections-index-plan.md); the server's
+    /// The library's index of connections' files (agents/docs/features/connection-index.md); the server's
     /// part (<see cref="Connections.Indexing.ConnectionIndexSources"/>) is handed to each library by its host.
     /// </summary>
     private static void AddConnectionIndex(IServiceCollection services)

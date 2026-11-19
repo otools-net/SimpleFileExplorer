@@ -58,3 +58,10 @@ internal sealed record TransferSide(int? Connection, IReadOnlyList<string> Paths
 
 /// <summary>The folder a transfer's items go into (<see cref="Connection"/> null: the library).</summary>
 internal sealed record TransferTarget(int? Connection, string Path);
+
+/// <summary>The answer of <c>GET connections/{id}/search</c>: the library's page and the index's coverage.</summary>
+internal sealed class ConnectionSearchAnswer
+{
+    public SfeSearchPage Results { get; init; } = new();
+    public SfeIndexCoverage Coverage { get; init; }
+}

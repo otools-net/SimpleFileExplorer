@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,17 +15,16 @@ namespace Otools.Net.Sfe.Client;
 /// </summary>
 public sealed class SfeTags
 {
-    /// <summary>Files one tag change may name (the server's limit in every v1 version).</summary>
-    private const int ChangeBatch = 1000;
-
     /// <summary>Tags one listing may answer (the server's limit).</summary>
     private const int MaxListed = 1000;
 
     private readonly SfeTransport _transport;
+    private readonly FileTagCalls _files;
 
     internal SfeTags(SfeTransport transport)
     {
         _transport = transport;
+        _files = new FileTagCalls(transport, FilePlace.Library);
     }
 
     /// <summary>The tags, by name (at most the server's limit, 1000).</summary>
@@ -98,10 +96,7 @@ public sealed class SfeTags
     /// <param name="cancellationToken">Stops waiting for the server.</param>
     /// <exception cref="SfeNotFoundException">It isn't there, or the caller may not see its tags.</exception>
     public Task<SfeFileTags> GetFileTagsAsync(string path, CancellationToken cancellationToken = default) =>
-        _transport.ReadAsync<SfeFileTags>(
-            SfeRequest.Get(Routes.WithPath("file-tags", SfePath.Normalize(path))),
-            cancellationToken
-        );
+        _files.GetAsync(path, cancellationToken);
 
     /// <summary>
     /// Gives tags to files (right <c>tags.assign</c>); files not indexed yet are indexed on the way. Many files go
@@ -145,33 +140,12 @@ public sealed class SfeTags
     /// <exception cref="SfeApiException">
     /// A path is not a file the caller may tag, or a tag doesn't exist (400, <see cref="SfeApiException.Errors"/>).
     /// </exception>
-    public async Task<SfeTagChangeResult> ChangeAsync(
+    public Task<SfeTagChangeResult> ChangeAsync(
         IEnumerable<string> paths,
         IEnumerable<int> add,
         IEnumerable<int> remove,
         CancellationToken cancellationToken = default
-    )
-    {
-        var files = (paths ?? throw new ArgumentNullException(nameof(paths))).Select(SfePath.Normalize).ToList();
-        var added = (add ?? []).ToList();
-        var removed = (remove ?? []).ToList();
-        var answers = new List<FileTagChangeAnswer>();
-        for (var start = 0; start < files.Count; start += ChangeBatch)
-        {
-            var batch = files.GetRange(start, Math.Min(ChangeBatch, files.Count - start));
-            var body = new FileTagChange(batch, added, removed);
-            answers.Add(
-                await _transport
-                    .ReadAsync<FileTagChangeAnswer>(SfeRequest.Post(Routes.V1("file-tags"), body), cancellationToken)
-                    .ConfigureAwait(false)
-            );
-        }
-        return new SfeTagChangeResult(
-            answers.Sum(answer => answer.Added),
-            answers.Sum(answer => answer.Removed),
-            answers.SelectMany(answer => answer.Files).ToList()
-        );
-    }
+    ) => _files.ChangeAsync(paths, add, remove, cancellationToken);
 
     private static string Route(int id) => Routes.V1($"tags/{id.ToString(CultureInfo.InvariantCulture)}");
 }

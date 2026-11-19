@@ -1,11 +1,13 @@
 namespace Otools.Net.Sfe.Client;
 
-/// <summary>Where a search looks and how its results come (<see cref="SfeSearch"/>).</summary>
+/// <summary>
+/// Where a search looks and how its results come (<see cref="SfeSearch"/>, <see cref="SfeConnectionSearch"/>).
+/// </summary>
 public sealed class SfeSearchOptions
 {
     /// <summary>
-    /// The folder searched, with its sub-folders; <c>""</c> (the default): the whole library. A folder that isn't
-    /// there finds nothing.
+    /// The folder searched, with its sub-folders; <c>""</c> (the default): the whole library (or connection). A folder
+    /// that isn't there finds nothing.
     /// </summary>
     public string Folder { get; set; } = "";
 

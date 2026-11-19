@@ -14,3 +14,12 @@ internal sealed class FileTagChangeAnswer
     public int Removed { get; init; }
     public List<SfeFileTags> Files { get; init; } = [];
 }
+
+/// <summary>The body of <c>POST file-tags/scope</c>.</summary>
+internal sealed record ScopeTagChange(
+    string Path,
+    bool Recursive,
+    string? Query,
+    IReadOnlyList<int> Add,
+    IReadOnlyList<int> Remove
+);

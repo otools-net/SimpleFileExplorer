@@ -8,7 +8,7 @@ namespace Otools.Net.Sfe.Core.Connections.Indexing;
 /// The tag terms of a search of a connection's rows written from the link table's <c>TagId</c> index: each
 /// <c>f.TagLinks.Any(l => …)</c> of the shared builder becomes <c>f.Id IN (SELECT FileId FROM RemoteFileTags WHERE
 /// …)</c>, which starts from the tag's links; the <c>EXISTS</c> form walks the connection's rows (phase 0 of
-/// agents/docs/development/connections-index-plan.md: a tag's count 2 s on SQLite over 2.4 M rows). Only the
+/// agents/docs/features/connection-index.md: a tag's count 2 s on SQLite over 2.4 M rows). Only the
 /// connection's search goes through it: the library's search SQL is unchanged.
 /// </summary>
 internal sealed class RemoteTagTerms(SfeDbContext db) : ExpressionVisitor

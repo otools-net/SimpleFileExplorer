@@ -67,6 +67,8 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
     {
         var bytes = new MemoryStream();
         await part.CopyToAsync(bytes, cancellationToken);
+        // As Dropbox's SDK: the part's stream is closed once sent, so a caller reading it afterwards fails here too.
+        await part.DisposeAsync();
         await Call("upload-append", upload, () =>
         {
             var session = account.Uploads.GetValueOrDefault(upload) ?? throw NotFound(upload);

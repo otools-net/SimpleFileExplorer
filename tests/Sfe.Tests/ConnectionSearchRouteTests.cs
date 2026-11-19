@@ -139,6 +139,26 @@ public sealed class ConnectionSearchRouteTests
         Assert.IsEmpty(world.Account.Calls, "never asked of the provider");
     }
 
+    [TestMethod]
+    public async Task AConnectionTurnedOffKeepsItsRowsButNobodySearchesOrReadsTheirTags()
+    {
+        await SearchAsync(_admin, $"{V1}/connections/{_id}/search?q=beach");
+        await SyncedAsync();
+        var connections = _factory.Services.GetRequiredService<ConnectionService>();
+
+        await connections.UpdateAsync(_id, new(Disabled: true), null, Token);
+        using var search = await _admin.GetAsync($"{V1}/connections/{_id}/search?q=beach", Token);
+        using var tags = await _admin.GetAsync($"{V1}/connections/{_id}/file-tags?path=Readme.txt", Token);
+        using var scope = await _admin.GetAsync($"{V1}/connections/{_id}/file-tags/scope?path=Photos", Token);
+        await connections.UpdateAsync(_id, new(Disabled: false), null, Token);
+        var again = await SearchAsync(_admin, $"{V1}/connections/{_id}/search?q=beach");
+
+        Assert.AreEqual(HttpStatusCode.NotFound, search.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, tags.StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, scope.StatusCode);
+        Assert.AreEqual(2, again.Results.Total, "turned on again, its index is still there");
+    }
+
     private async Task<ConnectionSearchResults> SearchAsync(HttpClient client, string url)
     {
         using var answer = await client.GetAsync(url, Token);
