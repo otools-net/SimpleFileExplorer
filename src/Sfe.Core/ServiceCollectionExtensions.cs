@@ -5,9 +5,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Otools.Net.Sfe.Core.Access;
-using Otools.Net.Sfe.Core.Backup;
-using Otools.Net.Sfe.Core.Connections;
-using Otools.Net.Sfe.Core.Connections.Dropbox;
 using Otools.Net.Sfe.Core.Data;
 using Otools.Net.Sfe.Core.Editing;
 using Otools.Net.Sfe.Core.Files;
@@ -25,7 +22,6 @@ using Otools.Net.Sfe.Core.Tagging;
 using Otools.Net.Sfe.Core.Tasks;
 using Otools.Net.Sfe.Core.Thumbnails;
 using Otools.Net.Sfe.Core.Trickplay;
-using Otools.Net.Sfe.Core.Upgrades;
 
 namespace Otools.Net.Sfe.Core;
 
@@ -58,7 +54,34 @@ public static class ServiceCollectionExtensions
             ?? new ConfigurationChangeTokenSource<SfeOptions>(configuration)
         );
         services.AddSingleton(new TenantBinding(tenantId));
+        AddLibraryOptions(services, configuration, basePath);
 
+        var provider = configured.Database.Provider;
+        var connectionString = ConnectionStringOf(configuration, provider, contentRootPath);
+        services.AddDbContextFactory<SfeDbContext>(options =>
+            SfeDatabase.Configure(options, provider, connectionString)
+        );
+
+        AddIndexing(services);
+        AddMedia(services);
+        AddFiles(services);
+        AddTasks(services);
+
+        // The logs of the task runs: SFE's own entries from Debug up, whatever the configured levels (which apply to
+        // the console and the other providers).
+        services.AddSingleton<ILoggerProvider, TaskLogProvider>();
+        services.Configure<LoggerFilterOptions>(options => options.AddFilter<TaskLogProvider>("Sfe", LogLevel.Debug));
+        AddLegacyLogCategories(services);
+
+        return services;
+    }
+
+    /// <summary>
+    /// The library's <see cref="SfeOptions"/>: the configuration, its file type defaults, the saved settings over it
+    /// (by level when the accounts' database is there), and the thumbnail cache resolved against
+    /// <paramref name="basePath"/>.
+    /// </summary>
+    private static void AddLibraryOptions(IServiceCollection services, IConfiguration configuration, string basePath) =>
         services
             .AddOptions<SfeOptions>()
             .Bind(configuration.GetSection(SfeOptions.SectionName))
@@ -88,15 +111,26 @@ public static class ServiceCollectionExtensions
             })
             .ValidateOnStart();
 
-        var provider = configured.Database.Provider;
+    /// <summary>
+    /// The configured connection string, its SQLite file prepared (made absolute against
+    /// <paramref name="contentRootPath"/>).
+    /// </summary>
+    internal static string ConnectionStringOf(
+        IConfiguration configuration,
+        DatabaseProvider provider,
+        string? contentRootPath
+    )
+    {
         var connectionString = configuration.GetConnectionString(ConnectionStringName)
             ?? throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is not configured.");
-        if (provider == DatabaseProvider.Sqlite)
-            connectionString = SfeDatabase.PrepareSqlite(connectionString, contentRootPath);
-        services.AddDbContextFactory<SfeDbContext>(options =>
-            SfeDatabase.Configure(options, provider, connectionString)
-        );
+        return provider == DatabaseProvider.Sqlite
+            ? SfeDatabase.PrepareSqlite(connectionString, contentRootPath)
+            : connectionString;
+    }
 
+    /// <summary>The library's paths, listings, search and scans.</summary>
+    private static void AddIndexing(IServiceCollection services)
+    {
         services.AddSingleton<LibraryPaths>();
         services.AddSingleton<MediaClassifier>();
         services.AddSingleton<LibraryBrowser>();
@@ -106,6 +140,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<FolderDefaultTags>();
         services.AddSingleton<DirectoryIndexer>();
         services.AddSingleton<ScanCoordinator>();
+    }
+
+    /// <summary>
+    /// ffmpeg and what it makes: thumbnails, trickplay, video streams; the network folders kept awake; the tags.
+    /// </summary>
+    private static void AddMedia(IServiceCollection services)
+    {
         services.AddSingleton<Ffmpeg>();
         // Shared by every library's services when the server hosts several (the host registers its own first).
         services.TryAddSingleton<FfmpegLimits>();
@@ -117,6 +158,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<KeepAliveService>();
         services.AddSingleton<TagService>();
         services.AddSingleton<ScopeTagger>();
+    }
+
+    /// <summary>
+    /// What changes the library's files: edits, the trash, move and copy jobs, transfers to connections, uploads,
+    /// archives, properties.
+    /// </summary>
+    private static void AddFiles(IServiceCollection services)
+    {
         services.AddSingleton<EditedImages>();
         services.AddSingleton<WorkFolder>();
         services.AddSingleton<PathMoves>();
@@ -138,6 +187,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<FileContent>();
         services.AddSingleton<PropertyJobs>();
         services.AddSingleton<FileOperations>();
+    }
+
+    /// <summary>The background tasks, what they run (duplicates, similar videos, relinking), their schedules.</summary>
+    private static void AddTasks(IServiceCollection services)
+    {
         services.AddSingleton<DuplicateFinder>();
         services.AddSingleton<DuplicateRemover>();
         services.AddSingleton<SimilarVideoFinder>();
@@ -147,20 +201,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TaskHistory>();
         services.AddSingleton<BackgroundTasks>();
         services.AddSingleton<TaskScheduleService>();
-
-        // The logs of the task runs: SFE's own entries from Debug up, whatever the configured levels (which apply to
-        // the console and the other providers).
-        services.AddSingleton<ILoggerProvider, TaskLogProvider>();
-        services.Configure<LoggerFilterOptions>(options => options.AddFilter<TaskLogProvider>("Sfe", LogLevel.Debug));
-        AddLegacyLogCategories(services);
-
-        return services;
     }
 
-    /// <summary>
-    /// The log levels set for the categories named <c>Sfe…</c> before the namespaces became <c>Otools.Net.Sfe.*</c>
-    /// still apply (<see cref="LegacyLogCategories"/>): in the server's container and in each library's.
-    /// </summary>
     /// <summary>
     /// The library's index of connections' files (agents/docs/features/connection-index.md); the server's
     /// part (<see cref="Connections.Indexing.ConnectionIndexSources"/>) is handed to each library by its host.
@@ -185,152 +227,15 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// The connections' cache (agents/docs/features/connection-previews.md): one for the server, in
-    /// <c>{Thumbnails:CacheDirectory}/connections</c> of the configuration (not a library's own cache folder).
+    /// The log levels set for the categories named <c>Sfe…</c> before the namespaces became <c>Otools.Net.Sfe.*</c>
+    /// still apply (<see cref="LegacyLogCategories"/>): in the server's container and in each library's.
     /// </summary>
-    private static void AddConnectionCache(IServiceCollection services, IConfigurationSection section, string root)
-    {
-        var cache = section.GetSection(nameof(SfeOptions.Thumbnails)).Get<ThumbnailOptions>()?.CacheDirectory
-            is { Length: > 0 } configured
-            ? configured
-            : new ThumbnailOptions().CacheDirectory;
-        var folder = Path.Combine(ThumbnailOptions.ResolveCacheDirectory(cache, root), "connections");
-        services.AddSingleton(sp => new Connections.Previews.ConnectionCacheStore(
-            folder,
-            sp.GetRequiredService<SettingLayers>(),
-            sp.GetRequiredService<TimeProvider>(),
-            sp.GetRequiredService<ILogger<Connections.Previews.ConnectionCacheStore>>()
-        ));
-        services.AddSingleton<Connections.Previews.ConnectionThumbnailStore>();
-        services.AddSingleton<Connections.Previews.ConnectionContentCache>();
-        services.AddSingleton<Connections.Previews.RemoteThumbnailBatches>();
-    }
-
-    private static void AddLegacyLogCategories(IServiceCollection services) =>
+    internal static void AddLegacyLogCategories(IServiceCollection services) =>
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IPostConfigureOptions<LoggerFilterOptions>, LegacyLogCategories>()
         );
 
-    /// <summary>
-    /// Accounts, groups, rights and libraries: one set for the whole server, in the database of
-    /// <c>ConnectionStrings:Sfe</c> (<see cref="AccessDbContext"/>).
-    /// </summary>
-    public static IServiceCollection AddSfeAccess(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        string? contentRootPath = null
-    )
-    {
-        AddLegacyLogCategories(services);
-        var section = configuration.GetSection(SfeOptions.SectionName);
-        services.AddOptions<SetupOptions>().Bind(section.GetSection(nameof(SfeOptions.Setup)));
-        // Without a configured setup code, the one the server made itself (written at start-up when needed).
-        var codeFile = section.GetSection(nameof(SfeOptions.Setup)).Get<SetupOptions>()?.CodeFile
-            is { Length: > 0 } file
-            ? file
-            : new SetupOptions().CodeFile;
-        var codePath = Path.GetFullPath(
-            LibraryPaths.ExpandHome(codeFile),
-            contentRootPath ?? Directory.GetCurrentDirectory()
-        );
-        services.AddSingleton(sp => new GeneratedSetupCode(
-            codePath,
-            sp.GetRequiredService<ILogger<GeneratedSetupCode>>()
-        ));
-        services.AddSingleton<IPostConfigureOptions<SetupOptions>>(sp => sp.GetRequiredService<GeneratedSetupCode>());
-        services.AddSingleton<IOptionsChangeTokenSource<SetupOptions>>(sp =>
-            sp.GetRequiredService<GeneratedSetupCode>()
-        );
-        services.AddOptions<SecurityOptions>().Bind(section.GetSection(nameof(SfeOptions.Security)));
-        services.AddOptions<RightOptions>().Bind(section.GetSection(nameof(SfeOptions.Rights)));
-        services.AddOptions<TenantOptions>().Bind(section.GetSection(nameof(SfeOptions.Tenants)));
-        services.AddOptions<BackupOptions>().Bind(section.GetSection(nameof(SfeOptions.Backup)));
-
-        var provider = section.GetSection(nameof(SfeOptions.Database)).Get<DatabaseOptions>()?.Provider
-            ?? DatabaseProvider.SqlServer;
-        var connectionString = configuration.GetConnectionString(ConnectionStringName)
-            ?? throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is not configured.");
-        if (provider == DatabaseProvider.Sqlite)
-            connectionString = SfeDatabase.PrepareSqlite(connectionString, contentRootPath);
-        services.AddDbContextFactory<AccessDbContext>(options =>
-            SfeDatabase.Configure(options, provider, connectionString, AccessDbContext.MigrationsHistoryTable)
-        );
-
-        services.AddSingleton<AccessChanges>();
-        services.AddSingleton<AccessDatabaseInitializer>();
-        services.AddSingleton<AccessService>();
-        services.AddSingleton<RightsEvaluator>();
-        services.AddSingleton<IUserDirectory, LocalUserDirectory>();
-        services.AddSingleton<SignInService>();
-        services.AddSingleton<SetupService>();
-        // Its codes are kept beside the setup code (a service has no console to show them in).
-        services.AddSingleton(sp => new AccountRecovery(
-            sp.GetRequiredService<IDbContextFactory<AccessDbContext>>(),
-            sp.GetRequiredService<AccessService>(),
-            Path.Combine(Path.GetDirectoryName(codePath)!, "recovery-code.txt"),
-            sp.GetRequiredService<ILogger<AccountRecovery>>()
-        ));
-        services.AddSingleton<QuickLinkService>();
-        services.AddSingleton<FolderRuleService>();
-        services.AddSingleton<AccessTokens>();
-        // Connections to other storage: the kinds registered (IConnectionProvider) and the door their calls leave by.
-        services.TryAddSingleton(_ => new OutboundPolicy());
-        services.AddSingleton<ConnectionProviders>();
-        // The secrets of the providers' apps typed on the settings page, beside the setup code.
-        services.AddSingleton(new ProviderSecrets(Path.Combine(Path.GetDirectoryName(codePath)!, "connections")));
-        services.AddSingleton<IConnectionProvider, DropboxProvider>();
-        // Their credentials are protected by the Api's keys (ICredentialProtector, AddSfeSecurity).
-        services.AddSingleton<ConnectionService>();
-        services.AddSingleton<ConnectionSharing>();
-        services.AddSingleton<ConnectionRuleService>();
-        services.AddSingleton<ConnectionAccess>();
-        services.AddSingleton<ConnectionPolicies>();
-        services.TryAddSingleton(TimeProvider.System);
-        services.AddSingleton<PendingSignIns>();
-        services.AddSingleton<ConnectionSignInFlow>();
-        services.AddSingleton<RemoteListings>();
-        services.AddSingleton<ConnectionGates>();
-        services.AddSingleton<Transfers.TransferCalls>();
-        services.AddSingleton<RemoteUploads>();
-        // What SFE changes in connections, told to every library's index of them and to the change feeds.
-        services.AddSingleton<ConnectionChanges>();
-        services.AddSingleton<Connections.Indexing.ConnectionIndexSources>();
-        AddConnectionCache(services, section, contentRootPath ?? Directory.GetCurrentDirectory());
-        // The version the install belongs to (read before anything else at start-up), and its backups.
-        services.AddSingleton<InstalledVersion>();
-        services.AddSingleton<BackupWriter>();
-
-        // Settings by level: the server's settings file, the libraries' and users' rows.
-        AddSettingsStore(
-            services,
-            section.Get<SfeOptions>() ?? new SfeOptions(),
-            contentRootPath ?? Directory.GetCurrentDirectory()
-        );
-        services.AddSingleton<SettingRows>();
-        services.AddSingleton<SettingLayers>();
-
-        // The server's log: every logger's entries (also the libraries', TenantHost), in the database and daily files.
-        var logsDirectory = section.GetSection(nameof(SfeOptions.Logs)).Get<LogOptions>()?.Directory
-            is { Length: > 0 } logs
-            ? logs
-            : new LogOptions().Directory;
-        logsDirectory = Path.GetFullPath(
-            LibraryPaths.ExpandHome(logsDirectory),
-            contentRootPath ?? Directory.GetCurrentDirectory()
-        );
-        services.AddSingleton<AuditLogProvider>();
-        services.AddSingleton<ILoggerProvider>(sp => sp.GetRequiredService<AuditLogProvider>());
-        services.AddSingleton(sp => new AuditLogService(
-            sp.GetRequiredService<AuditLogProvider>(),
-            sp.GetRequiredService<IDbContextFactory<AccessDbContext>>(),
-            sp.GetRequiredService<SettingLayers>(),
-            logsDirectory,
-            sp.GetRequiredService<ILogger<AuditLogService>>()
-        ));
-        return services;
-    }
-
-    private static void AddSettingsStore(IServiceCollection services, SfeOptions configured, string basePath)
+    internal static void AddSettingsStore(IServiceCollection services, SfeOptions configured, string basePath)
     {
         var settingsFile = Path.GetFullPath(LibraryPaths.ExpandHome(configured.SettingsFile), basePath);
         services.TryAddSingleton(sp => new SettingsStore(

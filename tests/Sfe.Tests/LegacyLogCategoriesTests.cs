@@ -53,7 +53,7 @@ public sealed class LegacyLogCategoriesTests
     }
 
     /// <summary>
-    /// The server's container (<see cref="ServiceCollectionExtensions.AddSfeAccess"/>) with these settings and a
+    /// The server's container (<see cref="AccessServiceCollectionExtensions.AddSfeAccess"/>) with these settings and a
     /// provider that takes every level, so that <see cref="ILogger.IsEnabled"/> tells what the filters let through.
     /// </summary>
     private static ServiceProvider Services(params (string Key, string Value)[] settings)

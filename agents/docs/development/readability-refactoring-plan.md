@@ -179,7 +179,9 @@ Tidy, one component per commit, worst first (add one line per component when sta
 - [x] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`: one `Configure<Area>` method per group
   of tables, order kept (not `IEntityTypeConfiguration` classes: the files already used methods); both models "No
   changes"
-- [ ] `AddSfeCore`, `AddSfeSecurity`
+- [x] `AddSfeCore`, `AddSfeSecurity` (and `AddSfeAccess`, 109): one `Add<Area>` method per area, order kept;
+  `AddSfeAccess` moved to `AccessServiceCollectionExtensions` (server-wide services; the file was 416 lines), the
+  connection string read once (`ConnectionStringOf`)
 - [ ] `ArchiveExtractor.Extract`
 - [ ] `EditableSettings.From`, `ApplyTo`; `SettingsService.Validate` and its 99-line lambda
 - [ ] `Uploads.FinishAsync`, `AppendAsync`
