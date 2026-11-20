@@ -97,6 +97,20 @@ describe('ImageEditorDialog', () => {
         expect(element.querySelector('.editor-panel')!.textContent).toContain('in “Edited”');
     });
 
+    it('stays closed and says why when canvases cannot be read back (Firefox resistFingerprinting)', async () => {
+        await setUp();
+        fakeCanvases({ readable: false });
+
+        await open();
+
+        expect(dialog().open).toBe(false);
+        expect(loader).not.toHaveBeenCalled();
+        expect(api.editedImageAccess).not.toHaveBeenCalled();
+        const toast = TestBed.inject(ToastService).toasts().at(-1)!;
+        expect(toast.error).toBe(true);
+        expect(toast.message).toContain('privacy.resistFingerprinting');
+    });
+
     it('frames by numbers, following the aspect ratio', async () => {
         await setUp();
         await open();

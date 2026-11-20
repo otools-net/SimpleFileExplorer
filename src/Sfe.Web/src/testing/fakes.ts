@@ -329,14 +329,25 @@ export function settingsValues(): SettingsValues {
 
 /**
  * Canvases whose 2D context records what is drawn ([canvas, ...drawImage arguments]) and whose `toBlob` gives a blob of
- * the type asked for: jsdom draws nothing. Undone by `vi.restoreAllMocks()`.
+ * the type asked for: jsdom draws nothing. `getImageData` gives back the colour of the last `fillRect` (the canvas
+ * probe), or white everywhere when `readable` is false (Firefox's resistFingerprinting). Undone by
+ * `vi.restoreAllMocks()`.
  */
-export function fakeCanvases(): { drawn: unknown[][] } {
+export function fakeCanvases({ readable = true } = {}): { drawn: unknown[][] } {
     const drawn: unknown[][] = [];
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (this: HTMLCanvasElement) {
-        return {
+        let filled = [0, 0, 0, 0];
+        const context = {
+            fillStyle: '',
             drawImage: (...args: unknown[]) => drawn.push([this, ...args]),
-        } as unknown as CanvasRenderingContext2D;
+            fillRect: () => (filled = [...(context.fillStyle.match(/\d+/g) ?? []).map(Number), 255]),
+            getImageData: (_x: number, _y: number, width: number, height: number) => ({
+                data: Uint8ClampedArray.from({ length: width * height * 4 }, (_, i) =>
+                    readable ? filled[i % 4] : 255,
+                ),
+            }),
+        };
+        return context as unknown as CanvasRenderingContext2D;
     } as never);
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (
         this: HTMLCanvasElement,

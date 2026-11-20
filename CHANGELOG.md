@@ -215,6 +215,13 @@ Connections:
   off says it is not available. The folder picker of Move to… / Copy to… shows the reason instead of an empty folder,
   and Properties and the folder rules' picker of such a connection show the error.
 
+Pictures:
+
+- **Firefox with `privacy.resistFingerprinting` no longer saves blank pictures**: the picture editor and the
+  player's "Save this frame" check first that the browser lets the page read the pictures it draws. When it doesn't,
+  the editor doesn't open and nothing is saved; a message says why and how to allow it (Firefox asks for permission
+  in the address bar; allow it, then try again).
+
 ## 1.85.1
 
 ### Fixed

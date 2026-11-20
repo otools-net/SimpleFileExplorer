@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Api, ApiError, editingSession } from '../core/api.service';
+import { canvasCheck } from '../core/canvas-probe';
 import { ConfigService } from '../core/config.service';
 import { formatSize } from '../core/format';
 import { LibraryItem } from '../core/models';
@@ -60,6 +61,7 @@ export class ImageEditorDialog {
     private readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
     private readonly loadPicture = inject(PICTURE_LOADER);
+    private readonly canvasReadable = canvasCheck();
     private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
     private readonly canvasHost = viewChild.required<ElementRef<HTMLElement>>('canvasHost');
     private readonly cropLayer = viewChild<ElementRef<HTMLElement>>('cropLayer');
@@ -138,6 +140,7 @@ export class ImageEditorDialog {
 
     /** Opens the editor on a picture of the listing (its original, from this server). */
     async open(item: LibraryItem): Promise<void> {
+        if (!this.canvasReadable()) return; // Save would write a blank picture: not opened (canvas-probe.ts)
         const generation = ++this.generation;
         this.item.set(item);
         this.picture.set(null);

@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { setMediaQuery, settle } from '../../testing/fakes';
+import { fakeCanvases, setMediaQuery, settle } from '../../testing/fakes';
+import { ToastService } from '../core/toast.service';
 import { VideoStream } from '../core/config.service';
 import { StreamProbe } from '../core/config.models';
 import { By } from '@angular/platform-browser';
@@ -37,6 +38,7 @@ describe('VideoPlayerComponent', () => {
     });
 
     afterEach(() => {
+        vi.unstubAllGlobals();
         TestBed.resetTestingModule(); // destroys the players while the media methods are still stubbed
         vi.restoreAllMocks();
     });
@@ -690,5 +692,42 @@ describe('VideoPlayerComponent', () => {
         expect(player().handleKey(new KeyboardEvent('keydown', { key: 'r', ctrlKey: true }))).toBe(false);
         await settle();
         expect(video().loop).toBe(false);
+    });
+
+    describe('Save this frame', () => {
+        function decoded(): void {
+            Object.defineProperty(video(), 'videoWidth', { value: 1920 });
+            Object.defineProperty(video(), 'videoHeight', { value: 1080 });
+            Object.defineProperty(video(), 'readyState', { value: 4 });
+        }
+
+        it('downloads the frame as a PNG when the browser lets canvases be read back', async () => {
+            fakeCanvases();
+            vi.stubGlobal(
+                'URL',
+                Object.assign(class extends URL {}, { createObjectURL: () => 'blob:frame', revokeObjectURL: () => {} }),
+            );
+            vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+            await create(false);
+            decoded();
+
+            expect(player().handleKey(new KeyboardEvent('keydown', { key: 's' }))).toBe(true);
+
+            expect(HTMLCanvasElement.prototype.toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/png');
+            expect(TestBed.inject(ToastService).toasts()).toEqual([]);
+        });
+
+        it('says why and saves nothing when the browser refuses (Firefox resistFingerprinting)', async () => {
+            fakeCanvases({ readable: false });
+            await create(false);
+            decoded();
+
+            player().handleKey(new KeyboardEvent('keydown', { key: 's' }));
+
+            expect(HTMLCanvasElement.prototype.toBlob).not.toHaveBeenCalled();
+            const toast = TestBed.inject(ToastService).toasts().at(-1)!;
+            expect(toast.error).toBe(true);
+            expect(toast.message).toContain('privacy.resistFingerprinting');
+        });
     });
 });

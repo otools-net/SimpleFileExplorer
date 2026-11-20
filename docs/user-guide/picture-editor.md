@@ -56,4 +56,7 @@ next to themselves. The new file is added to the index at once, so search finds 
 - The saved picture keeps no metadata of the original (EXIF date, camera, location); a photo's orientation is applied
   to its pixels.
 - A browser can only edit pictures it can show, and phones may refuse very large ones.
+- The editor needs the browser to let the page read the pictures it draws. Firefox refuses when its
+  `privacy.resistFingerprinting` setting is on: the editor then doesn't open and a message says why. Firefox asks for
+  the permission with a picture icon in the address bar: allow it, then open the editor again.
 - Saves are limited to 200 MB; behind IIS, its own request limit (30 MB by default) applies first.

@@ -12,6 +12,7 @@ import {
     signal,
     viewChild,
 } from '@angular/core';
+import { canvasCheck } from '../core/canvas-probe';
 import { formatDuration as formatTime } from '../core/format';
 import { VideoStream } from '../core/config.service';
 import { StreamProbe } from '../core/config.models';
@@ -102,6 +103,8 @@ export class VideoPlayerComponent {
     readonly unsupported = output<boolean>();
 
     protected readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    /** "Save this frame" reads the canvas back: asked first (canvas-probe.ts). */
+    private readonly canvasReadable = canvasCheck();
     private readonly videoRef = viewChild.required<ElementRef<HTMLVideoElement>>('video');
     private readonly seekRef = viewChild.required<ElementRef<HTMLInputElement>>('seek');
     private readonly previewRef = viewChild.required<ElementRef<HTMLElement>>('preview');
@@ -524,6 +527,7 @@ export class VideoPlayerComponent {
 
     /** Downloads the frame on screen (`downloadFrame`), named after the video and the time, with a flash. */
     protected saveFrame(): void {
+        if (!this.canvasReadable()) return;
         const time = formatTime(this.currentTime()).replaceAll(':', '-');
         const fileName = `${this.name().replace(/\.[^./]+$/, '')} ${time}.png`;
         if (!downloadFrame(this.video, fileName, this.host)) return;

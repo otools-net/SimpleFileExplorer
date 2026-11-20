@@ -1,6 +1,7 @@
 # Video player (viewer and player page)
 
-Code: `src/app/player/` (`VideoPlayerComponent`, `PlayerPageComponent` `player?path=&t=`), `src/app/library/viewer/`.
+Code: `src/app/player/` (`VideoPlayerComponent`, `PlayerPageComponent` `player?path=&t=`, `frame-capture.ts`: Save this
+frame, after the canvas probe of [picture-editor](picture-editor.md)), `src/app/library/viewer/`.
 Streams: [video-streams.md](video-streams.md).
 
 - `VideoPlayerComponent` is shared by the viewer and the player page; the seek icons get the step

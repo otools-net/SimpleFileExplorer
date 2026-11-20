@@ -13,7 +13,7 @@ Videos and audio files play in SFE's own player, in the [viewer](viewer.md) or i
 | Back / forward | J / L | Jumps by **Jump back / forward** (10 s by default, [Playback](../administration/playback.md)) |
 | Speed (`1×`) | | Lists the rates, 0.5× to 2× |
 | Loop | R | Starts the video over when it ends; whether it is on when a video opens is the **Loop videos** setting (off by default) |
-| Camera | S | Saves the frame on screen as a PNG at the video's resolution, named after the video and the position (e.g. `Holiday 1-23.png`) |
+| Camera | S | Saves the frame on screen as a PNG at the video's resolution, named after the video and the position (e.g. `Holiday 1-23.png`); in Firefox with `privacy.resistFingerprinting`, allow the permission it asks for first (see [picture editor](picture-editor.md#good-to-know)) |
 | Mute | M | |
 | Cinema mode | C | In the viewer: the player spans the whole width of the window and the video is enlarged to it (as YouTube's theater mode); press again for the default view. Remembered by this browser |
 | Fullscreen | F | On a phone or tablet a wide video turns the screen sideways, and back when you leave fullscreen (where the browser allows it, e.g. Chrome on Android; an iPhone turns by itself) |

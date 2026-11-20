@@ -35,3 +35,16 @@ Code: client `src/app/editor/` (`ImageEditorDialog`, `edits.ts`, `crop.ts`); ser
   `api/` addresses only (tiles, viewer), so the `<img>`s fetch it again. Other addresses stay unversioned (specs
   and the animated hover compare them).
 - `editor.outputFolder` is per library (`PerLibraryKeys`); `/api/config` `editor` is null without `files.edit`.
+- **Canvas read-back asked first** (`core/canvas-probe.ts`, 2.0 step 1.2): the editor's Save (`encode` = `toBlob`)
+  and the player's "Save this frame" (`player/frame-capture.ts`) read a canvas back. Firefox with
+  `privacy.resistFingerprinting` gives a blank (or random) picture instead, and shows its permission prompt only for a
+  read made inside a click or key press. So `canvasCheck()` runs synchronously at the start of `open()` and
+  `saveFrame()` (before any `await`): draws a known colour on a 32×32 canvas (not a tiny one: those may be let
+  through), reads it with `getImageData` (synchronous, same prompt as `toBlob`), ±16 per channel allowed (Firefox's
+  milder protection nudges values). Refused (or no 2D context, or a throw) → an error toast `CANVAS_REFUSED` (15 s),
+  the editor isn't opened, no frame saved. Tests: `fakeCanvases({ readable: false })` (white read-back).
+- **Manual Firefox check** (no automated browser has the prompt): `about:config` →
+  `privacy.resistFingerprinting` = true; open a picture → Crop… → the toast shows and the prompt icon appears in the
+  address bar; allow it ("Allow" on the canvas prompt), Crop… again → the editor opens; Save a copy → the copy is
+  the cropped picture, not white. Same with a video: S → toast, allow, S → the PNG is the frame. Set the preference
+  back to false.

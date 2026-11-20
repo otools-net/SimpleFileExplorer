@@ -31,11 +31,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   folder picker shows the reason; Everywhere, Properties and folder rules already showed rejections. POSTs keep
   409-as-data (`PlaceFiles.answered`). Before it, a refactoring moved `ApiError` and its helpers to `core/api-error.ts`
   (re-exported) to keep `api.service.ts` within its readability baseline. No screenshot (an error state).
-- [ ] **1.2 Canvas permission asked before the work** (IDEA-015, S). Only two read-backs exist: `editor/edits.ts`
-  `encode()` (picture editor Save) and `player/video-player.component.ts` `saveFrame()` ("Save this frame", the
-  "snapshot"). Add a probe helper (1×1 canvas `toBlob` inside the user's click) run when the picture editor opens
-  and before a frame is saved; if refused, explain (Firefox `privacy.resistFingerprinting`) and don't open the
-  editor. Manual Firefox check written in the feature note.
+- [x] **1.2 Canvas permission asked before the work** (IDEA-015, S). Done 2026-11-20: `core/canvas-probe.ts`
+  (`canvasCheck()`: 32×32 canvas, known colour, `getImageData` read back synchronously in the click — same Firefox
+  prompt as `toBlob`, no PNG to decode; ±16 per channel) at the start of `ImageEditorDialog.open` and
+  `saveFrame`; refused → error toast, editor not opened, nothing saved. Manual Firefox check in picture-editor.md.
+  e2e `picture-editor.spec.ts` (the probe passes in Chromium and WebKit). Refactoring first: `CropDrag` to
+  `crop.ts`, frame download to `player/frame-capture.ts`. No screenshot (a toast).
 - [ ] **1.3 Partial files marked** (IDEA-013 part, S). Copies and transfers write `name.sfe-partial` in the
   destination folder (`FileJobs`, `LibraryTransferEndpoint`); listings show them as ordinary files. Mark them
   "being written" (row mark, no open/preview), keep them out of search results and duplicates.
@@ -208,7 +209,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-20):** step 1.1 done (see its tick). Next: **1.2** (canvas probe), then 1.3.
+- **Last session (2026-11-20):** steps 1.1 and 1.2 done (see their ticks). Next: **1.3** (partial files marked).
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
   (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and
@@ -221,6 +222,9 @@ Where the work stands, for a session that picks it up. Update it at the end of e
   - The e2e web server's first build can fail with "No file exists for the asset … wwwroot\chunk-….js" (stale
     wwwroot after a client build); the run's own second build succeeds.
   - No Python on this machine: scripted edits with `node -e` or the edit tools.
+  - A refactoring that frees lines: write the baseline, but the step after it may raise it back a little (as 1.1 and
+    1.2 did); `measure.mjs --write-baseline` alone writes it (with `--check` it doesn't).
+  - Client specs run with `npm test -- --include <path>` (not `npx vitest`).
 
 ## Decisions
 
