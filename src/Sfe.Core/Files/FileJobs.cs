@@ -715,7 +715,7 @@ public sealed class FileJobs(
                     path,
                     null,
                     FileOperationStatus.Failed,
-                    $"“{name}” could not be extracted: {Lower(ex.Message)}"
+                    $"“{name}” could not be extracted: {JobMessages.Lower(ex.Message)}"
                 );
             }
 
@@ -822,7 +822,7 @@ public sealed class FileJobs(
             extracted.Folders,
             extracted.LeftOutCount
         );
-        return new FileJobItem(path, newPath, FileOperationStatus.Done, ExtractMessage(extracted, skipped));
+        return new FileJobItem(path, newPath, FileOperationStatus.Done, JobMessages.Extracted(extracted, skipped));
     }
 
     /// <summary>
@@ -998,7 +998,7 @@ public sealed class FileJobs(
                 label,
                 newPath,
                 FileOperationStatus.Done,
-                CompressMessage(summary, zipLength, job.Password is not null)
+                JobMessages.Compressed(summary, zipLength, job.Password is not null)
             );
         }
         finally
@@ -1008,58 +1008,6 @@ public sealed class FileJobs(
     }
 
     /// <summary>What a compression says when it is done: what went in, the ratio, what was left out.</summary>
-    private static string CompressMessage(ArchiveSummary summary, long zipLength, bool encrypted)
-    {
-        var ratio = summary.Bytes > 0 ? $" ({zipLength * 100.0 / summary.Bytes:0} %)" : string.Empty;
-        var text =
-            $"{Count(summary.Files, "file")}: {FormatBytes(summary.Bytes)} → "
-            + $"{FormatBytes(zipLength)}{ratio}{(encrypted ? ", encrypted" : string.Empty)}.";
-        if (summary.LeftOut.Count > 0)
-            text += $" Left out {Count(summary.LeftOut.Count, "item")} (listed in “{Archives.LeftOutEntry}”).";
-        return text;
-    }
-
-    /// <summary>
-    /// What an extraction says when it is done: what it wrote, what it left out and why, where it stopped.
-    /// </summary>
-    private static string ExtractMessage(ExtractResult result, int skipped)
-    {
-        var parts = new List<string>
-        {
-            result.Files + result.Folders == 0
-                ? "Nothing was extracted."
-                : $"{Count(result.Files, "file")} ({FormatBytes(result.Bytes)}).",
-        };
-        if (result.LeftOutCount > 0)
-        {
-            var named = string.Join("; ", result.LeftOut.Take(5).Select(l => $"“{l.Name}”: {l.Reason}"));
-            parts.Add(
-                $"Left out {Count(result.LeftOutCount, "entry", "entries")}: "
-                    + $"{named}{(result.LeftOutCount > 5 ? $"; and {result.LeftOutCount - 5:N0} more" : string.Empty)}."
-            );
-        }
-        if (skipped > 0)
-            parts.Add($"{Count(skipped, "item")} not placed: there is one of that name in the folder.");
-        if (result.Stopped is { } stopped)
-            parts.Add(stopped);
-        return string.Join(' ', parts);
-    }
-
-    private static string Count(long count, string one, string? many = null) =>
-        count == 1 ? $"1 {one}" : $"{count:N0} {many ?? one + "s"}";
-
-    private static string FormatBytes(long bytes) =>
-        bytes switch
-        {
-            < 1024 => $"{bytes} B",
-            < 1024 * 1024 => $"{bytes / 1024.0:0.#} KB",
-            < 1024L * 1024 * 1024 => $"{bytes / 1024.0 / 1024:0.#} MB",
-            _ => $"{bytes / 1024.0 / 1024 / 1024:0.##} GB",
-        };
-
-    private static string Lower(string message) =>
-        message.Length > 0 ? char.ToLowerInvariant(message[0]) + message[1..] : message;
-
     /// <summary>The archive's name without what makes it an archive: <c>trip.tar.gz</c> → <c>trip</c>.</summary>
     internal static string StemOf(string name)
     {
