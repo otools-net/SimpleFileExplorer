@@ -3,7 +3,14 @@ import { ItemKind } from './models';
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 const timeFormat = new Intl.DateTimeFormat(undefined, { timeStyle: 'short' });
 const numberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
-const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+/** Size units, powers of 1024 (ui-texts), translatable ("Ko", "Mo"… in French). */
+const units = [
+    $localize`:size unit, bytes:B`,
+    $localize`:size unit, 1024 bytes:KB`,
+    $localize`:size unit, 1024² bytes:MB`,
+    $localize`:size unit, 1024³ bytes:GB`,
+    $localize`:size unit, 1024⁴ bytes:TB`,
+];
 
 export function formatSize(bytes: number | null | undefined): string {
     if (bytes === null || bytes === undefined) return '';
@@ -51,6 +58,11 @@ export function formatElapsed(seconds: number): string {
           : `${total}s`;
 }
 
+/**
+ * "3 files". Not translatable: write the whole sentence as an ICU message instead, with `icu()`
+ * (`core/i18n/icu.ts`); the calls go as each area's texts are moved (release 2.0 steps 2.3–2.8).
+ * @deprecated Use `icu($localize`{count, plural, one {# file} other {# files}} deleted.`, { count })`.
+ */
 export function plural(count: number, singular: string, pluralForm = `${singular}s`): string {
     return `${count.toLocaleString()} ${count === 1 ? singular : pluralForm}`;
 }

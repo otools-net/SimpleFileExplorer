@@ -12,12 +12,14 @@
       "schematics": {},
       "root": "",
       "sourceRoot": "src",
+      "i18n": { "sourceLocale": "en-GB" },
       "prefix": "sfe",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
+            "polyfills": ["@angular/localize/init"],
             "tsConfig": "tsconfig.app.json",
             "allowedCommonJsDependencies": ["papaparse", "jszip"],
             "define": { "process.env.NODE_ENV": "'production'" },
@@ -111,6 +113,10 @@
           "options": {
             "setupFiles": ["src/testing/setup.ts"]
           }
+        },
+        "extract-i18n": {
+          "builder": "@angular/build:extract-i18n",
+          "options": { "buildTarget": "sfe:build" }
         }
       }
     }

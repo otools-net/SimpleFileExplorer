@@ -68,13 +68,18 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   found strings already mostly UK, `…` and curly quotes everywhere, errors as "Could not …"; leftovers to fix in
   2.3–2.8: "Colors"/"Color" (theme hint, tag docs), "guest" for the person (→ visitor), "login" (→ sign in),
   "job" in user texts (→ operation / task), terse noun-phrase hints. No code, no changelog line (agents/ only).
-- [ ] **2.2 Translation-ready strings: infrastructure** (IDEA-010, M). Owner's choice: **prepare only, English
-  ships**. Pick the library (Angular `$localize` + `@angular/localize` or Transloco — check bundle size and runtime
-  switch; npm first), English source file, ICU plurals replacing `plural()` in `core/format.ts`, size units through
-  the same files, an extraction command in `agents/tools/`, a test that fails on a new hard-coded string in a
-  template. Language setting (user level, browser default) only once a second language exists.
+- [x] **2.2 Translation-ready strings: infrastructure** (IDEA-010, M). Done 2026-11-21: `@angular/localize`
+  (`i18n` / `$localize`, polyfill ~0.5 KB, `sourceLocale` en-GB) + `intl-messageformat` (~10 KB) behind
+  `icu()` (`core/i18n/icu.ts`: plural rules of the text's language, numbers of the browser's region); size units
+  through `$localize`; `plural()` deprecated (its 42 files go in 2.3–2.8); source file `src/locale/messages.xlf`
+  (XLIFF 2.0) by `agents/tools/i18n/extract.mjs` (`--check`); `hard-coded-texts.spec.ts` counts unmarked template
+  texts per file against `testing/hard-coded-texts.json` (1,523 in 99 files). Note [translations](translations.md).
+  No language setting (none until a second language). Fixed on the way: a quote in `comfort.spec.ts` (1.4) that
+  broke the client test build.
 - [ ] **2.3–2.8 Strings extracted and texts rewritten, area by area** (IDEA-010 + IDEA-011, M each). Each string is
-  touched once: moved to the translation file **and** rewritten to the glossary in the same commit. Settings get an
+  touched once: marked (`i18n`, `$localize`, `icu()` for counts, [translations](translations.md)) **and** rewritten
+  to the glossary in the same commit; the area's `plural()` calls go, its counts in `hard-coded-texts.json` drop
+  (write it again), `extract.mjs` writes the source file. Settings get an
   optional `help` field in `SettingField` rendered with `shared/help.component.ts` (`sfe-help`, already click/tap
   and keyboard accessible) for long explanations. Areas: 2.3 settings schema (`settings-schema.ts`, ~105 keys);
   2.4 administration and access; 2.5 library, listing and menus; 2.6 files dialogs, uploads, operations;
@@ -230,8 +235,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-20):** steps 1.1 to 2.1 done (see their ticks). Next: **2.2** (translation
-  infrastructure: pick the library, npm first); 2.3–2.8 rewrite texts to [ui-texts](ui-texts.md).
+- **Last session (2026-11-21):** steps 1.1 to 2.2 done (see their ticks). Next: **2.3** (settings schema: texts
+  marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md) says how), then 2.4–2.8.
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
   (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and
@@ -252,6 +257,8 @@ Where the work stands, for a session that picks it up. Update it at the end of e
   - Scripted C# edits from `node -e` in Git Bash: write the script to a file with a quoted heredoc (`<<'EOF'`);
     `
 ` inside JS template strings becomes a real newline in the C# source otherwise.
+  - Texts marked for translation: `node agents/tools/i18n/extract.mjs` after, `--check` before each commit (~20 s
+    each); `SFE_TEXTS_BASELINE=write npm test -- --include src/app/core/i18n` when an area's unmarked texts drop.
   - The first `dotnet test` after a client build (`npm test` builds too) fails on a stale `wwwroot` chunk ("No file
     exists for the asset"): run it again, the second build succeeds.
 

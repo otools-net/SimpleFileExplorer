@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en-GB">
+  <file id="ngi18n" original="ng.template">
+    <unit id="2021928621838842498">
+      <notes>
+        <note category="location">src/app/core/format.ts:8</note>
+        <note category="description">size unit, bytes</note>
+      </notes>
+      <segment>
+        <source>B</source>
+      </segment>
+    </unit>
+    <unit id="479661769118958833">
+      <notes>
+        <note category="location">src/app/core/format.ts:9</note>
+        <note category="description">size unit, 1024 bytes</note>
+      </notes>
+      <segment>
+        <source>KB</source>
+      </segment>
+    </unit>
+    <unit id="6989616386199775152">
+      <notes>
+        <note category="location">src/app/core/format.ts:10</note>
+        <note category="description">size unit, 1024² bytes</note>
+      </notes>
+      <segment>
+        <source>MB</source>
+      </segment>
+    </unit>
+    <unit id="8866676232196483861">
+      <notes>
+        <note category="location">src/app/core/format.ts:11</note>
+        <note category="description">size unit, 1024³ bytes</note>
+      </notes>
+      <segment>
+        <source>GB</source>
+      </segment>
+    </unit>
+    <unit id="2202005401585520362">
+      <notes>
+        <note category="location">src/app/core/format.ts:12</note>
+        <note category="description">size unit, 1024⁴ bytes</note>
+      </notes>
+      <segment>
+        <source>TB</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>

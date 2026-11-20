@@ -5,8 +5,9 @@ The words and the style of every text a user reads: labels, buttons, hints (`tit
 `detail`). Code: `src/Sfe.Web/src/app/` (templates, `toasts.*` calls, `settings-schema.ts`), `Sfe.Core/Access/RightCatalog`,
 `shared/help.component.ts` (`sfe-help`). The user docs in `docs/` follow the same glossary.
 
-Texts are rewritten to this note area by area as they move to the translation files (release 2.0 steps 2.3–2.8): a
-string is touched once, moved **and** rewritten in the same commit. New texts follow it from now on.
+Texts are rewritten to this note area by area as they are marked for translation ([translations](translations.md),
+release 2.0 steps 2.3–2.8): a string is touched once, moved **and** rewritten in the same commit. New texts follow
+it from now on.
 
 ## Language and spelling
 
@@ -22,8 +23,9 @@ string is touched once, moved **and** rewritten in the same commit. New texts fo
   against ~140); keep "cannot" only where the stress matters ("This cannot be undone").
 - **Sentence case** everywhere: buttons, titles, menu items, section names ("Open in new tab", "Folder rules"), except
   names of things (Dropbox, SFE, a space's name).
-- **Numbers and sizes** go through `core/format.ts` (`plural()`, sizes in B / KB / MB / GB / TB, dates with the
-  browser's locale); never write "1 files" or "(s)".
+- **Numbers and sizes** go through `core/format.ts` (sizes in B / KB / MB / GB / TB, dates with the browser's
+  locale) and counts through ICU plurals (`icu()`, [translations](translations.md); `plural()` is on its way out);
+  never write "1 files" or "(s)".
 
 ## Tone
 

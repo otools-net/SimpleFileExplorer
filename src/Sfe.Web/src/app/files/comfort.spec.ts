@@ -297,7 +297,7 @@ describe('ChangeFeed', () => {
         expect(store.status()).toBe('ready');
     });
 
-    it('refreshes the folder listed when an item being written isn't listed yet or ended', async () => {
+    it("refreshes the folder listed when an item being written isn't listed yet or ended", async () => {
         await setUp();
         const feed = TestBed.inject(ChangeFeed);
         const copy = { name: 'copy.jpg.sfe-partial', finalName: 'copy.jpg', bytesDone: 1, bytesTotal: 10 };
