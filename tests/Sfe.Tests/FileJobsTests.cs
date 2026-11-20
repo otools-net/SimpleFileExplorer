@@ -3,6 +3,7 @@ using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Data;
 using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.Indexing;
+using Otools.Net.Sfe.Core.Library;
 using Otools.Net.Sfe.Core.Tagging;
 using Otools.Net.Sfe.Tests.Infrastructure;
 
@@ -301,6 +302,65 @@ public sealed class FileJobsTests
         Assert.AreEqual(FileOperationStatus.Failed, job.Results.Single().Status);
         StringAssert.Contains(job.Results.Single().Message, "MB free");
         Assert.IsFalse(File.Exists(_library.FullPath("Media/RFile1.txt")));
+    }
+
+    [TestMethod]
+    public async Task ACopyIsWrittenAsAPartialItemToldWithItsProgressThenTakesItsName()
+    {
+        // When the copy shows in its folder, it is written as name.sfe-partial and its progress is known.
+        var writing = _services.Get<ItemsBeingWritten>();
+        var seen = new List<ItemWriting>();
+        _services.Get<LibraryBrowser>().FolderChanged += folder =>
+        {
+            if (folder is "ChildDir" or "Media")
+                seen.AddRange(writing.In(folder));
+        };
+
+        var file = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["Media/photo.jpg"], "ChildDir"));
+        var folder = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["RepeatedDir"], "Media"));
+
+        Assert.AreEqual(FileOperationStatus.Done, file.Results.Single().Status, file.Results.Single().Message);
+        Assert.AreEqual(FileOperationStatus.Done, folder.Results.Single().Status, folder.Results.Single().Message);
+        Assert.AreEqual(new ItemWriting("photo.jpg.sfe-partial", "photo.jpg", 0, 3 * 1024), seen[0]);
+        var copied = seen.Single(i => i.FinalName == "RepeatedDir");
+        Assert.AreEqual("RepeatedDir.sfe-partial", copied.Name);
+        Assert.AreEqual(folder.BytesTotal, copied.BytesTotal);
+        Assert.IsTrue(File.Exists(_library.FullPath("ChildDir/photo.jpg")));
+        Assert.IsTrue(File.Exists(_library.FullPath("Media/RepeatedDir/RDFile1.txt")));
+        Assert.IsFalse(File.Exists(_library.FullPath("ChildDir/photo.jpg.sfe-partial")));
+        Assert.IsFalse(Directory.Exists(_library.FullPath("Media/RepeatedDir.sfe-partial")));
+        Assert.IsEmpty(writing.In("ChildDir"));
+        Assert.IsEmpty(writing.In("Media"));
+    }
+
+    [TestMethod]
+    public async Task ACopyRemovesWhatAStoppedOneLeftInItsFolder()
+    {
+        _library.AddFile("ChildDir/old.mp4.sfe-partial", 5);
+        Directory.CreateDirectory(_library.FullPath("ChildDir/Old folder.sfe-partial"));
+
+        var job = await RunAsync(new FileJobRequest(FileJobKind.Copy, ["RFile1.txt"], "ChildDir"));
+
+        Assert.AreEqual(FileOperationStatus.Done, job.Results.Single().Status, job.Results.Single().Message);
+        Assert.IsFalse(File.Exists(_library.FullPath("ChildDir/old.mp4.sfe-partial")));
+        Assert.IsFalse(Directory.Exists(_library.FullPath("ChildDir/Old folder.sfe-partial")));
+    }
+
+    [TestMethod]
+    public void AWholeCopyKeepsBothWhenAnItemOfItsNameCameMeanwhile()
+    {
+        _library.AddFile("ChildDir/notes.txt.sfe-partial", 5);
+        _library.AddFile("ChildDir/notes.txt", 3);
+
+        var placed = PartialItems.Place(
+            _library.FullPath("ChildDir/notes.txt.sfe-partial"),
+            _library.FullPath("ChildDir/notes.txt"),
+            isFolder: false
+        );
+
+        Assert.AreEqual(_library.FullPath("ChildDir/notes (2).txt"), placed);
+        Assert.AreEqual(5, new FileInfo(placed).Length);
+        Assert.AreEqual(3, new FileInfo(_library.FullPath("ChildDir/notes.txt")).Length);
     }
 
     [TestMethod]

@@ -171,6 +171,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<PathMoves>();
         services.AddSingleton<Trash>();
         services.AddSingleton<JobBoard>();
+        services.AddSingleton<ItemsBeingWritten>();
         services.AddSingleton<LibraryClashes>();
         services.AddSingleton<FileJobs>();
         services.AddSingleton<Transfers.LibraryTransfers>();

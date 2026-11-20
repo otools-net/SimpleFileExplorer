@@ -2,14 +2,15 @@ using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Http.Features;
 using Otools.Net.Sfe.Api.Security;
 using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
-/// The change feed (agents/docs/features/change-feed.md): server-sent events telling each open listing that a folder
-/// it may see was changed through SFE (by another tab, another person, a move or copy job), so that it lists it again;
-/// how keep alive goes (agents/docs/features/keep-alive.md), for the indicator of the top bar; and that the trash
-/// changed, for the count of the sidebar's Trash link.
+/// The change feed (agents/docs/features/change-feed.md): server-sent events telling each open listing that a folder it
+/// may see was changed through SFE (by another tab, another person, a move or copy job), so that it lists it again; how
+/// keep alive goes (agents/docs/features/keep-alive.md), for the indicator of the top bar; and that the trash changed,
+/// for the count of the sidebar's Trash link; how far the items being written in a folder are, for its listing.
 /// </summary>
 public static class ChangeEndpoints
 {
@@ -39,13 +40,17 @@ public static class ChangeEndpoints
     private static readonly ConcurrentDictionary<string, int> Streams = new();
     private static readonly Lock Gate = new();
 
-    private static readonly string FolderChangesDescription = $"""
-        Open with `EventSource`; `origin` is the `{TabHeader}` header of the request that changed it (a tab
+    private static readonly string FolderChangesDescription = $$"""
+        Open with `EventSource`; `origin` is the `{{TabHeader}}` header of the request that changed it (a tab
         skips its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or
         nothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete or
-        files.deletePermanently) when something came into or left the trash: ask its count again. A `ping` event
-        after {KeepAlive.TotalSeconds:N0} s without anything keeps it open; it ends after
-        {Lifetime.TotalMinutes:N0} minutes and the browser opens it again. {MaxStreamsPerCaller} at once per
+        files.deletePermanently) when something came into or left the trash: ask its count again. `writing` with
+        `{ path, items: [{ name, finalName, bytesDone, bytesTotal }] }` when items being written in a folder the
+        caller sees moved on, started or ended (at most every {{ItemsBeingWritten.Interval.TotalMilliseconds:N0}} ms
+        per folder, and every {{ItemsBeingWritten.Heartbeat.TotalSeconds:N0}} s while some are; `name` ends with
+        `.sfe-partial`, `bytesTotal` 0 when unknown, `items` empty once the last one ended). A `ping` event
+        after {{KeepAlive.TotalSeconds:N0}} s without anything keeps it open; it ends after
+        {{Lifetime.TotalMinutes:N0}} minutes and the browser opens it again. {{MaxStreamsPerCaller}} at once per
         caller (429).
         """;
 
@@ -59,7 +64,7 @@ public static class ChangeEndpoints
             .WithSummary(
                 "Server-sent events: `changed` with `{ path, origin }` (and `connection` for a connection's) each "
                     + "time a folder is changed through SFE; "
-                    + "`keepAlive` with `{ state }`; `trash`; `ping`."
+                    + "`keepAlive` with `{ state }`; `trash`; `writing` with `{ path, items }`; `ping`."
             )
             .WithDescription(FolderChangesDescription);
         return api;

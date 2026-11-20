@@ -6,8 +6,10 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Otools.Net.Sfe.Api.Endpoints;
+using Otools.Net.Sfe.Api.Tenancy;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.KeepAlive;
 using Otools.Net.Sfe.Core.Settings;
 using Otools.Net.Sfe.Tests.Infrastructure;
@@ -30,6 +32,7 @@ public sealed class ChangeFeedRouteTests
     private WebApplicationFactory<Program> _factory = null!;
     private HttpClient _admin = null!;
     private HttpClient _alice = null!;
+    private int _tenant;
 
     public TestContext TestContext { get; set; } = null!;
 
@@ -42,7 +45,7 @@ public sealed class ChangeFeedRouteTests
         _factory = ApiClients.CreateFactory(_library);
         _admin = await ApiClients.SetUpAsync(_factory, Token);
         var accounts = _factory.Services.GetRequiredService<AccessService>();
-        var tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
+        var tenant = _tenant = (await accounts.GetTenantsAsync(Token)).Single(t => t.IsDefault).Id;
         var users = (await accounts.GetBuiltInGroupAsync(tenant, BuiltInGroup.Users, Token))!;
         await accounts.CreateUserAsync(
             new UserInput("alice", Password: "alice-password-1", GroupIds: [users.Id]),
@@ -218,6 +221,31 @@ public sealed class ChangeFeedRouteTests
     }
 
     [TestMethod]
+    public async Task ItemsBeingWrittenAreToldWithTheirProgressInFoldersTheCallerSees()
+    {
+        using var feed = await OpenFeedAsync(_alice);
+        using var reader = new StreamReader(await feed.Content.ReadAsStreamAsync(Token));
+        await NextEventAsync<KeepAliveSignal>(reader, "keepAlive");
+        var host = await _factory.Services.GetRequiredService<TenantRegistry>().GetAsync(_tenant, Token);
+        var writing = host!.Services.GetRequiredService<ItemsBeingWritten>();
+
+        var hidden = writing.Begin(_library.FullPath("SpecialDir/secret.mp4.sfe-partial"), "secret.mp4", 100);
+        var seen = writing.Begin(_library.FullPath("ChildDir/clip.mp4.sfe-partial"), "clip.mp4", 100);
+        seen.Add(40);
+        var told = await WritingUntilAsync(reader, w => w.Items.Any(i => i.BytesDone == 40));
+        hidden.Dispose();
+        seen.Dispose();
+        var ended = await WritingUntilAsync(reader, w => w.Items.Count == 0);
+
+        Assert.AreEqual(new ItemWriting("clip.mp4.sfe-partial", "clip.mp4", 40, 100), told[^1].Items.Single());
+        // SpecialDir is hidden from Alice: never told.
+        CollectionAssert.AreEquivalent(
+            new[] { "ChildDir" },
+            told.Concat(ended).Select(w => w.Path).Distinct().ToList()
+        );
+    }
+
+    [TestMethod]
     public void TheTrashEventReachesThePage()
     {
         CollectionAssert.AreEqual(new[] { "event: trash", "data: {}", "", "" }, ChangeEndpoints.TrashEvent.Split('\n'));
@@ -295,6 +323,17 @@ public sealed class ChangeFeedRouteTests
                 return JsonSerializer.Deserialize<T>(line["data: ".Length..], Json)!;
         }
         throw new AssertFailedException($"The feed ended without a {name} event.");
+    }
+
+    /// <summary>The `writing` events up to the first that <paramref name="until"/> accepts (included).</summary>
+    private async Task<List<FolderWriting>> WritingUntilAsync(StreamReader reader, Func<FolderWriting, bool> until)
+    {
+        var events = new List<FolderWriting>();
+        do
+        {
+            events.Add(await NextEventAsync<FolderWriting>(reader, "writing"));
+        } while (!until(events[^1]));
+        return events;
     }
 
     /// <summary>The name and data of the next event, whatever it is.</summary>

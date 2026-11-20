@@ -781,23 +781,31 @@ const scenes = {
         await a.close();
     },
     /**
-     * A file still being written (name.sfe-partial, as a transfer leaves it while it runs), put straight into the
-     * sample library (`SFE_LIBRARY`, set by run.mjs) and removed after the shot.
+     * A folder being copied (written as name.sfe-partial, shown under its own name with its progress): a folder of many
+     * small files put straight into the sample library (`SFE_LIBRARY`, set by run.mjs) so that the copy lasts a few
+     * seconds, copied through the API, shot once the bar shows, then the copy cancelled (nothing of it stays) and the
+     * folder removed.
      */
     async partial() {
-        const file = path.join(process.env.SFE_LIBRARY, 'Inbox', 'Holiday clip.webm.sfe-partial');
-        fs.writeFileSync(file, Buffer.alloc(3 << 20));
+        const source = path.join(process.env.SFE_LIBRARY, 'Documents', 'Camera roll');
+        fs.mkdirSync(source, { recursive: true });
+        const content = Buffer.alloc(32 << 10, 7);
+        for (let n = 1; n <= 8000; n++) fs.writeFileSync(path.join(source, `IMG_${String(n).padStart(4, '0')}.jpg`), content);
         try {
             const b = await session();
             await b.open('?path=Inbox');
             await b.clickTitle('List');
-            await sleep(1500);
-            const row = await b.rect('.item.partial');
+            const job = await b.eval(`fetch('api/v1/files/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ kind: 'copy', paths: ['Documents/Camera roll'], target: 'Inbox' }) }).then(r => r.json()).then(j => j.id)`);
+            await b.waitFor('.write-progress');
+            await sleep(1200);
+            const row = await b.rect('.partial');
             await b.shot(OUT + 'partial-file.png', { x: 0, y: Math.max(0, row.y - 100), width: 1280, height: 220 });
+            await b.eval(`fetch('api/v1/files/jobs/${job}/cancel', { method: 'POST', headers: { 'X-SFE-Request': '1' } }).then(r => r.status)`);
+            await sleep(1500);
             await b.clickTitle('Grid');
             await b.close();
         } finally {
-            fs.rmSync(file, { force: true });
+            fs.rmSync(source, { recursive: true, force: true });
         }
     },
     async files() {

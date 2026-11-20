@@ -29,7 +29,7 @@
             [title]="linkTitle()"
             (click)="actions.openFile($event, item())"
         >
-            <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
+            <span class="item-name"><sfe-highlight [text]="name()" [pattern]="pattern()" /></span>
         </a>
         <sfe-partial-mark [item]="item()" />
         <span class="row-meta">@if (item().extension) {<span class="row-meta-type">{{ item().extension }}</span> ·

@@ -10,7 +10,7 @@ Extractions are jobs of the same kind: [archive-extraction](archive-extraction.m
 
 - Every move or copy is a **background job** (one code path), even for one small file. Jobs live in the library's
   `FileJobs` singleton (memory only, last 50 finished kept): nothing in the database, nothing to migrate; a restart
-  forgets them (a job cut off by a restart leaves what was done; a half-written copy file can remain).
+  forgets them (a job cut off by a restart leaves what was done; a half-written copy stays as `name.sfe-partial`).
 - **Replace** needs the right to delete at the item replaced (`files.delete`, or `files.deletePermanently` when the
   space always deletes permanently); the replaced item goes to the trash (`Trash.MoveInAsync`). With `conflicts:
   replace` but no right, the job **asks** instead of failing.
@@ -28,8 +28,9 @@ Extractions are jobs of the same kind: [archive-extraction](archive-extraction.m
   its files), `files.view` at each sub-folder (else left out, reported). Not seen (`library.browse`) = "not found".
 - Moves: `FileTree.Move` (rename; another drive: copy + delete), then `PathMoves`, inside `BeginMoveAsync` /
   `CompleteAsync` of the folder rules (`keepAccess` pins levels). Already in the target = skipped.
-- Copies: streams with 1 MB buffers counting bytes; modified time kept; a cancelled or failed item deletes its partial
-  file/folder. Links and work folders are never copied (reported). Free space: refused when the drive would keep less
+- Copies: written as `name.sfe-partial` (a file or the whole folder) shown in listings with their progress, renamed
+  when whole ([partial-files](partial-files.md)); streams with 1 MB buffers counting bytes; modified time kept; a
+  cancelled or failed item deletes its partial file/folder; leftovers of a stopped job in the target are removed first. Links and work folders are never copied (reported). Free space: refused when the drive would keep less
   than `Files:MinimumFreeSpaceMegabytes`. Then the originals' thumbnail/trickplay caches are copied, files indexed at
   once (`IndexFilesAsync`), folders by a scan of each (`ScanCoordinator.TryStart`, skipped while another scan runs).
 - Clash: a copy into its own folder always keeps both; otherwise the choice of the request, else the job waits

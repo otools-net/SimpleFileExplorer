@@ -105,7 +105,10 @@ public sealed class LibraryTransferEndpoint : ITransferEndpoint
         try
         {
             var stream = CreatePartial(folderFull, name);
-            return new LibraryTransferWrite(this, stream, hold, destination, modified);
+            // Listed at once, with its progress (agents/docs/features/partial-files.md).
+            var progress = _library.Writing.Begin(stream.Name, name, size);
+            _library.Browser.Invalidate(folderFull);
+            return new LibraryTransferWrite(this, stream, hold, destination, modified) { Progress = progress };
         }
         catch
         {

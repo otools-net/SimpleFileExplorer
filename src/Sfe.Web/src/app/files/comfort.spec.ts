@@ -297,6 +297,29 @@ describe('ChangeFeed', () => {
         expect(store.status()).toBe('ready');
     });
 
+    it('refreshes the folder listed when an item being written isn't listed yet or ended', async () => {
+        await setUp();
+        const feed = TestBed.inject(ChangeFeed);
+        const copy = { name: 'copy.jpg.sfe-partial', finalName: 'copy.jpg', bytesDone: 1, bytesTotal: 10 };
+        api.browse.mockResolvedValue(listing([holidays, a, b, notes, item('Media/copy.jpg.sfe-partial')]));
+
+        feed.writing({ path: 'Elsewhere', items: [copy] });
+        feed.writing({ path: 'Media', items: [copy] });
+        await settle(450);
+        // Listed now: its progress alone moves on.
+        feed.writing({ path: 'Media', items: [{ ...copy, bytesDone: 5 }] });
+        await settle(450);
+        // Its first load, then once for the item being written.
+        expect(api.browse).toHaveBeenCalledTimes(2);
+
+        api.browse.mockResolvedValue(listing([holidays, a, b, notes, item('Media/copy.jpg')]));
+        feed.writing({ path: 'Media', items: [] });
+        await settle(450);
+
+        expect(api.browse).toHaveBeenCalledTimes(3);
+        expect(store.items().map((i) => i.name)).toContain('copy.jpg');
+    });
+
     describe('connection', () => {
         /** A stand-in for the browser's EventSource: the test opens, drops and closes it. */
         class FakeSource extends EventTarget {

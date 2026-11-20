@@ -43,6 +43,9 @@ Decided 2026-10-17: a live feed (not a refresh on focus).
   per entry); no origin filter, so the deleting tab hears it too. Client: `ChangeFeed.trashChanges` (a counter), which
   the sidebar watches to read the count again ([trash.md](trash.md)).
 - Proxies must not buffer it (`X-Accel-Buffering: no` for nginx); documented in `docs/installation.md`.
+- And `event: writing` (`{ path, items }`): how far the items being written in a library folder are, a few times a
+  second at most per folder ([partial-files](partial-files.md)); the client keeps it in `WritingProgress` and
+  refreshes the folder listed when an item comes or ends.
 - Connections' folders (2026-11-15): `ConnectionChanges.FolderChanged` (server-wide, told by the connection write
   routes, uploads and transfer endpoints) queues a `ConnectionFolderChange`; `ConnectionFeed` sends it as `changed`
   with `connection` to feeds whose caller uses that connection in its library and sees the folder (folder rules),

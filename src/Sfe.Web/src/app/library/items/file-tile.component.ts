@@ -16,7 +16,7 @@ import { CopyPathService } from '../../core/copy-path.service';
 import { formatDate, formatSize, joinParts, kindIcon } from '../../core/format';
 import { LibraryItem } from '../../core/models';
 import { FileTransfers } from '../../files/file-transfers';
-import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial } from '../../files/partial-files';
+import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial, shownName } from '../../files/partial-files';
 import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
 import { useContextMenu } from '../../menus/context-menu';
 import { HighlightComponent } from '../../shared/highlight.component';
@@ -59,6 +59,8 @@ abstract class FileItemBase {
 
     /** Still being written (`isPartial`): marked, no link, no preview. */
     protected readonly partial = computed(() => isPartial(this.item()));
+    /** Its name, or the one it takes once written. */
+    protected readonly name = computed(() => shownName(this.item()));
     /** Opened by a modified click (new tab...): the file, or its viewer's page for formats that have one. */
     protected readonly url = computed(() => (this.partial() ? null : this.actions.fileUrl(this.item())));
     protected readonly icon = computed(() => kindIcon[this.item().kind]);
@@ -84,7 +86,7 @@ abstract class FileItemBase {
     /** The links' hint: the name, and whether the index has the file yet. */
     protected readonly linkTitle = computed(
         () =>
-            this.item().name +
+            this.name() +
             (this.partial()
                 ? ` (${BEING_WRITTEN}): ${BEING_WRITTEN_TITLE}`
                 : this.unindexed()

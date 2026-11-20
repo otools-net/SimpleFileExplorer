@@ -43,7 +43,14 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   name (`files/partial-files.ts`): faded, "being written" chip, no href, no preview, clicks open nothing, menu cut to
   Delete / Copy full path / Properties. Selection bar not covered (left to 2.9). Note
   [partial-files](../features/partial-files.md), screenshot `partial-file.png` (docs-screenshots scene `partial`).
-- [ ] **1.4 Copy progress on the item, as in macOS Finder** (owner's request 2026-11-20, M; after 1.3). Today only a
+- [x] **1.4 Copy progress on the item, as in macOS Finder** (owner's request 2026-11-20, M; after 1.3). Done
+  2026-11-20: copies write `name.sfe-partial` then rename (keep-both if taken meanwhile; partial over real name: the
+  suffix machinery already covers scans and leftovers, and a cut-off copy doesn't look whole); `ItemsBeingWritten`
+  (per library, memory, `Interlocked` counts, a 300 ms timer only while writing, 3 s heartbeat) fed through
+  `JobRun.Writing` by copies, compressions, extractions, and by `LibraryTransferWrite`; feed event `writing`
+  (rights per folder and item); client `WritingProgress`, `<progress>` in the mark, `shownName`, refresh when an item
+  comes or ends. Uploads left to 4.3 (they write in the work folder). Refactorings first: `PartialItems`,
+  `JobMessages` out of `FileJobs`. Screenshot: scene `partial` copies a folder of 8,000 small files. Was: today only a
   static "being written" mark, and library copies (`FileJobs.CopyFileAsync`) write the final name unmarked. Jobs
   already know their progress (`FileJobView.BytesDone`/`BytesTotal`, `Current`, `JobRun.Partials`) but only the
   operations panel shows it. Add: library copies registered as "in progress" on their destination while they run
@@ -222,8 +229,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-20):** steps 1.1, 1.2 and 1.3 done (see their ticks); step 1.4 added
-  at the owner's request (copy progress on the item). Next: **1.4**.
+- **Last session (2026-11-20):** steps 1.1 to 1.4 done (see their ticks). Next: **2.1** (glossary, no code).
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
   (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and
@@ -239,6 +245,11 @@ Where the work stands, for a session that picks it up. Update it at the end of e
   - A refactoring that frees lines: write the baseline, but the step after it may raise it back a little (as 1.1 and
     1.2 did); `measure.mjs --write-baseline` alone writes it (with `--check` it doesn't).
   - Client specs run with `npm test -- --include <path>` (not `npx vitest`).
+  - `FileJobs.cs` is at its baseline again after 1.4: new job code needs lines moved out first (the copy part —
+    `CopyAsync`, `CopyFolderAsync`, `CopyFileAsync`, `AfterCopyAsync`, `CopyCache` — is the next candidate).
+  - Scripted C# edits from `node -e` in Git Bash: write the script to a file with a quoted heredoc (`<<'EOF'`);
+    `
+` inside JS template strings becomes a real newline in the C# source otherwise.
   - The first `dotnet test` after a client build (`npm test` builds too) fails on a stale `wwwroot` chunk ("No file
     exists for the asset"): run it again, the second build succeeds.
 

@@ -14,6 +14,7 @@ internal sealed record ChangeFeedServices(
     LibraryBrowser Browser,
     KeepAliveService KeepAlive,
     Trash Trash,
+    ItemsBeingWritten Writing,
     LibraryPaths Paths,
     CurrentAccess Current,
     IHttpContextAccessor Accessor

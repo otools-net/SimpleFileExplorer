@@ -33,10 +33,23 @@ internal sealed class JobRun(
     public string? Current { get; set; }
     public Task? Completion { get; set; }
 
-    public void AddBytes(long bytes) => Interlocked.Add(ref _bytesDone, bytes);
+    /// <summary>
+    /// The item the job writes now, told to open listings (<see cref="ItemsBeingWritten"/>); null between.
+    /// </summary>
+    public ItemWrite? Writing { get; set; }
+
+    public void AddBytes(long bytes)
+    {
+        Interlocked.Add(ref _bytesDone, bytes);
+        Writing?.Add(bytes);
+    }
 
     /// <summary>How far the job is in its source (an extraction: in the archive's file).</summary>
-    public void SetBytes(long bytes) => Interlocked.Exchange(ref _bytesDone, bytes);
+    public void SetBytes(long bytes)
+    {
+        Interlocked.Exchange(ref _bytesDone, bytes);
+        Writing?.Set(bytes);
+    }
 
     /// <summary>The archive's password, while the job runs; never shown.</summary>
     public string? Password { get; set; }

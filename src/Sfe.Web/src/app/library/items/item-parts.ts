@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { RouterLink } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
 import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial } from '../../files/partial-files';
+import { percentOf, WritingProgress } from '../../files/writing-progress';
+import { formatSize } from '../../core/format';
 import { LibraryItem } from '../../core/models';
 import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
@@ -17,22 +19,45 @@ import { ItemActions } from './item-actions.service';
 /** Added to the hint of a file or folder the index doesn't have yet (shown faded). */
 export const NOT_INDEXED = '(not indexed yet: search, tags and duplicates find it after a scan)';
 
-/** The mark of a file or folder still being written (`isPartial`); nothing otherwise. */
+/**
+ * The mark of a file or folder still being written (`isPartial`), with a bar showing how far it is while the change
+ * feed tells it (`WritingProgress`, the percentage in the hint); nothing otherwise.
+ */
 @Component({
     selector: 'sfe-partial-mark',
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { style: 'display: contents' },
     template: `
         @if (partial()) {
-            <span class="partial-mark" [title]="title">{{ label }}</span>
+            <span class="partial-mark" [title]="title()">{{ label }}</span>
+            @if (percent() !== null) {
+                <progress class="write-progress" max="100" [value]="percent()" [title]="title()"
+                          [attr.aria-label]="'Written: ' + percent() + ' %'"></progress>
+            }
         }
     `,
 })
 export class PartialMarkComponent {
     readonly item = input.required<LibraryItem>();
+    private readonly writing = inject(WritingProgress);
     protected readonly partial = computed(() => isPartial(this.item()));
+    private readonly progress = computed(() => (this.partial() ? this.writing.of(this.item().path) : undefined));
+    protected readonly percent = computed(() => {
+        const progress = this.progress();
+        return progress ? percentOf(progress) : null;
+    });
     protected readonly label = BEING_WRITTEN;
-    protected readonly title = BEING_WRITTEN_TITLE;
+    /** How far it is (written of its size), then what the mark means. */
+    protected readonly title = computed(() => {
+        const progress = this.progress();
+        if (!progress) return BEING_WRITTEN_TITLE;
+        const done = formatSize(progress.bytesDone);
+        const written =
+            progress.bytesTotal > 0
+                ? `${this.percent()} % written (${done} of ${formatSize(progress.bytesTotal)}).`
+                : `${done} written.`;
+        return `${written} ${BEING_WRITTEN_TITLE}`;
+    });
 }
 
 /** Chips of the tags set on a file; clicking one searches for it. */

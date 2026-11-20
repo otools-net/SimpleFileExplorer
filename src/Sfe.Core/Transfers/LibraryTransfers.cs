@@ -30,6 +30,7 @@ public sealed class LibraryTransfers(
     internal LibraryBrowser Browser => browser;
     internal ScanCoordinator Scans => scans;
     internal Trash Trash => trash;
+    internal ItemsBeingWritten Writing => browser.Writing;
     internal FileManagementOptions Files => options.CurrentValue.Files;
     internal ILogger Logger => logger;
 

@@ -15,7 +15,7 @@ import { ItemActions } from './item-actions.service';
 import { DefaultTagsBadgeComponent } from '../../tags/default-tags-badge.component';
 import { exclusionChip, exclusionTitle } from './exclusions';
 import { NOT_INDEXED, PartialMarkComponent, SelectBoxComponent } from './item-parts';
-import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial } from '../../files/partial-files';
+import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial, shownName } from '../../files/partial-files';
 
 /**
  * A listed folder: a card with its first pictures (`cards`), or a line with its name. Buttons can't sit inside
@@ -63,13 +63,15 @@ export class FolderItemComponent {
     protected readonly unindexed = computed(() => this.item().indexed === false);
     /** Still being written (an extraction): marked, not opened. */
     protected readonly partial = computed(() => isPartial(this.item()));
+    /** Its name, or the one it takes once written. */
+    protected readonly name = computed(() => shownName(this.item()));
     /** Kept out of scans, trickplay or thumbnails (for everyone: it tells why). */
     protected readonly exclusion = computed(() => exclusionChip(this.item().excluded));
     protected readonly exclusionTitle = computed(() => exclusionTitle(this.item().excluded, this.item().path));
     /** The card's count lets clicks through to the link: its hint is the link's. */
     protected readonly linkTitle = computed(() =>
         [
-            this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''),
+            this.name() + (this.unindexed() ? ` ${NOT_INDEXED}` : ''),
             this.partial() ? `(${BEING_WRITTEN}) ${BEING_WRITTEN_TITLE}` : null,
             this.cards() && this.indexedItems() !== null ? this.countTitle() : null,
             this.exclusionTitle(),

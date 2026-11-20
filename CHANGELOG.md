@@ -11,6 +11,14 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   (`name.sfe-partial` until complete) show faded with a "being written" mark in listings; they can't be opened or
   previewed, their menu keeps Delete, Copy full path and Properties, and scans leave them out, so search and
   duplicates never find them (one indexed before goes at the next scan).
+- **Copy progress on the item**, as macOS Finder shows it: a file or folder being copied (in the library or from a
+  connection), a zip being made and an archive being extracted show in their folder at once under the name they will
+  take, with a progress bar (percentage and size written in its hint), for everyone viewing that folder, and take
+  their place when done. Copies inside the library are now written as `name.sfe-partial` and renamed when whole
+  (a keep-both name if an item of that name appeared meanwhile), so one cut off by a restart no longer looks complete;
+  leftovers in the target are removed at the next copy there. The change feed (`GET api/v1/files/changes`) has a new
+  `writing` event (`{ path, items: [{ name, finalName, bytesDone, bytesTotal }] }`), a few per second per folder at
+  most.
 - **Previews of connections' files**: thumbnails come from the provider (Dropbox: 25 asked at once) and are kept on
   the server under the file's id and version, so folders seen again show them without asking the provider and a file
   changed there gets a new one; pictures the provider doesn't thumbnail (Dropbox: photos over 20 MB) are made by

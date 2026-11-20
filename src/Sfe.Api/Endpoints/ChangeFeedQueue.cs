@@ -4,15 +4,17 @@ using System.Text.Json.Serialization;
 using System.Threading.Channels;
 using Otools.Net.Sfe.Api.Security;
 using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.KeepAlive;
+using Otools.Net.Sfe.Core.Paths;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What one change feed listens to while it is open: folders changed in the library and in connections, keep alive's
-/// state, the trash (for callers who may open it). The events are only queued by the request (or job, or keep alive's
-/// loop) that raised them; the feed's own loop takes them as the text of server-sent events, keeping those the caller
-/// may see. Disposing it stops listening.
+/// state, the trash (for callers who may open it), the progress of items being written. The events are only queued by
+/// the request (or job, or keep alive's loop) that raised them; the feed's own loop takes them as the text of
+/// server-sent events, keeping those the caller may see. Disposing it stops listening.
 /// </summary>
 internal sealed class ChangeFeedQueue : IDisposable
 {
@@ -25,7 +27,7 @@ internal sealed class ChangeFeedQueue : IDisposable
     private readonly AccessState _state;
     private readonly ConnectionFeed _connections;
 
-    // Holds a FolderChange, a ConnectionFolderChange, a KeepAliveSignal or a TrashSignal.
+    // Holds a FolderChange, a ConnectionFolderChange, a KeepAliveSignal, a TrashSignal or a WritingSignal.
     private readonly Channel<object> _changes = Channel.CreateBounded<object>(
         new BoundedChannelOptions(256) { FullMode = BoundedChannelFullMode.DropOldest, SingleReader = true }
     );
@@ -36,6 +38,7 @@ internal sealed class ChangeFeedQueue : IDisposable
         services.Browser.FolderChanged += OnChanged;
         _connections = new ConnectionFeed(connections, state, _changes.Writer, services.Accessor);
         services.KeepAlive.StateChanged += OnKeepAlive;
+        services.Writing.FolderProgressed += OnWriting;
         // The trash's count is for those who may open it.
         if (state.Access.Rights.Contains(Rights.DeleteFiles) || state.Access.Rights.Contains(Rights.DeletePermanently))
             services.Trash.EntriesChanged += OnTrash;
@@ -69,6 +72,7 @@ internal sealed class ChangeFeedQueue : IDisposable
     {
         _services.Browser.FolderChanged -= OnChanged;
         _services.KeepAlive.StateChanged -= OnKeepAlive;
+        _services.Writing.FolderProgressed -= OnWriting;
         _services.Trash.EntriesChanged -= OnTrash;
         _connections.Dispose();
     }
@@ -77,15 +81,20 @@ internal sealed class ChangeFeedQueue : IDisposable
     {
         var text = new StringBuilder();
         var trashChanged = false;
+        var writing = new HashSet<string>(LibraryPaths.PathComparer);
         while (_changes.Reader.TryRead(out var item))
         {
             if (item is TrashSignal)
                 trashChanged = true;
+            else if (item is WritingSignal signal)
+                writing.Add(signal.Path);
             else if (await EventOfAsync(item, cancellationToken) is { } seen)
                 text.Append(seen);
         }
         if (trashChanged)
             text.Append(ChangeEndpoints.TrashEvent);
+        foreach (var folder in writing)
+            text.Append(WritingEvent(folder));
         return text.ToString();
     }
 
@@ -110,6 +119,25 @@ internal sealed class ChangeFeedQueue : IDisposable
         var origin = _services.Accessor.HttpContext?.Request.Headers[ChangeEndpoints.TabHeader].ToString();
         _changes.Writer.TryWrite(new FolderChange(path, string.IsNullOrEmpty(origin) ? null : origin));
     }
+
+    private void OnWriting(string folder) => _changes.Writer.TryWrite(new WritingSignal(folder));
+
+    /// <summary>
+    /// `writing`: the items being written in <paramref name="folder"/> now (read when sent: the latest), those the
+    /// caller sees; nothing when it may not see the folder.
+    /// </summary>
+    private string WritingEvent(string folder)
+    {
+        if (_state.Check(_services.Paths, folder, Rights.Browse) != PathVerdict.Allowed)
+            return string.Empty;
+        var items = _services
+            .Writing.In(folder)
+            .Where(i => _state.Check(_services.Paths, Join(folder, i.Name), Rights.Browse) == PathVerdict.Allowed)
+            .ToList();
+        return $"event: writing\ndata: {JsonSerializer.Serialize(new FolderWriting(folder, items), Json)}\n\n";
+    }
+
+    private static string Join(string folder, string name) => folder.Length == 0 ? name : $"{folder}/{name}";
 
     private void OnKeepAlive(KeepAliveState keepAliveState) =>
         _changes.Writer.TryWrite(new KeepAliveSignal(keepAliveState));

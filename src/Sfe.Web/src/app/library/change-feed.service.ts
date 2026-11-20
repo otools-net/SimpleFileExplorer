@@ -4,6 +4,7 @@ import { ConfigService } from '../core/config.service';
 import { KeepAliveState } from './library.models';
 import { Rights } from '../core/rights';
 import { ListingStore } from './listing.store';
+import { FolderWriting, WritingProgress } from '../files/writing-progress';
 
 /** Changes close together (a move touches two folders, a folder upload many) make one reload. */
 const SETTLE = 400;
@@ -30,13 +31,14 @@ export interface FolderChange {
  * The change feed (agents/docs/features/change-feed.md): the server tells each open listing that a folder was changed
  * through SFE elsewhere (another tab, another person, a move or copy job); the folder listed is then refreshed in
  * place. The browser opens the feed again by itself when it ends or drops. It also tells how keep alive goes
- * (`keepAlive`) and whether the server answers (`serverLost`), for the indicator of the ⋮ menu, and that the trash
- * changed (`trashChanges`), for the sidebar's Trash link.
+ * (`keepAlive`) and whether the server answers (`serverLost`), for the indicator of the ⋮ menu, that the trash
+ * changed (`trashChanges`), for the sidebar's Trash link, and how far items being written are (`WritingProgress`).
  */
 @Injectable({ providedIn: 'root' })
 export class ChangeFeed {
     private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
+    private readonly progress = inject(WritingProgress);
     private source: EventSource | null = null;
     private timer: ReturnType<typeof setTimeout> | undefined;
     private lostTimer: ReturnType<typeof setTimeout> | undefined;
@@ -124,6 +126,10 @@ export class ChangeFeed {
             this.heard();
             this.changed(JSON.parse((event as MessageEvent<string>).data) as FolderChange);
         });
+        source.addEventListener('writing', (event) => {
+            this.heard();
+            this.writing(JSON.parse((event as MessageEvent<string>).data) as FolderWriting);
+        });
         source.addEventListener('trash', () => {
             this.heard();
             this.trashChanges.update((n) => n + 1);
@@ -195,6 +201,23 @@ export class ChangeFeed {
         const route = this.store.route();
         if (change.origin === TAB_ID || route.q || change.path !== route.path) return;
         if (connection !== (route.c ?? null)) return;
+        this.settle();
+    }
+
+    /**
+     * Items being written in a library folder (any tab's, any person's it may see): their progress kept for the bars;
+     * the folder listed is refreshed when one isn't listed yet or one ended (it took its name, or went).
+     */
+    writing(change: FolderWriting): void {
+        const { started, ended } = this.progress.update(change);
+        const route = this.store.route();
+        if (route.q || route.c != null || change.path !== route.path) return;
+        const listed = new Set(this.store.items().map((item) => item.name));
+        if (ended.length > 0 || started.some((name) => !listed.has(name))) this.settle();
+    }
+
+    /** The folder listed is refreshed once the changes settle. */
+    private settle(): void {
         clearTimeout(this.timer);
         this.timer = setTimeout(() => void this.store.refresh(), SETTLE);
     }

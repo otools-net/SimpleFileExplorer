@@ -47,7 +47,7 @@
             [title]="linkTitle()"
             (click)="actions.openFile($event, item())"
         >
-            <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
+            <span class="item-name"><sfe-highlight [text]="name()" [pattern]="pattern()" /></span>
         </a>
         <sfe-partial-mark [item]="item()" />
         <sfe-item-folder [item]="item()" [pattern]="pattern()" />

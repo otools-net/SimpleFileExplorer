@@ -1,3 +1,4 @@
+using Otools.Net.Sfe.Core.Files;
 using static Otools.Net.Sfe.Core.Transfers.LibraryTransferErrors;
 
 namespace Otools.Net.Sfe.Core.Transfers;
@@ -23,12 +24,16 @@ internal sealed class LibraryTransferWrite(
 
     public long Offset => partial.Position;
 
+    /// <summary>How far it is, told to open listings; ended with the write.</summary>
+    public ItemWrite? Progress { get; init; }
+
     public async Task WriteAsync(ReadOnlyMemory<byte> part, CancellationToken cancellationToken)
     {
         CheckRoom(part.Length);
         try
         {
             await partial.WriteAsync(part, cancellationToken);
+            Progress?.Add(part.Length);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -99,6 +104,7 @@ internal sealed class LibraryTransferWrite(
     private void End()
     {
         _ended = true;
+        Progress?.Dispose();
         scanHold.Dispose();
     }
 }

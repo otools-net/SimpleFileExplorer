@@ -4,6 +4,7 @@ import { ApiMock, item, loadConfig, mockApi, testProviders } from '../../../test
 import { LibraryItem } from '../../core/models';
 import { ItemMenu } from '../../files/item-menu';
 import { isPartial } from '../../files/partial-files';
+import { WritingProgress } from '../../files/writing-progress';
 import { Dialogs } from '../dialogs.service';
 import { SidebarService } from '../sidebar/sidebar.service';
 import { ViewerComponent } from '../viewer/viewer.component';
@@ -58,6 +59,41 @@ describe('Partial items', () => {
         expect(done.classList.contains('partial')).toBe(false);
         expect(done.querySelector('.partial-mark')).toBeNull();
         expect(done.querySelector('.item-link')!.getAttribute('href')).not.toBeNull();
+    });
+
+    it('shows the name they will take, and a bar while the change feed tells how far they are', async () => {
+        TestBed.inject(WritingProgress).update({
+            path: 'Media',
+            items: [{ name: 'clip.mp4.sfe-partial', finalName: 'clip.mp4', bytesDone: 256, bytesTotal: 1024 }],
+        });
+        const tile = await make(FileTileComponent, partialFile);
+        const row = await make(FileRowComponent, partialFile);
+        const folder = await make(FolderItemComponent, partialFolder);
+
+        for (const element of [tile, row]) {
+            expect(element.querySelector('.item-name')!.textContent!.trim()).toBe('clip.mp4');
+            const bar = element.querySelector('progress')!;
+            expect(bar.value).toBe(25);
+            expect(bar.getAttribute('title')).toContain('25 % written (256 B of 1 KB)');
+        }
+        expect(folder.querySelector('.item-name')!.textContent!.trim()).toBe('photos');
+        // No progress told: the mark alone.
+        expect(folder.querySelector('progress')).toBeNull();
+    });
+
+    it('keeps the progress of each folder, telling which items came and went', () => {
+        const progress = TestBed.inject(WritingProgress);
+        const writing = (name: string, bytesDone = 0) => ({ name, finalName: name, bytesDone, bytesTotal: 10 });
+
+        const first = progress.update({ path: 'Media', items: [writing('a.sfe-partial'), writing('b.sfe-partial')] });
+        progress.update({ path: '', items: [writing('top.sfe-partial')] });
+        const next = progress.update({ path: 'Media', items: [writing('b.sfe-partial', 5)] });
+
+        expect(first).toEqual({ started: ['a.sfe-partial', 'b.sfe-partial'], ended: [] });
+        expect(next).toEqual({ started: [], ended: ['a.sfe-partial'] });
+        expect(progress.of('Media/a.sfe-partial')).toBeUndefined();
+        expect(progress.of('Media/b.sfe-partial')!.bytesDone).toBe(5);
+        expect(progress.of('top.sfe-partial')).toBeDefined();
     });
 
     it('opens nothing on a click on a file being written', () => {

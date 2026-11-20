@@ -20,7 +20,9 @@ namespace Otools.Net.Sfe.Core.Files;
 /// Moves and copies (agents/docs/features/move-and-copy.md): each request is a background job with progress, cancel,
 /// questions on name clashes and a final report, re-checking the person's rights at every item. Moves keep what SFE
 /// knows by path (<see cref="PathMoves"/>, folder rules); copies never follow links, leave out what the person may not
-/// see, leave no partial file when cancelled, and are indexed (a scan of a copied folder).
+/// see, are written as <c>name.sfe-partial</c> with their progress told to open listings
+/// (<see cref="ItemsBeingWritten"/>), leave nothing half written when cancelled, and are indexed (a scan of a copied
+/// folder).
 /// </summary>
 public sealed class FileJobs(
     IDbContextFactory<SfeDbContext> dbFactory,
@@ -49,7 +51,7 @@ public sealed class FileJobs(
     private const long FreeSpaceStep = 64L << 20;
 
     private readonly CancellationTokenSource _shutdown = new();
-    private readonly PartialItems _partials = new(board, logger);
+    private readonly PartialItems _partials = new(board, browser, logger);
 
     /// <summary>Files and folders being written before they take their names (<see cref="LibraryPaths"/>).</summary>
     public const string PartialSuffix = LibraryPaths.PartialSuffix;
@@ -110,6 +112,8 @@ public sealed class FileJobs(
             targetPath = paths.ToRelative(targetFull)!;
             if (request.Kind is FileJobKind.Copy or FileJobKind.Extract or FileJobKind.Compress)
                 job.BytesTotal = request.Paths.Sum(path => paths.TryResolve(path, out var full) ? SizeOf(full) : 0);
+            if (request.Kind == FileJobKind.Copy)
+                _partials.RemoveLeftovers(job, targetFull);
             if (request.Kind == FileJobKind.Compress)
             {
                 FileJobItem made;
@@ -381,27 +385,32 @@ public sealed class FileJobs(
                 $"“{Base(path)}” was not copied: the drive would keep less than {margin / 1024 / 1024:N0} MB free."
             );
         }
-
-        using var hold = scans.TryBeginOperation(destination);
+        // Written as name.sfe-partial, listed at once with its progress, renamed when whole.
+        var partial = PartialItems.FreeName(Path.GetDirectoryName(destination)!, Path.GetFileName(destination));
+        using var hold = scans.TryBeginOperation(partial, destination);
         if (hold is null)
             return ScanRunning(path);
-
         var skipped = new List<string>();
+        job.Partials.Add(partial);
         try
         {
+            _partials.Writes(job, PartialItems.Create(partial, isFolder), Path.GetFileName(destination), needed);
             if (isFolder)
-                await CopyFolderAsync(job, source, sourcePath, destination, skipped, token);
+                await CopyFolderAsync(job, source, sourcePath, partial, skipped, token);
             else
-                await CopyFileAsync(job, source, destination, token);
+                await CopyFileAsync(job, source, partial, token);
+            destination = PartialItems.Place(partial, destination, isFolder);
+            destinationPath = Join(Parent(destinationPath), Path.GetFileName(destination));
         }
         catch
         {
             // Cancelled or failed: nothing half copied stays.
-            if (Directory.Exists(destination))
-                FileTree.Delete(destination);
-            else if (File.Exists(destination))
-                File.Delete(destination);
+            _partials.Remove(partial);
             throw;
+        }
+        finally
+        {
+            PartialItems.Wrote(job);
         }
 
         // The copies: indexed (a file now, a folder by a scan), with previews and, when asked, the originals' tags.
@@ -502,7 +511,7 @@ public sealed class FileJobs(
         {
             await using var output = new FileStream(
                 destination,
-                FileMode.CreateNew,
+                FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
                 CopyBuffer,
@@ -654,6 +663,7 @@ public sealed class FileJobs(
         try
         {
             Directory.CreateDirectory(partial);
+            _partials.Writes(job, partial, stem, SizeOf(source));
             int? maxFullPath = null;
             await using (var db = await dbFactory.CreateDbContextAsync(token))
                 maxFullPath = db.PathLengthLimit;
@@ -720,6 +730,10 @@ public sealed class FileJobs(
             }
 
             throw;
+        }
+        finally
+        {
+            PartialItems.Wrote(job);
         }
 
         // What came out takes its place (the files are whole); a cancel while a clash is asked leaves the rest out.
@@ -911,6 +925,7 @@ public sealed class FileJobs(
                     CopyBuffer
                 );
                 await using var writer = new ZipWriter(file, job.Password);
+                _partials.Writes(job, partial, name, job.BytesTotal);
                 var checkedAt = 0L;
                 summary = await archives.CompressAsync(
                     chosen,
@@ -941,6 +956,10 @@ public sealed class FileJobs(
             {
                 _partials.RemoveFile(partial);
                 throw;
+            }
+            finally
+            {
+                PartialItems.Wrote(job);
             }
 
             // Its name, now that it is whole: a clash is asked (or answered by the request).

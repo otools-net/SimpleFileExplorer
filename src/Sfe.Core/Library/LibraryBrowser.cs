@@ -1,12 +1,21 @@
 using Microsoft.Extensions.Options;
+using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.Options;
 using Otools.Net.Sfe.Core.Paths;
 
 namespace Otools.Net.Sfe.Core.Library;
 
 /// <summary>Lists folders straight from disk.</summary>
-public sealed class LibraryBrowser(LibraryPaths paths, MediaClassifier classifier, IOptionsMonitor<SfeOptions> options)
+public sealed class LibraryBrowser(
+    LibraryPaths paths,
+    MediaClassifier classifier,
+    IOptionsMonitor<SfeOptions> options,
+    ItemsBeingWritten writing
+)
 {
+    /// <summary>The files and folders being written in the library, and how far each is (for listings).</summary>
+    public ItemsBeingWritten Writing => writing;
+
     private static readonly EnumerationOptions WithHidden = CreateEnumerationOptions(showHidden: true);
     private static readonly EnumerationOptions WithoutHidden = CreateEnumerationOptions(showHidden: false);
 
