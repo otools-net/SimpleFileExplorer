@@ -13,6 +13,7 @@ import {
     ASPECTS,
     aspectRatio,
     clampRect,
+    CropDrag,
     flipAspect,
     largestAround,
     dragRect,
@@ -36,19 +37,6 @@ import {
     renderEdits,
     Size,
 } from './edits';
-
-/** A drag of the crop frame: what moves, from where, and the frame then. */
-interface CropDrag {
-    pointerId: number;
-    handle: Handle | null;
-    startX: number;
-    startY: number;
-    start: Rect;
-    /** Picture pixels per screen pixel. */
-    scale: number;
-    /** A new frame, drawn from this point of the picture. */
-    origin: { x: number; y: number } | null;
-}
 
 type CropField = keyof Rect;
 

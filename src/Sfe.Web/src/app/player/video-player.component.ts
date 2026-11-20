@@ -20,6 +20,7 @@ import { readPreference, writePreference } from '../core/preferences';
 import { MenuEntry } from '../menus/context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../menus/overflow-row';
 import { IconComponent } from '../shared/icon.component';
+import { downloadFrame } from './frame-capture';
 
 const DOUBLE_TAP_MS = 300; // max delay between the two taps of a double tap
 const STREAK_MS = 700; // further taps within this delay add another step
@@ -521,29 +522,11 @@ export class VideoPlayerComponent {
         );
     }
 
-    /**
-     * Downloads the frame on screen at the video's own resolution. The video comes from this server, so the canvas
-     * isn't tainted; a blob link with `download` works on plain-http LAN pages, unlike the image clipboard.
-     */
+    /** Downloads the frame on screen (`downloadFrame`), named after the video and the time, with a flash. */
     protected saveFrame(): void {
-        const video = this.video;
-        if (!video.videoWidth || video.readyState < 2) return; // no frame decoded yet
-        const canvas = Object.assign(document.createElement('canvas'), {
-            width: video.videoWidth,
-            height: video.videoHeight,
-        });
-        canvas.getContext('2d')!.drawImage(video, 0, 0);
         const time = formatTime(this.currentTime()).replaceAll(':', '-');
         const fileName = `${this.name().replace(/\.[^./]+$/, '')} ${time}.png`;
-        canvas.toBlob((blob) => {
-            if (!blob) return;
-            const url = URL.createObjectURL(blob);
-            const link = Object.assign(document.createElement('a'), { href: url, download: fileName });
-            this.host.append(link);
-            link.click();
-            link.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 10000);
-        }, 'image/png');
+        if (!downloadFrame(this.video, fileName, this.host)) return;
         const flash = this.flashRef().nativeElement;
         flash.classList.remove('show');
         void flash.offsetWidth; // restart the animation

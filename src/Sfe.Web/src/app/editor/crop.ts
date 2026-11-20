@@ -11,6 +11,19 @@ export type Handle = 'move' | 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 /** The handles drawn on the frame, clockwise from the top left corner. */
 export const HANDLES: readonly Exclude<Handle, 'move'>[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
 
+/** A drag of the crop frame: what moves, from where, and the frame then. */
+export interface CropDrag {
+    pointerId: number;
+    handle: Handle | null;
+    startX: number;
+    startY: number;
+    start: Rect;
+    /** Picture pixels per screen pixel. */
+    scale: number;
+    /** A new frame, drawn from this point of the picture. */
+    origin: { x: number; y: number } | null;
+}
+
 /**
  * The aspect ratio choices: [id, label], `free` = none, `original` = the picture's own, then the usual ratios of
  * photos, screens and social posts, landscape before its portrait (`flipAspect` turns one into the other).
