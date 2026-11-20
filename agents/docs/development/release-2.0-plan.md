@@ -43,6 +43,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   name (`files/partial-files.ts`): faded, "being written" chip, no href, no preview, clicks open nothing, menu cut to
   Delete / Copy full path / Properties. Selection bar not covered (left to 2.9). Note
   [partial-files](../features/partial-files.md), screenshot `partial-file.png` (docs-screenshots scene `partial`).
+- [ ] **1.4 Copy progress on the item, as in macOS Finder** (owner's request 2026-11-20, M; after 1.3). Today only a
+  static "being written" mark, and library copies (`FileJobs.CopyFileAsync`) write the final name unmarked. Jobs
+  already know their progress (`FileJobView.BytesDone`/`BytesTotal`, `Current`, `JobRun.Partials`) but only the
+  operations panel shows it. Add: library copies registered as "in progress" on their destination while they run
+  (real name kept, as Finder does — or a partial then rename; pick one and note why); the items being written in a
+  folder and their progress told to its open listings through the change feed (throttled to a few updates a second
+  per folder, nothing per write; other people's copies too, within their rights); a progress ring or bar on the
+  tile / row (percentage in the hint), real name shown without `.sfe-partial`, not openable until done, refreshed in
+  place when finished; a folder being copied shows the progress on its card (from the job's byte totals). Reuse for
+  uploads in progress (4.3) where it fits. Tests, user docs with screenshot, partial-files.md updated.
 
 ### Phase 2: foundations (texts, menus) — before any new screen
 
@@ -212,8 +222,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-20):** steps 1.1, 1.2 and 1.3 done (see their ticks). Next: **2.1** (glossary and
-  writing style).
+- **Last session (2026-11-20):** steps 1.1, 1.2 and 1.3 done (see their ticks); step 1.4 added
+  at the owner's request (copy progress on the item). Next: **1.4**.
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
   (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and
