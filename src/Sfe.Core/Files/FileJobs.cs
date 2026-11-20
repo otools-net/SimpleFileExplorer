@@ -49,6 +49,7 @@ public sealed class FileJobs(
     private const long FreeSpaceStep = 64L << 20;
 
     private readonly CancellationTokenSource _shutdown = new();
+    private readonly PartialItems _partials = new(board, logger);
 
     /// <summary>Files and folders being written before they take their names (<see cref="LibraryPaths"/>).</summary>
     public const string PartialSuffix = LibraryPaths.PartialSuffix;
@@ -642,8 +643,8 @@ public sealed class FileJobs(
 
         var settings = options.CurrentValue;
         var stem = StemOf(name);
-        RemoveLeftovers(job, targetFull);
-        var partial = PartialFolder(targetFull, stem);
+        _partials.RemoveLeftovers(job, targetFull);
+        var partial = PartialItems.FreeName(targetFull, stem);
         using var hold = scans.TryBeginOperation(partial);
         if (hold is null)
             return ScanRunning(path);
@@ -695,7 +696,7 @@ public sealed class FileJobs(
         }
         catch (Exception ex)
         {
-            RemovePartial(partial);
+            _partials.RemoveFolder(partial);
             if (ex is ArchiveException { NeedsPassword: true })
             {
                 return new FileJobItem(
@@ -744,7 +745,7 @@ public sealed class FileJobs(
                 using var place = scans.TryBeginOperation(destination);
                 if (place is null)
                 {
-                    RemovePartial(partial);
+                    _partials.RemoveFolder(partial);
                     return ScanRunning(path);
                 }
                 Directory.Move(single ?? partial, destination);
@@ -788,7 +789,7 @@ public sealed class FileJobs(
         }
         finally
         {
-            RemovePartial(partial);
+            _partials.RemoveFolder(partial);
         }
 
         try
@@ -892,8 +893,8 @@ public sealed class FileJobs(
         await gate.WaitAsync(token);
         try
         {
-            RemoveLeftovers(job, targetFull);
-            var partial = PartialFolder(targetFull, name);
+            _partials.RemoveLeftovers(job, targetFull);
+            var partial = PartialItems.FreeName(targetFull, name);
             using var hold = scans.TryBeginOperation(partial);
             if (hold is null)
                 return ScanRunning(label);
@@ -938,7 +939,7 @@ public sealed class FileJobs(
             }
             catch
             {
-                RemovePartialFile(partial);
+                _partials.RemoveFile(partial);
                 throw;
             }
 
@@ -958,7 +959,7 @@ public sealed class FileJobs(
             );
             if (clash is not null)
             {
-                RemovePartialFile(partial);
+                _partials.RemoveFile(partial);
                 return clash;
             }
             var destination = Path.Combine(targetFull, finalName!);
@@ -966,7 +967,7 @@ public sealed class FileJobs(
             {
                 if (place is null)
                 {
-                    RemovePartialFile(partial);
+                    _partials.RemoveFile(partial);
                     return ScanRunning(label);
                 }
                 File.Move(partial, destination);
@@ -1016,18 +1017,6 @@ public sealed class FileJobs(
         if (summary.LeftOut.Count > 0)
             text += $" Left out {Count(summary.LeftOut.Count, "item")} (listed in “{Archives.LeftOutEntry}”).";
         return text;
-    }
-
-    private void RemovePartialFile(string partial)
-    {
-        try
-        {
-            File.Delete(partial);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            logger.LogWarning(ex, "Could not remove the partial file {File}: the next compression there does", partial);
-        }
     }
 
     /// <summary>
@@ -1082,66 +1071,6 @@ public sealed class FileJobs(
 
         var stem = Path.GetFileNameWithoutExtension(name);
         return stem.Length > 0 ? stem : name;
-    }
-
-    /// <summary>
-    /// A free <c>name.sfe-partial</c> in <paramref name="folder"/> (its name cut to stay a valid one), for a folder or
-    /// a file.
-    /// </summary>
-    private static string PartialFolder(string folder, string stem)
-    {
-        stem = stem.Length > 200 ? stem[..200].TrimEnd('.', ' ') : stem;
-        for (var n = 1; n <= FileNames.MaxKeepBothAttempts; n++)
-        {
-            var name = n == 1 ? stem + PartialSuffix : $"{stem} ({n}){PartialSuffix}";
-            if (!LibraryClashes.Taken(folder)(name))
-                return Path.Combine(folder, name);
-        }
-        throw new IOException("No free name.");
-    }
-
-    /// <summary>
-    /// Partial folders an extraction left in <paramref name="folder"/> when the server stopped during it: removed at
-    /// the next extraction there, unless a running job writes into one.
-    /// </summary>
-    private void RemoveLeftovers(JobRun job, string folder)
-    {
-        try
-        {
-            var running = board.PartialsOfOthers(job);
-            foreach (var leftover in Directory.EnumerateDirectories(folder, "*" + PartialSuffix))
-            {
-                if (!running.Contains(leftover) && new DirectoryInfo(leftover).LinkTarget is null)
-                    RemovePartial(leftover);
-            }
-
-            foreach (var leftover in Directory.EnumerateFiles(folder, "*" + PartialSuffix))
-            {
-                if (!running.Contains(leftover) && new FileInfo(leftover).LinkTarget is null)
-                    RemovePartialFile(leftover);
-            }
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            logger.LogDebug(ex, "Could not look for partial folders in {Folder}", folder);
-        }
-    }
-
-    private void RemovePartial(string partial)
-    {
-        try
-        {
-            if (Directory.Exists(partial))
-                FileTree.Delete(partial);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            logger.LogWarning(
-                ex,
-                "Could not remove the partial folder {Folder}: the next extraction there does",
-                partial
-            );
-        }
     }
 
     /// <summary>
