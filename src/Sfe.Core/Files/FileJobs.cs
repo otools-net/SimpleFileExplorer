@@ -50,8 +50,8 @@ public sealed class FileJobs(
 
     private readonly CancellationTokenSource _shutdown = new();
 
-    /// <summary>Folders an extraction writes into before they take their names: never a name of the person's.</summary>
-    public const string PartialSuffix = ".sfe-partial";
+    /// <summary>Files and folders being written before they take their names (<see cref="LibraryPaths"/>).</summary>
+    public const string PartialSuffix = LibraryPaths.PartialSuffix;
 
     /// <summary>
     /// Starts a move, copy or extraction; the result is its first view. <paramref name="password"/>: the archive's,

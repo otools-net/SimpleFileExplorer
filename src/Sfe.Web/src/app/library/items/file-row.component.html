@@ -1,7 +1,7 @@
     <label sfeSelectBox [item]="item()"></label>
     <a
         class="item-link"
-        [href]="url()"
+        [attr.href]="url()"
         target="_blank"
         rel="noopener"
         [title]="linkTitle()"
@@ -23,7 +23,7 @@
     <div class="row-main">
         <a
             class="item-link"
-            [href]="url()"
+            [attr.href]="url()"
             target="_blank"
             rel="noopener"
             [title]="linkTitle()"
@@ -31,6 +31,7 @@
         >
             <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
         </a>
+        <sfe-partial-mark [item]="item()" />
         <span class="row-meta">@if (item().extension) {<span class="row-meta-type">{{ item().extension }}</span> ·
         }{{ meta() }}</span>
         <sfe-item-folder [item]="item()" [pattern]="pattern()" />

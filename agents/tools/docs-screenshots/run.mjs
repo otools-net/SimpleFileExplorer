@@ -65,7 +65,7 @@ function node(script, ...scriptArgs) {
     return new Promise((resolve, reject) => {
         const started = Date.now();
         const child = spawn(process.execPath, [path.join(here, script), ...scriptArgs], {
-            stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, SFE_URL: url, SFE_SETUP_CODE: setupCode, ...(ffmpeg ? { FFMPEG: ffmpeg } : {}) },
+            stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, SFE_URL: url, SFE_SETUP_CODE: setupCode, SFE_LIBRARY: library, ...(ffmpeg ? { FFMPEG: ffmpeg } : {}) },
         });
         let active = Date.now();
         const seen = new Map();

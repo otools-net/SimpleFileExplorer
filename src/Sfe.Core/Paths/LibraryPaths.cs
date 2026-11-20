@@ -76,6 +76,15 @@ public sealed class LibraryPaths
     public const string WorkFolderName = ".sfe";
 
     /// <summary>
+    /// Ending of the files and folders being written (transfers, compressions, extractions) before they take their
+    /// names: never a name of the person's; scans leave them out, the client marks them.
+    /// </summary>
+    public const string PartialSuffix = ".sfe-partial";
+
+    /// <summary>A file or folder being written (<see cref="PartialSuffix"/>).</summary>
+    public static bool IsPartial(string name) => name.EndsWith(PartialSuffix, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
     /// <paramref name="fullPath"/> (inside the root, as <see cref="Path.GetFullPath(string)"/> made it) is SFE's work
     /// folder or inside it: no route reaches it. Its short (8.3) name on Windows too.
     /// </summary>

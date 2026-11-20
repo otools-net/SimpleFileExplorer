@@ -37,9 +37,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   `saveFrame`; refused → error toast, editor not opened, nothing saved. Manual Firefox check in picture-editor.md.
   e2e `picture-editor.spec.ts` (the probe passes in Chromium and WebKit). Refactoring first: `CropDrag` to
   `crop.ts`, frame download to `player/frame-capture.ts`. No screenshot (a toast).
-- [ ] **1.3 Partial files marked** (IDEA-013 part, S). Copies and transfers write `name.sfe-partial` in the
-  destination folder (`FileJobs`, `LibraryTransferEndpoint`); listings show them as ordinary files. Mark them
-  "being written" (row mark, no open/preview), keep them out of search results and duplicates.
+- [x] **1.3 Partial files marked** (IDEA-013 part, S). Done 2026-11-20: transfers into the library, compression and
+  extraction write `name.sfe-partial` (library copies write the final name: unchanged). Scans skip that ending
+  (`LibraryPaths.IsPartial`, files and folders), so search and duplicates never see them; the client marks them by
+  name (`files/partial-files.ts`): faded, "being written" chip, no href, no preview, clicks open nothing, menu cut to
+  Delete / Copy full path / Properties. Selection bar not covered (left to 2.9). Note
+  [partial-files](../features/partial-files.md), screenshot `partial-file.png` (docs-screenshots scene `partial`).
 
 ### Phase 2: foundations (texts, menus) — before any new screen
 
@@ -209,7 +212,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-20):** steps 1.1 and 1.2 done (see their ticks). Next: **1.3** (partial files marked).
+- **Last session (2026-11-20):** steps 1.1, 1.2 and 1.3 done (see their ticks). Next: **2.1** (glossary and
+  writing style).
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
   (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and
@@ -225,6 +229,8 @@ Where the work stands, for a session that picks it up. Update it at the end of e
   - A refactoring that frees lines: write the baseline, but the step after it may raise it back a little (as 1.1 and
     1.2 did); `measure.mjs --write-baseline` alone writes it (with `--check` it doesn't).
   - Client specs run with `npm test -- --include <path>` (not `npx vitest`).
+  - The first `dotnet test` after a client build (`npm test` builds too) fails on a stale `wwwroot` chunk ("No file
+    exists for the asset"): run it again, the second build succeeds.
 
 ## Decisions
 

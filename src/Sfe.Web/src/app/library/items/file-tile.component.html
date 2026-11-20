@@ -1,6 +1,6 @@
     <a
         class="item-link"
-        [href]="url()"
+        [attr.href]="url()"
         target="_blank"
         rel="noopener"
         [title]="linkTitle()"
@@ -41,7 +41,7 @@
     <div class="info">
         <a
             class="item-link"
-            [href]="url()"
+            [attr.href]="url()"
             target="_blank"
             rel="noopener"
             [title]="linkTitle()"
@@ -49,6 +49,7 @@
         >
             <span class="item-name"><sfe-highlight [text]="item().name" [pattern]="pattern()" /></span>
         </a>
+        <sfe-partial-mark [item]="item()" />
         <sfe-item-folder [item]="item()" [pattern]="pattern()" />
         <span class="meta">{{ meta() }}</span>
         <sfe-item-tags [item]="item()" />

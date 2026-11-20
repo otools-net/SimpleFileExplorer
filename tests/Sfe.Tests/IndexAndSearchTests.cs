@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Otools.Net.Sfe.Core.Data;
+using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.Indexing;
 using Otools.Net.Sfe.Core.Library;
 using Otools.Net.Sfe.Core.Paths;
@@ -419,6 +420,29 @@ public sealed class IndexAndSearchTests
 
         Assert.IsEmpty(await SearchNamesAsync("Русский"));
         Assert.IsNotEmpty(await SearchNamesAsync("RFile"));
+    }
+
+    [TestMethod]
+    public async Task PartialFilesAndFoldersAreIndexedOnlyOnceRenamed()
+    {
+        // Transfers and compressions write a file, extractions a folder, under name.sfe-partial: search and
+        // duplicates must never find what is still being written.
+        _library.AddFile("Media/clip.mp4" + FileJobs.PartialSuffix, 100);
+        _library.AddFile("Media/photos" + FileJobs.PartialSuffix + "/inside.jpg", 100);
+
+        await ScanAsync(_library.Root);
+
+        await using (var db = await CreateDbAsync())
+        {
+            Assert.IsFalse(await db.Files.AnyAsync(f => f.FullName.Contains(FileJobs.PartialSuffix)));
+            Assert.IsFalse(await db.Directories.AnyAsync(d => d.FullName.Contains(FileJobs.PartialSuffix)));
+        }
+
+        File.Move(_library.FullPath("Media/clip.mp4" + FileJobs.PartialSuffix), _library.FullPath("Media/clip.mp4"));
+        await ScanAsync(_library.Root);
+
+        await using (var db = await CreateDbAsync())
+            Assert.IsTrue(await db.Files.AnyAsync(f => f.FullName == _library.FullPath("Media/clip.mp4")));
     }
 
     [TestMethod]

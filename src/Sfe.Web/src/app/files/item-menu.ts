@@ -24,6 +24,7 @@ import { QuickLinksService } from '../library/quick-links/quick-links.service';
 import { FileDownloads } from './downloads';
 import { FileActions } from './file-actions';
 import { stemOf } from './extract.dialog';
+import { partialEntries } from './partial-files';
 import { FileTransfers, pasteTitle } from './file-transfers';
 
 /** One entry of an item's menu: always an action. */
@@ -430,7 +431,7 @@ export class ItemMenu {
                         : 'Its size, dates and what the index knows of it; its checksum (Alt+Enter)',
                 run: () => void this.dialogs.properties()?.open(item),
             });
-        return entries;
+        return partialEntries(item, entries);
     }
 
     /**

@@ -1,4 +1,6 @@
 // Documentation screenshots: node shots.mjs [scene...]
+import fs from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launch, sleep } from './cdp.mjs';
 
@@ -777,6 +779,26 @@ const scenes = {
         await a.shot(OUT + 'admin-files-uploads.png');
         await a.eval(call('DELETE', `api/v1/files/uploads/${started.id}`));
         await a.close();
+    },
+    /**
+     * A file still being written (name.sfe-partial, as a transfer leaves it while it runs), put straight into the
+     * sample library (`SFE_LIBRARY`, set by run.mjs) and removed after the shot.
+     */
+    async partial() {
+        const file = path.join(process.env.SFE_LIBRARY, 'Inbox', 'Holiday clip.webm.sfe-partial');
+        fs.writeFileSync(file, Buffer.alloc(3 << 20));
+        try {
+            const b = await session();
+            await b.open('?path=Inbox');
+            await b.clickTitle('List');
+            await sleep(1500);
+            const row = await b.rect('.item.partial');
+            await b.shot(OUT + 'partial-file.png', { x: 0, y: Math.max(0, row.y - 100), width: 1280, height: 220 });
+            await b.clickTitle('Grid');
+            await b.close();
+        } finally {
+            fs.rmSync(file, { force: true });
+        }
     },
     async files() {
         const b = await session();

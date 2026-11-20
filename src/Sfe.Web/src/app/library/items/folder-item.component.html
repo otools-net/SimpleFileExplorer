@@ -8,12 +8,14 @@
     @if (cards()) {
         <sfe-folder-cover [path]="item().path" />
         <span class="folder-caption"><svg sfeIcon="folder"></svg><span class="item-name">{{ item().name }}</span>
+            <sfe-partial-mark [item]="item()" />
             @if (exclusion(); as exclusion) {
                 <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
             }
         </span>
     } @else {
         <svg sfeIcon="folder"></svg><span class="item-name">{{ item().name }}</span>
+        <sfe-partial-mark [item]="item()" />
         @if (exclusion(); as exclusion) {
             <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
         }

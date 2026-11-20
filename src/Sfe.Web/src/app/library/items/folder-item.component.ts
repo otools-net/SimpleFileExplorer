@@ -14,7 +14,8 @@ import { FolderCoverComponent } from './folder-cover.component';
 import { ItemActions } from './item-actions.service';
 import { DefaultTagsBadgeComponent } from '../../tags/default-tags-badge.component';
 import { exclusionChip, exclusionTitle } from './exclusions';
-import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
+import { NOT_INDEXED, PartialMarkComponent, SelectBoxComponent } from './item-parts';
+import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial } from '../../files/partial-files';
 
 /**
  * A listed folder: a card with its first pictures (`cards`), or a line with its name. Buttons can't sit inside
@@ -29,6 +30,7 @@ import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
         ItemMenuButtonComponent,
         SelectBoxComponent,
         DefaultTagsBadgeComponent,
+        PartialMarkComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -36,6 +38,7 @@ import { NOT_INDEXED, SelectBoxComponent } from './item-parts';
         '[class.copied]': 'copied()',
         '[class.cut]': 'transfers.cutPaths().has(item().path)',
         '[class.unindexed]': 'unindexed()',
+        '[class.partial]': 'partial()',
         '[class.revealed]': 'store.revealed() === item().path',
         '[class.selected]': 'store.selection().has(item().path)',
         '[attr.data-path]': 'item().path',
@@ -58,6 +61,8 @@ export class FolderItemComponent {
     protected readonly transfers = inject(FileTransfers);
     protected readonly copied = computed(() => this.copyPaths.copied().has(this.item().path));
     protected readonly unindexed = computed(() => this.item().indexed === false);
+    /** Still being written (an extraction): marked, not opened. */
+    protected readonly partial = computed(() => isPartial(this.item()));
     /** Kept out of scans, trickplay or thumbnails (for everyone: it tells why). */
     protected readonly exclusion = computed(() => exclusionChip(this.item().excluded));
     protected readonly exclusionTitle = computed(() => exclusionTitle(this.item().excluded, this.item().path));
@@ -65,6 +70,7 @@ export class FolderItemComponent {
     protected readonly linkTitle = computed(() =>
         [
             this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''),
+            this.partial() ? `(${BEING_WRITTEN}) ${BEING_WRITTEN_TITLE}` : null,
             this.cards() && this.indexedItems() !== null ? this.countTitle() : null,
             this.exclusionTitle(),
         ]
@@ -83,11 +89,16 @@ export class FolderItemComponent {
     constructor() {
         useContextMenu(() => this.menu.target(this.item()));
         // While items are selected, a click on the folder selects it: caught before the link's own handler navigates.
+        // One still being written isn't opened.
         const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
         const actions = inject(ItemActions);
         const capture = (event: MouseEvent) => {
-            if ((event.target as Element).closest('a.folder') && actions.selectInstead(event, this.item()))
+            if (!(event.target as Element).closest('a.folder')) return;
+            if (actions.selectInstead(event, this.item())) event.stopPropagation();
+            else if (this.partial()) {
+                event.preventDefault();
                 event.stopPropagation();
+            }
         };
         host.addEventListener('click', capture, { capture: true });
         inject(DestroyRef).onDestroy(() => host.removeEventListener('click', capture, { capture: true }));

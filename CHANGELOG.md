@@ -7,6 +7,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Files being written are marked**: a file copied from a connection, a zip being made and a folder being extracted
+  (`name.sfe-partial` until complete) show faded with a "being written" mark in listings; they can't be opened or
+  previewed, their menu keeps Delete, Copy full path and Properties, and scans leave them out, so search and
+  duplicates never find them (one indexed before goes at the next scan).
 - **Previews of connections' files**: thumbnails come from the provider (Dropbox: 25 asked at once) and are kept on
   the server under the file's id and version, so folders seen again show them without asking the provider and a file
   changed there gets a new one; pictures the provider doesn't thumbnail (Dropbox: photos over 20 MB) are made by

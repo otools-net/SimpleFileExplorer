@@ -4,6 +4,7 @@ import { formatOf, isViewable } from '../../formats/formats';
 import { LibraryItem } from '../../core/models';
 import { TagSummary } from '../../core/tag.models';
 import { tagQuery } from '../../tags/tags';
+import { isPartial } from '../../files/partial-files';
 import { Dialogs } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
 
@@ -21,7 +22,7 @@ export class ItemActions {
 
     /** Opens a file as a plain click on it does: in the viewer when it has one (true), else nothing (false). */
     view(item: LibraryItem): boolean {
-        const viewer = isViewable(item) ? this.dialogs.viewer() : null;
+        const viewer = isViewable(item) && !isPartial(item) ? this.dialogs.viewer() : null;
         viewer?.open(item);
         return Boolean(viewer);
     }
@@ -44,6 +45,10 @@ export class ItemActions {
      */
     openFile(event: MouseEvent, item: LibraryItem): void {
         if (this.selectInstead(event, item)) return;
+        if (isPartial(item)) {
+            event.preventDefault(); // still being written: nothing to open yet
+            return;
+        }
         if (
             event.button === 0 &&
             !event.ctrlKey &&

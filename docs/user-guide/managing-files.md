@@ -261,6 +261,16 @@ the folder you are viewing is listed again by itself a moment later: what was ad
 without losing your place or what you selected. Changes made to the disk outside SFE show when you open the folder
 again.
 
+## Files being written
+
+A file copied from a connection, a zip being made and an archive being extracted are written under a temporary name
+ending in `.sfe-partial`, and take their real name only once complete. Until then the listing shows them faded and
+marked **being written**: they can't be opened or previewed, their menu only offers **Delete**, **Copy full path** and
+**Properties**, and search and duplicates never find them. One left behind by an operation that stopped (the server
+was restarted during it) can be deleted; SFE also removes it at the next extraction or compression in that folder.
+
+![A file being written, marked in the listing](../images/partial-file.png)
+
 ## On phones
 
 - **Press and hold** a file or folder to select it (as phone file managers do), on Android and iPhones; press and

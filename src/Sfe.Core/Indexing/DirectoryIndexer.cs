@@ -661,6 +661,7 @@ public sealed class DirectoryIndexer(
     private bool IsIgnoredDirectory(DirectoryInfo directory) =>
         NameSet(ref _ignoredDirectories, Scan.IgnoredDirectories).Contains(directory.Name)
         || IsExcludedFolder(directory)
+        || LibraryPaths.IsPartial(directory.Name) // being written: indexed once it has its name
         // SFE's work folder (the trash...) is never indexed.
         || (
             directory.Name.Length == LibraryPaths.WorkFolderName.Length
@@ -688,7 +689,8 @@ public sealed class DirectoryIndexer(
         return set;
     }
 
-    private bool IsIgnoredFile(FileInfo file) => NameSet(ref _ignoredFiles, Scan.IgnoredFiles).Contains(file.Name);
+    private bool IsIgnoredFile(FileInfo file) =>
+        NameSet(ref _ignoredFiles, Scan.IgnoredFiles).Contains(file.Name) || LibraryPaths.IsPartial(file.Name);
 
     /// <summary>A class, so that parallel scan tasks swap it with one atomic reference write.</summary>
     private sealed record NameCache(List<string> Source, HashSet<string> Names);

@@ -89,3 +89,28 @@ mark {
 .folder-item.unindexed:focus-within {
     opacity: 1;
 }
+
+/* A file or folder still being written (name.sfe-partial): marked, faded, and its link opens nothing. */
+.partial-mark {
+    flex: none;
+    align-self: center;
+    width: fit-content;
+    padding: 1px 6px;
+    border: 1px dashed var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 16px;
+    white-space: nowrap;
+}
+.folder > .partial-mark {
+    margin-left: 4px;
+}
+.item.partial,
+.folder-item.partial {
+    opacity: 0.55;
+}
+.item.partial .item-link,
+.folder-item.partial a.folder {
+    cursor: default;
+}

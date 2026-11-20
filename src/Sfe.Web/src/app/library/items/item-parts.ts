@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
+import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial } from '../../files/partial-files';
 import { LibraryItem } from '../../core/models';
 import { HighlightComponent } from '../../shared/highlight.component';
 import { IconComponent } from '../../shared/icon.component';
@@ -15,6 +16,24 @@ import { ItemActions } from './item-actions.service';
 
 /** Added to the hint of a file or folder the index doesn't have yet (shown faded). */
 export const NOT_INDEXED = '(not indexed yet: search, tags and duplicates find it after a scan)';
+
+/** The mark of a file or folder still being written (`isPartial`); nothing otherwise. */
+@Component({
+    selector: 'sfe-partial-mark',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { style: 'display: contents' },
+    template: `
+        @if (partial()) {
+            <span class="partial-mark" [title]="title">{{ label }}</span>
+        }
+    `,
+})
+export class PartialMarkComponent {
+    readonly item = input.required<LibraryItem>();
+    protected readonly partial = computed(() => isPartial(this.item()));
+    protected readonly label = BEING_WRITTEN;
+    protected readonly title = BEING_WRITTEN_TITLE;
+}
 
 /** Chips of the tags set on a file; clicking one searches for it. */
 @Component({

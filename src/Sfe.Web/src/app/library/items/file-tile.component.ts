@@ -16,6 +16,7 @@ import { CopyPathService } from '../../core/copy-path.service';
 import { formatDate, formatSize, joinParts, kindIcon } from '../../core/format';
 import { LibraryItem } from '../../core/models';
 import { FileTransfers } from '../../files/file-transfers';
+import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial } from '../../files/partial-files';
 import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
 import { useContextMenu } from '../../menus/context-menu';
 import { HighlightComponent } from '../../shared/highlight.component';
@@ -29,6 +30,7 @@ import {
     ItemFolderComponent,
     ItemTagsComponent,
     NOT_INDEXED,
+    PartialMarkComponent,
     SelectBoxComponent,
     TagButtonComponent,
 } from './item-parts';
@@ -55,15 +57,19 @@ abstract class FileItemBase {
     /** Cut (Ctrl+X): faded until pasted. */
     protected readonly cut = computed(() => this.transfers.cutPaths().has(this.item().path));
 
+    /** Still being written (`isPartial`): marked, no link, no preview. */
+    protected readonly partial = computed(() => isPartial(this.item()));
     /** Opened by a modified click (new tab...): the file, or its viewer's page for formats that have one. */
-    protected readonly url = computed(() => this.actions.fileUrl(this.item()));
+    protected readonly url = computed(() => (this.partial() ? null : this.actions.fileUrl(this.item())));
     protected readonly icon = computed(() => kindIcon[this.item().kind]);
     protected readonly sources = computed(
         () =>
-            this.previews.sources(
-                this.item(),
-                this.store.view() === 'single' && Boolean(this.config.config()?.singleViewOriginals),
-            ),
+            this.previews
+                .sources(
+                    this.item(),
+                    this.store.view() === 'single' && Boolean(this.config.config()?.singleViewOriginals),
+                )
+                .filter(() => !this.partial()),
         { equal: sameStrings },
     );
     protected readonly previewFailed = signal(false);
@@ -76,7 +82,15 @@ abstract class FileItemBase {
     protected readonly resolutionMark = computed(() => this.config.resolutionMark(this.item()));
     protected readonly unindexed = computed(() => this.item().indexed === false);
     /** The links' hint: the name, and whether the index has the file yet. */
-    protected readonly linkTitle = computed(() => this.item().name + (this.unindexed() ? ` ${NOT_INDEXED}` : ''));
+    protected readonly linkTitle = computed(
+        () =>
+            this.item().name +
+            (this.partial()
+                ? ` (${BEING_WRITTEN}): ${BEING_WRITTEN_TITLE}`
+                : this.unindexed()
+                  ? ` ${NOT_INDEXED}`
+                  : ''),
+    );
 
     /** The box of the preview, where the hover previews play. */
     protected abstract previewContainer(): HTMLElement | undefined;
@@ -127,6 +141,7 @@ function sameStrings(a: string[], b: string[]): boolean {
         TagButtonComponent,
         ItemFolderComponent,
         ItemMenuButtonComponent,
+        PartialMarkComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -137,6 +152,7 @@ function sameStrings(a: string[], b: string[]): boolean {
         '[class.cut]': 'cut()',
         '[class.revealed]': 'revealed()',
         '[class.unindexed]': 'unindexed()',
+        '[class.partial]': 'partial()',
         '[attr.data-path]': 'item().path',
         '[style.--ratio]': 'ratio()',
     },
@@ -199,6 +215,7 @@ export class FileTileComponent extends FileItemBase {
         TagButtonComponent,
         ItemFolderComponent,
         ItemMenuButtonComponent,
+        PartialMarkComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -208,6 +225,7 @@ export class FileTileComponent extends FileItemBase {
         '[class.cut]': 'cut()',
         '[class.revealed]': 'revealed()',
         '[class.unindexed]': 'unindexed()',
+        '[class.partial]': 'partial()',
         '[attr.data-path]': 'item().path',
     },
     templateUrl: './file-row.component.html',
