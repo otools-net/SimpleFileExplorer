@@ -208,6 +208,13 @@ Security (second audit, 2026-11):
   (`Sfe:Tenants:AllowedRoots`) that leads outside it.
 - **`zod` updated to 4.6.6** (GHSA-mrhx-c7xc-m3w5).
 
+Connections:
+
+- **A connection that must be signed in to again no longer breaks its page**: its listing and its search say so, with
+  a link to the connections page for whoever can sign in again (else: ask whoever manages it); a connection switched
+  off says it is not available. The folder picker of Move to… / Copy to… shows the reason instead of an empty folder,
+  and Properties and the folder rules' picker of such a connection show the error.
+
 ## 1.85.1
 
 ### Fixed

@@ -49,7 +49,11 @@
                 </button>
             </li>
         } @empty {
-            <li class="muted">{{ browser().loading() ? 'Loading…' : 'No folders in here.' }}</li>
+            @if (browser().problem(); as problem) {
+                <li class="form-error" data-place-problem>{{ problem }}</li>
+            } @else {
+                <li class="muted">{{ browser().loading() ? 'Loading…' : 'No folders in here.' }}</li>
+            }
         }
         @if (browser().truncated()) {
             <li class="muted">Only the first {{ shown }} folders are listed.</li>

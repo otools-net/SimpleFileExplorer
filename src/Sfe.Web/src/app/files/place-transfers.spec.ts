@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { ConnectionsConfig } from '../core/config.models';
 import { ConnectionListing, ConnectionPlace, ConnectionsView } from '../core/connection.models';
@@ -242,6 +243,27 @@ describe('the folder picker with places', () => {
             conflicts: 'ask',
         });
         expect(element.querySelector('dialog')!.open).toBe(false);
+    });
+
+    it('says why a connection that cannot be used lists nothing, and offers no folder there', async () => {
+        api.browse.mockResolvedValue(listing('Media', []));
+        const { fixture, element } = create();
+        TestBed.inject(ListingStore).route.set({ path: 'Media', q: '', sort: '', desc: false });
+        transfers.pick('move', [photo]);
+        await settle();
+        fixture.detectChanges();
+        buttonNamed(element.querySelector('.transfer-crumbs')!, 'Places')!.click();
+        fixture.detectChanges();
+
+        api.connectionBrowse.mockRejectedValue(
+            new ApiError(409, 'The connection must be signed in to again.', null, 'connection-needs-reconnecting'),
+        );
+        button(element, 'Dropbox').click();
+        await settle();
+        fixture.detectChanges();
+
+        expect(element.querySelector('[data-place-problem]')!.textContent).toContain('must be signed in to again');
+        expect(buttonNamed(element, 'Move here')!.disabled).toBe(true);
     });
 
     it('starts on the connection listed, whose items it moves and copies', async () => {

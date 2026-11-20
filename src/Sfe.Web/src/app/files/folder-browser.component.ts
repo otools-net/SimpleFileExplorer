@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { Api } from '../core/api.service';
+import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { FolderLevelName, UsableConnection } from '../core/connection.models';
 import { DirectoryListing } from '../core/models';
@@ -33,6 +33,8 @@ export class FolderBrowser {
     readonly top = signal(false);
     readonly listing = signal<DirectoryListing | null>(null);
     readonly loading = signal(false);
+    /** Why the place browsed can't be read (a connection to sign in to again...); null when it was. */
+    readonly problem = signal<string | null>(null);
     /** The session's access to the connection browsed. */
     private readonly access = signal<FolderLevelName | null>(null);
 
@@ -85,6 +87,7 @@ export class FolderBrowser {
         this.connection.set(connection);
         this.top.set(false);
         this.listing.set(null);
+        this.problem.set(null);
     }
 
     /** Shows the library and the connections: a place is opened next. */
@@ -103,15 +106,23 @@ export class FolderBrowser {
         this.connection.set(connection);
         this.top.set(false);
         this.loading.set(true);
+        this.problem.set(null);
         try {
             const listing = await this.read(path, connection);
             if (this.target() === path && this.connection() === connection) this.listing.set(listing);
-        } catch {
-            // A folder gone meanwhile: back to the top.
-            if (path) await this.browse('', connection);
+        } catch (error) {
+            // A folder gone meanwhile: back to the top; a place that can't be read at all: why.
+            if (path && !(error instanceof ApiError && error.status === 409)) await this.browse('', connection);
+            else if (this.target() === path && this.connection() === connection) this.refused(error);
         } finally {
             this.loading.set(false);
         }
+    }
+
+    /** Nothing is listed, so nothing is allowed there; the reason is shown instead. */
+    private refused(error: unknown): void {
+        this.listing.set(null);
+        this.problem.set(error instanceof Error ? error.message : String(error));
     }
 
     private async read(path: string, connection: number | null): Promise<DirectoryListing> {

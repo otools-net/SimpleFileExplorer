@@ -29,6 +29,14 @@ with the library: [transfers](transfers.md).
 - A provider's error becomes `ConnectionProblems` (problem types): `connection-needs-reconnecting` (409, marks the
   connection), `connection-rate-limited` (429 + `Retry-After`), `connection-unavailable` (502), `connection-refused`,
   `connection-not-supported`, `connection-unusable`.
+- Client: `Api.send` resolves a 409 with its body (a state to show), but the connection's reads (`connectionBrowse`,
+  `connectionSearch`, `connectionGet`, `connectionFolders`) go through `getOrRefused`: their 409 is a refusal, so it
+  rejects as an `ApiError` with its `type` (read as a listing, it once broke the page: no `capabilities`). The listing
+  shows it through `connectionProblemOf` (`library/connection-problems.ts`: "sign in again" with a link to the account's
+  or the shared connections page by the connection's level and the session's rights); the folder picker
+  (`FolderBrowser.problem`) shows its words. POSTs (`connectionFiles`) still resolve it: `PlaceFiles.answered` reads it.
+  Tests: `api.service.spec.ts`, `listing.component.spec.ts`, `place-transfers.spec.ts`, e2e
+  `connection-problems.spec.ts`.
 
 ## Browsing and reading
 

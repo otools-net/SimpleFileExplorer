@@ -12,7 +12,19 @@
             }
             @case ('error') {
                 @let error = store.error();
-                @if (error?.type === 'library-root-missing') {
+                @if (connectionProblem(); as problem) {
+                    <sfe-empty-state
+                        icon="lock"
+                        [heading]="problem.heading"
+                        [text]="problem.text"
+                        data-connection-problem
+                    >
+                        @if (problem.page) {
+                            <a class="button" routerLink="/admin" [queryParams]="problem.page">Open connections</a>
+                        }
+                        <a class="button" routerLink="/" [queryParams]="store.libraryParams('')">Go to library root</a>
+                    </sfe-empty-state>
+                } @else if (error?.type === 'library-root-missing') {
                     <sfe-empty-state
                         icon="folder"
                         heading="The library folder is missing"

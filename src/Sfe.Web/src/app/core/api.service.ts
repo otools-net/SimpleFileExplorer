@@ -194,7 +194,7 @@ export class Api {
     /** `after`: the `next` value of the previous page; a connection's files: `connectionSearch` (its index). */
     search = (query: SearchAsk, signal?: AbortSignal) => this.get<SearchResults>('search', query, signal);
     connectionSearch = (id: number, query: SearchAsk, signal?: AbortSignal) =>
-        this.get<ConnectionSearchResults>(`connections/${id}/search`, query, signal);
+        this.getOrRefused<ConnectionSearchResults>(`connections/${id}/search`, query, signal);
 
     scanStatus = () => this.get<ScanStatus>('scan');
     startScan = (path: string) => this.post<ScanStatus>('scan', { path });
@@ -450,7 +450,7 @@ export class Api {
     connectionFiles = <T>(id: number, action: string, body: unknown) =>
         this.post<T>(`connections/${id}/files/${action}`, body);
     connectionGet = <T>(id: number, action: string, query: Record<string, QueryValue>) =>
-        this.get<T>(`connections/${id}/files/${action}`, query);
+        this.getOrRefused<T>(`connections/${id}/files/${action}`, query);
     /** Names the items of a zip (of a connection's files with `connection`); the browser downloads it once. */
     createArchive = (paths: string[], connection?: number) =>
         this.post<ArchiveLink>(connection ? `connections/${connection}/archive` : 'files/archive', { paths });
@@ -626,9 +626,9 @@ export class Api {
 
     /** Connections to other storage (agents/docs/features/connections.md); `kind` of a provider (`dropbox`). */
     connections = () => this.get<ConnectionsView>('connections');
-    /** A page of a connection's folder (`path` relative to its root). */
+    /** A page of a connection's folder (`path` relative to its root); a 409 rejects (`getOrRefused`). */
     connectionBrowse = (id: number, query: BrowseAsk, signal?: AbortSignal) =>
-        this.get<ConnectionListing>(`connections/${id}/browse`, query, signal);
+        this.getOrRefused<ConnectionListing>(`connections/${id}/browse`, query, signal);
     updateConnection = (id: number, change: ConnectionChange) =>
         this.patch<ConnectionInfo>(`connections/${id}`, change);
     removeConnection = (id: number) => this.delete<void>(`connections/${id}`);
@@ -640,7 +640,8 @@ export class Api {
     connectionRules = (id: number) => this.get<ConnectionRuleView[]>(`connections/${id}/folder-rules`);
     setConnectionRules = (id: number, rules: ConnectionRule[]) =>
         this.put<ConnectionRuleView[]>(`connections/${id}/folder-rules`, { rules });
-    connectionFolders = (id: number, path: string) => this.get<FolderPicker>(`connections/${id}/folders`, { path });
+    connectionFolders = (id: number, path: string) =>
+        this.getOrRefused<FolderPicker>(`connections/${id}/folders`, { path });
     connectionIndex = (id: number) => this.get<ConnectionIndexStatus>(`connections/${id}/index`);
     syncConnectionIndex = (id: number) => this.post<ConnectionIndexStatus>(`connections/${id}/index/sync`);
     authorizeConnection = (request: ConnectRequest) => this.post<SignInBegun>('connections/authorize', request);
@@ -671,6 +672,15 @@ export class Api {
             signal,
             redirect,
         );
+    }
+
+    /**
+     * As `get`, for routes whose 409 is a refusal, not a state to show (a connection that can't be used:
+     * `connection-needs-reconnecting`, `connection-unusable`...): it rejects as an `ApiError`, as other errors do.
+     */
+    private getOrRefused<T>(url: string, query: Record<string, QueryValue>, signal?: AbortSignal): Promise<T> {
+        const request = this.http.get<T>(API_BASE + url, { params: params(query), headers: this.headers(false) });
+        return this.send(request, signal, true, false);
     }
 
     private post<T>(url: string, body: unknown = null, signal?: AbortSignal, redirect = true): Promise<T> {
@@ -713,9 +723,10 @@ export class Api {
      * off, a request refused for want of a session (401) opens the sign-in page, one refused before the server is
      * set up (503 `setup-required`) the setup page. One refused while the install waits for its update (503
      * `migration-required`) always opens the update page: no other page works then; one refused because a Local server
-     * answers its own computer only (403 `local-only`) always opens the page saying so.
+     * answers its own computer only (403 `local-only`) always opens the page saying so. A 409 resolves with its body,
+     * unless `resolve409` is off.
      */
-    private send<T>(request: Observable<T>, signal?: AbortSignal, redirect = true): Promise<T> {
+    private send<T>(request: Observable<T>, signal?: AbortSignal, redirect = true, resolve409 = true): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             if (signal?.aborted) {
                 reject(new ApiError(0, 'Cancelled'));
@@ -729,7 +740,8 @@ export class Api {
                         // Another tab switched the session to another library: show that one.
                         location.reload();
                         reject(toApiError(error));
-                    } else if (error instanceof HttpErrorResponse && error.status === 409) resolve(error.error as T);
+                    } else if (resolve409 && error instanceof HttpErrorResponse && error.status === 409)
+                        resolve(error.error as T);
                     else {
                         if (
                             error instanceof HttpErrorResponse &&

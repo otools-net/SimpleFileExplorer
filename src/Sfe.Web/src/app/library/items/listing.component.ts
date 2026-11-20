@@ -14,7 +14,9 @@ import { RouterLink } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
 import { highlightPattern } from '../../core/format';
 import { Rights } from '../../core/rights';
+import { UsableConnections } from '../../core/usable-connections';
 import { EmptyStateComponent } from '../../shared/empty-state.component';
+import { connectionProblemOf } from '../connection-problems';
 import { EverywhereComponent } from '../everywhere/everywhere.component';
 import { ListingStore } from '../listing.store';
 import { FileRowComponent, FileTileComponent } from './file-tile.component';
@@ -44,6 +46,7 @@ export class ListingComponent {
     protected readonly store = inject(ListingStore);
     protected readonly previews = inject(PreviewsService);
     private readonly config = inject(ConfigService);
+    private readonly connections = inject(UsableConnections);
     private readonly injector = inject(Injector);
     private readonly sentinel = viewChild.required<ElementRef<HTMLElement>>('sentinel');
 
@@ -58,6 +61,15 @@ export class ListingComponent {
     protected readonly folderLayout = computed(() =>
         this.store.view() === 'list' ? 'list' : this.folderCards() ? 'grid covers' : 'grid',
     );
+
+    /** The connection listed can't be used (sign in again, switched off...): what to say instead of an error. */
+    protected readonly connectionProblem = computed(() => {
+        const c = this.store.route().c;
+        if (!c || this.store.status() !== 'error') return null;
+        const known = this.connections.list().find((connection) => connection.id === c);
+        if (!known) void this.connections.load();
+        return connectionProblemOf(this.store.error(), known?.level ?? null, this.config);
+    });
 
     /** A search of a connection whose index is not whole: what it finds may miss files. */
     protected readonly coverageNote = computed(() => {

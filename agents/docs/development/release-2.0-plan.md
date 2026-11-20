@@ -1,0 +1,242 @@
+# Plan: release 2.0 (the ideas scratchpad)
+
+Source: the owner's ideas scratchpad (claude.ai doc "SimpleFileExplorer — Ideas Scratchpad", IDEA-001 to IDEA-027,
+2026-11-16). Each idea was checked against `edge` on 2026-11-20 (many were already partly done), the remaining
+questions were answered by the owner, and the ideas were cut here into **steps of one session each**, in order.
+Delete this plan once 2.0 is released, moving what stays true into the feature notes (see
+[AGENTS.md](../../../AGENTS.md), "Keeping these notes current").
+
+**2.0 = every idea below** (owner's choice). It is the first release without the "alpha" label.
+
+## How to work this plan
+
+- **A session takes the first unticked step** whose dependencies are ticked; steps in the same phase may be taken in
+  any order unless "after" says otherwise. Tick it **in the commit that does it**, with a few words worth knowing.
+- A step found too big is split into sub-steps here before starting. A decision taken on the way goes under
+  "Decisions" below, with its date.
+- Each step follows the usual rules: tests ([testing](testing.md)), changelog line, user docs with screenshots
+  ([user-docs](user-docs.md)), migration path ([production-upgrades](production-upgrades.md)), a right for every new
+  route ([rights](../features/rights.md)), no work proportional to a folder per request ([scale](scale.md)), feature
+  note in `agents/docs/features/`.
+- **Versions:** merges into `main` before the end keep the 1.x rules (minor for features). The only breaking step
+  (8.1, hash v2) is done last, so `2.0.0` is the first version carrying it.
+
+## Progress
+
+### Phase 1: bugs and quick fixes
+
+- [x] **1.1 Connection problem answers read as listings** (IDEA-003, S). Done 2026-11-20: the connection's reads
+  (`connectionBrowse`, `connectionSearch`, `connectionGet`, `connectionFolders`) go through `Api.getOrRefused` (a 409
+  rejects); the listing says "sign in again" with a link by level and rights (`library/connection-problems.ts`), the
+  folder picker shows the reason; Everywhere, Properties and folder rules already showed rejections. POSTs keep
+  409-as-data (`PlaceFiles.answered`). Before it, a refactoring moved `ApiError` and its helpers to `core/api-error.ts`
+  (re-exported) to keep `api.service.ts` within its readability baseline. No screenshot (an error state).
+- [ ] **1.2 Canvas permission asked before the work** (IDEA-015, S). Only two read-backs exist: `editor/edits.ts`
+  `encode()` (picture editor Save) and `player/video-player.component.ts` `saveFrame()` ("Save this frame", the
+  "snapshot"). Add a probe helper (1×1 canvas `toBlob` inside the user's click) run when the picture editor opens
+  and before a frame is saved; if refused, explain (Firefox `privacy.resistFingerprinting`) and don't open the
+  editor. Manual Firefox check written in the feature note.
+- [ ] **1.3 Partial files marked** (IDEA-013 part, S). Copies and transfers write `name.sfe-partial` in the
+  destination folder (`FileJobs`, `LibraryTransferEndpoint`); listings show them as ordinary files. Mark them
+  "being written" (row mark, no open/preview), keep them out of search results and duplicates.
+
+### Phase 2: foundations (texts, menus) — before any new screen
+
+- [ ] **2.1 Glossary and writing style** (IDEA-011, S). New note `agents/docs/development/ui-texts.md`: terms
+  (space, library, connection, folder rules, quick links, trash, previous versions…), **UK English** (the texts
+  lean UK today; "colors" mixed in), tone (plain, full sentences, second person), when a text goes to `sfe-help`
+  (more than ~2 lines). No code.
+- [ ] **2.2 Translation-ready strings: infrastructure** (IDEA-010, M). Owner's choice: **prepare only, English
+  ships**. Pick the library (Angular `$localize` + `@angular/localize` or Transloco — check bundle size and runtime
+  switch; npm first), English source file, ICU plurals replacing `plural()` in `core/format.ts`, size units through
+  the same files, an extraction command in `agents/tools/`, a test that fails on a new hard-coded string in a
+  template. Language setting (user level, browser default) only once a second language exists.
+- [ ] **2.3–2.8 Strings extracted and texts rewritten, area by area** (IDEA-010 + IDEA-011, M each). Each string is
+  touched once: moved to the translation file **and** rewritten to the glossary in the same commit. Settings get an
+  optional `help` field in `SettingField` rendered with `shared/help.component.ts` (`sfe-help`, already click/tap
+  and keyboard accessible) for long explanations. Areas: 2.3 settings schema (`settings-schema.ts`, ~105 keys);
+  2.4 administration and access; 2.5 library, listing and menus; 2.6 files dialogs, uploads, operations;
+  2.7 viewers, player, editors, formats; 2.8 toasts (~200 calls) and server texts that reach users (right names
+  in `RightCatalog`, problem `detail`; problem `type` words never change — [api-versioning](api-versioning.md)).
+  Note: no "its/it's" error was found in UI strings; the real issue is terse noun-phrase hints.
+- [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
+  the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
+  (dividers) to `MenuEntry`; one action registry used by the item menu, folder menu and selection bar; order
+  Open (Open, new tab, containing folder, **Open as… ▸**) → Edit (Edit, Crop) → Clipboard (Cut, Copy, Paste) →
+  Organise (Rename, Move to, Copy to, Tags, quick link) → Archive ▸ (Compress, Extract) → Download / Copy path →
+  Delete → Properties (Windows Explorer-like). Shortcuts stay shown. Not-applicable items stay **hidden** for type
+  and selection; items blocked by rights or mode are **greyed with a reason** (used by 3.3). Update
+  context-menu.md, user guide, screenshots, e2e menu specs.
+
+### Phase 3: getting around
+
+- [ ] **3.1 Shallower administration** (IDEA-002, S–M). Tabs, per-page URLs, phone chips and the admin search
+  already exist; the depth is in the space page (groups, accounts, folder access are cards behind the space list:
+  4–5 clicks). Give Groups, Accounts, Visitors and Folder access their own sub-pages (`admin?section=&page=&space=`),
+  index them in `admin-search.ts`, add "Folder access…" to a folder's menu for administrators. Target: any admin
+  page in **at most 3 clicks** from the library. Old addresses kept through `ADMIN_MOVED`.
+- [ ] **3.2 Deep single folder opened directly** (IDEA-027 part 1, S–M). A user whose rights reach only `/a/b/c/d`
+  sees path-only parents today and clicks through them. On entering the library root, follow path-only folders with
+  a single branch down to the first usable one (`access.pathOnly`, server-side so it costs one call). Breadcrumbs:
+  path-only parents shown greyed, not clickable. Several branches: the root keeps listing the path-only branches.
+- [ ] **3.3 Feature × mode matrix and mode badge** (IDEA-023, S–M). Modes are Local (this computer, administrators,
+  no visitors) and External (`Sfe:Mode`, [server-modes](../features/server-modes.md)); limits exist and are
+  enforced server-side but are spread out. Write the matrix in docs/ and the note (source of truth), show the mode
+  in the ⋮ menu / About, grey out with a reason (2.9) what the mode blocks. No new limit without the owner.
+- [ ] **3.4 Used and free space** (IDEA-020, S–M). Free space is read (`LibraryDisk`, uploads, jobs) and Dropbox
+  reports space (`IRemoteStorage.SpaceAsync`, capability `FreeSpace`) but nothing shows it. Routes: the library's
+  drive (no root path leaked to space administrators) and each connection; a bar "X used of Y, Z free" in the
+  sidebar (library and connection place), orange past 85 %, red past 95 %; "not reported" when the provider can't.
+  Refreshed every few minutes (cached server-side). The trash size shown in the trash page. No per-user quota.
+- [ ] **3.5 Changes made outside SFE shown live** (IDEA-007, M). SFE's own changes already reach open listings
+  (SSE change feed, ~400 ms, selection/scroll kept). Add: a file watcher **only on folders someone has open**
+  (reference counted, released with the feed; network shares included, with a polling fallback when the watcher
+  fails), raising `LibraryBrowser.Invalidate`; for connections, poll the change cursor of open connection folders
+  (capability-driven). Per-user off switch. Changes applied quietly (no highlight).
+- [ ] **3.6 Scan as you go for library folders** (IDEA-008, M). Connections already sync when opened. For library
+  folders: after a listing's first page, index **that folder only** (not recursive) in the background, at most
+  once per 10 minutes per folder, never blocking the listing nor colliding with `ScanCoordinator`; removed tagged
+  files go through `MissingFileRecorder` as scans do; marks refreshed through the change feed (3.5 finds the
+  changes, this keeps the index right). Server setting, on by default. After 3.5.
+
+### Phase 4: files
+
+- [ ] **4.1 Merge folders on a clash** (IDEA-016, M). Today a clashing folder is replaced whole (old one to the
+  trash), skipped or kept as `folder1 (2)`; replaced files already go to the trash and picture "Save over" keeps
+  the previous version there — part 2 of the idea is done. Add a **Merge** choice: go into the folder, add new
+  items, ask per clashing file (replace → trash / skip / keep both, "for all"), recursively. Library jobs
+  (`FileJobs`, `LibraryClashes`) and transfers (`TransferRun`). Tests with the scratchpad's case
+  (`root/folder1/text1.txt` + incoming `folder1/text1.txt`, `folder1/text2.txt`) and nested folders. Document
+  today's behaviour first in move-and-copy.md.
+- [ ] **4.2 Previous versions of a file** (IDEA-018, M). Owner's choice: **keep "Trash"** for deleted items and add
+  **Previous versions** on a file (menu + properties) listing its `TrashEntry.Kind = PreviousVersion` entries:
+  open, restore as a copy, restore over (the current one becomes a version). Technical names (`api/files/trash`,
+  `TrashEntries`, `SfeTrash`) unchanged. Version-friendly reading of the trash page ("saved over …" exists).
+- [ ] **4.3 Uploads at scale** (IDEA-013, M). Resumable chunked uploads, folder trees, pause/resume/cancel, user
+  and admin lists already exist. Missing: a load test (5,000 small files; one file of 100+ GB on a scratch disk,
+  as a tool in `agents/tools/`), an end-to-end checksum (client sends a hash per chunk or for the whole file,
+  server verifies before finishing), a background sweep of unfinished uploads (today only when listing/starting),
+  connection uploads that survive a reload / server restart (records persisted). Fix what the load test finds.
+- [ ] **4.4 Ctrl+Z** (IDEA-026, S–M). Toast Undo exists for rename, batch rename, move, delete, duplicate removal.
+  Add a session undo stack (last 20, this tab only): Ctrl+Z / Cmd+Z undoes the latest, outside text fields; an
+  Undo entry in the ⋮ menu; add undo for create folder (to trash) and copy (copies to trash). Refused with a reason
+  when the item changed since. No redo, nothing across reloads or devices, no undo of other users' actions.
+- [ ] **4.5 Notification centre** (IDEA-022, M). Every toast goes through `ToastService`: keep them (this browser,
+  last 200, 30 days), a bell with an unread count, level (info / success / warning / error replacing the `error`
+  flag), entries keep their actions and link to what they're about (folder, upload, task run — add a deep link to
+  one run in the task history). Server events (task finished or failed while away) through the change feed,
+  for the user who started them; administrators also get failed background tasks.
+
+### Phase 5: guidance
+
+- [ ] **5.1 Help inside the app** (IDEA-012, M). The user docs exist (`docs/`, ~34 pages, screenshots kept by the
+  docs-screenshots tool) but aren't shipped or linked. Ship `docs/` in every package (zip, AppImage, Docker), serve
+  it under a read-only route (no right needed beyond being signed in; setup pages too), a `help` route rendering it
+  with the Markdown viewer (links and images rewritten to the help route), Help in the ⋮ menu, a "?" on each admin
+  sub-page opening its page, search over titles and headings (index built at build time). English only (2.2).
+- [ ] **5.2 Getting-started checklist** (IDEA-001 part 1, S–M). Setup is already a 3-step wizard. After it, the
+  administrator's start shows a checklist: library folder, a group and its rights, folder access, an account,
+  a connection; each item opens the wizard or the page, ticks itself when done, can be dismissed.
+- [ ] **5.3 Wizards** (IDEA-001 part 2, M each, one per session): **a** new space (folder picker, name, visitors);
+  **b** share a folder with someone (account or group → Hidden/Read/Write rule, shows "who has access" at the end);
+  **c** add a connection (app key for the provider if missing, then sign in, test, who may use it). Each step has
+  an explanation (`sfe-help`) and a link to its help page (5.1), Back is allowed, nothing saved before the last
+  step, connections tested before saving. The wizards are found by the admin search; the normal pages stay.
+- [ ] **5.4 Home folder** (IDEA-027 part 2, S–M). A home folder per account: default per group set by an
+  administrator, changeable by the user (user setting, [settings-levels](../features/settings-levels.md)); never
+  created automatically. Shown on the dashboard (5.5) and as "Home" in the sidebar. Library folders only.
+- [ ] **5.5 Dashboard as the start page** (IDEA-019, L, split in two). Owner's choice: **dashboard first**.
+  **a:** route, widget registry, default layout, start page setting (user can choose dashboard / home / library
+  root). **b:** widgets from what exists: home and quick links, recent files (new per-user store, last 50),
+  storage (3.4), uploads in progress (4.3), notifications (4.5), connections and their state, tag history;
+  administrators: scan status, failed tasks, keep-alive. Layout: fixed columns with add / remove / reorder (no free
+  grid), saved per user; administrators set the default layout. Works on phones (one column). After 3.4, 4.5, 5.4.
+
+### Phase 6: connections
+
+- [ ] **6.1 One file API in Sfe.Client** (IDEA-006, M). Owner's choice: **one path-agnostic API**. A common
+  interface (e.g. `ISfeFileStore`) implemented by `sfe.Files` and `sfe.Connections[id].Files`: same signatures,
+  results and exceptions (move/copy as jobs on both; new methods where today's differ, old ones kept); a parity
+  matrix in client-library.md; capabilities say what a store can't do (`SfeNotSupportedException`). One shared test
+  suite run against the library and `FakeProvider`, reused by every new provider. Public API snapshot updated.
+- [ ] **6.2 Trash on connections: analysis** (IDEA-017, S, document). Today: library trash in the work folder
+  (`.sfe/trash` or the server's), SMB shares are library folders (not connections), Dropbox uses its own trash
+  (`OwnTrash`). Write the decision for providers without a trash (WebDAV, FTP/SFTP) — e.g. an SFE trash folder on the
+  same storage vs. "can't be undone" — per provider table, who sees entries, retention. Owner reviews before 6.5.
+- [ ] **6.3 Generic provider setup** (IDEA-009 prep, S–M). Remove the Dropbox-only places outside its folder:
+  `DropboxOptions` in `ConnectionOptions`, the Dropbox settings group, `<sfe-provider-setup kind="dropbox">`, the
+  admin entry — each provider declares its app settings and setup page. A route listing all known kinds.
+- [ ] **6.4 Kinds and levels picked, not typed** (IDEA-005, S–M). `connections.providers` and `connections.levels`
+  are `list` textareas. New `multi-select` settings field type (checkboxes); kinds from 6.3's route (empty = all,
+  shown as "All kinds"), levels fixed (account, library, server). Kinds validated against registered providers;
+  unknown saved values shown flagged, not dropped. After 6.3.
+- [ ] **6.5 Google Drive** (IDEA-009, L, split). Owner's order: **Google Drive first**. a: OAuth sign-in,
+  browse by id (duplicate names), raw/download, space; b: write (create, rename, move, copy, delete → Drive's
+  trash), uploads (resumable sessions); c: thumbnails, index sync with the changes API, Google Docs shown as
+  not downloadable (export later). My Drive and shared drives the account sees. Passes 6.1's shared suite.
+- [ ] **6.6 WebDAV** (M), then **6.7 Nextcloud** (S–M: WebDAV with app passwords, Nextcloud previews and trash if
+  6.2 says so), then **6.8 FTP / FTPS / SFTP** (M–L). Each passes the shared suite; recorded answers in tests, no
+  live service in CI (owner's choice: no live tests).
+
+### Phase 7: sync
+
+- [ ] **7.1 Research note** (IDEA-021, S). Owner's choice: **build on SFE transfers**. A short comparison of
+  existing tools (rclone + web UIs, Syncthing, rsync web UIs) for robustness and integration, to confirm or
+  correct the choice; kept in `agents/docs/features/`.
+- [ ] **7.2 Saved sync jobs** (L, split): a: stored job (source and destination: any SFE place), modes **copy
+  changes only** and **mirror** (deletions go to the trash), dry run listing what would change; b: schedulable
+  (`BackgroundTasks.CanSchedule`, today excludes `Transfer`), run history and failures in the notification centre
+  (4.5). Administrators only at first.
+
+### Phase 8: release 2.0
+
+- [ ] **8.1 Hash v2 (breaking)** (IDEA-014, M). Today: SHA-1 of the first 1 MB (`FileFingerprint`), stored in
+  `Files.Sha1` (40 chars), used by duplicates (with size), relink, editors' refresh. Owner's choice: **first 1 MB +
+  last 1 MB + the file size, new algorithm**: XxHash128 (`System.IO.Hashing`, Microsoft) with a version prefix
+  (`2:` + 32 hex = 34 chars, fits the column, name kept); migration clears v1 values (both providers), scans
+  recompute (rows with an empty hash are already re-hashed); relink and duplicates ignore v1 values meanwhile and
+  say "hashes being recomputed". Sfe.Client `DuplicateGroup.Fingerprint` changes value: breaking, in the changelog.
+- [ ] **8.2 Sfe.Client on nuget.org** (IDEA-024, S–M). Package id `Sfe.Client` if free on nuget.org (else
+  `Otools.Net.Sfe.Client`, the namespace); SourceLink and `RepositoryUrl`; a workflow job packing and pushing on
+  `v*` tags with `NUGET_API_KEY` (owner adds the secret). App and client keep one version.
+- [ ] **8.3 README and 2.0.0** (IDEA-024, S). README without the alpha warning: one-line pitch, highlights,
+  Docker quick start, badges (build, version, NuGet, licence), fresh screenshots, link to the in-app help.
+  `CHANGELOG.md` `## 2.0.0` with breaking changes called out; version 2.0.0 at the merge into `main`
+  ([versioning-and-changelog](versioning-and-changelog.md)). Pre-releases (`-rc.1`) allowed by the build scripts.
+
+## Handover (read first when resuming)
+
+Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
+
+- **Last session (2026-11-20):** step 1.1 done (see its tick). Next: **1.2** (canvas probe), then 1.3.
+- **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
+  `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
+  (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and
+  `node agents/tools/readability/measure.mjs --check` before each commit.
+- **Commits per step:** a refactoring needed to make room goes first in its own commit (with `--write-baseline` when
+  it improved a file), then the step's commit (code, tests, changelog, notes, user docs, its tick here).
+- **Traps met:**
+  - `core/api.service.ts` sits exactly at its readability baseline (file length): a new route there needs lines freed
+    elsewhere in it (move helpers or models out in a refactoring commit first).
+  - The e2e web server's first build can fail with "No file exists for the asset … wwwroot\chunk-….js" (stale
+    wwwroot after a client build); the run's own second build succeeds.
+  - No Python on this machine: scripted edits with `node -e` or the edit tools.
+
+## Decisions
+
+Owner's answers (2026-11-20): 2.0 = everything; connectors Google Drive first; languages: prepare only; sync on SFE
+transfers; Trash kept + per-file previous versions; Merge added; hash with size and a new algorithm; dashboard first;
+nuget.org public; one path-agnostic client API; watch open folders (disk and connections); **no live Dropbox tests**
+(IDEA-004 dropped: recorded/fake tests and e2e mocks stay, testing rules already require tests).
+
+Defaults taken (change here if the owner disagrees): UK English; Windows-Explorer-like menu order; admin pages in
+≤3 clicks; XxHash128; notifications kept in the browser (server events pushed, not stored); undo per tab, 20 steps;
+dashboard fixed columns; home folder never auto-created; scan-as-you-go not recursive, 10 minutes; storage bar
+thresholds 85/95 %; sync jobs for administrators only.
+
+## What the check found already done (don't redo)
+
+Resumable uploads (folders, pause, admin list, Sfe.Client resume); trash for deletes, replaces and saved-over
+versions with restore and purge; clash choices with "for all" and keep-both names; live refresh for SFE's own
+changes; Local/External modes enforced server-side; admin tabs, per-page URLs and search; provider abstraction with
+capabilities (Dropbox on it); SemVer, `CHANGELOG.md`, Sfe.Client packed; user docs with screenshots; toast Undo.

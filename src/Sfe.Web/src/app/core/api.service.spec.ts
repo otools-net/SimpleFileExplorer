@@ -182,6 +182,46 @@ describe('Api', () => {
         expect(await check).toEqual({ state: 'disabled' });
     });
 
+    it('rejects the problem of a connection that cannot be used: it is no listing (409)', async () => {
+        const problem = {
+            type: 'connection-needs-reconnecting',
+            title: 'Conflict',
+            status: 409,
+            detail: 'The connection must be signed in to again.',
+        };
+        const browse = api.connectionBrowse(7, { path: '', offset: 0, limit: 10, sort: 'name', desc: false });
+        http.expectOne((r) => r.url === 'api/v1/connections/7/browse').flush(problem, {
+            status: 409,
+            statusText: 'Conflict',
+        });
+        const error = (await browse.catch((e) => e)) as ApiError;
+        expect(error).toBeInstanceOf(ApiError);
+        expect(error.status).toBe(409);
+        expect(error.type).toBe('connection-needs-reconnecting');
+        expect(error.message).toBe('The connection must be signed in to again.');
+
+        const search = api.connectionSearch(7, { q: 'x', path: '', after: null, limit: 10, sort: 'name', desc: false });
+        http.expectOne((r) => r.url === 'api/v1/connections/7/search').flush(
+            { ...problem, type: 'connection-unusable', detail: 'The connection is off.' },
+            { status: 409, statusText: 'Conflict' },
+        );
+        await expect(search).rejects.toMatchObject({ status: 409, type: 'connection-unusable' });
+
+        const properties = api.connectionGet(7, 'properties', { path: 'a.txt' });
+        http.expectOne((r) => r.url === 'api/v1/connections/7/files/properties').flush(problem, {
+            status: 409,
+            statusText: 'Conflict',
+        });
+        await expect(properties).rejects.toMatchObject({ type: 'connection-needs-reconnecting' });
+
+        const folders = api.connectionFolders(7, '');
+        http.expectOne((r) => r.url === 'api/v1/connections/7/folders').flush(problem, {
+            status: 409,
+            statusText: 'Conflict',
+        });
+        await expect(folders).rejects.toMatchObject({ type: 'connection-needs-reconnecting' });
+    });
+
     it('cancels the request when its signal aborts', async () => {
         const controller = new AbortController();
         const page = api.browse({ path: '', offset: 0, limit: 10, sort: 'name', desc: false }, controller.signal);

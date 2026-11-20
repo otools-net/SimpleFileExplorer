@@ -68,7 +68,9 @@ A sign-in lasts 10 minutes and works once, for the account that started it.
   with who uses it, but nobody opens it).
 - **Sign in again** when it shows **Sign in again** in red: Dropbox no longer accepts its sign-in (access removed at
   Dropbox, or the server's keys lost with a restored backup). It stays the same connection, with the same people;
-  signing in to another Dropbox account than before is said, as people then see other files.
+  signing in to another Dropbox account than before is said, as people then see other files. Until then, opening the
+  connection says it must be signed in to again, with a link here for those who can; the others are told to ask
+  whoever manages it.
 - **Who uses it** (space and server connections): **Groups of this space** — doesn't see it, reads, or reads and
   changes; for a server connection, the **spaces it is offered to** (every space, or some), then each space's
   administrators choose their groups.
