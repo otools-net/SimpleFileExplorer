@@ -63,10 +63,11 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 ### Phase 2: foundations (texts, menus) — before any new screen
 
-- [ ] **2.1 Glossary and writing style** (IDEA-011, S). New note `agents/docs/development/ui-texts.md`: terms
-  (space, library, connection, folder rules, quick links, trash, previous versions…), **UK English** (the texts
-  lean UK today; "colors" mixed in), tone (plain, full sentences, second person), when a text goes to `sfe-help`
-  (more than ~2 lines). No code.
+- [x] **2.1 Glossary and writing style** (IDEA-011, S). Done 2026-11-20: [ui-texts](ui-texts.md) (spelling,
+  punctuation, tone, a table of text kinds, `sfe-help` past ~2 lines, glossary with the words not used). The survey
+  found strings already mostly UK, `…` and curly quotes everywhere, errors as "Could not …"; leftovers to fix in
+  2.3–2.8: "Colors"/"Color" (theme hint, tag docs), "guest" for the person (→ visitor), "login" (→ sign in),
+  "job" in user texts (→ operation / task), terse noun-phrase hints. No code, no changelog line (agents/ only).
 - [ ] **2.2 Translation-ready strings: infrastructure** (IDEA-010, M). Owner's choice: **prepare only, English
   ships**. Pick the library (Angular `$localize` + `@angular/localize` or Transloco — check bundle size and runtime
   switch; npm first), English source file, ICU plurals replacing `plural()` in `core/format.ts`, size units through
@@ -229,7 +230,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-20):** steps 1.1 to 1.4 done (see their ticks). Next: **2.1** (glossary, no code).
+- **Last session (2026-11-20):** steps 1.1 to 2.1 done (see their ticks). Next: **2.2** (translation
+  infrastructure: pick the library, npm first); 2.3–2.8 rewrite texts to [ui-texts](ui-texts.md).
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
   (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and

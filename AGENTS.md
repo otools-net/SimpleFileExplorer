@@ -89,6 +89,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |
 | [security-audit-2026-11](agents/docs/development/security-audit-2026-11.md) | second security audit: findings A1–A13 with their status (fixed / open) and possible fixes, what was and wasn't reviewed | `Sfe.Api/Security/`, `LibraryPaths`, `Ffmpeg`, `WindowsServiceSetup` |
 | [file-operations](agents/docs/development/file-operations.md) | rules for changing library files (planned), moving folder rules with folders | `FolderRuleService.BeginMoveAsync` |
+| [ui-texts](agents/docs/development/ui-texts.md) | texts users read: UK English, punctuation, tone, kinds of text (buttons, hints, toasts, errors), when to use `sfe-help`, the glossary of terms (and words not used) | `settings-schema.ts`, `toasts.*`, `RightCatalog`, `shared/help.component.ts` |
 | [user-docs](agents/docs/development/user-docs.md) | what goes in `docs/`, README, OpenAPI | `docs/` |
 | [testing](agents/docs/development/testing.md) | test rules and helpers | `tests/Sfe.Tests/Infrastructure/`, `src/testing/` |
 | [testing-backend](agents/docs/development/testing-backend.md) | SQLite pool, ffmpeg tests, junctions | `tests/Sfe.Tests/` |
