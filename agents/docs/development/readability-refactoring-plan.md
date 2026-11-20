@@ -176,7 +176,9 @@ Tidy, one component per commit, worst first (add one line per component when sta
   - [x] `ChangeEndpoints.StreamAsync` (8, also 117 lines and nested 4): `ChangeFeedServices`; the events queued,
     filtered and written as text by `ChangeFeedQueue` (disposing it stops listening); tests of the per-caller limit
     and the headers added first
-- [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
+- [x] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`: one `Configure<Area>` method per group
+  of tables, order kept (not `IEntityTypeConfiguration` classes: the files already used methods); both models "No
+  changes"
 - [ ] `AddSfeCore`, `AddSfeSecurity`
 - [ ] `ArchiveExtractor.Extract`
 - [ ] `EditableSettings.From`, `ApplyTo`; `SettingsService.Validate` and its 99-line lambda

@@ -43,6 +43,19 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
         if (isSqlServer)
             modelBuilder.HasDefaultSchema(SfeDbContext.Schema);
 
+        ConfigureAccounts(modelBuilder, isSqlServer);
+        ConfigureGroups(modelBuilder, isSqlServer);
+        ConfigureSettings(modelBuilder);
+        ConfigureQuickLinks(modelBuilder);
+        ConfigureFolderRules(modelBuilder);
+        ConfigureConnections(modelBuilder);
+        ConfigureAccessTokens(modelBuilder);
+        ConfigureLog(modelBuilder);
+    }
+
+    /// <summary>Libraries and accounts, each found by a name unique whatever its case.</summary>
+    private static void ConfigureAccounts(ModelBuilder modelBuilder, bool isSqlServer)
+    {
         modelBuilder.Entity<Tenant>(entity =>
         {
             entity.ToTable("Tenants");
@@ -69,7 +82,11 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             if (!isSqlServer)
                 entity.Property(u => u.UserName).UseCollation("NOCASE");
         });
+    }
 
+    /// <summary>The groups of each library, their members and their rights.</summary>
+    private static void ConfigureGroups(ModelBuilder modelBuilder, bool isSqlServer)
+    {
         modelBuilder.Entity<UserGroup>(entity =>
         {
             entity.ToTable("Groups");
@@ -114,7 +131,14 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
                 .HasForeignKey(r => r.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+    }
 
+    /// <summary>
+    /// What each library and each user has set: the rights a library turns off, the settings of libraries and users,
+    /// and the server's own properties.
+    /// </summary>
+    private static void ConfigureSettings(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<TenantDisabledRight>(entity =>
         {
             entity.ToTable("TenantDisabledRights");
@@ -152,7 +176,11 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.Property(p => p.Key).HasMaxLength(64).IsUnicode(false);
             entity.Property(p => p.Value).HasMaxLength(400).IsRequired();
         });
+    }
 
+    /// <summary>Each user's quick links, by library.</summary>
+    private static void ConfigureQuickLinks(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<QuickLink>(entity =>
         {
             entity.ToTable("QuickLinks");
@@ -164,7 +192,11 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.HasOne<UserAccount>().WithMany().HasForeignKey(l => l.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne<Tenant>().WithMany().HasForeignKey(l => l.TenantId).OnDelete(DeleteBehavior.Cascade);
         });
+    }
 
+    /// <summary>The rights given or taken on folders of a library, to a group or to an account.</summary>
+    private static void ConfigureFolderRules(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<FolderRule>(entity =>
         {
             // A rule is for a group or for an account, never both nor neither.
@@ -191,10 +223,11 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
                 .OnDelete(DeleteBehavior.ClientCascade);
             entity.HasOne<UserAccount>().WithMany().HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
         });
+    }
 
-        ConfigureConnections(modelBuilder);
-        ConfigureAccessTokens(modelBuilder);
-
+    /// <summary>The server log's entries, kept until they expire.</summary>
+    private static void ConfigureLog(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<LogEntry>(entity =>
         {
             entity.ToTable("LogEntries");

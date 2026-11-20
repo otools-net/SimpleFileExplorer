@@ -27,8 +27,6 @@
     "src/Sfe.Core/Access/RightCatalog.cs": {"fileLines":650},
     "src/Sfe.Core/Access/SetupService.cs": {"longFunctions":1},
     "src/Sfe.Core/Backup/BackupWriter.cs": {"longFunctions":2},
-    "src/Sfe.Core/Data/AccessDbContext.cs": {"longFunctions":1},
-    "src/Sfe.Core/Data/SfeDbContext.cs": {"longFunctions":1},
     "src/Sfe.Core/Editing/EditedImages.cs": {"manyParameterFunctions":1},
     "src/Sfe.Core/FileTracking/DuplicateFinder.cs": {"longFunctions":1},
     "src/Sfe.Core/FileTracking/DuplicateRemover.cs": {"longFunctions":1},

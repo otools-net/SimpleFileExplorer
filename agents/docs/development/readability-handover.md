@@ -31,9 +31,8 @@ What is still over the limits (`node agents/tools/readability/measure.mjs`):
 ## How to resume
 
 1. Read the plan's Progress list: take the **first unticked item of phase 5**, then the core functions in the order
-   listed. Tick each item in the commit that does it. Paused 2026-11-20 after `ChangeEndpoints.StreamAsync` (tree
-   clean); next:
-   - Then "EF: `AccessDbContext.OnModelCreating`…" (checks `--only ef`).
+   listed. Tick each item in the commit that does it. Paused 2026-11-20 after the EF configuration (tree clean);
+   next: `AddSfeCore`, `AddSfeSecurity` (one `Add<Area>` per area, registration order kept).
 2. One function (or one endpoints file for `[AsParameters]`) per commit, message `claude: refactoring: …`; no
    `CHANGELOG.md` line, no version bump.
 3. Before a function whose paths no test pins (most core functions of phase 5: `ArchiveExtractor.Extract`,

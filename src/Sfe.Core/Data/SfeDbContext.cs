@@ -197,6 +197,13 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
     /// </summary>
     private static void ConfigureTagging(ModelBuilder modelBuilder, bool isSqlServer)
     {
+        ConfigureTags(modelBuilder, isSqlServer);
+        ConfigureTagUses(modelBuilder, isSqlServer);
+    }
+
+    /// <summary>The tags themselves, their aliases and their parents, with the built-in ones as seed data.</summary>
+    private static void ConfigureTags(ModelBuilder modelBuilder, bool isSqlServer)
+    {
         modelBuilder.Entity<Tag>(entity =>
         {
             entity.ToTable("TagDefinitions");
@@ -252,7 +259,11 @@ public class SfeDbContext(DbContextOptions<SfeDbContext> options) : DbContext(op
 
             entity.HasData(BuiltInTags.Parents);
         });
+    }
 
+    /// <summary>Where tags are used: on files, as folder defaults, and when each was last searched or seen.</summary>
+    private static void ConfigureTagUses(ModelBuilder modelBuilder, bool isSqlServer)
+    {
         modelBuilder.Entity<FileTag>(entity =>
         {
             entity.ToTable("FileTags");
