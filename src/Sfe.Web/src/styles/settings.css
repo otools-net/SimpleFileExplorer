@@ -174,6 +174,17 @@
     }
 }
 
+/*
+ * The "?" of a setting's longer explanation: next to its name, without making the name's line taller (fields side by
+ * side keep their boxes level); at the end of a checkbox's line, level with its name.
+ */
+.settings-form .help-row .help-button {
+    margin-block: -4px;
+}
+.setting-check .help-row {
+    align-items: flex-start;
+}
+
 /* Settings by level: a setting this level cannot change says why, one it may lock has a box for it. */
 .setting-check {
     display: flex;

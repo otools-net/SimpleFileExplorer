@@ -13,6 +13,10 @@ Never rename or remove a key silently: [production-upgrades.md](../development/p
   `extensions`, `select` with `options: [[value, label]]` (`numeric: true` on the same line: its values are sent as
   numbers, and the API test expects a number), `preset` = an unsaved choice filling the `fills` fields from
   `presets`, e.g. `EXTERNAL_PLAYERS`.
+- Texts (title, label, hint, `help`, choices) are `$localize`d and written to
+  [ui-texts](../development/ui-texts.md): the hint says the effect, unit and range in a sentence or two (200
+  characters at most, `settings.spec.ts` checks it); the why, examples and exceptions go in `help` (a "?" next to the
+  label). A long text is broken over lines as [translations](../development/translations.md) says.
 - Add its key to `SIMPLE_SETTINGS` (`settings-schema.ts`) to show it in the default simple view, whose groups without a
   listed key are hidden (a tab with none shows a "Show all settings" note; an error on a hidden field shows all).
 - `EverySettingOfTheClientsSettingsDialogExists` reads `settings-schema.ts`, `settings/tabs/*.ts` and the two

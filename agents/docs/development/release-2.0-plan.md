@@ -76,7 +76,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   texts per file against `testing/hard-coded-texts.json` (1,523 in 99 files). Note [translations](translations.md).
   No language setting (none until a second language). Fixed on the way: a quote in `comfort.spec.ts` (1.4) that
   broke the client test build.
-- [ ] **2.3–2.8 Strings extracted and texts rewritten, area by area** (IDEA-010 + IDEA-011, M each). Each string is
+- [x] **2.3 Settings schema** (part of 2.3–2.8 below). Done 2026-11-21: a refactoring first split
+  `settings-schema.ts` (1,496 lines) into `settings/tabs/` (one file per admin section; data compared identical).
+  Every text of the tabs (and connections', tokens') is `$localize`d and rewritten; long ones broken over lines with
+  `\` (no `+`: [translations](translations.md)); `help` on `SettingField`, a "?" next to the label, searched by the
+  admin search; panel template marked (0 left), lock notes and form errors in code marked (its toasts and confirms
+  left to 2.8). Corrected on the way: duplicate removal goes to the trash and needs the right "Delete duplicates"; the
+  picture editor can save over. `template-texts.ts` counted plain texts inside `i18n` elements: fixed, with specs.
+  `settings.spec.ts` checks the texts' style (no `...`, no "Colors", hints ≤ 200 characters, ending with a stop).
+- [ ] **2.4–2.8 Strings extracted and texts rewritten, area by area** (IDEA-010 + IDEA-011, M each). Each string is
   touched once: marked (`i18n`, `$localize`, `icu()` for counts, [translations](translations.md)) **and** rewritten
   to the glossary in the same commit; the area's `plural()` calls go, its counts in `hard-coded-texts.json` drop
   (write it again), `extract.mjs` writes the source file. Settings get an
@@ -235,8 +243,9 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-21):** steps 1.1 to 2.2 done (see their ticks). Next: **2.3** (settings schema: texts
-  marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md) says how), then 2.4–2.8.
+- **Last session (2026-11-21):** steps 1.1 to 2.3 done (see their ticks). Next: **2.4** (administration and access:
+  texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md) says how; `admin-sections.ts`
+  descriptions still say "Colors"), then 2.5–2.8.
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
   (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and
@@ -259,6 +268,10 @@ Where the work stands, for a session that picks it up. Update it at the end of e
 ` inside JS template strings becomes a real newline in the C# source otherwise.
   - Texts marked for translation: `node agents/tools/i18n/extract.mjs` after, `--check` before each commit (~20 s
     each); `SFE_TEXTS_BASELINE=write npm test -- --include src/app/core/i18n` when an area's unmarked texts drop.
+  - Code generated through the Bash tool (`node -e`, heredocs) loses `\` line continuations and `\n` escapes (they
+    become real breaks or vanish): write texts with the Write / Edit tools, and count lengths by characters
+    (`[...line].length`; `awk length` counts bytes, and `“ ”` are 3).
+  - Templates are not Prettier-formatted: never run `prettier --write` on an `.html` (it re-indents everything).
   - The first `dotnet test` after a client build (`npm test` builds too) fails on a stale `wwwroot` chunk ("No file
     exists for the asset"): run it again, the second build succeeds.
 

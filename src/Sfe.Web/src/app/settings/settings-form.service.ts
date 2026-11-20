@@ -264,17 +264,17 @@ export class SettingsForm {
         if (!state || state.editable) return null;
         switch (state.lockedBy) {
             case 'environment':
-                return "Set by the server's configuration: it cannot be changed here.";
+                return $localize`Set by the server's configuration: it can't be changed here.`;
             case 'server':
-                return "Locked by the server's settings.";
+                return $localize`Locked by the server's settings.`;
             case 'tenant':
-                return "Locked by the space's settings.";
+                return $localize`Locked by the space's settings.`;
         }
         const level = this.level();
         if (state.scope === 'server' && level !== 'server')
-            return "A setting of the whole server: server administrators change it in the server's settings.";
-        if (level === 'server' && state.scope !== 'server') return "Set in each space's own settings.";
-        return "You don't have the right to change the settings of this section.";
+            return $localize`A setting of the whole server: server administrators change it in the server's settings.`;
+        if (level === 'server' && state.scope !== 'server') return $localize`Set in each space's own settings.`;
+        return $localize`You don't have the right to change the settings of this section.`;
     }
 
     /** This level can lock the setting for the levels below (libraries, users). */
@@ -581,8 +581,8 @@ export class SettingsForm {
         this.summary.set(
             errors
                 ? (this.faultyTabs().size
-                      ? 'Some settings need fixing (see the marked sections).'
-                      : 'The settings could not be saved.') + (remaining.length ? ` ${remaining.join(' ')}` : '')
+                      ? $localize`Some settings need fixing (see the marked sections).`
+                      : $localize`Could not save the settings.`) + (remaining.length ? ` ${remaining.join(' ')}` : '')
                 : null,
         );
     }
@@ -593,7 +593,7 @@ export class SettingsForm {
         for (const [key, control] of Object.entries(edits.controls)) {
             const field = this.fields.get(key);
             if (field?.type === 'number' && !Number.isInteger(this.toValue(field, control)))
-                errors[key] = ['Enter a whole number.'];
+                errors[key] = [$localize`Enter a whole number.`];
         }
         return Object.keys(errors).length ? errors : null;
     }

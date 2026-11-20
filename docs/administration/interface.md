@@ -1,6 +1,6 @@
 # Interface
 
-**Administration › Interface**: colors, listings and the search box, as defaults of the space or of the server. Most
+**Administration › Interface**: colours, listings and the search box, as defaults of the space or of the server. Most
 of these settings can also be changed by each user for themselves in [My account](my-account.md). Right:
 `settings.interface`.
 

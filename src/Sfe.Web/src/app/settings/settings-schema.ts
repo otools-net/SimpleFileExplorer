@@ -19,10 +19,16 @@ import { KEEP_ALIVE_SETTINGS, LOG_SETTINGS, STARTUP_SETTINGS, TASK_SETTINGS } fr
 
 export type GroupAction = 'clearHistory' | 'clearSearchHistory' | 'trickplayStatus' | 'browserTheme';
 
+/**
+ * Texts are marked for translation (`$localize`) and follow agents/docs/development/ui-texts.md: the `hint` under a
+ * field keeps to a sentence or two (its effect, unit and range); the why, examples and exceptions go in `help`, shown
+ * behind a "?" (`sfe-help`).
+ */
 interface FieldBase {
     key: string;
     label: string;
     hint: string;
+    help?: string;
     placeholder?: string;
 }
 

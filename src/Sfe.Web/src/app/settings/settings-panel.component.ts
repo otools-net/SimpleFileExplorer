@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { ThemeChoice, ThemeService } from '../core/theme.service';
 import { checkedOf, valueOf } from '../shared/events';
+import { HelpComponent } from '../shared/help.component';
 import { IconComponent } from '../shared/icon.component';
 import { TrickplayStatusComponent } from '../trickplay/trickplay-status.component';
 import { isSimpleGroup, settingFieldId, SettingsForm } from './settings-form.service';
@@ -25,7 +26,7 @@ import { SettingField, TABS } from './settings-schema';
  */
 @Component({
     selector: 'sfe-settings-panel',
-    imports: [NgTemplateOutlet, IconComponent, TrickplayStatusComponent],
+    imports: [NgTemplateOutlet, HelpComponent, IconComponent, TrickplayStatusComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './settings-panel.component.html',
 })
@@ -47,12 +48,12 @@ export class SettingsPanelComponent {
         () => this.form.level() !== 'user' && !this.form.showAll() && !this.schema().groups.some(isSimpleGroup),
     );
     protected readonly lockLabel = computed(() =>
-        this.form.level() === 'server' ? 'Lock for spaces and users' : 'Lock for users',
+        this.form.level() === 'server' ? $localize`Lock for spaces and users` : $localize`Lock for users`,
     );
     protected readonly lockHint = computed(() =>
         this.form.level() === 'server'
-            ? 'Spaces and users cannot change it: the value above applies everywhere'
-            : 'Users of the space cannot change it for themselves',
+            ? $localize`Spaces and users can't change it: the value above applies everywhere.`
+            : $localize`Users of this space can't change it for themselves.`,
     );
 
     protected readonly valueOf = valueOf;

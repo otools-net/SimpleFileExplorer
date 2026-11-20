@@ -31,6 +31,10 @@ themselves follow [ui-texts](ui-texts.md).
   `i18n-title="@@trash.empty"` only sets the id).
 - **Code:** `` $localize`Text` ``; description first: `` $localize`:size unit, bytes:B` ``. Values go in as
   `` ${value}:name: `` (a named placeholder: `` $localize`Deleted “${name}:name:”.` ``).
+- **Long texts in code:** one `$localize` per text, never `$localize` pieces joined with `+` (two messages for
+  translators). Break it over lines with a `\` at the end of each line and the next line starting at column 0: the
+  text has neither the break nor an indent (`extract.mjs` and the run-time text agree), and lines stay within 120
+  characters (`settings/tabs/*.ts` are written so).
 - **Counts and choices in code:** one ICU message for the whole sentence, never a count glued to a word —
   `` icu($localize`{count, plural, one {# file} other {# files}} deleted.`, { count }) `` (`core/i18n/icu.ts`).
   Plural rules follow the text's language (`$localize.locale`, en-GB until a translation is loaded); `#` and
@@ -58,6 +62,12 @@ Not counted: strings in code (`$localize` is checked by review and by 2.3–2.8 
 in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
 
 ## Gotchas
+
+- `$localize` at module level (the settings tabs, `EXTERNAL_PLAYERS`) runs when the module is imported: a translation
+  loaded at run time must be loaded before the app's modules are (`main.ts` importing the app dynamically after
+  `loadTranslations()`); a build per language has no such issue.
+- Plain texts inside an element marked `i18n` carry no `i18n` of their own in the parsed template (only texts with
+  an interpolation do): `template-texts.ts` counts what is inside a marked element as marked.
 
 - Specs reading files use `node:fs` through `src/testing/node.d.ts` (a few declarations: `@types/node` isn't
   installed, it would change timer types in every spec); `process.cwd()` is `src/Sfe.Web` under `npm test`.

@@ -159,7 +159,7 @@ It is off by default because it tells every visitor where the library lives on t
 
 ![The light theme](../images/library-light.png)
 
-The pages come in dark and light colors. By default they follow the light or dark mode of each device; the server's
+The pages come in dark and light colours. By default they follow the light or dark mode of each device; the server's
 **Default theme** and each browser's own choice are in
 [Interface › Appearance](../administration/interface.md#appearance) and [My account](../administration/my-account.md).
 The separate video player window always stays dark.

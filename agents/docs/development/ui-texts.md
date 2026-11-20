@@ -12,10 +12,9 @@ it from now on.
 ## Language and spelling
 
 - **UK English**: colour, centre, behaviour, cancelled, grey, organise, recognise, licence (the noun; "license" in
-  file names such as `LICENSE` stays). Survey 2026-11-20: strings were mostly UK already; US leftovers seen:
-  "Colors" (`settings-schema.ts`, the theme hint), tag "Color" (`docs/administration/tags.md`, `docs/user-guide/tags.md`),
-  "colors" (`docs/administration/interface.md`, `docs/user-guide/browsing.md`). Identifiers in code stay as they are
-  (`color`, `customized()`): only the text a user reads changes.
+  file names such as `LICENSE` stays). Survey 2026-11-20: strings were mostly UK already; US leftover still seen:
+  tag "Color" (`docs/administration/tags.md`, `docs/user-guide/tags.md`; the settings' "Colors" were fixed in 2.3).
+  Identifiers in code stay as they are (`color`, `customized()`): only the text a user reads changes.
 - **Punctuation:** the ellipsis character `…` (never `...`), curly quotes `“ ”` around words quoted in a text,
   `›` between the parts of a place in the app (Administration › Connections › Settings), `→` only in previews of a
   change (old → new).
@@ -59,7 +58,9 @@ it from now on.
 A text longer than **about two lines** on a phone goes into `sfe-help` (`shared/help.component.ts`: a "?" opening it,
 click / tap and keyboard accessible) instead of sitting under the field. The line shown keeps the essential
 sentence; the help holds the why, the examples and the exceptions. Settings get it through the optional `help` field
-of `SettingField` (added in step 2.3). When the in-app help exists (step 5.1), the help ends with a link to its page.
+of `SettingField` (step 2.3: rendered next to the label, found by the administration search; the hint
+keeps to 200 characters, a spec checks it). When the in-app help exists (step 5.1), the help ends with a link to its
+page.
 
 ## Glossary
 

@@ -72,7 +72,6 @@
   "app/migration/migration-page.component.html": 36,
   "app/player/player-page.component.html": 6,
   "app/player/video-player.component.html": 9,
-  "app/settings/settings-panel.component.html": 20,
   "app/shared/folder-picker.component.html": 3,
   "app/shared/help.component.ts": 2,
   "app/shared/sheet.component.ts": 2,

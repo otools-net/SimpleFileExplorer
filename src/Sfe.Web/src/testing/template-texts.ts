@@ -66,6 +66,8 @@ export function hardCodedTexts({ template, firstLine }: TemplateSource, url: str
 
 class HardCodedFinder extends TmplAstRecursiveVisitor {
     readonly found: HardCodedText[] = [];
+    /** Elements marked `i18n` around the node visited: their texts are in the element's message. */
+    private marked = 0;
 
     constructor(private readonly firstLine: number) {
         super();
@@ -74,23 +76,32 @@ class HardCodedFinder extends TmplAstRecursiveVisitor {
     override visitElement(element: TmplAstElement): void {
         if (NOT_TEXT.has(element.name) || skipped(element.attributes)) return;
         this.attributes(element.attributes);
-        super.visitElement(element);
+        this.inside(element.i18n, () => super.visitElement(element));
     }
 
     override visitTemplate(template: TmplAstTemplate): void {
         if (skipped(template.attributes)) return;
         this.attributes(template.attributes);
-        super.visitTemplate(template);
+        this.inside(template.i18n, () => super.visitTemplate(template));
     }
 
     override visitText(text: TmplAstText): void {
-        // Inside an element marked i18n, texts carry it (the typings leave it out).
-        if (!(text as { i18n?: unknown }).i18n) this.add(text.value, text.sourceSpan.start.line);
+        if (!this.marked) this.add(text.value, text.sourceSpan.start.line);
     }
 
     override visitBoundText(text: TmplAstBoundText): void {
         const strings = (text.value as { ast?: { strings?: string[] } }).ast?.strings ?? [];
-        if (!text.i18n) this.add(strings.join(' '), text.sourceSpan.start.line);
+        if (!this.marked && !text.i18n) this.add(strings.join(' '), text.sourceSpan.start.line);
+    }
+
+    /**
+     * Visits the content of an element, counting it as marked when the element is: only texts with an interpolation
+     * carry `i18n` themselves, plain ones don't.
+     */
+    private inside(i18n: unknown, visit: () => void): void {
+        if (i18n) this.marked++;
+        visit();
+        if (i18n) this.marked--;
     }
 
     private attributes(attributes: TmplAstTextAttribute[]): void {

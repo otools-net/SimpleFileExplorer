@@ -1104,8 +1104,8 @@ public sealed class ApiTests
         var fields = System
             .Text.RegularExpressions.Regex.Matches(
                 schemaText,
-                // Prettier lays an entry out on one line or one property per line, a label in either quotes.
-                @"\{\s*key: '(?<key>[\w.]+)',\s*label: (?:'[^']*'|""[^""]*""),\s*"
+                // An entry on one line or one property per line; a label in either quotes or in $localize`…`.
+                @"\{\s*key: '(?<key>[\w.]+)',\s*label: (?:'[^']*'|""[^""]*""|\$localize`[^`]*`),\s*"
                     + @"type: '(?<type>\w+)'(?<numeric>,\s*numeric: true)?"
             )
             // A select of numbers (`numeric: true`) holds numbers.

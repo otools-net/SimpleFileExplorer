@@ -37,6 +37,11 @@ describe('searchAdmin', () => {
         expect(found.indexOf('Activity')).toBeGreaterThan(0);
     });
 
+    it("finds words of a setting's longer explanation", () => {
+        // Only in the help of Copy full paths ("For example D:\\Media\\Photos\\beach.jpg…").
+        expect(titles('beach.jpg')).toContain('Copy full paths');
+    });
+
     it('finds the choices of a list and the sections and sub-pages', () => {
         expect(searchAdmin('follow the device', ADMIN_SECTIONS).map((r) => r.setting)).toContain('appearance.theme');
         expect(searchAdmin('potplayer', ADMIN_SECTIONS).map((r) => r.setting)).toContain('player.externalPreset');

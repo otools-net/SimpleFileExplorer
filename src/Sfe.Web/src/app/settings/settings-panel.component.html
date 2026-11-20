@@ -1,16 +1,18 @@
 
         @if (form.loadError(); as error) {
             <div class="settings-panel">
-                <p class="form-error">Could not load the settings: {{ error }}</p>
+                <p class="form-error" i18n>Could not load the settings: {{ error }}</p>
                 <button
                     type="button"
                     class="button small"
                     title="Ask the server for the settings again"
+                    i18n-title
                     (click)="form.load()"
+                    i18n
                 >Try again</button>
             </div>
         } @else if (!form.loaded()) {
-            <p class="muted">Loading the settings…</p>
+            <p class="muted" i18n>Loading the settings…</p>
         } @else {
             <form class="settings-form" novalidate (submit)="submit($event)">
                 <div class="settings-panel" [id]="'settings-panel-' + tab()">
@@ -19,12 +21,14 @@
                     }
                     @if (onlyAdvanced()) {
                         <p class="settings-intro settings-advanced-note">
-                            The settings here are only shown in the full view.
+                            <span i18n>The settings here are only shown in the full view.</span>
                             <button
                                 type="button"
                                 class="button small"
                                 title="Show every setting instead of only the most used ones"
+                                i18n-title
                                 (click)="form.setShowAll(true)"
+                                i18n
                             >Show all settings</button>
                         </p>
                     }
@@ -55,9 +59,12 @@
                                             type="button"
                                             class="button small"
                                             title="Empty the sidebar's “Last searched” and “Last viewed” lists (asks first)"
+                                            i18n-title
                                             (click)="form.clearHistory()"
+                                            i18n
                                         >Clear tag history</button>
-                                        <span class="field-hint">Forgets the searched and viewed tags right away. Tags and files are not changed.</span>
+                                        <span class="field-hint" i18n
+                                            >Forgets the searched and viewed tags at once. Tags and files don't change.</span>
                                     </div>
                                 }
                                 @case ('clearSearchHistory') {
@@ -66,9 +73,12 @@
                                             type="button"
                                             class="button small"
                                             title="Forget the searches this browser suggests again (asks first)"
+                                            i18n-title
                                             (click)="form.clearSearchHistory()"
+                                            i18n
                                         >Clear search history</button>
-                                        <span class="field-hint">Forgets the searches kept by this browser. Other browsers keep theirs.</span>
+                                        <span class="field-hint" i18n
+                                            >Forgets the searches kept by this browser. Other browsers keep theirs.</span>
                                     </div>
                                 }
                                 @case ('trickplayStatus') {
@@ -78,7 +88,14 @@
                                     <!-- Not part of the form: kept by this browser and applied right away. -->
                                     <div class="settings-grid">
                                         <div class="field narrow">
-                                            <label class="field-label" for="browser-theme">This browser's theme</label>
+                                            <div class="help-row">
+                                                <label class="field-label" for="browser-theme" i18n
+                                                    >This browser's theme</label>
+                                                <sfe-help about="This browser's theme" i18n-about>
+                                                    <p i18n>Applied without saving, and kept in this browser only:
+                                                        other browsers and devices don't change.</p>
+                                                </sfe-help>
+                                            </div>
                                             <select
                                                 id="browser-theme"
                                                 aria-describedby="browser-theme-hint"
@@ -87,20 +104,24 @@
                                                 <option
                                                     value=""
                                                     [selected]="theme.current() === ''"
+                                                    i18n
                                                 >Server default ({{ theme.defaultName() }})</option>
                                                 <option
                                                     value="light"
                                                     [selected]="theme.current() === 'light'"
+                                                    i18n="theme"
                                                 >Light</option>
                                                 <option
                                                     value="dark"
                                                     [selected]="theme.current() === 'dark'"
+                                                    i18n="theme"
                                                 >Dark</option>
                                             </select>
                                             <span
                                                 class="field-hint"
                                                 id="browser-theme-hint"
-                                            >Colors of the pages in this browser, applied right away without saving. Kept in this browser only; the other browsers and devices are not changed.</span>
+                                                i18n
+                                            >The colours of the pages in this browser, applied at once.</span>
                                         </div>
                                     </div>
                                 }
@@ -118,23 +139,29 @@
             @let error = form.errors()[field.key];
             @if (field.type === 'checkbox') {
                 <div class="span setting-check" [hidden]="form.fieldHidden(field)">
-                    <label class="check">
-                        <input
-                            type="checkbox"
-                            [id]="id"
-                            [attr.aria-describedby]="id + '-hint'"
-                            [disabled]="form.fieldLocked(field)"
-                            [checked]="form.control(field.key)"
-                            (change)="form.setControl(field.key, checkedOf($event))"
-                        >
-                        <span>
-                            <strong>{{ field.label }}</strong>
-                            <span class="field-hint" [id]="id + '-hint'">{{ field.hint }}</span>
-                            @if (error) {
-                                <span class="field-error">{{ error }}</span>
-                            }
-                        </span>
-                    </label>
+                    <div class="help-row">
+                        <label class="check">
+                            <input
+                                type="checkbox"
+                                [id]="id"
+                                [attr.aria-describedby]="id + '-hint'"
+                                [disabled]="form.fieldLocked(field)"
+                                [checked]="form.control(field.key)"
+                                (change)="form.setControl(field.key, checkedOf($event))"
+                            >
+                            <span>
+                                <strong>{{ field.label }}</strong>
+                                <span class="field-hint" [id]="id + '-hint'">{{ field.hint }}</span>
+                                @if (error) {
+                                    <span class="field-error">{{ error }}</span>
+                                }
+                            </span>
+                        </label>
+                        <ng-container
+                            [ngTemplateOutlet]="helpTemplate"
+                            [ngTemplateOutletContext]="{ $implicit: field }"
+                        />
+                    </div>
                     <ng-container [ngTemplateOutlet]="lockTemplate" [ngTemplateOutletContext]="{ $implicit: field }" />
                 </div>
             } @else {
@@ -145,7 +172,13 @@
                     [class.span]="field.type !== 'number' && field.type !== 'select'"
                     [hidden]="form.fieldHidden(field)"
                 >
-                    <label class="field-label" [for]="id">{{ field.label }}</label>
+                    <div class="help-row">
+                        <label class="field-label" [for]="id">{{ field.label }}</label>
+                        <ng-container
+                            [ngTemplateOutlet]="helpTemplate"
+                            [ngTemplateOutletContext]="{ $implicit: field }"
+                        />
+                    </div>
                     @switch (field.type) {
                         @case ('preset') {
                             <select
@@ -154,7 +187,11 @@
                                 [disabled]="form.fieldLocked(field)"
                                 (change)="applyPreset(field, valueOf($event))"
                             >
-                                <option value="" [selected]="form.presetValue(field) === ''">None (no button)</option>
+                                <option
+                                    value=""
+                                    [selected]="form.presetValue(field) === ''"
+                                    i18n
+                                >None (no button)</option>
                                 @for (preset of field.presets; track $index) {
                                     <option
                                         [value]="'' + $index"
@@ -164,6 +201,7 @@
                                 <option
                                     value="custom"
                                     [selected]="form.presetValue(field) === 'custom'"
+                                    i18n
                                 >Custom…</option>
                             </select>
                         }
@@ -216,6 +254,13 @@
                     }
                     <ng-container [ngTemplateOutlet]="lockTemplate" [ngTemplateOutletContext]="{ $implicit: field }" />
                 </div>
+            }
+        </ng-template>
+
+        <!-- A setting's longer explanation (`help`), behind a "?" next to its label. -->
+        <ng-template #helpTemplate let-field>
+            @if (field.help) {
+                <sfe-help [about]="field.label"><p>{{ field.help }}</p></sfe-help>
             }
         </ng-template>
 

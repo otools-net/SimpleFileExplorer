@@ -66,6 +66,27 @@ describe('settings schema', () => {
         }
     });
 
+    it('writes its texts in the UI style, short under the field (agents/docs/development/ui-texts.md)', () => {
+        const texts = TABS.flatMap((tab) => [
+            tab.title,
+            tab.intro ?? '',
+            ...tab.groups.flatMap((group) => [
+                group.title,
+                group.hint ?? '',
+                ...group.fields.flatMap((field) => [field.label, field.hint, field.help ?? '']),
+            ]),
+        ]);
+        for (const text of texts.filter(Boolean)) {
+            // A text broken over lines in the code (`\` at the end of a line) keeps no line break nor indent.
+            expect(text, text).not.toMatch(/\n|\s{2}|\.\.\.|\bColors?\b/);
+        }
+        for (const field of FIELDS) {
+            expect(field.hint, field.key).toMatch(/[.)…]$/);
+            if (field.help) expect(field.help, field.key).toMatch(/[.)…]$/);
+            expect(field.hint.length, `${field.key}: a longer hint goes in help`).toBeLessThanOrEqual(200);
+        }
+    });
+
     it('fills existing text fields from its presets', () => {
         const keys = new Map(FIELDS.map((field) => [field.key, field.type]));
         for (const field of FIELDS.filter((f) => f.type === 'preset')) {
@@ -225,6 +246,22 @@ describe('settings on the administration page', () => {
         await open(view({}, false));
         expect(status()).toBe("Using the server's configuration");
         expect(bar('Reset to defaults')!.disabled).toBe(true);
+    });
+
+    it("opens a setting's longer explanation from the ? next to its name", async () => {
+        await open();
+        showAll().click();
+        await settle();
+        const help = control('browse.copyPaths').closest('.help-row')!;
+        const button = help.querySelector<HTMLButtonElement>('.help-button')!;
+        expect(button.getAttribute('aria-label')).toBe('About Copy full paths');
+        expect(help.querySelector('.help-panel')).toBeNull();
+
+        button.click();
+        await settle();
+        expect(help.querySelector('.help-panel')!.textContent).toContain('D:\\Media\\Photos\\beach.jpg');
+        // A setting without one has no "?".
+        expect(control('browse.defaultPageSize').closest('.field')!.querySelector('.help-button')).toBeNull();
     });
 
     it('reports settings that could not be loaded, and loads them again on asking', async () => {

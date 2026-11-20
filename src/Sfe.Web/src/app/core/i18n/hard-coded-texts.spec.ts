@@ -40,6 +40,29 @@ describe('texts in templates', () => {
     });
 });
 
+describe('finding texts not marked', () => {
+    const texts = (template: string) => hardCodedTexts({ template, firstLine: 0 }, 'test.html').map((t) => t.text);
+
+    it('finds texts and read attributes not marked', () => {
+        expect(texts('<p title="Close it">Some text</p>')).toEqual(['Close it', 'Some text']);
+    });
+
+    it('leaves out texts marked, with or without values, and inside marked elements', () => {
+        expect(texts('<button i18n title="Close it" i18n-title>Try again</button>')).toEqual([]);
+        expect(texts('<p i18n>Could not load: {{ error }}</p>')).toEqual([]);
+        expect(texts('<p i18n>Read <strong>this</strong> first</p>')).toEqual([]);
+        expect(texts('@if (on) { <span i18n>Loading the settings…</span> }')).toEqual([]);
+    });
+
+    it('still finds unmarked attributes inside a marked element, and texts after it', () => {
+        expect(texts('<p i18n>Read <a title="Open it">this</a></p><p>Then this</p>')).toEqual(['Open it', 'Then this']);
+    });
+
+    it('leaves out names marked translate="no"', () => {
+        expect(texts('<span translate="no">Dropbox</span>')).toEqual([]);
+    });
+});
+
 function list(texts: ReturnType<typeof hardCodedTexts>): string {
     return texts.map(({ line, text }) => `  line ${line}: ${text}`).join('\n');
 }

@@ -1,6 +1,174 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xliff version="2.0" xmlns="urn:oasis:names:tc:xliff:document:2.0" srcLang="en-GB">
   <file id="ngi18n" original="ng.template">
+    <unit id="2557623954339695776">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:10</note>
+      </notes>
+      <segment>
+        <source>Connections</source>
+      </segment>
+    </unit>
+    <unit id="1294087843952092532">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:11</note>
+      </notes>
+      <segment>
+        <source>Connections to storage outside the libraries (Dropbox). The server itself calls the provider, so these are the whole server&apos;s settings; Sfe:Locked (connections.*) in the configuration fixes them.</source>
+      </segment>
+    </unit>
+    <unit id="8167361857306136802">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:15</note>
+      </notes>
+      <segment>
+        <source>What is allowed</source>
+      </segment>
+    </unit>
+    <unit id="5158898366460763361">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:19</note>
+      </notes>
+      <segment>
+        <source>Allow connections</source>
+      </segment>
+    </unit>
+    <unit id="1034177808516994559">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:21</note>
+      </notes>
+      <segment>
+        <source>Off: no connection is listed, opened or made, whatever the rights say. Those already made are kept.</source>
+      </segment>
+    </unit>
+    <unit id="5738670966387954282">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:26</note>
+      </notes>
+      <segment>
+        <source>Kinds allowed</source>
+      </segment>
+    </unit>
+    <unit id="5894787003462208139">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:29</note>
+      </notes>
+      <segment>
+        <source>One per line. Empty: every kind this server knows.</source>
+      </segment>
+    </unit>
+    <unit id="3853379252931298219">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:33</note>
+      </notes>
+      <segment>
+        <source>Levels allowed</source>
+      </segment>
+    </unit>
+    <unit id="7666477280745823977">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:36</note>
+      </notes>
+      <segment>
+        <source>One per line: account (Only me), library (This space), server (The server).</source>
+      </segment>
+    </unit>
+    <unit id="8648142065472972092">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:37</note>
+      </notes>
+      <segment>
+        <source>“Only me” is private to the account that made it, “This space” is shared with a space and its groups, and “The server” is offered to spaces. Connections of a level taken out are kept but can&apos;t be used.</source>
+      </segment>
+    </unit>
+    <unit id="742771218041266375">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:48</note>
+      </notes>
+      <segment>
+        <source>App key</source>
+      </segment>
+    </unit>
+    <unit id="2495316614377913824">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:50</note>
+      </notes>
+      <segment>
+        <source>The key of the app you registered in Dropbox&apos;s App Console. Empty: Dropbox isn&apos;t offered.</source>
+      </segment>
+    </unit>
+    <unit id="6869415582008181628">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:52</note>
+      </notes>
+      <segment>
+        <source>The app&apos;s secret, optional, is set apart and never shown again.</source>
+      </segment>
+    </unit>
+    <unit id="1442598976013075249">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:57</note>
+      </notes>
+      <segment>
+        <source>Cache of previews</source>
+      </segment>
+    </unit>
+    <unit id="4428618802403711129">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:61</note>
+      </notes>
+      <segment>
+        <source>Cache size (MB)</source>
+      </segment>
+    </unit>
+    <unit id="2594841254992186919">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:65</note>
+      </notes>
+      <segment>
+        <source>Thumbnails and files of connections kept on this server for previews, for every space. 0 turns it off.</source>
+      </segment>
+    </unit>
+    <unit id="1207649687875810721">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:67</note>
+      </notes>
+      <segment>
+        <source>It holds videos being converted, and pictures the provider doesn&apos;t make thumbnails of.</source>
+      </segment>
+    </unit>
+    <unit id="4331603612986743654">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:72</note>
+      </notes>
+      <segment>
+        <source>Largest file downloaded (MB)</source>
+      </segment>
+    </unit>
+    <unit id="4790040554102509704">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:76</note>
+      </notes>
+      <segment>
+        <source>A larger file only plays when the browser can play it, and only gets the provider&apos;s thumbnail.</source>
+      </segment>
+    </unit>
+    <unit id="7751812419119974209">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:81</note>
+      </notes>
+      <segment>
+        <source>Days kept unused</source>
+      </segment>
+    </unit>
+    <unit id="9051588338988918767">
+      <notes>
+        <note category="location">src/app/connections/connection-settings.ts:85</note>
+      </notes>
+      <segment>
+        <source>What nobody looked at for this long is removed.</source>
+      </segment>
+    </unit>
     <unit id="2021928621838842498">
       <notes>
         <note category="location">src/app/core/format.ts:8</note>
@@ -44,6 +212,3065 @@
       </notes>
       <segment>
         <source>TB</source>
+      </segment>
+    </unit>
+    <unit id="1395493186609386132">
+      <notes>
+        <note category="location">src/app/settings/settings-form.service.ts:267</note>
+      </notes>
+      <segment>
+        <source>Set by the server&apos;s configuration: it can&apos;t be changed here.</source>
+      </segment>
+    </unit>
+    <unit id="3512545929449324465">
+      <notes>
+        <note category="location">src/app/settings/settings-form.service.ts:269</note>
+      </notes>
+      <segment>
+        <source>Locked by the server&apos;s settings.</source>
+      </segment>
+    </unit>
+    <unit id="2715345408293244387">
+      <notes>
+        <note category="location">src/app/settings/settings-form.service.ts:271</note>
+      </notes>
+      <segment>
+        <source>Locked by the space&apos;s settings.</source>
+      </segment>
+    </unit>
+    <unit id="6818824027193058857">
+      <notes>
+        <note category="location">src/app/settings/settings-form.service.ts:275</note>
+      </notes>
+      <segment>
+        <source>A setting of the whole server: server administrators change it in the server&apos;s settings.</source>
+      </segment>
+    </unit>
+    <unit id="1103851981245316362">
+      <notes>
+        <note category="location">src/app/settings/settings-form.service.ts:276</note>
+      </notes>
+      <segment>
+        <source>Set in each space&apos;s own settings.</source>
+      </segment>
+    </unit>
+    <unit id="5021897056852458039">
+      <notes>
+        <note category="location">src/app/settings/settings-form.service.ts:277</note>
+      </notes>
+      <segment>
+        <source>You don&apos;t have the right to change the settings of this section.</source>
+      </segment>
+    </unit>
+    <unit id="7192178365851802274">
+      <notes>
+        <note category="location">src/app/settings/settings-form.service.ts:584</note>
+      </notes>
+      <segment>
+        <source>Some settings need fixing (see the marked sections).</source>
+      </segment>
+    </unit>
+    <unit id="3670837598205437602">
+      <notes>
+        <note category="location">src/app/settings/settings-form.service.ts:585</note>
+      </notes>
+      <segment>
+        <source>Could not save the settings.</source>
+      </segment>
+    </unit>
+    <unit id="3843003486998520193">
+      <notes>
+        <note category="location">src/app/settings/settings-form.service.ts:596</note>
+      </notes>
+      <segment>
+        <source>Enter a whole number.</source>
+      </segment>
+    </unit>
+    <unit id="5706541971295412832">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:4,5</note>
+      </notes>
+      <segment>
+        <source>Could not load the settings: <ph id="0" equiv="INTERPOLATION" disp="{{ error }}"/></source>
+      </segment>
+    </unit>
+    <unit id="3432297697030179837">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:8,9</note>
+      </notes>
+      <segment>
+        <source>Ask the server for the settings again</source>
+      </segment>
+    </unit>
+    <unit id="6650633628037596693">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:12,13</note>
+      </notes>
+      <segment>
+        <source>Try again</source>
+      </segment>
+    </unit>
+    <unit id="4235471210141610852">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:15,16</note>
+      </notes>
+      <segment>
+        <source>Loading the settings…</source>
+      </segment>
+    </unit>
+    <unit id="1308228589191942370">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:24,25</note>
+      </notes>
+      <segment>
+        <source>The settings here are only shown in the full view.</source>
+      </segment>
+    </unit>
+    <unit id="536610637334312079">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:28,29</note>
+      </notes>
+      <segment>
+        <source>Show every setting instead of only the most used ones</source>
+      </segment>
+    </unit>
+    <unit id="2294727580763071220">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:32,33</note>
+      </notes>
+      <segment>
+        <source>Show all settings</source>
+      </segment>
+    </unit>
+    <unit id="4243471749319754665">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:61,62</note>
+      </notes>
+      <segment>
+        <source>Empty the sidebar&apos;s “Last searched” and “Last viewed” lists (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="5155982830600956096">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:65,66</note>
+      </notes>
+      <segment>
+        <source>Clear tag history</source>
+      </segment>
+    </unit>
+    <unit id="8560326943723413139">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:67,68</note>
+      </notes>
+      <segment>
+        <source>Forgets the searched and viewed tags at once. Tags and files don&apos;t change.</source>
+      </segment>
+    </unit>
+    <unit id="3403125694535299230">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:75,76</note>
+      </notes>
+      <segment>
+        <source>Forget the searches this browser suggests again (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="6171024624950254061">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:79,80</note>
+      </notes>
+      <segment>
+        <source>Clear search history</source>
+      </segment>
+    </unit>
+    <unit id="2110826749754826050">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:81,82</note>
+      </notes>
+      <segment>
+        <source>Forgets the searches kept by this browser. Other browsers keep theirs.</source>
+      </segment>
+    </unit>
+    <unit id="240025000146316101">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:93,94</note>
+        <note category="location">src/app/settings/settings-panel.component.html:94</note>
+      </notes>
+      <segment>
+        <source>This browser&apos;s theme</source>
+      </segment>
+    </unit>
+    <unit id="3388544590573169259">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:95,96</note>
+      </notes>
+      <segment>
+        <source>Applied without saving, and kept in this browser only: other browsers and devices don&apos;t change.</source>
+      </segment>
+    </unit>
+    <unit id="8298996141222095314">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:108,109</note>
+      </notes>
+      <segment>
+        <source>Server default (<ph id="0" equiv="INTERPOLATION" disp="{{ theme.defaultName() }}"/>)</source>
+      </segment>
+    </unit>
+    <unit id="413116577994876478">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:113,114</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:62</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:80</note>
+        <note category="description">theme</note>
+      </notes>
+      <segment>
+        <source>Light</source>
+      </segment>
+    </unit>
+    <unit id="3892161059518616136">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:118,119</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:61</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:82</note>
+        <note category="description">theme</note>
+      </notes>
+      <segment>
+        <source>Dark</source>
+      </segment>
+    </unit>
+    <unit id="226991533996669372">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:124,125</note>
+      </notes>
+      <segment>
+        <source>The colours of the pages in this browser, applied at once.</source>
+      </segment>
+    </unit>
+    <unit id="403388257895485151">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:194,195</note>
+      </notes>
+      <segment>
+        <source>None (no button)</source>
+      </segment>
+    </unit>
+    <unit id="5005854152929595905">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.html:205,206</note>
+      </notes>
+      <segment>
+        <source>Custom…</source>
+      </segment>
+    </unit>
+    <unit id="2190748617181785426">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.ts:51</note>
+      </notes>
+      <segment>
+        <source>Lock for spaces and users</source>
+      </segment>
+    </unit>
+    <unit id="802728675683839672">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.ts:51</note>
+      </notes>
+      <segment>
+        <source>Lock for users</source>
+      </segment>
+    </unit>
+    <unit id="5735988931181446884">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.ts:55</note>
+      </notes>
+      <segment>
+        <source>Spaces and users can&apos;t change it: the value above applies everywhere.</source>
+      </segment>
+    </unit>
+    <unit id="4666631475627052654">
+      <notes>
+        <note category="location">src/app/settings/settings-panel.component.ts:56</note>
+      </notes>
+      <segment>
+        <source>Users of this space can&apos;t change it for themselves.</source>
+      </segment>
+    </unit>
+    <unit id="7839402764760633331">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:9</note>
+      </notes>
+      <segment>
+        <source>Literata (serif, for reading)</source>
+      </segment>
+    </unit>
+    <unit id="7542214249238567677">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:10</note>
+      </notes>
+      <segment>
+        <source>Atkinson Hyperlegible (sans-serif)</source>
+      </segment>
+    </unit>
+    <unit id="9221823200198458714">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:11</note>
+      </notes>
+      <segment>
+        <source>JetBrains Mono (monospace)</source>
+      </segment>
+    </unit>
+    <unit id="5092889951481915462">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:12</note>
+      </notes>
+      <segment>
+        <source>Serif of the device</source>
+      </segment>
+    </unit>
+    <unit id="7094968811289218940">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:13</note>
+      </notes>
+      <segment>
+        <source>Sans-serif of the device</source>
+      </segment>
+    </unit>
+    <unit id="1008688827793525369">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:14</note>
+      </notes>
+      <segment>
+        <source>Monospace of the device</source>
+      </segment>
+    </unit>
+    <unit id="5748526609036002489">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:15</note>
+      </notes>
+      <segment>
+        <source>The font named below</source>
+      </segment>
+    </unit>
+    <unit id="8271604556595336092">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:21</note>
+      </notes>
+      <segment>
+        <source>Whole width</source>
+      </segment>
+    </unit>
+    <unit id="4943702389857113953">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:24</note>
+        <note category="description">longest line of text</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="count" disp="value"/> characters</source>
+      </segment>
+    </unit>
+    <unit id="6252070156626006029">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:29</note>
+        <note category="description">no margin</note>
+      </notes>
+      <segment>
+        <source>None</source>
+      </segment>
+    </unit>
+    <unit id="2450071309895133231">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:32</note>
+        <note category="description">a margin in pixels</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="count" disp="value"/> px</source>
+      </segment>
+    </unit>
+    <unit id="7422164037104208948">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:36</note>
+      </notes>
+      <segment>
+        <source>The bundled fonts are downloaded from this server the first time they are used.</source>
+      </segment>
+    </unit>
+    <unit id="8227747201957563809">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:37</note>
+      </notes>
+      <segment>
+        <source>In pixels, from 10 to 32.</source>
+      </segment>
+    </unit>
+    <unit id="2199169776499272898">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:38</note>
+      </notes>
+      <segment>
+        <source>Space between lines, as a multiple of the text size.</source>
+      </segment>
+    </unit>
+    <unit id="2840632557365676307">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:39</note>
+      </notes>
+      <segment>
+        <source>The longest a line gets when long lines wrap. About 70 characters is easiest to read.</source>
+      </segment>
+    </unit>
+    <unit id="7928434662384692490">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:40</note>
+      </notes>
+      <segment>
+        <source>Space left around the text, on every side.</source>
+      </segment>
+    </unit>
+    <unit id="4645400558130778033">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:41</note>
+      </notes>
+      <segment>
+        <source>Long lines continue on the next line instead of going off the side.</source>
+      </segment>
+    </unit>
+    <unit id="9034028757723007410">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:42</note>
+      </notes>
+      <segment>
+        <source>Shows the number of each line on the left.</source>
+      </segment>
+    </unit>
+    <unit id="8671234314555525900">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:46</note>
+      </notes>
+      <segment>
+        <source>Appearance</source>
+      </segment>
+    </unit>
+    <unit id="859441694065520011">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:47,48</note>
+      </notes>
+      <segment>
+        <source>Changes apply as soon as you save them, for everyone using this space (on the server&apos;s settings: every space). A setting locked above says why it can&apos;t change here. The library&apos;s folder, the cache folder, the database, ffmpeg and the server&apos;s commands are set in the server&apos;s configuration file.</source>
+      </segment>
+    </unit>
+    <unit id="7103588127254721505">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:52</note>
+      </notes>
+      <segment>
+        <source>Theme</source>
+      </segment>
+    </unit>
+    <unit id="7873582037270026625">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:57</note>
+      </notes>
+      <segment>
+        <source>Default theme</source>
+      </segment>
+    </unit>
+    <unit id="2198161914570041956">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:60</note>
+      </notes>
+      <segment>
+        <source>Follow the device</source>
+      </segment>
+    </unit>
+    <unit id="531789152649307284">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:64</note>
+      </notes>
+      <segment>
+        <source>The colours of the pages, in browsers that haven&apos;t picked their own below. “Follow the device” uses the light or dark mode of the computer or phone.</source>
+      </segment>
+    </unit>
+    <unit id="8805362480797505507">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:70</note>
+      </notes>
+      <segment>
+        <source>Reading text files</source>
+      </segment>
+    </unit>
+    <unit id="5309378565715132693">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:71</note>
+      </notes>
+      <segment>
+        <source>How text files read in the viewer, before each browser&apos;s own changes (“Aa” in the text&apos;s bar).</source>
+      </segment>
+    </unit>
+    <unit id="4885542694787728767">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:76</note>
+      </notes>
+      <segment>
+        <source>Colours</source>
+      </segment>
+    </unit>
+    <unit id="5326302176534821680">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:79</note>
+      </notes>
+      <segment>
+        <source>As the app (light or dark)</source>
+      </segment>
+    </unit>
+    <unit id="8741449640848604429">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:81</note>
+        <note category="description">theme</note>
+      </notes>
+      <segment>
+        <source>Sepia</source>
+      </segment>
+    </unit>
+    <unit id="7401180406635779761">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:84</note>
+      </notes>
+      <segment>
+        <source>The colours of the text and of the page behind it.</source>
+      </segment>
+    </unit>
+    <unit id="3219067889591485412">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:88</note>
+      </notes>
+      <segment>
+        <source>Font of the device</source>
+      </segment>
+    </unit>
+    <unit id="7111505054127016915">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:90</note>
+      </notes>
+      <segment>
+        <source>e.g. Fira Code</source>
+      </segment>
+    </unit>
+    <unit id="9219140997234356032">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:91</note>
+      </notes>
+      <segment>
+        <source>The name of a font installed on the reader&apos;s computer or phone, used where the font is “The font named below”.</source>
+      </segment>
+    </unit>
+    <unit id="5819235025252533026">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:97</note>
+      </notes>
+      <segment>
+        <source>Reading: notes and documents</source>
+      </segment>
+    </unit>
+    <unit id="3054824596008290028">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:98</note>
+      </notes>
+      <segment>
+        <source>Text meant to be read: .txt, .md, README, LICENSE…</source>
+      </segment>
+    </unit>
+    <unit id="4249324484211564661">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:102</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:159</note>
+      </notes>
+      <segment>
+        <source>Font</source>
+      </segment>
+    </unit>
+    <unit id="4547376068759243702">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:109</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:166</note>
+      </notes>
+      <segment>
+        <source>Text size</source>
+      </segment>
+    </unit>
+    <unit id="3351339831817755126">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:117</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:174</note>
+      </notes>
+      <segment>
+        <source>Line height</source>
+      </segment>
+    </unit>
+    <unit id="2018922024247045709">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:125</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:182</note>
+      </notes>
+      <segment>
+        <source>Width</source>
+      </segment>
+    </unit>
+    <unit id="2526925893691461533">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:133</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:190</note>
+      </notes>
+      <segment>
+        <source>Margins</source>
+      </segment>
+    </unit>
+    <unit id="6450185031581102356">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:141</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:198</note>
+      </notes>
+      <segment>
+        <source>Wrap long lines</source>
+      </segment>
+    </unit>
+    <unit id="4150190668090736414">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:147</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:204</note>
+      </notes>
+      <segment>
+        <source>Line numbers</source>
+      </segment>
+    </unit>
+    <unit id="3197694845722947180">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:154</note>
+      </notes>
+      <segment>
+        <source>Reading: code, logs and settings</source>
+      </segment>
+    </unit>
+    <unit id="2785864330224923360">
+      <notes>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:155</note>
+      </notes>
+      <segment>
+        <source>Scripts, code, logs, configuration and data files.</source>
+      </segment>
+    </unit>
+    <unit id="4810161381204686182">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:8</note>
+      </notes>
+      <segment>
+        <source>Only scripts and other programs using the API ask for pages; the app itself uses the page size above.</source>
+      </segment>
+    </unit>
+    <unit id="7824266831434362876">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:13</note>
+      </notes>
+      <segment>
+        <source>Browsing</source>
+      </segment>
+    </unit>
+    <unit id="2663912515245168797">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:16</note>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:156</note>
+      </notes>
+      <segment>
+        <source>Listings</source>
+      </segment>
+    </unit>
+    <unit id="8939587804990976924">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:20</note>
+      </notes>
+      <segment>
+        <source>Items per page</source>
+      </segment>
+    </unit>
+    <unit id="4252225784471098634">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:24</note>
+      </notes>
+      <segment>
+        <source>Files and folders loaded at a time; more load as you scroll. Smaller pages show up faster on slow drives.</source>
+      </segment>
+    </unit>
+    <unit id="2136618163523034774">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:29</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:125</note>
+      </notes>
+      <segment>
+        <source>Largest page</source>
+      </segment>
+    </unit>
+    <unit id="5986087594233591243">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:33</note>
+      </notes>
+      <segment>
+        <source>The most items a single request can ask for.</source>
+      </segment>
+    </unit>
+    <unit id="8003988773457718713">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:38</note>
+      </notes>
+      <segment>
+        <source>Pictures per folder</source>
+      </segment>
+    </unit>
+    <unit id="6516395775853694801">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:42</note>
+      </notes>
+      <segment>
+        <source>Folders show their first photos and videos: 4 makes a 2×2 grid, 9 a 3×3 grid. 0 lists folders without pictures.</source>
+      </segment>
+    </unit>
+    <unit id="5895457311368414419">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:44</note>
+      </notes>
+      <segment>
+        <source>Only the grid and one-per-row views show them, where folders are cards.</source>
+      </segment>
+    </unit>
+    <unit id="7678252496891159074">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:48</note>
+      </notes>
+      <segment>
+        <source>Copy full paths</source>
+      </segment>
+    </unit>
+    <unit id="393467800418041198">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:50</note>
+      </notes>
+      <segment>
+        <source>Adds buttons that copy the full path of a folder or file on the server.</source>
+      </segment>
+    </unit>
+    <unit id="1446821861757584432">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:51</note>
+      </notes>
+      <segment>
+        <source>For example D:\Media\Photos\beach.jpg. The buttons sit next to the location for the current folder, on each folder and file, and in the viewer. Everyone who sees them learns where the library is on the server&apos;s disk.</source>
+      </segment>
+    </unit>
+    <unit id="4999860378494617470">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:58</note>
+      </notes>
+      <segment>
+        <source>Resolution and duration</source>
+      </segment>
+    </unit>
+    <unit id="1776210421325891412">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:59</note>
+      </notes>
+      <segment>
+        <source>These need the resolutions and durations read by scans (Scanning › Indexing › Read resolutions and durations).</source>
+      </segment>
+    </unit>
+    <unit id="4099423086858001962">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:64</note>
+      </notes>
+      <segment>
+        <source>Show resolutions</source>
+      </segment>
+    </unit>
+    <unit id="8277290844782775112">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:66</note>
+      </notes>
+      <segment>
+        <source>Shows the size in pixels of photos and videos (e.g. 1920×1080) next to their file size, in listings and in the viewer.</source>
+      </segment>
+    </unit>
+    <unit id="2541108176217297048">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:71</note>
+      </notes>
+      <segment>
+        <source>Show durations</source>
+      </segment>
+    </unit>
+    <unit id="8864695421690998465">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:73</note>
+      </notes>
+      <segment>
+        <source>Shows how long each video and audio file lasts (e.g. 1:23:45) next to its file size, in listings and in the viewer.</source>
+      </segment>
+    </unit>
+    <unit id="7025005937924653776">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:78</note>
+      </notes>
+      <segment>
+        <source>Mark high and low resolution</source>
+      </segment>
+    </unit>
+    <unit id="367195855763293344">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:80</note>
+      </notes>
+      <segment>
+        <source>Labels the preview of each photo and video HR (high resolution) or LR (low resolution) in its bottom-right corner, by the thresholds below.</source>
+      </segment>
+    </unit>
+    <unit id="4371436865301707523">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:85</note>
+      </notes>
+      <segment>
+        <source>Photos are high resolution from (pixels)</source>
+      </segment>
+    </unit>
+    <unit id="2211103591967290516">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:89</note>
+      </notes>
+      <segment>
+        <source>A photo whose shorter side reaches this many pixels is HR.</source>
+      </segment>
+    </unit>
+    <unit id="7832799081905460617">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:90</note>
+      </notes>
+      <segment>
+        <source>With 1500, a 2000×1500 photo (or a portrait one of 1500×2000) is HR, and a 1000×1000 one is LR.</source>
+      </segment>
+    </unit>
+    <unit id="8500080773753869573">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:95</note>
+      </notes>
+      <segment>
+        <source>Videos are high resolution from (pixels)</source>
+      </segment>
+    </unit>
+    <unit id="5090246463923808326">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:99</note>
+      </notes>
+      <segment>
+        <source>A video whose shorter side reaches this many pixels is HR.</source>
+      </segment>
+    </unit>
+    <unit id="6627281149276913890">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:100</note>
+      </notes>
+      <segment>
+        <source>With 720, videos of 1280×720 and 1000×1000 are HR, and one of 854×480 is LR. The searches r:hr and r:lr use both thresholds, whether the marks are shown or not.</source>
+      </segment>
+    </unit>
+    <unit id="4580988005648117665">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:110</note>
+      </notes>
+      <segment>
+        <source>Search</source>
+      </segment>
+    </unit>
+    <unit id="5968132631442328843">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:113</note>
+      </notes>
+      <segment>
+        <source>Results</source>
+      </segment>
+    </unit>
+    <unit id="341618940227092764">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:117</note>
+      </notes>
+      <segment>
+        <source>Results per page</source>
+      </segment>
+    </unit>
+    <unit id="3661145885986683522">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:121</note>
+      </notes>
+      <segment>
+        <source>Search results loaded at a time; more load as you scroll.</source>
+      </segment>
+    </unit>
+    <unit id="2841612508133195877">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:129</note>
+      </notes>
+      <segment>
+        <source>The most results a single request can ask for.</source>
+      </segment>
+    </unit>
+    <unit id="8724969247795731822">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:135</note>
+      </notes>
+      <segment>
+        <source>Search box</source>
+      </segment>
+    </unit>
+    <unit id="7466220890637811224">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:140</note>
+      </notes>
+      <segment>
+        <source>Explain searches</source>
+      </segment>
+    </unit>
+    <unit id="7601240027795705190">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:142</note>
+      </notes>
+      <segment>
+        <source>Adds a button to the search box that puts the search into words as you type.</source>
+      </segment>
+    </unit>
+    <unit id="3306747909054935461">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:143</note>
+      </notes>
+      <segment>
+        <source>It also points out the parts of a search that are ignored, or that don&apos;t work the way they may seem to.</source>
+      </segment>
+    </unit>
+    <unit id="5949463342923797801">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:148</note>
+      </notes>
+      <segment>
+        <source>Searches remembered</source>
+      </segment>
+    </unit>
+    <unit id="3228224542697626101">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:152</note>
+      </notes>
+      <segment>
+        <source>The last searches each browser keeps and suggests again as you type, newest first. 0 keeps none.</source>
+      </segment>
+    </unit>
+    <unit id="5152929430307007483">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:154</note>
+      </notes>
+      <segment>
+        <source>Each browser keeps its own searches: they never reach the server or other devices.</source>
+      </segment>
+    </unit>
+    <unit id="7172558586224768124">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:9</note>
+      </notes>
+      <segment>
+        <source>Picture editor</source>
+      </segment>
+    </unit>
+    <unit id="2611840781787759251">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:10</note>
+      </notes>
+      <segment>
+        <source>The Edit button of the viewer crops pictures. The result is saved as a new file, or over the original by those allowed to replace files (its previous version is kept in the trash).</source>
+      </segment>
+    </unit>
+    <unit id="4636616640072565270">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:14</note>
+      </notes>
+      <segment>
+        <source>Saving</source>
+      </segment>
+    </unit>
+    <unit id="3002526053967967590">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:18</note>
+      </notes>
+      <segment>
+        <source>Folder for edited pictures</source>
+      </segment>
+    </unit>
+    <unit id="3008573030448240863">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:20</note>
+        <note category="description">folder name</note>
+      </notes>
+      <segment>
+        <source>Edited</source>
+      </segment>
+    </unit>
+    <unit id="7003432436029419742">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:21</note>
+      </notes>
+      <segment>
+        <source>A folder of the library (a path from its top) where edited pictures are saved, in the same folders as their originals. Empty: next to the original.</source>
+      </segment>
+    </unit>
+    <unit id="3474844490065650888">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:23</note>
+      </notes>
+      <segment>
+        <source>With Edited, Photos/2024/beach.jpg is saved as Edited/Photos/2024/beach.jpg; the folder is created when first needed. Empty, it is saved as “beach (edited).jpg” next to the original. Existing files are never replaced: a number is added to the name.</source>
+      </segment>
+    </unit>
+    <unit id="5329455389774371896">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:29</note>
+      </notes>
+      <segment>
+        <source>Quality (JPEG and WebP)</source>
+      </segment>
+    </unit>
+    <unit id="2554709543164781381">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:33</note>
+      </notes>
+      <segment>
+        <source>How much detail JPEG and WebP pictures keep when saved: higher is sharper and larger.</source>
+      </segment>
+    </unit>
+    <unit id="4303649221901010578">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:35</note>
+      </notes>
+      <segment>
+        <source>PNG pictures are saved without loss; other formats are saved as PNG.</source>
+      </segment>
+    </unit>
+    <unit id="4730016237617113117">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:44</note>
+      </notes>
+      <segment>
+        <source>File management</source>
+      </segment>
+    </unit>
+    <unit id="4000172853977120710">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:45</note>
+      </notes>
+      <segment>
+        <source>Creating folders, renaming, moving, copying, uploading and deleting files and folders from the listing, for the groups given those rights (Spaces &amp; accounts).</source>
+      </segment>
+    </unit>
+    <unit id="3141301060598402455">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:49</note>
+      </notes>
+      <segment>
+        <source>Deleting</source>
+      </segment>
+    </unit>
+    <unit id="2817165831344108767">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:53</note>
+      </notes>
+      <segment>
+        <source>Always delete permanently</source>
+      </segment>
+    </unit>
+    <unit id="3392845590682286742">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:55</note>
+      </notes>
+      <segment>
+        <source>Every delete skips the trash: files are gone at once, and only those who may delete permanently can delete.</source>
+      </segment>
+    </unit>
+    <unit id="1645608277957366837">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:57</note>
+      </notes>
+      <segment>
+        <source>What is already in the trash stays there.</source>
+      </segment>
+    </unit>
+    <unit id="8289918497879386582">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:61</note>
+      </notes>
+      <segment>
+        <source>Days in the trash</source>
+      </segment>
+    </unit>
+    <unit id="2351796364529115253">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:65</note>
+      </notes>
+      <segment>
+        <source>Items are deleted for good after this many days in the trash. 0 keeps them until the trash is emptied.</source>
+      </segment>
+    </unit>
+    <unit id="7527374008664456881">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:67</note>
+      </notes>
+      <segment>
+        <source>A background task does it: Background tasks › Trash purge.</source>
+      </segment>
+    </unit>
+    <unit id="4309161194291010148">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:72</note>
+      </notes>
+      <segment>
+        <source>Copies, uploads and downloads</source>
+      </segment>
+    </unit>
+    <unit id="8083204422744924677">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:76</note>
+      </notes>
+      <segment>
+        <source>Free space kept by copies and uploads (MB)</source>
+      </segment>
+    </unit>
+    <unit id="8502477136221413947">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:80</note>
+      </notes>
+      <segment>
+        <source>A copy or an upload is refused when it would leave less free space than this on the drive it goes to. 0: they may fill the drive.</source>
+      </segment>
+    </unit>
+    <unit id="4506461304951357506">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:85</note>
+      </notes>
+      <segment>
+        <source>Largest file to upload (MB)</source>
+      </segment>
+    </unit>
+    <unit id="2500431459048952771">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:89</note>
+      </notes>
+      <segment>
+        <source>Larger files are refused before they are sent. 0: no limit (only the free space kept counts).</source>
+      </segment>
+    </unit>
+    <unit id="4436628930043218118">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:94</note>
+      </notes>
+      <segment>
+        <source>Keep unfinished uploads for (hours)</source>
+      </segment>
+    </unit>
+    <unit id="8515085791651858912">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:98</note>
+      </notes>
+      <segment>
+        <source>An upload that receives nothing for this long is removed, with what it received.</source>
+      </segment>
+    </unit>
+    <unit id="3514672766599937499">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:100</note>
+      </notes>
+      <segment>
+        <source>Until then, picking the same file again carries on where it stopped.</source>
+      </segment>
+    </unit>
+    <unit id="1965724137773267569">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:104</note>
+      </notes>
+      <segment>
+        <source>Largest zip to download (MB)</source>
+      </segment>
+    </unit>
+    <unit id="1701102362771773401">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:108</note>
+      </notes>
+      <segment>
+        <source>Downloading several files or a folder makes one zip; a larger one is refused before it starts. 0: no limit.</source>
+      </segment>
+    </unit>
+    <unit id="6651222988998406724">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:110</note>
+      </notes>
+      <segment>
+        <source>The size is what the index knows of the files: folders not in the index count for nothing.</source>
+      </segment>
+    </unit>
+    <unit id="2128800934734769071">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:116</note>
+      </notes>
+      <segment>
+        <source>Names</source>
+      </segment>
+    </unit>
+    <unit id="6261071322630016650">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:120</note>
+      </notes>
+      <segment>
+        <source>Only names Windows accepts</source>
+      </segment>
+    </unit>
+    <unit id="3332789250026515713">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:122</note>
+      </notes>
+      <segment>
+        <source>New names must also work on Windows. Keep it on when the library is shared with Windows computers or may move to one.</source>
+      </segment>
+    </unit>
+    <unit id="2710821826341713541">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:124</note>
+      </notes>
+      <segment>
+        <source>That means no &lt; &gt; : &quot; \ | ? *, no name ending with a dot or a space, and no CON, NUL, COM1… A Windows server always refuses them.</source>
+      </segment>
+    </unit>
+    <unit id="4402257673365313847">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:130</note>
+      </notes>
+      <segment>
+        <source>Work folder</source>
+      </segment>
+    </unit>
+    <unit id="6800212647328599643">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:134</note>
+      </notes>
+      <segment>
+        <source>Where SFE keeps its work files</source>
+      </segment>
+    </unit>
+    <unit id="3908714584994423187">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:137</note>
+      </notes>
+      <segment>
+        <source>In the library</source>
+      </segment>
+    </unit>
+    <unit id="1042331568228799602">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:138</note>
+      </notes>
+      <segment>
+        <source>On the server</source>
+      </segment>
+    </unit>
+    <unit id="7379723664601997943">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:140</note>
+      </notes>
+      <segment>
+        <source>Where the trash and unfinished uploads are kept.</source>
+      </segment>
+    </unit>
+    <unit id="65645295710573845">
+      <notes>
+        <note category="location">src/app/settings/tabs/files-settings.ts:141</note>
+      </notes>
+      <segment>
+        <source>In the library (a hidden .sfe folder at its top), they stay on the library&apos;s drive, so moving a file there is instant. In the server&apos;s data folder, the library holds nothing of SFE&apos;s, but large files are copied from one drive to the other. The name .sfe at the top of the library stays reserved either way.</source>
+      </segment>
+    </unit>
+    <unit id="3414857355250876097">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:9</note>
+      </notes>
+      <segment>
+        <source>Duplicates &amp; moves</source>
+      </segment>
+    </unit>
+    <unit id="1806202980495942251">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:10</note>
+      </notes>
+      <segment>
+        <source>Find identical files in the library, and keep the tags of files that are moved, renamed, or whose drive was missing during a scan. Both work from the index: scan folders to keep it up to date.</source>
+      </segment>
+    </unit>
+    <unit id="3587873128318078848">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:14</note>
+      </notes>
+      <segment>
+        <source>Duplicates</source>
+      </segment>
+    </unit>
+    <unit id="6937015734563033379">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:15</note>
+      </notes>
+      <segment>
+        <source>Files with the same size and fingerprint are taken as identical. This needs fingerprints (Scanning › Indexing › Fingerprint files).</source>
+      </segment>
+    </unit>
+    <unit id="909867296041992825">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:20</note>
+      </notes>
+      <segment>
+        <source>Smallest file (KB)</source>
+      </segment>
+    </unit>
+    <unit id="1196434357217248479">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:24</note>
+      </notes>
+      <segment>
+        <source>Smaller files are left out, as libraries hold many identical tiny files. 0 compares every file.</source>
+      </segment>
+    </unit>
+    <unit id="4799105805600631381">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:29</note>
+      </notes>
+      <segment>
+        <source>Groups per page</source>
+      </segment>
+    </unit>
+    <unit id="2718931396272733014">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:33</note>
+      </notes>
+      <segment>
+        <source>Groups of identical files loaded at a time; “Load more” shows the next ones.</source>
+      </segment>
+    </unit>
+    <unit id="3738399065873689813">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:37</note>
+      </notes>
+      <segment>
+        <source>Allow deleting copies</source>
+      </segment>
+    </unit>
+    <unit id="8858875931088152019">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:39</note>
+      </notes>
+      <segment>
+        <source>Adds a Remove button to each copy: the file goes to the trash and its tags are added to a copy you keep.</source>
+      </segment>
+    </unit>
+    <unit id="8832715053411994046">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:41</note>
+      </notes>
+      <segment>
+        <source>The two files are compared byte for byte first, so an identical copy always stays. Only groups with the right “Delete duplicates” can remove copies; with “Always delete permanently” (File management), they are deleted for good.</source>
+      </segment>
+    </unit>
+    <unit id="8714539619500735356">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:48</note>
+      </notes>
+      <segment>
+        <source>Similar videos</source>
+      </segment>
+    </unit>
+    <unit id="5867298964461076870">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:49,50</note>
+      </notes>
+      <segment>
+        <source>Videos showing the same pictures in other files (another resolution, quality or format, trimmed) are found from fingerprints made with their trickplay: turn trickplay on for the folders to compare.</source>
+      </segment>
+    </unit>
+    <unit id="7563027960549659114">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:54</note>
+      </notes>
+      <segment>
+        <source>Smallest match (%)</source>
+      </segment>
+    </unit>
+    <unit id="4934544017361721189">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:58</note>
+      </notes>
+      <segment>
+        <source>The share of frames two videos must have in common, out of the longer one. Applies from the next comparison.</source>
+      </segment>
+    </unit>
+    <unit id="4632589009729673908">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:60</note>
+      </notes>
+      <segment>
+        <source>A copy at another resolution is near 100%, and a copy cut by a tenth near 90%.</source>
+      </segment>
+    </unit>
+    <unit id="109909122766590340">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:66</note>
+      </notes>
+      <segment>
+        <source>Moved and renamed files</source>
+      </segment>
+    </unit>
+    <unit id="1578985300810882031">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:70</note>
+      </notes>
+      <segment>
+        <source>Keep the tags of moved files</source>
+      </segment>
+    </unit>
+    <unit id="2542176210752428029">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:72</note>
+      </notes>
+      <segment>
+        <source>A tagged file that a scan no longer finds is remembered with its tags, which move over when it is found again. Off: it loses its tags.</source>
+      </segment>
+    </unit>
+    <unit id="2107895198438192028">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:74</note>
+      </notes>
+      <segment>
+        <source>The file is found again when a scan indexes the same file somewhere else: moved, renamed, or back on its drive.</source>
+      </segment>
+    </unit>
+    <unit id="4396014716976906733">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:79</note>
+      </notes>
+      <segment>
+        <source>Recognise files without a fingerprint by name</source>
+      </segment>
+    </unit>
+    <unit id="1166412884559386567">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:81</note>
+      </notes>
+      <segment>
+        <source>Files indexed without a fingerprint are matched on their name, size and date modified: a move is recognised, a rename is not.</source>
+      </segment>
+    </unit>
+    <unit id="53872301715920481">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:86</note>
+      </notes>
+      <segment>
+        <source>Remember missing files for (days)</source>
+      </segment>
+    </unit>
+    <unit id="1936470555086947292">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:90</note>
+      </notes>
+      <segment>
+        <source>Missing files not found again in that time are forgotten, with their tags. 0: until found or forgotten by hand.</source>
+      </segment>
+    </unit>
+    <unit id="7886570921510760899">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:100</note>
+      </notes>
+      <segment>
+        <source>Tags</source>
+      </segment>
+    </unit>
+    <unit id="3982403428275430291">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:103</note>
+      </notes>
+      <segment>
+        <source>Sidebar</source>
+      </segment>
+    </unit>
+    <unit id="2898060314972143163">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:107</note>
+      </notes>
+      <segment>
+        <source>Tags per sidebar section</source>
+      </segment>
+    </unit>
+    <unit id="7994651215861371476">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:111</note>
+      </notes>
+      <segment>
+        <source>How many tags each section of the sidebar shows.</source>
+      </segment>
+    </unit>
+    <unit id="186236568870281953">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:116</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:14</note>
+      </notes>
+      <segment>
+        <source>History</source>
+      </segment>
+    </unit>
+    <unit id="5305326899836714713">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:121</note>
+      </notes>
+      <segment>
+        <source>Remember tag history</source>
+      </segment>
+    </unit>
+    <unit id="2539074578884620980">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:123</note>
+      </notes>
+      <segment>
+        <source>Records the tags you search for and the tags of the files you open, for the sidebar&apos;s “Last searched” and “Last viewed” lists.</source>
+      </segment>
+    </unit>
+    <unit id="2813753562585679605">
+      <notes>
+        <note category="location">src/app/settings/tabs/library-settings.ts:125</note>
+      </notes>
+      <segment>
+        <source>Off: nothing new is recorded, and those lists are hidden.</source>
+      </segment>
+    </unit>
+    <unit id="8579781627982869129">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:12</note>
+      </notes>
+      <segment>
+        <source>VLC (iPhone, iPad; on a computer only with a vlc:// handler installed)</source>
+      </segment>
+    </unit>
+    <unit id="3330417599019508262">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:13</note>
+      </notes>
+      <segment>
+        <source>VLC (Android)</source>
+      </segment>
+    </unit>
+    <unit id="67880680240807949">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:15</note>
+      </notes>
+      <segment>
+        <source>MX Player (Android)</source>
+      </segment>
+    </unit>
+    <unit id="7968416368400244514">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:20</note>
+      </notes>
+      <segment>
+        <source>MX Player Pro (Android)</source>
+      </segment>
+    </unit>
+    <unit id="8508592520240127904">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:24</note>
+      </notes>
+      <segment>
+        <source>PotPlayer (Windows)</source>
+      </segment>
+    </unit>
+    <unit id="3778368019213667484">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:25</note>
+      </notes>
+      <segment>
+        <source>Infuse (iPhone, iPad, Mac)</source>
+      </segment>
+    </unit>
+    <unit id="4463066677708346026">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:26</note>
+      </notes>
+      <segment>
+        <source>IINA (macOS)</source>
+      </segment>
+    </unit>
+    <unit id="7683705529753923369">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:31</note>
+      </notes>
+      <segment>
+        <source>Player</source>
+      </segment>
+    </unit>
+    <unit id="3739311706692458197">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:34</note>
+      </notes>
+      <segment>
+        <source>Video player</source>
+      </segment>
+    </unit>
+    <unit id="5233236292277542271">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:38</note>
+      </notes>
+      <segment>
+        <source>Jump back / forward (seconds)</source>
+      </segment>
+    </unit>
+    <unit id="1935307500710936298">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:42</note>
+      </notes>
+      <segment>
+        <source>How far the player&apos;s back and forward buttons and the J and L keys jump.</source>
+      </segment>
+    </unit>
+    <unit id="5573162184845509215">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:43</note>
+      </notes>
+      <segment>
+        <source>A double tap on the left or right of the picture jumps by the same amount, and each further tap jumps again.</source>
+      </segment>
+    </unit>
+    <unit id="1289596067609871549">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:48</note>
+      </notes>
+      <segment>
+        <source>Loop videos</source>
+      </segment>
+    </unit>
+    <unit id="7078990081250074804">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:50</note>
+      </notes>
+      <segment>
+        <source>Videos start over when they end. The player&apos;s loop button (R) switches it for the video on screen.</source>
+      </segment>
+    </unit>
+    <unit id="7088280379555702462">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:56</note>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:60</note>
+      </notes>
+      <segment>
+        <source>External player</source>
+      </segment>
+    </unit>
+    <unit id="976101675412098105">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:64</note>
+      </notes>
+      <segment>
+        <source>The app that the viewer&apos;s ▶ button opens videos and audio in, on every browser.</source>
+      </segment>
+    </unit>
+    <unit id="7526905797396879265">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:66</note>
+      </notes>
+      <segment>
+        <source>The app must be installed on the device you watch on, and that device must be able to reach this server.</source>
+      </segment>
+    </unit>
+    <unit id="7299105800972999569">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:71</note>
+      </notes>
+      <segment>
+        <source>External player link</source>
+      </segment>
+    </unit>
+    <unit id="4791686961987663356">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:73</note>
+      </notes>
+      <segment>
+        <source>Empty: no external player button</source>
+      </segment>
+    </unit>
+    <unit id="7736702757265961155">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:74</note>
+      </notes>
+      <segment>
+        <source>Filled in by the choice above, or written by hand.</source>
+      </segment>
+    </unit>
+    <unit id="4890539880768549601">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:75,76</note>
+      </notes>
+      <segment>
+        <source>{url} is replaced by the file&apos;s address, and {encodedUrl} by the same address encoded for a query string. Without either, the address is added at the end (e.g. vlc://).</source>
+      </segment>
+    </unit>
+    <unit id="8944423514801836144">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:80</note>
+      </notes>
+      <segment>
+        <source>External player name</source>
+      </segment>
+    </unit>
+    <unit id="3516901746478800629">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:82</note>
+      </notes>
+      <segment>
+        <source>external player</source>
+      </segment>
+    </unit>
+    <unit id="3005790133264124559">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:83</note>
+      </notes>
+      <segment>
+        <source>Shown on its button, as in “Open in VLC”.</source>
+      </segment>
+    </unit>
+    <unit id="8798880909616098524">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:87</note>
+      </notes>
+      <segment>
+        <source>Link lifetime (minutes)</source>
+      </segment>
+    </unit>
+    <unit id="2250150271040025549">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:91</note>
+      </notes>
+      <segment>
+        <source>How long the link given to the player works, without signing in.</source>
+      </segment>
+    </unit>
+    <unit id="2760522258073973113">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:92</note>
+      </notes>
+      <segment>
+        <source>Make it long enough to watch a whole film: players ask again each time you seek. A new password or a disabled account ends the links it gave out.</source>
+      </segment>
+    </unit>
+    <unit id="6170268503580019701">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:98</note>
+      </notes>
+      <segment>
+        <source>Flash movies</source>
+      </segment>
+    </unit>
+    <unit id="2391369627473040285">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:102</note>
+      </notes>
+      <segment>
+        <source>Play Flash movies</source>
+      </segment>
+    </unit>
+    <unit id="4506174744690606195">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:104</note>
+      </notes>
+      <segment>
+        <source>Flash movies and games (.swf) play in the viewer. Off: .swf files can only be downloaded.</source>
+      </segment>
+    </unit>
+    <unit id="2644865949504428662">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:106</note>
+      </notes>
+      <segment>
+        <source>They play through Ruffle, a Flash Player emulator that comes with SFE. A movie can only read the files of its own folder, and never acts as the person watching it.</source>
+      </segment>
+    </unit>
+    <unit id="8872285976030977366">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:116</note>
+      </notes>
+      <segment>
+        <source>Streaming</source>
+      </segment>
+    </unit>
+    <unit id="4903609420495999825">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:119</note>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:123</note>
+      </notes>
+      <segment>
+        <source>Data server</source>
+      </segment>
+    </unit>
+    <unit id="1131821633124193198">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:125</note>
+      </notes>
+      <segment>
+        <source>Empty: SFE streams the files</source>
+      </segment>
+    </unit>
+    <unit id="5548863841849212416">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:126</note>
+      </notes>
+      <segment>
+        <source>The http:// or https:// address of another web server that already publishes the library. Files then open from there instead of being streamed by SFE.</source>
+      </segment>
+    </unit>
+    <unit id="6029549974549515771">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:128</note>
+      </notes>
+      <segment>
+        <source>The file&apos;s path is added after the address, or put where you write {url} (e.g. http://nas/files/{url}?raw=1). {encodedUrl} is the same path fully percent-encoded, slashes too (e.g. http://nas/get?file={encodedUrl}).</source>
+      </segment>
+    </unit>
+    <unit id="2604302920429893456">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:135</note>
+      </notes>
+      <segment>
+        <source>Videos converted by the server</source>
+      </segment>
+    </unit>
+    <unit id="6870581334236390290">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:136</note>
+      </notes>
+      <segment>
+        <source>These need ffmpeg on the server (System › About says whether it was found). Playback › Video streams lists the videos being converted.</source>
+      </segment>
+    </unit>
+    <unit id="386689636819625897">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:141</note>
+      </notes>
+      <segment>
+        <source>Convert videos</source>
+      </segment>
+    </unit>
+    <unit id="4669859128213287911">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:144</note>
+      </notes>
+      <segment>
+        <source>When the browser can&apos;t play them</source>
+      </segment>
+    </unit>
+    <unit id="9212449559226155586">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:145</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:110</note>
+        <note category="description">convert videos</note>
+      </notes>
+      <segment>
+        <source>Always</source>
+      </segment>
+    </unit>
+    <unit id="8372007266188249803">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:146</note>
+        <note category="description">convert videos</note>
+      </notes>
+      <segment>
+        <source>Never</source>
+      </segment>
+    </unit>
+    <unit id="718316380968264241">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:148</note>
+      </notes>
+      <segment>
+        <source>When the browser can&apos;t play a video (AVI, WMV, HEVC pictures…), the player asks the server for it converted, from where it was.</source>
+      </segment>
+    </unit>
+    <unit id="3281807468750894839">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:150,151</note>
+      </notes>
+      <segment>
+        <source>Converted videos play as H.264 with AAC sound, which every browser plays. “Always” converts every video, for browsers that play some files without picture or sound. The player&apos;s ⟳ button converts the video on screen either way. A conversion keeps the server&apos;s processor busy while someone watches.</source>
+      </segment>
+    </unit>
+    <unit id="7391518502471828894">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:156</note>
+      </notes>
+      <segment>
+        <source>Videos converted at once</source>
+      </segment>
+    </unit>
+    <unit id="5433922849633647858">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:160</note>
+      </notes>
+      <segment>
+        <source>For the whole server. Each one keeps a processor core or more busy.</source>
+      </segment>
+    </unit>
+    <unit id="8314032248519155918">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:161</note>
+      </notes>
+      <segment>
+        <source>Someone asking for one more is told to try again later.</source>
+      </segment>
+    </unit>
+    <unit id="4508080853862445430">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:165</note>
+      </notes>
+      <segment>
+        <source>Quality (CRF)</source>
+      </segment>
+    </unit>
+    <unit id="3977261422277746337">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:169</note>
+      </notes>
+      <segment>
+        <source>Lower looks better and is heavier: 18 looks like the original, 23 is a good balance, 28 is small.</source>
+      </segment>
+    </unit>
+    <unit id="3603041145543172197">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:174</note>
+      </notes>
+      <segment>
+        <source>Largest height (pixels)</source>
+      </segment>
+    </unit>
+    <unit id="1434894764602541580">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:178</note>
+      </notes>
+      <segment>
+        <source>Taller videos are scaled down to it, keeping their shape (1080 for Full HD). 0 keeps their size.</source>
+      </segment>
+    </unit>
+    <unit id="3024460787824565531">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:183</note>
+      </notes>
+      <segment>
+        <source>Copy H.264 pictures</source>
+      </segment>
+    </unit>
+    <unit id="5850690129093194110">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:185</note>
+      </notes>
+      <segment>
+        <source>Pictures already in H.264 (8-bit) are only repackaged, with their sound converted: almost no work for the server.</source>
+      </segment>
+    </unit>
+    <unit id="5921509880332145658">
+      <notes>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:187</note>
+      </notes>
+      <segment>
+        <source>The catch: a seek lands on the nearest earlier key frame, and the largest height doesn&apos;t apply.</source>
+      </segment>
+    </unit>
+    <unit id="661327736955528191">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:8</note>
+      </notes>
+      <segment>
+        <source>Those already made are still shown. “Scans and previews…” in a folder&apos;s menu, or Scanning › Excluded folders, adds and removes folders here too.</source>
+      </segment>
+    </unit>
+    <unit id="6907161397537530258">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:13</note>
+      </notes>
+      <segment>
+        <source>Thumbnails</source>
+      </segment>
+    </unit>
+    <unit id="477181226282824446">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:16</note>
+      </notes>
+      <segment>
+        <source>Previews</source>
+      </segment>
+    </unit>
+    <unit id="3853177309860120783">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:20</note>
+      </notes>
+      <segment>
+        <source>Show thumbnails</source>
+      </segment>
+    </unit>
+    <unit id="7996260729183519277">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:22</note>
+      </notes>
+      <segment>
+        <source>Shows small pictures of photos and videos, made with ffmpeg and kept in the server&apos;s cache folder.</source>
+      </segment>
+    </unit>
+    <unit id="6845015068427557828">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:27</note>
+      </notes>
+      <segment>
+        <source>Width (pixels)</source>
+      </segment>
+    </unit>
+    <unit id="6868887317949572497">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:31</note>
+      </notes>
+      <segment>
+        <source>Applies to new thumbnails; existing ones are kept until their file changes.</source>
+      </segment>
+    </unit>
+    <unit id="5462471067443850478">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:35</note>
+      </notes>
+      <segment>
+        <source>Video position (seconds)</source>
+      </segment>
+    </unit>
+    <unit id="2628389172729806999">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:39</note>
+      </notes>
+      <segment>
+        <source>The moment of a video shown as its thumbnail. Shorter videos use their first frame.</source>
+      </segment>
+    </unit>
+    <unit id="8312759008168522889">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:44</note>
+      </notes>
+      <segment>
+        <source>Large image size (KB)</source>
+      </segment>
+    </unit>
+    <unit id="7654016814080140525">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:48</note>
+      </notes>
+      <segment>
+        <source>Larger photos are previewed through their thumbnail instead of being downloaded whole. 0 uses thumbnails for every photo.</source>
+      </segment>
+    </unit>
+    <unit id="3779770729410611948">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:50</note>
+      </notes>
+      <segment>
+        <source>The viewer shows the thumbnail until the original has loaded.</source>
+      </segment>
+    </unit>
+    <unit id="214533593500868676">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:54</note>
+      </notes>
+      <segment>
+        <source>Full images in one-per-row view</source>
+      </segment>
+    </unit>
+    <unit id="551005246303424491">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:56</note>
+      </notes>
+      <segment>
+        <source>The one-per-row view shows each photo itself instead of its thumbnail, sharp at any size.</source>
+      </segment>
+    </unit>
+    <unit id="5042467774747944381">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:58</note>
+      </notes>
+      <segment>
+        <source>This applies even above the large image size: large photos are downloaded whole as you scroll past them, which can be slow over the network.</source>
+      </segment>
+    </unit>
+    <unit id="5773702892870628365">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:63</note>
+      </notes>
+      <segment>
+        <source>Play animated images on hover</source>
+      </segment>
+    </unit>
+    <unit id="3852938291709642762">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:65</note>
+      </notes>
+      <segment>
+        <source>Resting the mouse on an animated GIF, PNG, WebP or AVIF plays it (on a touch screen: press and hold).</source>
+      </segment>
+    </unit>
+    <unit id="5077960733264125074">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:67</note>
+      </notes>
+      <segment>
+        <source>It concerns animated images shown through their thumbnail. Each time, the whole file is downloaded.</source>
+      </segment>
+    </unit>
+    <unit id="3372678468695151635">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:72</note>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:135</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:33</note>
+      </notes>
+      <segment>
+        <source>Excluded folders</source>
+      </segment>
+    </unit>
+    <unit id="4211164494079429592">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:75</note>
+      </notes>
+      <segment>
+        <source>Folders whose files get no new thumbnails, with the folders inside them: paths from the top of the library, one per line.</source>
+      </segment>
+    </unit>
+    <unit id="1322586333669103999">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:82</note>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:215</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:127</note>
+      </notes>
+      <segment>
+        <source>Performance</source>
+      </segment>
+    </unit>
+    <unit id="3936798257087162457">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:86</note>
+      </notes>
+      <segment>
+        <source>Rendered at once</source>
+      </segment>
+    </unit>
+    <unit id="5979817299379079300">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:90</note>
+      </notes>
+      <segment>
+        <source>Thumbnails rendered in parallel. Each one runs ffmpeg, so higher values use more of the processor.</source>
+      </segment>
+    </unit>
+    <unit id="9148780350725341802">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:95</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:127</note>
+      </notes>
+      <segment>
+        <source>Time limit (seconds)</source>
+      </segment>
+    </unit>
+    <unit id="7811557173384926652">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:99</note>
+      </notes>
+      <segment>
+        <source>A thumbnail taking longer is given up, and tried again the next time it is asked for.</source>
+      </segment>
+    </unit>
+    <unit id="8414932350776289558">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:109</note>
+      </notes>
+      <segment>
+        <source>Trickplay</source>
+      </segment>
+    </unit>
+    <unit id="6233608758332906094">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:110</note>
+      </notes>
+      <segment>
+        <source>Trickplay is a strip of small frames taken along a video. The player shows them above its seek bar while you hover over it or drag it, so you can see where you are going. They are made in the background with ffmpeg and kept in the trickplay folder of the server&apos;s cache.</source>
+      </segment>
+    </unit>
+    <unit id="7826278929667400294">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:115</note>
+      </notes>
+      <segment>
+        <source>Background task</source>
+      </segment>
+    </unit>
+    <unit id="6577750984813396656">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:120</note>
+      </notes>
+      <segment>
+        <source>Create trickplay</source>
+      </segment>
+    </unit>
+    <unit id="321573042853461661">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:122</note>
+      </notes>
+      <segment>
+        <source>The first pass over a large library keeps ffmpeg busy for a long time; later ones only handle new and changed videos.</source>
+      </segment>
+    </unit>
+    <unit id="1205037876874222931">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:127</note>
+      </notes>
+      <segment>
+        <source>Folders</source>
+      </segment>
+    </unit>
+    <unit id="6667416276224268858">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:130</note>
+      </notes>
+      <segment>
+        <source>Folders whose videos get trickplay, with the folders inside them: paths from the top of the library, one per line. Empty: the whole library.</source>
+      </segment>
+    </unit>
+    <unit id="2444990177612267793">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:138</note>
+      </notes>
+      <segment>
+        <source>Folders whose videos get no trickplay, with the folders inside them, even inside the folders above.</source>
+      </segment>
+    </unit>
+    <unit id="6573922824733056258">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:144</note>
+      </notes>
+      <segment>
+        <source>Look for new videos every (hours)</source>
+      </segment>
+    </unit>
+    <unit id="6088807754662972039">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:148</note>
+      </notes>
+      <segment>
+        <source>How often the folders are checked for new videos. 0: no regular check.</source>
+      </segment>
+    </unit>
+    <unit id="8333951314466869082">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:149</note>
+      </notes>
+      <segment>
+        <source>The folders are also checked when the server starts and when these settings change, and a video you open is handled right away. Background tasks shows when the next check runs, and can schedule checks at set times.</source>
+      </segment>
+    </unit>
+    <unit id="3985184483666315021">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:160</note>
+      </notes>
+      <segment>
+        <source>Play on hover</source>
+      </segment>
+    </unit>
+    <unit id="1145208227838352829">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:162</note>
+      </notes>
+      <segment>
+        <source>Resting the mouse on a video plays its trickplay over the thumbnail (on a touch screen: press and hold). Only videos that already have trickplay.</source>
+      </segment>
+    </unit>
+    <unit id="3091819333763458246">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:168</note>
+      </notes>
+      <segment>
+        <source>Frames</source>
+      </segment>
+    </unit>
+    <unit id="8581373767700376531">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:169</note>
+      </notes>
+      <segment>
+        <source>Changing these makes the trickplay of every video again, in the background. The old frames are shown until then.</source>
+      </segment>
+    </unit>
+    <unit id="3802089991568977129">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:174</note>
+      </notes>
+      <segment>
+        <source>Interval (seconds)</source>
+      </segment>
+    </unit>
+    <unit id="5664481791386115603">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:178</note>
+      </notes>
+      <segment>
+        <source>Time between two frames. Shorter is more precise, but takes longer and more space.</source>
+      </segment>
+    </unit>
+    <unit id="6193486351387400621">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:183</note>
+      </notes>
+      <segment>
+        <source>Frame width (pixels)</source>
+      </segment>
+    </unit>
+    <unit id="2823960065162391135">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:187</note>
+      </notes>
+      <segment>
+        <source>Narrower videos keep their own width.</source>
+      </segment>
+    </unit>
+    <unit id="7347792355198373441">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:191</note>
+      </notes>
+      <segment>
+        <source>Frames per row</source>
+      </segment>
+    </unit>
+    <unit id="572134395965006960">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:195</note>
+      </notes>
+      <segment>
+        <source>Frames are stored on sheets of rows × columns.</source>
+      </segment>
+    </unit>
+    <unit id="4175758655141009840">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:199</note>
+      </notes>
+      <segment>
+        <source>Rows per sheet</source>
+      </segment>
+    </unit>
+    <unit id="7320147899904173968">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:203</note>
+      </notes>
+      <segment>
+        <source>Bigger sheets mean fewer, larger files.</source>
+      </segment>
+    </unit>
+    <unit id="6713295533675662428">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:207</note>
+      </notes>
+      <segment>
+        <source>Fast mode</source>
+      </segment>
+    </unit>
+    <unit id="5905358620462799741">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:209</note>
+      </notes>
+      <segment>
+        <source>Decodes only the key frames of each video: many times faster, but a frame can be a few seconds off its position.</source>
+      </segment>
+    </unit>
+    <unit id="6808937520717321560">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:219</note>
+      </notes>
+      <segment>
+        <source>Videos at once</source>
+      </segment>
+    </unit>
+    <unit id="1913647982312847054">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:223</note>
+      </notes>
+      <segment>
+        <source>Each one runs ffmpeg, which can use several processor cores.</source>
+      </segment>
+    </unit>
+    <unit id="674183403583308386">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:227</note>
+      </notes>
+      <segment>
+        <source>Time limit per video (minutes)</source>
+      </segment>
+    </unit>
+    <unit id="1474055493971935058">
+      <notes>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:231</note>
+      </notes>
+      <segment>
+        <source>A video taking longer is skipped until it, or these settings, change.</source>
+      </segment>
+    </unit>
+    <unit id="3672402570538331121">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:9</note>
+      </notes>
+      <segment>
+        <source>What to scan</source>
+      </segment>
+    </unit>
+    <unit id="9109618195562940141">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:12</note>
+      </notes>
+      <segment>
+        <source>Skipped by scans</source>
+      </segment>
+    </unit>
+    <unit id="5338451379119099263">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:16</note>
+      </notes>
+      <segment>
+        <source>Ignored folders</source>
+      </segment>
+    </unit>
+    <unit id="4821439053738884120">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:19</note>
+      </notes>
+      <segment>
+        <source>Folder names (not paths) that scans skip, with everything inside them. One per line.</source>
+      </segment>
+    </unit>
+    <unit id="6996621870042246426">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:21</note>
+      </notes>
+      <segment>
+        <source>Files of these folders already in the index stay there until the next scan of the folder above them.</source>
+      </segment>
+    </unit>
+    <unit id="8826568001431728032">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:26</note>
+      </notes>
+      <segment>
+        <source>Ignored files</source>
+      </segment>
+    </unit>
+    <unit id="627023157919746837">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:29</note>
+      </notes>
+      <segment>
+        <source>File names that scans skip. One per line.</source>
+      </segment>
+    </unit>
+    <unit id="5715463326596601127">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:36</note>
+      </notes>
+      <segment>
+        <source>Folders that scans leave out, with the folders inside them: paths from the top of the library, one per line.</source>
+      </segment>
+    </unit>
+    <unit id="4861634539374835770">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:38</note>
+      </notes>
+      <segment>
+        <source>What the index already has of them stays as it is, never refreshed. “Scans and previews…” in a folder&apos;s menu, or Scanning › Excluded folders, adds and removes them too; ⋮ › Remove from index forgets a folder and can add it here as well.</source>
+      </segment>
+    </unit>
+    <unit id="2831653245452238970">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:45</note>
+      </notes>
+      <segment>
+        <source>Hidden items</source>
+      </segment>
+    </unit>
+    <unit id="640924020103609865">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:49</note>
+      </notes>
+      <segment>
+        <source>Show hidden files and folders</source>
+      </segment>
+    </unit>
+    <unit id="5959293414289063458">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:51</note>
+      </notes>
+      <segment>
+        <source>Includes items marked hidden or system (on Linux and macOS, names starting with a dot), in listings and in scans.</source>
+      </segment>
+    </unit>
+    <unit id="6125391559813574136">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:61</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:64</note>
+      </notes>
+      <segment>
+        <source>File types</source>
+      </segment>
+    </unit>
+    <unit id="6274305908761369037">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:66</note>
+      </notes>
+      <segment>
+        <source>Which files are photos, videos, audio and text, by their extension.</source>
+      </segment>
+    </unit>
+    <unit id="8405309693308875139">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:70</note>
+      </notes>
+      <segment>
+        <source>Photos</source>
+      </segment>
+    </unit>
+    <unit id="8703479650720706479">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:72</note>
+      </notes>
+      <segment>
+        <source>Extensions opened in the photo viewer and given thumbnails, separated by commas.</source>
+      </segment>
+    </unit>
+    <unit id="8936704404804793618">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:77</note>
+      </notes>
+      <segment>
+        <source>Videos</source>
+      </segment>
+    </unit>
+    <unit id="4274548572794080424">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:79</note>
+      </notes>
+      <segment>
+        <source>Extensions played in the video player and given thumbnails and trickplay.</source>
+      </segment>
+    </unit>
+    <unit id="347407180135731058">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:83</note>
+      </notes>
+      <segment>
+        <source>Audio</source>
+      </segment>
+    </unit>
+    <unit id="1163575280278129969">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:85</note>
+      </notes>
+      <segment>
+        <source>Extensions played in the audio player. Other extensions open in a new tab.</source>
+      </segment>
+    </unit>
+    <unit id="7809725235628680714">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:89</note>
+      </notes>
+      <segment>
+        <source>More text files</source>
+      </segment>
+    </unit>
+    <unit id="826750613027561156">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:91</note>
+      </notes>
+      <segment>
+        <source>Extensions opened in the text viewer besides those it knows, e.g. dat, out, sub. Not media extensions.</source>
+      </segment>
+    </unit>
+    <unit id="4763241204528910320">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:93</note>
+      </notes>
+      <segment>
+        <source>The text viewer already knows .txt, .log, .md, .json, .xml, code and scripts.</source>
+      </segment>
+    </unit>
+    <unit id="4973087105311508591">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:102</note>
+      </notes>
+      <segment>
+        <source>Indexing</source>
+      </segment>
+    </unit>
+    <unit id="1853395974422033336">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:105</note>
+      </notes>
+      <segment>
+        <source>Read from files</source>
+      </segment>
+    </unit>
+    <unit id="285088435277133287">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:109</note>
+      </notes>
+      <segment>
+        <source>Fingerprint files</source>
+      </segment>
+    </unit>
+    <unit id="2540672136398236156">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:111</note>
+      </notes>
+      <segment>
+        <source>Reads the start of each new or changed file to find duplicates and recognise moved files.</source>
+      </segment>
+    </unit>
+    <unit id="8732246317316747307">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:113</note>
+      </notes>
+      <segment>
+        <source>It makes scans slower, especially over the network.</source>
+      </segment>
+    </unit>
+    <unit id="4327325832835421271">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:117</note>
+      </notes>
+      <segment>
+        <source>Read resolutions and durations</source>
+      </segment>
+    </unit>
+    <unit id="377561294685801566">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:119</note>
+      </notes>
+      <segment>
+        <source>Reads the size in pixels of photos and videos, and how long videos and audio last, to show them and search by them (w:, h:, r:, d:).</source>
+      </segment>
+    </unit>
+    <unit id="7403639738026125689">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:121</note>
+      </notes>
+      <segment>
+        <source>Files already in the index are read by the next scan. Videos and audio need ffmpeg, which makes scanning new ones slower.</source>
+      </segment>
+    </unit>
+    <unit id="4970291337868616362">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:131</note>
+      </notes>
+      <segment>
+        <source>Folders scanned at once</source>
+      </segment>
+    </unit>
+    <unit id="6793851123496188877">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:135</note>
+      </notes>
+      <segment>
+        <source>Higher is faster on SSDs and fast network drives; lower is gentler on spinning disks.</source>
+      </segment>
+    </unit>
+    <unit id="6904866445262015585">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:9</note>
+      </notes>
+      <segment>
+        <source>Tasks</source>
+      </segment>
+    </unit>
+    <unit id="4132100578515590852">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:10,11</note>
+      </notes>
+      <segment>
+        <source>Scans, trickplay, similar-video comparisons and thumbnails run in the background. The other tabs show what runs, when each task runs next, the schedules that start them, and the log of every run.</source>
+      </segment>
+    </unit>
+    <unit id="5015541892699364218">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:18</note>
+      </notes>
+      <segment>
+        <source>Keep runs and logs for (days)</source>
+      </segment>
+    </unit>
+    <unit id="5039640637643955515">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:22</note>
+      </notes>
+      <segment>
+        <source>Runs that finished longer ago are forgotten, with their logs. 0: until cleared by hand.</source>
+      </segment>
+    </unit>
+    <unit id="4804785061014590286">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:32</note>
+      </notes>
+      <segment>
+        <source>Logs</source>
+      </segment>
+    </unit>
+    <unit id="1491760929003188276">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:33</note>
+      </notes>
+      <segment>
+        <source>What the server logs (its messages, warnings and errors, for every space) is kept for the Logs page. Both settings are the whole server&apos;s.</source>
+      </segment>
+    </unit>
+    <unit id="1546078006074216947">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:37</note>
+      </notes>
+      <segment>
+        <source>Keeping the log</source>
+      </segment>
+    </unit>
+    <unit id="7140826802096852288">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:41</note>
+      </notes>
+      <segment>
+        <source>Keep log entries for (days)</source>
+      </segment>
+    </unit>
+    <unit id="7216152577210419425">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:45</note>
+      </notes>
+      <segment>
+        <source>Older entries are forgotten, and so are the daily files. 0 keeps them forever (the database keeps growing).</source>
+      </segment>
+    </unit>
+    <unit id="3458246483979847309">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:50</note>
+      </notes>
+      <segment>
+        <source>Also save the log to files</source>
+      </segment>
+    </unit>
+    <unit id="8009147035218539261">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:52</note>
+      </notes>
+      <segment>
+        <source>Writes a copy of every entry to a file per day (sfe-yyyymmdd.log) in the logs folder.</source>
+      </segment>
+    </unit>
+    <unit id="4321264245697680886">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:54,55</note>
+      </notes>
+      <segment>
+        <source>The logs folder is next to the database and the thumbnails (data/logs unless the server&apos;s configuration says otherwise). The files are written even while the database can&apos;t be.</source>
+      </segment>
+    </unit>
+    <unit id="744533273062091875">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:64</note>
+      </notes>
+      <segment>
+        <source>Start-up</source>
+      </segment>
+    </unit>
+    <unit id="5192687558796811602">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:65</note>
+      </notes>
+      <segment>
+        <source>What SFE does when it is started by hand from its portable package (a double click on Windows, the AppImage on Linux). A service never opens a browser. Both settings are the whole server&apos;s.</source>
+      </segment>
+    </unit>
+    <unit id="6056501768575254734">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:69</note>
+      </notes>
+      <segment>
+        <source>When SFE starts</source>
+      </segment>
+    </unit>
+    <unit id="8641701195810840569">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:73</note>
+      </notes>
+      <segment>
+        <source>Open the browser</source>
+      </segment>
+    </unit>
+    <unit id="8263377291734187991">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:75</note>
+      </notes>
+      <segment>
+        <source>Opens SFE in this computer&apos;s default browser once it is ready.</source>
+      </segment>
+    </unit>
+    <unit id="7677265445737922909">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:76</note>
+      </notes>
+      <segment>
+        <source>Starting SFE with --no-browser keeps it closed whatever this says.</source>
+      </segment>
+    </unit>
+    <unit id="3760868372749181119">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:80</note>
+      </notes>
+      <segment>
+        <source>Sign the administrator in at once</source>
+      </segment>
+    </unit>
+    <unit id="4110943892398414802">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:82</note>
+      </notes>
+      <segment>
+        <source>The browser opened at start signs the server&apos;s administrator in without a password. Only for SFE used on this computer alone.</source>
+      </segment>
+    </unit>
+    <unit id="1332127336011480401">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:84,85</note>
+      </notes>
+      <segment>
+        <source>It uses a link that works once, for a minute, from this computer only, and only while the server has a single administrator. Anyone who can start SFE here gets in as the administrator.</source>
+      </segment>
+    </unit>
+    <unit id="3237669241623156165">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:94</note>
+      </notes>
+      <segment>
+        <source>Keep alive</source>
+      </segment>
+    </unit>
+    <unit id="5548779864362722387">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:95</note>
+      </notes>
+      <segment>
+        <source>A file server drops the connection to a share nobody used for a while (Windows file servers after 15 minutes, many NAS sooner), and the drive may be lost with it. Keep alive looks at the library folder every few minutes, a single read of its first item, so the connection never goes idle. It can&apos;t reconnect a drive already lost.</source>
+      </segment>
+    </unit>
+    <unit id="4838560589606228091">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:101</note>
+      </notes>
+      <segment>
+        <source>Pings</source>
+      </segment>
+    </unit>
+    <unit id="1043834392777912632">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:105</note>
+      </notes>
+      <segment>
+        <source>Keep the library folder alive</source>
+      </segment>
+    </unit>
+    <unit id="3500458863157551898">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:108</note>
+        <note category="description">keep alive</note>
+      </notes>
+      <segment>
+        <source>Off</source>
+      </segment>
+    </unit>
+    <unit id="563656999691832315">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:109</note>
+      </notes>
+      <segment>
+        <source>When it is on a network share</source>
+      </segment>
+    </unit>
+    <unit id="8020052780292613089">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:112</note>
+      </notes>
+      <segment>
+        <source>“When it is on a network share”: a \\server\share folder, a mapped network drive, or a CIFS, NFS or SSHFS mount, also through a link.</source>
+      </segment>
+    </unit>
+    <unit id="7185734676352095327">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:114</note>
+      </notes>
+      <segment>
+        <source>“Always” also pings a folder that SFE can&apos;t tell is on the network.</source>
+      </segment>
+    </unit>
+    <unit id="5550931144803607074">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:118</note>
+      </notes>
+      <segment>
+        <source>Seconds between pings</source>
+      </segment>
+    </unit>
+    <unit id="5414171598051227032">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:122</note>
+      </notes>
+      <segment>
+        <source>Shorter than the time the file server waits before dropping an idle connection (240: every 4 minutes).</source>
+      </segment>
+    </unit>
+    <unit id="922078259752165001">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:131</note>
+      </notes>
+      <segment>
+        <source>A ping taking longer counts as failed; the next one waits until it ends.</source>
+      </segment>
+    </unit>
+    <unit id="6481783564765923319">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:135</note>
+      </notes>
+      <segment>
+        <source>How the library folder is pinged</source>
+      </segment>
+    </unit>
+    <unit id="8111199747899550199">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:138</note>
+      </notes>
+      <segment>
+        <source>Read the folder</source>
+      </segment>
+    </unit>
+    <unit id="7667841609189785289">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:139</note>
+      </notes>
+      <segment>
+        <source>Write and delete a small file</source>
+      </segment>
+    </unit>
+    <unit id="84901254689594634">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:141</note>
+      </notes>
+      <segment>
+        <source>Reading is enough for most file servers; writing always reaches the server.</source>
+      </segment>
+    </unit>
+    <unit id="589808418617126103">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:142,143</note>
+      </notes>
+      <segment>
+        <source>The computer may answer a read from its own cache without asking the server. Writing creates and deletes a small file in SFE&apos;s work folder (.sfe/keep-alive at the top of the library). When the work folder is on the server (File management), the folder is read instead. More folders are always read.</source>
+      </segment>
+    </unit>
+    <unit id="2112821466846566879">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:148</note>
+      </notes>
+      <segment>
+        <source>More folders</source>
+      </segment>
+    </unit>
+    <unit id="7642931110034087315">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:151</note>
+      </notes>
+      <segment>
+        <source>Folders kept alive too, for those reached through a link to another share: paths from the top of the library, one per line.</source>
+      </segment>
+    </unit>
+    <unit id="2440247240114751525">
+      <notes>
+        <note category="location">src/app/settings/tabs/system-settings.ts:153</note>
+      </notes>
+      <segment>
+        <source>“When it is on a network share” looks at each one on its own.</source>
+      </segment>
+    </unit>
+    <unit id="6636034901982104135">
+      <notes>
+        <note category="location">src/app/tokens/token-settings.ts:9</note>
+        <note category="location">src/app/tokens/token-settings.ts:14</note>
+      </notes>
+      <segment>
+        <source>Access tokens</source>
+      </segment>
+    </unit>
+    <unit id="5527191798614450608">
+      <notes>
+        <note category="location">src/app/tokens/token-settings.ts:10</note>
+      </notes>
+      <segment>
+        <source>Tokens let programs call the API as the account that made them (My account › Access tokens). These are the whole server&apos;s settings.</source>
+      </segment>
+    </unit>
+    <unit id="8246443843290252499">
+      <notes>
+        <note category="location">src/app/tokens/token-settings.ts:18</note>
+      </notes>
+      <segment>
+        <source>Allow access tokens</source>
+      </segment>
+    </unit>
+    <unit id="7601625335612766736">
+      <notes>
+        <note category="location">src/app/tokens/token-settings.ts:20</note>
+      </notes>
+      <segment>
+        <source>Off: no token can be made, and those already made are refused. They are kept, and work again once this is back on.</source>
+      </segment>
+    </unit>
+    <unit id="5772593143589458103">
+      <notes>
+        <note category="location">src/app/tokens/token-settings.ts:25</note>
+      </notes>
+      <segment>
+        <source>Longest life (days)</source>
+      </segment>
+    </unit>
+    <unit id="2684164933864564408">
+      <notes>
+        <note category="location">src/app/tokens/token-settings.ts:29</note>
+      </notes>
+      <segment>
+        <source>A new token expires after at most this many days. 0 lets a token never expire.</source>
+      </segment>
+    </unit>
+    <unit id="4948927819061436572">
+      <notes>
+        <note category="location">src/app/tokens/token-settings.ts:33</note>
+      </notes>
+      <segment>
+        <source>Tokens per account</source>
+      </segment>
+    </unit>
+    <unit id="8989417891741110566">
+      <notes>
+        <note category="location">src/app/tokens/token-settings.ts:37</note>
+      </notes>
+      <segment>
+        <source>How many tokens an account may hold at once (those neither revoked nor expired).</source>
       </segment>
     </unit>
   </file>

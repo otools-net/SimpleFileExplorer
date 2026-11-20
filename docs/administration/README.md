@@ -58,6 +58,8 @@ used ones. The **✕** in the box, or **Esc**, empties it and brings the section
   pages with unsaved changes, **Discard** drops them, and leaving the page asks first.
 - Saved values apply right away, for everyone using the space, and take precedence over `appsettings.json` and
   environment variables. **Reset to defaults** goes back to those.
+- Under each setting, a line says what it does; a **?** next to its name opens a longer explanation (examples,
+  exceptions) when there is one.
 - Errors are shown next to their fields, and their sections and pages are marked in red.
 - The page shows the most used settings; tick **Show all settings** in the bottom bar for the others (each browser
   remembers the choice).

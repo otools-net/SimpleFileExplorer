@@ -35,7 +35,7 @@ function fieldText(field: SettingField, group: SettingGroup): string[] {
             : field.type === 'preset'
               ? field.presets.map((preset) => preset[0])
               : [];
-    return [field.hint, field.key, group.title, group.hint ?? '', ...choices];
+    return [field.hint, field.help ?? '', field.key, group.title, group.hint ?? '', ...choices];
 }
 
 /**
