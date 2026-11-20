@@ -2,7 +2,7 @@
 
 Code: `src/Sfe.Api/BrowserLauncher.cs`, `StartupLogo.cs`, `CommandLine.cs`, `Security/LocalVisitor.cs`, `Security/FastSignIn.cs`, `Program.cs`,
 `Endpoints/SessionEndpoints.cs` (`api/session/start`), `SetupService.IsFreshAsync`; client `account/setup-page.component.ts`,
-the `startup` tab of `settings/settings-schema.ts` (System › Start-up). Tests: `LocalStartTests`.
+the `startup` tab (`settings/tabs/system-settings.ts`) (System › Start-up). Tests: `LocalStartTests`.
 
 - **Browser at start:** only portable builds started interactively (`Portable`/`AppImage` hosting). Off with
   `--no-browser` (taken out of `args` before the builder: the command-line provider would eat the next argument as its

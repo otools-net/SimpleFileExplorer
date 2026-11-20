@@ -32,7 +32,7 @@ Code: client `app/formats/reading/` (`reading.ts` model and limits, `reading.ser
   `reading.{code,prose}.{font,size,lineHeight,width,padding,wrap,lineNumbers}`), all in `SettingCatalog.UserKeys`,
   prefix `reading.` → `settings.interface`; checked in `SettingsService.Validate` (lists, size 10–32, custom font
   ≤ 100 characters without CSS punctuation); `ClientConfig.Reading` (last, optional) = the effective values.
-- Client: the **Reading text files** groups of the Appearance settings tab (`settings-schema.ts`; line height, width
+- Client: the **Reading text files** groups of the Appearance settings tab (`settings/tabs/appearance-settings.ts`; line height, width
   and margins are `select` with `numeric: true`). The panel's **Save as my default** (a signed-in account with
   `account.preferences`, enabled when `changed`) sends all 16 keys with `savePreferenceChanges`, reloads the config
   and clears this browser's overrides. **Reset** goes back to the defaults (the account's).

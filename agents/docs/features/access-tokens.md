@@ -115,7 +115,7 @@ Personal access tokens let a program call any v1 route with `Authorization: Bear
 - Rights to pick come from `config.rights` (current library), titled and grouped by `api/access/rights` when the
   session may read it, else by id; the server checks them for the library chosen.
 - Sub-pages are declared in `tokens/token-pages.ts`; the settings tab in `tokens/token-settings.ts`, spread into
-  `TABS` (`admin-sections.ts` and `settings-schema.ts` sit at their readability baseline).
+  `TABS` (`admin-sections.ts` sits at its readability baseline).
 - While tokens are off, My account › Access tokens says so and offers no New token (list and Revoke stay).
 - Specs: `tokens/my-tokens.spec.ts`, `tokens/all-tokens.spec.ts`; builder `accessToken()` in `testing/fakes.ts`.
 
@@ -131,8 +131,7 @@ Personal access tokens let a program call any v1 route with `Authorization: Bear
 
 - **Known gap:** external player and Flash links made with a token still carry the account, not the token: they
   keep the account's rights and outlive a revoked token until they expire.
-- `EverySettingOfTheClientsSettingsDialogExists` reads only `settings-schema.ts`, so it doesn't check the three
-  token keys of `token-settings.ts`. `SETTINGS_RIGHTS` has no `accessTokens` entry (the sub-page names
+- `EverySettingOfTheClientsSettingsDialogExists` reads `token-settings.ts` too. `SETTINGS_RIGHTS` has no `accessTokens` entry (the sub-page names
   `server.settings` itself).
 - Tests: helpers in `tests/Sfe.Tests/Infrastructure/TokenClients` (`Bearer` client without cookies, `CreateAsync`
   through the service).

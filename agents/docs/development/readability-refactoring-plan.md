@@ -207,7 +207,7 @@ Tidy, one component per commit, worst first (add one line per component when sta
   files over 400 lines (one item each when started)
 - [ ] Client `LibraryPageComponent`, `ItemMenu`, `ViewerComponent`, `MainMenuComponent`, `FolderMenu`,
   `QuickLinksComponent`
-- [ ] Client files over 400 lines: `archive-view`, `video-player`, `admin-page`, `context-menu`, `settings-schema`,
+- [ ] Client files over 400 lines: `archive-view`, `video-player`, `admin-page`, `context-menu`, ~~`settings-schema`~~ (split in `settings/tabs/`, 2026-11-21),
   `json-view`, `listing.store`, `settings-form.service`, `csv-view`, `api.service`, `image-editor`, `subtitles-view`,
   `text-view`, `uploads`, `scope-tags` (one item each when started)
 

@@ -18,7 +18,8 @@ import {
     settle,
     type,
 } from '../../testing/fakes';
-import { EXTERNAL_PLAYERS, getValue, SettingField, setValue, SIMPLE_SETTINGS, TABS } from './settings-schema';
+import { getValue, SettingField, setValue, SIMPLE_SETTINGS, TABS } from './settings-schema';
+import { EXTERNAL_PLAYERS } from './tabs/playback-settings';
 
 const FIELDS: SettingField[] = TABS.flatMap((tab) => tab.groups.flatMap((group) => group.fields));
 

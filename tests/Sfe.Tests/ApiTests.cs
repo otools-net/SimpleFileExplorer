@@ -1082,16 +1082,19 @@ public sealed class ApiTests
     [TestMethod]
     public async Task EverySettingOfTheClientsSettingsDialogExists()
     {
-        // settings-schema.ts and the tabs kept beside their feature name settings by their path in /api/settings
-        // `values`: a renamed or removed one would show empty and be sent back under a key the server ignores.
+        // The tabs of settings-schema.ts (in settings/tabs/ and beside their feature) name settings by their path
+        // in /api/settings `values`: a renamed or removed one would show empty and be sent back under a key the server
+        // ignores.
         var app = Path.GetFullPath(
             Path.Combine(Path.GetDirectoryName(SourceFile())!, "..", "..", "src", "Sfe.Web", "src", "app")
         );
+        var tabs = Path.Combine(app, "settings", "tabs");
         string[] schemaFiles =
         [
             Path.Combine(app, "settings", "settings-schema.ts"),
             Path.Combine(app, "tokens", "token-settings.ts"),
             Path.Combine(app, "connections", "connection-settings.ts"),
+            .. Directory.Exists(tabs) ? Directory.GetFiles(tabs, "*.ts") : Array.Empty<string>(),
         ];
         if (schemaFiles.FirstOrDefault(file => !File.Exists(file)) is { } absent)
             Assert.Inconclusive($"Sources not found at {absent}.");

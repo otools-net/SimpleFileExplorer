@@ -2,7 +2,7 @@
 
 Code: `src/Sfe.Core/KeepAlive/` (`KeepAliveService`, `NetworkFolders`), `KeepAliveOptions` in `Options/SfeOptions.cs`,
 `src/Sfe.Api/KeepAliveWorker.cs` (registered in `Tenancy/TenantHost.cs`), `Endpoints/KeepAliveEndpoints.cs`; client
-`app/admin/keep-alive-status.component.ts`, tab `keepAlive` of `settings/settings-schema.ts`. Tests: `KeepAliveTests`,
+`app/admin/keep-alive-status.component.ts`, tab `keepAlive` (`settings/tabs/system-settings.ts`). Tests: `KeepAliveTests`,
 `KeepAliveRouteTests`, `admin-page.spec.ts`. User docs: `docs/administration/keep-alive.md`,
 `docs/configuration.md` (Libraries on a network share).
 

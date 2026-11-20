@@ -1,20 +1,23 @@
 # Adding a setting
 
 Code: `src/Sfe.Core/Options/SfeOptions.cs`, `Settings/EditableSettings.cs`, `Settings/SettingCatalog.cs`,
-`Settings/SettingsService.cs` (`Validate`); client `src/app/settings/settings-schema.ts`, `admin/admin-sections.ts`,
-`core/rights.ts` (`SETTINGS_RIGHTS`). Levels: [settings-levels.md](settings-levels.md). Never rename or remove a key
-silently: [production-upgrades.md](../development/production-upgrades.md).
+`Settings/SettingsService.cs` (`Validate`); client `src/app/settings/settings-schema.ts` and `settings/tabs/`,
+`admin/admin-sections.ts`, `core/rights.ts` (`SETTINGS_RIGHTS`). Levels: [settings-levels.md](settings-levels.md).
+Never rename or remove a key silently: [production-upgrades.md](../development/production-upgrades.md).
 
 - New settings go in `SfeOptions`. UI-editable ones also need `EditableSettings` (`From` + `ApplyTo`), a range check in
-  `SettingsService.Validate` and a field in `settings/settings-schema.ts`.
-- `settings-schema.ts`: `TABS` → groups → fields; a new tab also needs a sub-page `{ settings: id }` in
-  `admin/admin-sections.ts`. Field types `number`, `checkbox`, `text`, `list`, `extensions`, `select` with
-  `options: [[value, label]]` (`numeric: true` on the same line: its values are sent as numbers, and the API test expects a number), `preset` = an unsaved choice filling the `fills` fields from `presets`, e.g.
-  `EXTERNAL_PLAYERS`.
-- Add its key to `SIMPLE_SETTINGS` (same file) to show it in the default simple view, whose groups without a listed
-  key are hidden (a tab with none shows a "Show all settings" note; an error on a hidden field shows all).
-- `EverySettingOfTheClientsSettingsDialogExists` reads `settings-schema.ts` with a regex (`{ key: '…', label: '…',
-  type: '…'`): keep a field's first three properties in that order, on one line.
+  `SettingsService.Validate` and a field in its tab's file (`settings/tabs/<section>-settings.ts`; connections and
+  tokens keep theirs beside their feature).
+- `settings-schema.ts`: the field types and `TABS` (the tabs in order) → groups → fields; a new tab also needs a
+  sub-page `{ settings: id }` in `admin/admin-sections.ts`. Field types `number`, `checkbox`, `text`, `list`,
+  `extensions`, `select` with `options: [[value, label]]` (`numeric: true` on the same line: its values are sent as
+  numbers, and the API test expects a number), `preset` = an unsaved choice filling the `fills` fields from
+  `presets`, e.g. `EXTERNAL_PLAYERS`.
+- Add its key to `SIMPLE_SETTINGS` (`settings-schema.ts`) to show it in the default simple view, whose groups without a
+  listed key are hidden (a tab with none shows a "Show all settings" note; an error on a hidden field shows all).
+- `EverySettingOfTheClientsSettingsDialogExists` reads `settings-schema.ts`, `settings/tabs/*.ts` and the two
+  feature tabs with a regex (`{ key: '…', label: '…', type: '…'`): keep a field's first three properties in that
+  order, its key a literal string (not built from parts).
 - Saved values override appsettings/env and flow through `IOptionsMonitor`.
 - **Level:** a new key of `EditableSettings` is a library setting (`SettingLevel.Tenant`) unless listed in
   `SettingCatalog.ServerKeys` (server resources) or `UserKeys` (personal preferences); paths inside a library go in

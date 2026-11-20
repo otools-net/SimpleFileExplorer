@@ -61,7 +61,7 @@ src/Sfe.Web/            the web client (Angular workspace: angular.json, package
                         topbar/ location/ items/ search-explain/ scan/ sidebar/ quick-links/ viewer/, selection bar
   src/app/player/       VideoPlayerComponent, PlayerPageComponent (`player?path=&t=`)
   src/app/admin/        AdminPageComponent (`admin?section=&page=`), admin-sections.ts (sidebar groups, sections, sub-pages), System section
-  src/app/settings/     settings-schema.ts, SettingsForm (one form for every settings tab), SettingsPanel (one tab)
+  src/app/settings/     settings-schema.ts (types, TABS) and tabs/ (one file per section), SettingsForm (one form for every settings tab), SettingsPanel (one tab)
   src/app/editor/       ImageEditorDialog (over the viewer), edits.ts (operations, EDIT_KINDS, renderEdits), crop.ts
   src/app/tags/ trickplay/ tracking/   their dialogs, sections of the admin page and parts
   src/app/logs/         LogsSection (Administration › Logs › Log), logs.ts (filters → api/logs query)
