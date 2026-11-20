@@ -94,6 +94,52 @@ public sealed class ChangeFeedRouteTests
     }
 
     [TestMethod]
+    public async Task TheFeedIsNeitherCachedNorHeldBackByAProxy()
+    {
+        using var feed = await _alice.GetAsync($"{V1}/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
+
+        Assert.IsTrue(feed.Headers.CacheControl?.NoStore);
+        Assert.AreEqual("no", feed.Headers.GetValues("X-Accel-Buffering").Single());
+    }
+
+    [TestMethod]
+    [DoNotParallelize] // Feeds are counted per user id for the whole process: other tests' users have the same ids.
+    public async Task ACallerKeepsAtMostTwelveFeedsOpen()
+    {
+        var feeds = new List<HttpResponseMessage>();
+        try
+        {
+            for (var i = 0; i < ChangeEndpoints.MaxStreamsPerCaller; i++)
+            {
+                var feed = await OpenFeedAsync(_alice);
+                feeds.Add(feed);
+                Assert.AreEqual(HttpStatusCode.OK, feed.StatusCode, $"feed {i + 1}");
+            }
+
+            using (var refused = await OpenFeedAsync(_alice))
+            {
+                Assert.AreEqual(HttpStatusCode.TooManyRequests, refused.StatusCode);
+            }
+            // Another caller is counted apart.
+            using (var other = await OpenFeedAsync(_admin))
+            {
+                Assert.AreEqual(HttpStatusCode.OK, other.StatusCode);
+            }
+
+            // A feed closed makes room again (once the server sees it closed).
+            feeds[0].Dispose();
+            feeds.RemoveAt(0);
+            var reopened = await OpenOnceRoomAsync(_alice);
+            feeds.Add(reopened);
+            Assert.AreEqual(HttpStatusCode.OK, reopened.StatusCode);
+        }
+        finally
+        {
+            feeds.ForEach(f => f.Dispose());
+        }
+    }
+
+    [TestMethod]
     public void QuietFeedsSendAPingThePageSees()
     {
         // A named event with data reaches the page's listener (a comment, or an event without data, would not): the
@@ -215,6 +261,22 @@ public sealed class ChangeFeedRouteTests
             request.Headers.Add(ChangeEndpoints.TabHeader, tab);
         using var response = await _admin.SendAsync(request, Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+    }
+
+    private Task<HttpResponseMessage> OpenFeedAsync(HttpClient client) =>
+        client.GetAsync($"{V1}/files/changes", HttpCompletionOption.ResponseHeadersRead, Token);
+
+    /// <summary>A feed opened as soon as the server has let one go (it sees a closed feed after a moment).</summary>
+    private async Task<HttpResponseMessage> OpenOnceRoomAsync(HttpClient client)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            var feed = await OpenFeedAsync(client);
+            if (feed.StatusCode != HttpStatusCode.TooManyRequests || attempt == 50)
+                return feed;
+            feed.Dispose();
+            await Task.Delay(100, Token);
+        }
     }
 
     private Task<FolderChange> NextChangeAsync(StreamReader reader) => NextEventAsync<FolderChange>(reader, "changed");
