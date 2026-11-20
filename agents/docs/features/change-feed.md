@@ -1,10 +1,10 @@
 # Change feed (folders changed elsewhere)
 
 Code: `LibraryBrowser.FolderChanged` (raised by `Invalidate`, after the cache is cleared), `Api/Endpoints/ChangeEndpoints.cs`
-(`GET api/files/changes`, SSE), the `X-SFE-Tab` header (`TAB_ID` in `api.service.ts`); client
-`library/change-feed.service.ts` (`ChangeFeed`), `ListingStore.refresh`. Tests: `ChangeFeedRouteTests`,
-`FileOperationsTests.ANewFileIsEmptyIndexedAndNeverOverAnother`, `comfort.spec.ts`. Decided 2026-10-17: a live feed
-(not a refresh on focus).
+(`GET api/files/changes`, SSE; what one feed listens to and sends: `ChangeFeedQueue.cs`), the `X-SFE-Tab` header
+(`TAB_ID` in `api.service.ts`); client `library/change-feed.service.ts` (`ChangeFeed`), `ListingStore.refresh`.
+Tests: `ChangeFeedRouteTests`, `FileOperationsTests.ANewFileIsEmptyIndexedAndNeverOverAnother`, `comfort.spec.ts`.
+Decided 2026-10-17: a live feed (not a refresh on focus).
 
 - Every file operation already calls `LibraryBrowser.Invalidate` for the folders it touched (creates, renames, moves,
   copies, trash, restore, uploads): that is the one place the event comes from. Changes on the disk outside SFE are not

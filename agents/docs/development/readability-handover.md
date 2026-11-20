@@ -31,10 +31,8 @@ What is still over the limits (`node agents/tools/readability/measure.mjs`):
 ## How to resume
 
 1. Read the plan's Progress list: take the **first unticked item of phase 5**, then the core functions in the order
-   listed. Tick each item in the commit that does it. Paused 2026-11-20 after `ExploreEndpoints.CatalogOf` (tree
+   listed. Tick each item in the commit that does it. Paused 2026-11-20 after `ChangeEndpoints.StreamAsync` (tree
    clean); next:
-   - `ChangeEndpoints.StreamAsync` (7, also over 60 lines and nested 4): its own plan item further down; do its
-     parameters with it.
    - Then "EF: `AccessDbContext.OnModelCreating`…" (checks `--only ef`).
 2. One function (or one endpoints file for `[AsParameters]`) per commit, message `claude: refactoring: …`; no
    `CHANGELOG.md` line, no version bump.

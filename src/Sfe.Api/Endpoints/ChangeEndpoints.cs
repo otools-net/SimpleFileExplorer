@@ -1,14 +1,7 @@
 using System.Collections.Concurrent;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Otools.Net.Sfe.Api.Security;
 using Otools.Net.Sfe.Core.Access;
-using Otools.Net.Sfe.Core.Files;
-using Otools.Net.Sfe.Core.KeepAlive;
-using Otools.Net.Sfe.Core.Library;
-using Otools.Net.Sfe.Core.Paths;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
 
@@ -45,10 +38,6 @@ public static class ChangeEndpoints
 
     private static readonly ConcurrentDictionary<string, int> Streams = new();
     private static readonly Lock Gate = new();
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
-    {
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-    };
 
     private static readonly string FolderChangesDescription = $"""
         Open with `EventSource`; `origin` is the `{TabHeader}` header of the request that changed it (a tab
@@ -78,16 +67,11 @@ public static class ChangeEndpoints
 
     private static async Task StreamAsync(
         HttpContext context,
-        LibraryBrowser browser,
-        KeepAliveService keepAlive,
-        Trash trash,
-        LibraryPaths paths,
-        CurrentAccess current,
-        IHttpContextAccessor accessor,
+        [AsParameters] ChangeFeedServices services,
         [AsParameters] ChangeFeedConnections connections
     )
     {
-        var state = await current.GetAsync();
+        var state = await services.Current.GetAsync();
         var caller = RequestLimits.Caller(context);
         if (!Enter(caller))
         {
@@ -100,92 +84,12 @@ public static class ChangeEndpoints
             return;
         }
 
-        // Read by the request (or job) that changed a folder, or by keep alive's loop: only queued here (a FolderChange
-        // a KeepAliveSignal or a TrashSignal), written by this request's own loop.
-        var changes = Channel.CreateBounded<object>(
-            new BoundedChannelOptions(256) { FullMode = BoundedChannelFullMode.DropOldest, SingleReader = true }
-        );
-        void OnChanged(string path)
-        {
-            var origin = accessor.HttpContext?.Request.Headers[TabHeader].ToString();
-            changes.Writer.TryWrite(new FolderChange(path, string.IsNullOrEmpty(origin) ? null : origin));
-        }
-
-        void OnKeepAlive(KeepAliveState keepAliveState) => changes.Writer.TryWrite(new KeepAliveSignal(keepAliveState));
-
-        // The trash's count is for those who may open it.
-        var seesTrash =
-            state.Access.Rights.Contains(Rights.DeleteFiles) || state.Access.Rights.Contains(Rights.DeletePermanently);
-        void OnTrash() => changes.Writer.TryWrite(new TrashSignal());
-
-        browser.FolderChanged += OnChanged;
-        using var connectionFeed = new ConnectionFeed(connections, state, changes.Writer, accessor);
-        keepAlive.StateChanged += OnKeepAlive;
-        if (seesTrash)
-            trash.EntriesChanged += OnTrash;
+        using var queue = new ChangeFeedQueue(services, connections, state);
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
         lifetime.CancelAfter(Lifetime);
-        var token = lifetime.Token;
         try
         {
-            var response = context.Response;
-            context.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
-            response.ContentType = "text/event-stream";
-            response.Headers.CacheControl = "no-store";
-            // nginx would otherwise hold the events back.
-            response.Headers["X-Accel-Buffering"] = "no";
-            await response.WriteAsync("retry: 5000\n\n" + KeepAliveEvent(new KeepAliveSignal(keepAlive.State)), token);
-            await response.Body.FlushAsync(token);
-            while (!token.IsCancellationRequested)
-            {
-                using var wait = CancellationTokenSource.CreateLinkedTokenSource(token);
-                wait.CancelAfter(KeepAlive);
-                bool ready;
-                try
-                {
-                    ready = await changes.Reader.WaitToReadAsync(wait.Token);
-                }
-                catch (OperationCanceledException) when (!token.IsCancellationRequested)
-                {
-                    await response.WriteAsync(PingEvent, token);
-                    await response.Body.FlushAsync(token);
-                    continue;
-                }
-                if (!ready)
-                    break;
-                // Several at once (a move touches both folders): one write, with one `trash` at most (emptying the
-                // trash purges many).
-                var text = new System.Text.StringBuilder();
-                var trashChanged = false;
-                while (changes.Reader.TryRead(out var item))
-                {
-                    if (item is TrashSignal)
-                    {
-                        trashChanged = true;
-                    }
-                    else if (item is KeepAliveSignal signal)
-                    {
-                        text.Append(KeepAliveEvent(signal));
-                    }
-                    else if (
-                        item is FolderChange change
-                        && state.Check(paths, change.Path, Rights.Browse) == PathVerdict.Allowed
-                    )
-                    {
-                        text.Append(ChangedEvent(change));
-                    }
-                    else if (item is ConnectionFolderChange remote && await connectionFeed.SeesAsync(remote, token))
-                    {
-                        text.Append(ChangedEvent(remote));
-                    }
-                }
-                if (trashChanged)
-                    text.Append(TrashEvent);
-                if (text.Length == 0)
-                    continue;
-                await response.WriteAsync(text.ToString(), token);
-                await response.Body.FlushAsync(token);
-            }
+            await WriteEventsAsync(context, queue, lifetime.Token);
         }
         catch (OperationCanceledException)
         {
@@ -197,19 +101,35 @@ public static class ChangeEndpoints
         }
         finally
         {
-            browser.FolderChanged -= OnChanged;
-            keepAlive.StateChanged -= OnKeepAlive;
-            trash.EntriesChanged -= OnTrash;
             Leave(caller);
         }
     }
 
-    /// <summary>`changed`, with a library folder (`path`, `origin`) or a connection's (and its `connection`).</summary>
-    private static string ChangedEvent(object change) =>
-        $"event: changed\ndata: {JsonSerializer.Serialize(change, change.GetType(), Json)}\n\n";
-
-    private static string KeepAliveEvent(KeepAliveSignal signal) =>
-        $"event: keepAlive\ndata: {JsonSerializer.Serialize(signal, Json)}\n\n";
+    /// <summary>Sends the queue's events as they come, until the feed's time is over or the tab closes.</summary>
+    private static async Task WriteEventsAsync(
+        HttpContext context,
+        ChangeFeedQueue queue,
+        CancellationToken cancellationToken
+    )
+    {
+        var response = context.Response;
+        context.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
+        response.ContentType = "text/event-stream";
+        response.Headers.CacheControl = "no-store";
+        // nginx would otherwise hold the events back.
+        response.Headers["X-Accel-Buffering"] = "no";
+        await response.WriteAsync("retry: 5000\n\n" + queue.KeepAliveNow, cancellationToken);
+        await response.Body.FlushAsync(cancellationToken);
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            if (await queue.NextEventsAsync(KeepAlive, cancellationToken) is not { } text)
+                break;
+            if (text.Length == 0)
+                continue;
+            await response.WriteAsync(text, cancellationToken);
+            await response.Body.FlushAsync(cancellationToken);
+        }
+    }
 
     private static bool Enter(string caller)
     {

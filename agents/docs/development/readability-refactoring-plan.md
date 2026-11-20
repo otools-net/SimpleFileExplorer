@@ -139,7 +139,7 @@ Tidy, one component per commit, worst first (add one line per component when sta
   GetEntryAt): `ExploreServices` and request records; OpenAPI identical, routes' guards identical
 - [x] `[AsParameters]`: `LibraryEndpoints`, `TextEndpoints`, `EditorEndpoints`, `ConfigEndpoints`
   (`handler_params.py`; OpenAPI identical, defaults included; `AccessTests` reads a path as text, not `Paths`)
-- [ ] `[AsParameters]`: the other endpoints files (one item each when started)
+- [x] `[AsParameters]`: the other endpoints files (one item each when started)
   - [x] `FileEndpoints`: `FileServices`, `TrashServices`, `FileJobServices`; `Refused` takes a `RefusedAttempt`
     (who, path, action; TextEndpoints' calls too), `DeleteVerdict` the `FileServices`; OpenAPI and guards identical
     (many-parameter functions 95 -> 84)
@@ -173,13 +173,15 @@ Tidy, one component per commit, worst first (add one line per component when sta
     default
   - [x] `ExploreEndpoints.CatalogOf` (7, a private helper): `ExploredArchive` (full, canonical, format: what every
     call passes together); `ExploreServices` did not fit, one caller passes `static () => false` for `mayStart`
-  - [ ] `ChangeEndpoints.StreamAsync` (7, also a long and nested function): with its item below
+  - [x] `ChangeEndpoints.StreamAsync` (8, also 117 lines and nested 4): `ChangeFeedServices`; the events queued,
+    filtered and written as text by `ChangeFeedQueue` (disposing it stops listening); tests of the per-caller limit
+    and the headers added first
 - [ ] EF: `AccessDbContext.OnModelCreating`, `SfeDbContext.ConfigureTagging`
 - [ ] `AddSfeCore`, `AddSfeSecurity`
 - [ ] `ArchiveExtractor.Extract`
 - [ ] `EditableSettings.From`, `ApplyTo`; `SettingsService.Validate` and its 99-line lambda
 - [ ] `Uploads.FinishAsync`, `AppendAsync`
-- [ ] `ChangeEndpoints.StreamAsync`, `SimilarVideoFinder.RunAsync`, `TagService.AttachIndexDataAsync`
+- [ ] `SimilarVideoFinder.RunAsync`, `TagService.AttachIndexDataAsync` (`ChangeEndpoints.StreamAsync` done above)
 - [ ] `Trash.RestoreAsync`, `PurgeExpiredAsync`, `DeleteCachesLater`
 - [ ] `TrickplayService.GenerateAsync`, `ZipDirectory.Read`, `ZipWriter.AddFileAsync` (+ `AddCentral`,
   `WriteLocal` parameters), `FileContent.OverwriteAsync`, `InstallationSettings`
