@@ -100,7 +100,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     (template ICU plurals, `icu()` in code); errors keep the reason, the template writes the sentence; editors titled
     "Edit the space “…”"; "Library root" → "Top of the library" (glossary gained it and "guest account"); confirms
     and toasts left for 2.8. Gotchas in [translations](translations.md) (aria-label binding, `sheetFooter`).
-  - [ ] **2.4b sign-in and setup** (`app/account/`, `app/migration/`, local-only page; ~190 texts).
+  - [x] **2.4b sign-in and setup** (`app/account/`, `app/migration/`, local-only page; ~190 texts). Done
+    2026-11-21: 7 files at 0 unmarked texts (180 gone); setup-code steps one `$localize` each (no `+`), where a
+    generated code is kept now two whole sentences (`generatedCodeWhere`), no fragments glued in templates; texts
+    chosen by a condition as `@if` around `<ng-container i18n>`; the recovery code's minutes an ICU plural; "as a
+    guest" → "as a visitor"; My account's intro says "settings" (its tab is still "Preferences": 2.4c). The update
+    page's confirm left for 2.8. `local-only.png` not retaken (one word changed; taken by hand).
   - [ ] **2.4c the rest of administration** (`app/admin/` with `admin-sections.ts` "Colors", `app/connections/`,
     `app/tokens/`, `app/tasks/`, `app/logs/`; ~250 texts).
   Toasts and confirms of these areas stay for 2.8 (as in 2.3).
@@ -253,9 +258,9 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-21):** steps 1.1 to 2.3 and 2.4a done (see their ticks; 2.4 was split in three). Next:
-  **2.4b** (sign-in and setup), then **2.4c** (rest of administration: `admin-sections.ts` descriptions still say
-  "Colors"), then 2.5–2.8. Texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md)
+- **Last session (2026-11-21):** steps 1.1 to 2.3, 2.4a and 2.4b done (see their ticks; 2.4 was split in three).
+  Next: **2.4c** (rest of administration: `admin-sections.ts` descriptions still say "Colors", My account's tab
+  "Preferences" → "Settings"?), then 2.5–2.8. Texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md)
   says how; `app/access/` is a worked example.
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs

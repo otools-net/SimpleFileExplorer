@@ -82,7 +82,7 @@ signed-in server administrator without the code can't use it, nor can anyone wit
   Saving starts the libraries again on it at once. Another folder makes the space show other files: the next scan
   treats the files of the old folder as gone (tagged ones are kept as [moved files](duplicates-and-moves.md) for a while,
   and found again if the new folder holds them). Other spaces keep their own folder.
-- **Who can open SFE**: **Only this computer** (`http://localhost:<port>`) or **Also the other devices of my network**
+- **Who can open SFE**: **Only this computer** (`http://localhost:<port>`) or **The other devices on my network too**
   (`http://*:<port>`), and the port. It applies once SFE starts again (the page says so). A Local server only shows
   the port: it answers this computer only.
 - **ffmpeg**: **Found** with its path and version, or **Not found**. Type its program or folder, or **Browse** to the

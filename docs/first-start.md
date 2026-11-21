@@ -77,7 +77,7 @@ External):
      **External**, the folder (and ffmpeg) come from the server's configuration instead (`Sfe__Root`,
      `Sfe__Thumbnails__FfmpegPath`): the page only shows them. To pick them here, choose them before External, while
      the server is still Local.
-   - **Who can open SFE** (External only): **Only this computer**, or **Also the other devices of my network** (phones,
+   - **Who can open SFE** (External only): **Only this computer**, or **The other devices on my network too** (phones,
      TVs, other computers; everyone still signs in), and the port. This one applies once SFE is started again.
    - **ffmpeg** (optional): whether it was found; to add it, download it from [ffmpeg.org](https://ffmpeg.org/), unzip
      it and pick its folder. Without it there are no video thumbnails, trickplay, video durations or converted videos.

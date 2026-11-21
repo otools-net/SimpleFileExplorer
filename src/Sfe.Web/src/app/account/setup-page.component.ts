@@ -82,11 +82,19 @@ export class SetupPageComponent implements OnInit {
         }
     });
 
+    protected readonly backToCode = $localize`Go back to the setup code`;
+    protected readonly backToLibrary = $localize`Go back to the library folder`;
+    protected readonly submitTitle = computed(() =>
+        this.info()?.recover
+            ? $localize`Give the administrator the new password and sign in`
+            : $localize`Create the administrator and sign in`,
+    );
+
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;
 
     constructor() {
-        inject(Title).setTitle('Setup – SFE');
+        inject(Title).setTitle($localize`Setup – SFE`);
     }
 
     ngOnInit(): Promise<void> {
@@ -187,7 +195,7 @@ export class SetupPageComponent implements OnInit {
                     ),
                 );
             else if (error instanceof ApiError && error.status === 429)
-                this.error.set('Too many attempts: wait a minute, then try again.');
+                this.error.set($localize`Too many attempts: wait a minute, then try again.`);
             else this.error.set((error as Error).message);
         } finally {
             this.busy.set(false);

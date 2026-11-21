@@ -46,7 +46,7 @@ export class LoginPageComponent implements OnInit {
     protected readonly checkedOf = checkedOf;
 
     constructor() {
-        inject(Title).setTitle('Sign in – SFE');
+        inject(Title).setTitle($localize`Sign in – SFE`);
     }
 
     async ngOnInit(): Promise<void> {
@@ -71,7 +71,7 @@ export class LoginPageComponent implements OnInit {
                 setupAvailable: false,
                 canBrowse: false,
             });
-            this.error.set(`The server is not reachable: ${(error as Error).message}`);
+            this.error.set($localize`Could not load the sign-in page: ${(error as Error).message}:reason:`);
         }
     }
 
@@ -83,7 +83,7 @@ export class LoginPageComponent implements OnInit {
         try {
             const session = await this.api.signIn(this.userName().trim(), this.password(), this.remember());
             if (!session.canBrowse) {
-                this.error.set('This account is in no space yet: ask an administrator to add it to one.');
+                this.error.set($localize`Your account isn't in any space yet: ask an administrator to add it to one.`);
                 return;
             }
             this.done();

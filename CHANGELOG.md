@@ -184,6 +184,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   access say things in full sentences with the same words everywhere (visitors, sign-in directory, for example);
   editors are titled "Edit the space “…”" (or account, group), and the whole library is named **Top of the library**
   in folder rules. Their texts are ready for translation.
+- **Sign-in, setup and update pages reworded**: the sign-in and recovery forms, the setup steps, the installation
+  settings, the update page, the Local mode page and My account's settings and password say things in full sentences
+  (the recovery code's lifetime, where a code the server made is shown and kept); browsing a space without an account
+  is called browsing as a visitor. Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

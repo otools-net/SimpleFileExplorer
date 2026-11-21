@@ -50,12 +50,14 @@ export class InstallationFormComponent implements OnInit {
         const view = this.settings();
         if (this.localAllowed())
             return view.mode?.value == null && !this.setup()
-                ? 'Not chosen yet: until it is, SFE works as Local.'
+                ? $localize`Not chosen yet: until it is, SFE works as Local.`
                 : null;
         return view.onThisComputer
-            ? "SFE is External: it goes back to Local only in the server's configuration (Sfe:Mode)."
-            : 'Local is chosen from a browser on the server itself, at http://localhost.';
+            ? $localize`SFE is External: only the server's configuration (Sfe:Mode) can make it Local again.`
+            : $localize`Local can only be chosen from a browser on the server itself, at http://localhost.`;
     });
+    /** Shown for a value the server has none of. */
+    protected readonly notSet = $localize`:no value:not set`;
 
     protected readonly root = signal<string | null>(null);
     protected readonly network = signal(false);
@@ -70,6 +72,10 @@ export class InstallationFormComponent implements OnInit {
     /** The folder picker's source: the server's disks, through the token. */
     protected readonly folders = (path: string | null): Promise<FolderPicker> =>
         this.api.serverFolders(this.token(), path);
+
+    protected listFailed(reason: string): void {
+        this.problem.set($localize`Could not list the folders: ${reason}:reason:`);
+    }
 
     ngOnInit(): void {
         this.reset(this.initial());

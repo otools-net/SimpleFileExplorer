@@ -1,36 +1,44 @@
 <section class="account-card wide">
     <header class="account-head">
-        <span class="brand"><svg sfeIcon="folder"></svg><span>SFE</span></span>
-        <h1>{{ info()?.recover ? 'Recover an administrator' : 'Set up SFE' }}</h1>
+        <span class="brand"><svg sfeIcon="folder"></svg><span translate="no">SFE</span></span>
+        <h1>
+            @if (info()?.recover) {
+                <ng-container i18n>Recover an administrator</ng-container>
+            } @else {
+                <ng-container i18n>Set up SFE</ng-container>
+            }
+        </h1>
         @if (stepNumber(); as number) {
-            <p class="setup-progress">Step {{ number }} of {{ stepCount() }}</p>
+            <p class="setup-progress" i18n>Step {{ number }} of {{ stepCount() }}</p>
         }
     </header>
     @if (loadError(); as error) {
-        <p class="form-error" role="alert">The server is not reachable: {{ error }}</p>
-        <button type="button" class="button" title="Ask the server again" (click)="load()">Try again</button>
+        <p class="form-error" role="alert" i18n>Could not reach the server: {{ error }}</p>
+        <button type="button" class="button" title="Ask the server again" i18n-title (click)="load()" i18n
+        >Try again</button>
     } @else if (!info()) {
         <div class="tag-loading"><span class="spinner"></span></div>
     } @else if (!info()!.codeConfigured && !codeFree()) {
         <div class="account-steps">
-            <p>
+            <p i18n>
                 SFE has no administrator yet. So that only the person running the server can create one, the server
-                first
-                needs a <strong>setup code</strong> of at least {{ info()!.minimumCodeLength }} characters, given in its
-                environment; this page then asks for it.
+                first needs a <strong>setup code</strong> of at least {{ info()!.minimumCodeLength }} characters, given
+                in its environment. This page then asks for it.
             </p>
             <sfe-setup-code-steps
                 [hosting]="info()!.hosting"
                 [minimumCodeLength]="info()!.minimumCodeLength"
                 [codeTooShort]="info()!.codeTooShort"
             />
-            <p class="field-hint">Pick a long code nobody can guess. Afterwards it is only asked for again to confirm
-            the update after an upgrade.</p>
+            <p class="field-hint" i18n>Pick a long code nobody can guess. After the setup, it's only asked for again to
+            confirm an update after an upgrade.</p>
             <button
                 type="button"
                 class="button primary"
                 title="Ask the server whether it has a setup code now"
+                i18n-title
                 (click)="load()"
+                i18n
             >Check again</button>
         </div>
     } @else {
@@ -43,7 +51,9 @@
                             type="button"
                             class="button"
                             title="Ask the server again"
+                            i18n-title
                             (click)="openWithoutCode()"
+                            i18n
                         >Try again</button>
                     } @else {
                         <div class="tag-loading"><span class="spinner"></span></div>
@@ -51,21 +61,19 @@
                 } @else {
                     <form class="account-form" novalidate (submit)="checkCode($event)">
                         @if (info()!.recover) {
-                            <p>
-                                The server is in recovery mode: enter the setup code, then the name of a local
-                                administrator to give it a new
-                                password, or a new name to add an administrator. Turn recovery off (Sfe:Setup:Recover)
-                                afterwards.
+                            <p i18n>
+                                The server is in recovery mode. Enter the setup code, then either the name of a local
+                                administrator to give them a new password, or a new name to add an administrator.
+                                Turn recovery off afterwards (Sfe:Setup:Recover).
                             </p>
                         } @else {
-                            <p>
+                            <p i18n>
                                 Welcome. SFE needs three things: the setup code that proves you run this server, the
-                                folder of your library,
-                                and an administrator account.
+                                folder of your library, and an administrator account.
                             </p>
                         }
                         <div class="field">
-                            <label class="field-label" for="setup-code">Setup code</label>
+                            <label class="field-label" for="setup-code" i18n>Setup code</label>
                             <input
                                 id="setup-code"
                                 type="text"
@@ -79,9 +87,11 @@
                             >
                             <span class="field-hint" id="setup-code-hint">
                                 @if (info()!.codeGenerated) {
-                                    SFE made this code when it started: {{ codeWhere() }}.
+                                    <ng-container i18n>SFE made this code when it started.
+                                    {{ codeWhere() }}</ng-container>
                                 } @else {
-                                    The code given in the server's environment (Sfe:Setup:Code).
+                                    <ng-container i18n>The code given in the server's environment
+                                    (Sfe:Setup:Code).</ng-container>
                                 }
                             </span>
                             @if (errors()['code']; as error) {
@@ -95,7 +105,9 @@
                             type="submit"
                             class="button primary account-submit"
                             title="Check the setup code and go on"
+                            i18n-title
                             [disabled]="busy() || !code().trim()"
+                            i18n
                         >Next</button>
                     </form>
                 }
@@ -103,12 +115,13 @@
             @case ('library') {
                 <form class="account-form" novalidate (submit)="saveLibrary($event)">
                     @if (codeFree()) {
-                        <p>Welcome. SFE needs two things: the folder of your library, and an administrator account.</p>
+                        <p i18n>Welcome. SFE needs two things: the folder of your library, and an administrator
+                        account.</p>
                     }
-                    <p>
-                        How will SFE be used, where are your photos, videos and music, and who may open SFE? All of it
-                        can be changed later in
-                        Administration › System › Installation, except going back from External to Local.
+                    <p i18n>
+                        How will SFE be used, where are your photos, videos and music, and who may open SFE? You can
+                        change all of it later in Administration › System › Installation, except going back from
+                        External to Local.
                     </p>
                     <sfe-installation-form [token]="token()!" [initial]="installation()!" [setup]="true" />
                     <div class="setup-actions">
@@ -116,15 +129,19 @@
                             <button
                                 type="button"
                                 class="button"
-                                title="Back to the setup code"
+                                title="Go back to the setup code"
+                                i18n-title
                                 (click)="step.set('code')"
+                                i18n
                             >Back</button>
                         }
                         <button
                             type="submit"
                             class="button primary"
                             title="Save these and go on to the administrator"
+                            i18n-title
                             [disabled]="busy()"
+                            i18n
                         >Next</button>
                     </div>
                 </form>
@@ -132,18 +149,17 @@
             @case ('account') {
                 <form class="account-form" novalidate (submit)="submit($event)">
                     @if (info()!.recover) {
-                        <p>Enter the name of a local administrator to give it a new password, or a new name to add an
-                        administrator.</p>
+                        <p i18n>Enter the name of a local administrator to give them a new password, or a new name to
+                        add an administrator.</p>
                     } @else {
-                        <p>
+                        <p i18n>
                             Create the administrator of this server. Your library, its index, tags and settings become
-                            the first
-                            <strong>space</strong>, which you can name here. More spaces, and accounts for the others,
-                            come later in Administration.
+                            the first <strong>space</strong>, which you can name here. You can add more spaces, and
+                            accounts for other people, later in Administration.
                         </p>
                     }
                     <div class="field">
-                        <label class="field-label" for="setup-name">Administrator's name</label>
+                        <label class="field-label" for="setup-name" i18n>Administrator's name</label>
                         <input
                             id="setup-name"
                             type="text"
@@ -162,7 +178,8 @@
                         <label
                             class="field-label"
                             for="setup-display"
-                        >Display name <span class="field-hint">(optional)</span></label>
+                        ><ng-container i18n>Display name</ng-container> <span class="field-hint"
+                            i18n>(optional)</span></label>
                         <input
                             id="setup-display"
                             type="text"
@@ -172,7 +189,7 @@
                         >
                     </div>
                     <div class="field">
-                        <label class="field-label" for="setup-password">Password</label>
+                        <label class="field-label" for="setup-password" i18n>Password</label>
                         <input
                             id="setup-password"
                             type="password"
@@ -185,13 +202,14 @@
                         <span
                             class="field-hint"
                             id="setup-password-hint"
+                            i18n
                         >At least {{ info()!.minimumPasswordLength }} characters.</span>
                         @if (errors()['password']; as error) {
                             <span class="field-error">{{ error }}</span>
                         }
                     </div>
                     <div class="field">
-                        <label class="field-label" for="setup-confirm">Password again</label>
+                        <label class="field-label" for="setup-confirm" i18n>Password again</label>
                         <input
                             id="setup-confirm"
                             type="password"
@@ -201,12 +219,12 @@
                             (input)="confirm.set(valueOf($event))"
                         >
                         @if (mismatch()) {
-                            <span class="field-error">The two passwords differ.</span>
+                            <span class="field-error" i18n>The two passwords differ.</span>
                         }
                     </div>
                     @if (!info()!.recover) {
                         <div class="field">
-                            <label class="field-label" for="setup-library">Name of the first space</label>
+                            <label class="field-label" for="setup-library" i18n>Name of the first space</label>
                             <input
                                 id="setup-library"
                                 type="text"
@@ -217,7 +235,9 @@
                             <span
                                 class="field-hint"
                                 id="setup-library-hint"
-                            >A space holds one library and who may see it, e.g. Family. You can rename it later.</span>
+                                i18n
+                            >A space holds one library and says who may see it, for example Family. You can rename it
+                            later.</span>
                             @if (errors()['libraryName']; as error) {
                                 <span class="field-error">{{ error }}</span>
                             }
@@ -231,11 +251,11 @@
                                 (change)="fastSignIn.set(checkedOf($event))"
                             >
                             <span>
-                                Sign me in when SFE starts on this computer
-                                <span class="field-hint">
+                                <ng-container i18n>Sign me in when SFE starts on this computer</ng-container>
+                                <span class="field-hint" i18n>
                                     The browser SFE opens when it starts signs you in without your password. Only for
-                                    SFE used on this
-                                    computer alone; switch it off in Administration › System › Start-up.
+                                    SFE used on this computer alone; you can switch it off in Administration › System ›
+                                    Start-up.
                                 </span>
                             </span>
                         </label>
@@ -250,27 +270,34 @@
                         <button
                             type="button"
                             class="button"
-                            [title]="info()!.recover ? 'Back to the setup code' : 'Back to the library folder'"
+                            [title]="info()!.recover ? backToCode : backToLibrary"
                             (click)="step.set(info()!.recover ? 'code' : 'library')"
+                            i18n
                         >Back</button>
-                        <button type="submit" class="button primary" title="Create the administrator and sign in"
+                        <button type="submit" class="button primary" [title]="submitTitle()"
                                 [disabled]="busy() || mismatch() || !userName().trim() || !password()">
-                            {{ info()!.recover ? 'Restore the administrator' : 'Create the administrator' }}
+                            @if (info()!.recover) {
+                                <ng-container i18n>Restore the administrator</ng-container>
+                            } @else {
+                                <ng-container i18n>Create the administrator</ng-container>
+                            }
                         </button>
                     </div>
                 </form>
             }
             @case ('restart') {
                 <div class="account-steps">
-                    <p><strong>SFE is set up.</strong> One more thing: the new network setting applies once SFE starts
-                    again.</p>
-                    <p>Close SFE and start it again (or restart its service). Until then, it keeps answering at this
-                    address.</p>
+                    <p i18n><strong>SFE is set up.</strong> One more thing: the new network setting applies once SFE
+                    starts again.</p>
+                    <p i18n>Close SFE and start it again (or restart its service). Until then, it keeps answering at
+                    this address.</p>
                     <button
                         type="button"
                         class="button primary"
                         title="Open the library"
+                        i18n-title
                         (click)="finish()"
+                        i18n
                     >Open the library</button>
                 </div>
             }

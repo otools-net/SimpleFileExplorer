@@ -4,11 +4,11 @@
     }
     @case ('password') {
         @if (config.user()?.local === false) {
-            <p class="muted">The password of this account is kept by its directory: change it there.</p>
+            <p class="muted" i18n>Your password is kept by your sign-in directory: change it there.</p>
         } @else {
             <form class="access-form account-password" novalidate (submit)="changePassword($event)">
                 <div class="field">
-                    <label class="field-label" for="password-current">Current password</label>
+                    <label class="field-label" for="password-current" i18n>Current password</label>
                     <input
                         id="password-current"
                         type="password"
@@ -21,7 +21,7 @@
                     }
                 </div>
                 <div class="field">
-                    <label class="field-label" for="password-new">New password</label>
+                    <label class="field-label" for="password-new" i18n>New password</label>
                     <input
                         id="password-new"
                         type="password"
@@ -34,7 +34,7 @@
                     }
                 </div>
                 <div class="field">
-                    <label class="field-label" for="password-confirm">New password again</label>
+                    <label class="field-label" for="password-confirm" i18n>New password again</label>
                     <input
                         id="password-confirm"
                         type="password"
@@ -43,21 +43,20 @@
                         (input)="confirm.set(valueOf($event))"
                     >
                     @if (mismatch()) {
-                        <span class="field-error">The two passwords differ.</span>
+                        <span class="field-error" i18n>The two passwords differ.</span>
                     }
                 </div>
-                <p class="field-hint">Your other sessions (other browsers and devices) end, and the links you gave to
-                external players stop working.</p>
-                <button type="submit" class="button primary" title="Change the password of your account"
-                        [disabled]="busy() || mismatch() || !current() || !password()">Change the password</button>
+                <p class="field-hint" i18n>You'll be signed out on your other browsers and devices, and the links you
+                gave to external players will stop working.</p>
+                <button type="submit" class="button primary" title="Change your account's password" i18n-title
+                        [disabled]="busy() || mismatch() || !current() || !password()" i18n>Change the password</button>
             </form>
         }
     }
     @default {
-        <p class="settings-intro">
-            Your own choices, over the space's settings: kept by the server, they follow you on every device you sign in
-            on.
-            A setting the space or the server locked cannot be changed here.
+        <p class="settings-intro" i18n>
+            Your own settings, used instead of the space's. The server keeps them, so they follow you on every device
+            you sign in on. A setting locked by the space or the server can't be changed here.
         </p>
         @for (shown of tabs(); track shown) {
             <sfe-settings-panel [tab]="shown" (submitted)="save()" />
@@ -66,24 +65,30 @@
             <button
                 type="button"
                 class="button primary"
-                title="Save your preferences"
+                title="Save your settings"
+                i18n-title
                 [disabled]="form.saving() || !form.changed()"
                 (click)="save()"
+                i18n
             >Save</button>
             @if (form.changed()) {
                 <button
                     type="button"
                     class="button"
-                    title="Undo the changes not saved yet"
+                    title="Undo the changes you haven't saved yet"
+                    i18n-title
                     (click)="form.discard()"
+                    i18n
                 >Discard</button>
             }
             <button
                 type="button"
                 class="button"
                 [disabled]="!form.customized()"
-                title="Forget your preferences and follow the space's settings (asks first)"
+                title="Forget your settings and use the space's instead (asks first)"
+                i18n-title
                 (click)="form.reset()"
+                i18n
             >Use the space's settings</button>
         </div>
     }

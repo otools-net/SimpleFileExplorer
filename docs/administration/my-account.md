@@ -7,8 +7,8 @@ any right to change something sees. Clicking your name at the top of the ⋮ men
 
 ![My account › Preferences](../images/admin-account-preferences.png)
 
-Your own choices, over the space's settings: kept by the server, they follow you on every device you sign in on.
-A setting the space or the server locked cannot be changed here. Right: `account.preferences`.
+Your own settings, used instead of the space's. The server keeps them, so they follow you on every device you sign in on.
+A setting locked by the space or the server can't be changed here. Right: `account.preferences`.
 
 They include the theme (and **This browser's theme**, kept in this browser only), items and results per page, pictures
 per folder, the display of resolutions, durations and HR/LR marks, the player's jump and loop, play on hover (videos

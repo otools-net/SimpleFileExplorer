@@ -29,32 +29,37 @@ export function localAddress(base = document.baseURI): string {
     template: `
         <section class="account-card wide">
             <header class="account-head">
-                <span class="brand"><svg sfeIcon="folder"></svg><span>SFE</span></span>
-                <h1>SFE is in Local mode</h1>
+                <span class="brand"><svg sfeIcon="folder"></svg><span translate="no">SFE</span></span>
+                <h1 i18n>SFE is in Local mode</h1>
             </header>
-            <p>
-                This SFE is set up for the computer it runs on: only that computer opens it, at
+            <p i18n>
+                This SFE is set up for the computer it runs on: only that computer can open it, at
                 <a class="local-only-address" [href]="address">{{ address }}</a>, and only its administrators sign in.
             </p>
             @if (session() === undefined) {
                 <div class="tag-loading"><span class="spinner"></span></div>
             } @else if (session()?.user?.isServerAdmin) {
-                <p>To let other devices open it, switch it to <strong>External</strong> below, with the setup code.</p>
+                <p i18n>To let other devices open it, switch it to <strong>External</strong> below, with the setup
+                code.</p>
                 <sfe-installation-section />
                 <button
                     type="button"
                     class="button account-submit"
                     title="Open the library"
+                    i18n-title
                     (click)="open()"
+                    i18n
                 >Open the library</button>
             } @else {
-                <p>Do you run this server? Sign in as its administrator to switch it to External, so that other devices
-                can open it.</p>
+                <p i18n>Do you run this server? Sign in as its administrator to switch it to External, so that
+                other devices can open it.</p>
                 <button
                     type="button"
                     class="button primary account-submit"
                     title="Sign in as the server's administrator"
+                    i18n-title
                     (click)="signIn()"
+                    i18n
                 >Sign in</button>
             }
         </section>
@@ -70,7 +75,7 @@ export class LocalOnlyPageComponent implements OnInit {
     protected readonly session = signal<SessionInfo | null | undefined>(undefined);
 
     constructor() {
-        inject(Title).setTitle('Local mode – SFE');
+        inject(Title).setTitle($localize`Local mode – SFE`);
     }
 
     async ngOnInit(): Promise<void> {

@@ -152,7 +152,7 @@ describe('LoginPageComponent', () => {
         await settle();
 
         expect(api.requestRecovery).toHaveBeenCalledWith('admin');
-        expect(element.textContent).toContain('works for 15 minutes');
+        expect(element.textContent).toContain('works once, for 15 minutes');
         type(element, '#recover-code', ' ab2c-de3f-gh4j-km5n ');
         type(element, '#recover-password', 'new-password-1');
         type(element, '#recover-confirm', 'new-password-2');
@@ -585,7 +585,7 @@ describe('InstallationFormComponent', () => {
         );
         expect(modeRadio(external.element, 'local').disabled).toBe(true);
         expect(external.element.querySelector('.installation-mode-note')!.textContent).toContain(
-            "only in the server's configuration",
+            "only the server's configuration (Sfe:Mode) can make it Local again",
         );
     });
 

@@ -1,10 +1,4 @@
 {
-  "app/account/account-section.component.html": 15,
-  "app/account/installation-form.component.html": 36,
-  "app/account/local-only-page.component.ts": 12,
-  "app/account/login-page.component.html": 31,
-  "app/account/setup-code.component.ts": 2,
-  "app/account/setup-page.component.html": 48,
   "app/admin/admin-page.component.html": 33,
   "app/admin/installation-section.component.html": 9,
   "app/admin/keep-alive-status.component.html": 5,
@@ -61,7 +55,6 @@
   "app/library/viewer/viewer.component.html": 13,
   "app/logs/logs-section.component.html": 25,
   "app/menus/context-menu.html": 2,
-  "app/migration/migration-page.component.html": 36,
   "app/player/player-page.component.html": 6,
   "app/player/video-player.component.html": 9,
   "app/shared/folder-picker.component.html": 3,

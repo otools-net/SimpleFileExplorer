@@ -102,6 +102,7 @@
     <unit id="2409672154570643758">
       <notes>
         <note category="location">src/app/access/account-editor.component.html:33</note>
+        <note category="location">src/app/account/setup-page.component.html:181</note>
       </notes>
       <segment>
         <source>Display name</source>
@@ -111,6 +112,8 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:34</note>
         <note category="location">src/app/access/space-editor.component.html:79</note>
+        <note category="location">src/app/account/installation-form.component.html:119</note>
+        <note category="location">src/app/account/setup-page.component.html:182</note>
       </notes>
       <segment>
         <source>(optional)</source>
@@ -135,6 +138,8 @@
     <unit id="1431416938026210429">
       <notes>
         <note category="location">src/app/access/account-editor.component.html:55</note>
+        <note category="location">src/app/account/login-page.component.html:122,123</note>
+        <note category="location">src/app/account/setup-page.component.html:192,193</note>
       </notes>
       <segment>
         <source>Password</source>
@@ -143,6 +148,8 @@
     <unit id="3588415639242079458">
       <notes>
         <note category="location">src/app/access/account-editor.component.html:57</note>
+        <note category="location">src/app/account/account-section.component.html:24,25</note>
+        <note category="location">src/app/account/login-page.component.html:70,71</note>
       </notes>
       <segment>
         <source>New password</source>
@@ -483,6 +490,7 @@
         <note category="location">src/app/access/account-editor.component.html:282</note>
         <note category="location">src/app/access/group-editor.component.html:175</note>
         <note category="location">src/app/access/space-editor.component.html:206</note>
+        <note category="location">src/app/account/account-section.component.html:73,74</note>
       </notes>
       <segment>
         <source>Save</source>
@@ -1181,6 +1189,7 @@
       <notes>
         <note category="location">src/app/access/folder-access.component.ts:141</note>
         <note category="location">src/app/access/space-editor.component.ts:106</note>
+        <note category="location">src/app/account/installation-form.component.ts:77</note>
       </notes>
       <segment>
         <source>Could not list the folders: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -1230,6 +1239,8 @@
       <notes>
         <note category="location">src/app/access/group-editor.component.html:12,13</note>
         <note category="location">src/app/access/space-editor.component.html:12,13</note>
+        <note category="location">src/app/account/login-page.component.html:21,22</note>
+        <note category="location">src/app/account/login-page.component.html:109,110</note>
       </notes>
       <segment>
         <source>Name</source>
@@ -1871,6 +1882,7 @@
     <unit id="5987442632686406032">
       <notes>
         <note category="location">src/app/access/space-editor.component.html:24,25</note>
+        <note category="location">src/app/account/installation-form.component.html:50,51</note>
       </notes>
       <segment>
         <source>Library folder</source>
@@ -2323,6 +2335,1152 @@ Space “Holiday photos”
         <source>If you let them in: people without an account, with the Guests group&apos;s rights.</source>
       </segment>
     </unit>
+    <unit id="234277611127241731">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:7,8</note>
+      </notes>
+      <segment>
+        <source>Your password is kept by your sign-in directory: change it there.</source>
+      </segment>
+    </unit>
+    <unit id="5340498030552368470">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:11,12</note>
+      </notes>
+      <segment>
+        <source>Current password</source>
+      </segment>
+    </unit>
+    <unit id="8631034221891290580">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:37,38</note>
+        <note category="location">src/app/account/login-page.component.html:78,79</note>
+      </notes>
+      <segment>
+        <source>New password again</source>
+      </segment>
+    </unit>
+    <unit id="3749207389625433286">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:46,47</note>
+        <note category="location">src/app/account/login-page.component.html:82,83</note>
+        <note category="location">src/app/account/setup-page.component.html:222,223</note>
+      </notes>
+      <segment>
+        <source>The two passwords differ.</source>
+      </segment>
+    </unit>
+    <unit id="1430530827917365221">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:49,50</note>
+      </notes>
+      <segment>
+        <source>You&apos;ll be signed out on your other browsers and devices, and the links you gave to external players will stop working.</source>
+      </segment>
+    </unit>
+    <unit id="2728940565002372112">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:51</note>
+      </notes>
+      <segment>
+        <source>Change your account&apos;s password</source>
+      </segment>
+    </unit>
+    <unit id="8065870978492486706">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:52,53</note>
+      </notes>
+      <segment>
+        <source>Change the password</source>
+      </segment>
+    </unit>
+    <unit id="1711746209821707547">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:58,59</note>
+      </notes>
+      <segment>
+        <source> Your own settings, used instead of the space&apos;s. The server keeps them, so they follow you on every device you sign in on. A setting locked by the space or the server can&apos;t be changed here. </source>
+      </segment>
+    </unit>
+    <unit id="2111708170090393876">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:68,69</note>
+      </notes>
+      <segment>
+        <source>Save your settings</source>
+      </segment>
+    </unit>
+    <unit id="3099510775775873563">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:78,79</note>
+      </notes>
+      <segment>
+        <source>Undo the changes you haven&apos;t saved yet</source>
+      </segment>
+    </unit>
+    <unit id="3823219296477075982">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:82,83</note>
+      </notes>
+      <segment>
+        <source>Discard</source>
+      </segment>
+    </unit>
+    <unit id="856135539933636932">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:88,89</note>
+      </notes>
+      <segment>
+        <source>Forget your settings and use the space&apos;s instead (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="6512167223260458974">
+      <notes>
+        <note category="location">src/app/account/account-section.component.html:92,93</note>
+      </notes>
+      <segment>
+        <source>Use the space&apos;s settings</source>
+      </segment>
+    </unit>
+    <unit id="1574704365443135004">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:4,5</note>
+      </notes>
+      <segment>
+        <source>How SFE is used</source>
+      </segment>
+    </unit>
+    <unit id="8443599644703896121">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:7,8</note>
+        <note category="location">src/app/account/installation-form.component.html:53,54</note>
+        <note category="location">src/app/account/installation-form.component.html:82,83</note>
+        <note category="location">src/app/account/installation-form.component.html:138,139</note>
+      </notes>
+      <segment>
+        <source>Set by <ph id="0" equiv="INTERPOLATION" disp="{{ mode.lockedBy }}"/>.</source>
+      </segment>
+    </unit>
+    <unit id="2906587845957718064">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:18</note>
+      </notes>
+      <segment>
+        <source>Local</source>
+      </segment>
+    </unit>
+    <unit id="151584809945498517">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:19,20</note>
+      </notes>
+      <segment>
+        <source>SFE on your own computer: only this computer can open it, and only administrators sign in.</source>
+      </segment>
+    </unit>
+    <unit id="6736404413477208257">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:31</note>
+      </notes>
+      <segment>
+        <source>External</source>
+      </segment>
+    </unit>
+    <unit id="8277037116947365106">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:33,34</note>
+      </notes>
+      <segment>
+        <source> Other people open SFE from their devices, over the network or the internet. The library folder and ffmpeg are then set in the server&apos;s configuration (environment variables or a settings file), not on this page. </source>
+      </segment>
+    </unit>
+    <unit id="6323026412841860668">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:56,58</note>
+      </notes>
+      <segment>
+        <source>An External server takes it from its configuration (<pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">Sfe__Root</pc> in its environment, or <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">appsettings.json</pc>).</source>
+      </segment>
+    </unit>
+    <unit id="626360706327994666">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:62,63</note>
+      </notes>
+      <segment>
+        <source>Pick the folder of your photos, videos and music</source>
+      </segment>
+    </unit>
+    <unit id="4858931365534115189">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:67,68</note>
+      </notes>
+      <segment>
+        <source>SFE shows the files of this folder and of every folder inside it. Click a folder to choose it; click again inside it to go deeper.</source>
+      </segment>
+    </unit>
+    <unit id="2744683304145488519">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:70,71</note>
+      </notes>
+      <segment>
+        <source>This folder isn&apos;t on the server any more: pick another one.</source>
+      </segment>
+    </unit>
+    <unit id="7312016673777024353">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:79,80</note>
+      </notes>
+      <segment>
+        <source>Who can open SFE</source>
+      </segment>
+    </unit>
+    <unit id="9080811276765351741">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:85</note>
+      </notes>
+      <segment>
+        <source>Only this computer, as SFE is Local</source>
+      </segment>
+    </unit>
+    <unit id="5782826774072659941">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:86,87</note>
+        <note category="location">src/app/account/installation-form.component.html:90,92</note>
+      </notes>
+      <segment>
+        <source>Open it at http://localhost:<ph id="0" equiv="INTERPOLATION" disp="{{ port() }}"/>.</source>
+      </segment>
+    </unit>
+    <unit id="8291664782381044012">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:90</note>
+      </notes>
+      <segment>
+        <source>Only this computer</source>
+      </segment>
+    </unit>
+    <unit id="888186760450073530">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:95</note>
+      </notes>
+      <segment>
+        <source>The other devices on my network too</source>
+      </segment>
+    </unit>
+    <unit id="6358439463259315459">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:96,98</note>
+      </notes>
+      <segment>
+        <source>Phones, TVs and other computers at home open http://<pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">this computer&apos;s name or address</pc>:<ph id="1" equiv="INTERPOLATION" disp="{{ port() }}"/>. Everyone still signs in.</source>
+      </segment>
+    </unit>
+    <unit id="6117946241126833991">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:102,103</note>
+      </notes>
+      <segment>
+        <source>Port</source>
+      </segment>
+    </unit>
+    <unit id="602821270955747507">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:122</note>
+      </notes>
+      <segment>
+        <source>Found</source>
+      </segment>
+    </unit>
+    <unit id="3268095459835706851">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:125,126</note>
+      </notes>
+      <segment>
+        <source>version <ph id="0" equiv="INTERPOLATION" disp="{{ view.ffmpegVersion }}"/></source>
+      </segment>
+    </unit>
+    <unit id="6595008830732269870">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:128</note>
+      </notes>
+      <segment>
+        <source>Not found</source>
+      </segment>
+    </unit>
+    <unit id="1066205003916119423">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:133,134</note>
+      </notes>
+      <segment>
+        <source> ffmpeg makes the video thumbnails, the previews along the timeline, the durations and the converted videos. Everything else works without it. To add it, download it from ffmpeg.org, unzip it, then pick its folder here. </source>
+      </segment>
+    </unit>
+    <unit id="1657414600364476888">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:141,143</note>
+      </notes>
+      <segment>
+        <source>An External server takes it from its configuration (<pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">Sfe__Thumbnails__FfmpegPath</pc> in its environment, or <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">appsettings.json</pc>).</source>
+      </segment>
+    </unit>
+    <unit id="2614977674407179326">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:149,150</note>
+      </notes>
+      <segment>
+        <source>ffmpeg (looked for on the PATH)</source>
+      </segment>
+    </unit>
+    <unit id="8902433877285271806">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:151,152</note>
+      </notes>
+      <segment>
+        <source>ffmpeg&apos;s program or folder</source>
+      </segment>
+    </unit>
+    <unit id="2585206084049694433">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:159,160</note>
+      </notes>
+      <segment>
+        <source>Pick the folder ffmpeg is in</source>
+      </segment>
+    </unit>
+    <unit id="787163983066183218">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:163</note>
+      </notes>
+      <segment>
+        <source>Browse</source>
+      </segment>
+    </unit>
+    <unit id="6320985456897195904">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.html:169,170</note>
+      </notes>
+      <segment>
+        <source>Pick the folder ffmpeg is in (or its bin folder)</source>
+      </segment>
+    </unit>
+    <unit id="6579238429660703378">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.ts:53</note>
+      </notes>
+      <segment>
+        <source>Not chosen yet: until it is, SFE works as Local.</source>
+      </segment>
+    </unit>
+    <unit id="1351878983545970916">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.ts:56</note>
+      </notes>
+      <segment>
+        <source>SFE is External: only the server&apos;s configuration (Sfe:Mode) can make it Local again.</source>
+      </segment>
+    </unit>
+    <unit id="8242865467263494479">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.ts:57</note>
+      </notes>
+      <segment>
+        <source>Local can only be chosen from a browser on the server itself, at http://localhost.</source>
+      </segment>
+    </unit>
+    <unit id="6778709274988908851">
+      <notes>
+        <note category="location">src/app/account/installation-form.component.ts:60</note>
+        <note category="description">no value</note>
+      </notes>
+      <segment>
+        <source>not set</source>
+      </segment>
+    </unit>
+    <unit id="5820249266661966039">
+      <notes>
+        <note category="location">src/app/account/local-only-page.component.ts:33,34</note>
+      </notes>
+      <segment>
+        <source>SFE is in Local mode</source>
+      </segment>
+    </unit>
+    <unit id="5365609704059010613">
+      <notes>
+        <note category="location">src/app/account/local-only-page.component.ts:36,38</note>
+      </notes>
+      <segment>
+        <source> This SFE is set up for the computer it runs on: only that computer can open it, at <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a class=&quot;local-only-address&quot; [href]=&quot;address&quot;&gt;" dispEnd="&lt;/a&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ address }}"/></pc>, and only its administrators sign in. </source>
+      </segment>
+    </unit>
+    <unit id="5887574969136775279">
+      <notes>
+        <note category="location">src/app/account/local-only-page.component.ts:42,43</note>
+      </notes>
+      <segment>
+        <source>To let other devices open it, switch it to <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">External</pc> below, with the setup code.</source>
+      </segment>
+    </unit>
+    <unit id="210483899932808258">
+      <notes>
+        <note category="location">src/app/account/local-only-page.component.ts:47,48</note>
+        <note category="location">src/app/account/local-only-page.component.ts:51,52</note>
+        <note category="location">src/app/account/setup-page.component.html:297,298</note>
+        <note category="location">src/app/account/setup-page.component.html:301,302</note>
+        <note category="location">src/app/migration/migration-page.component.html:28,29</note>
+      </notes>
+      <segment>
+        <source>Open the library</source>
+      </segment>
+    </unit>
+    <unit id="8625511586552764048">
+      <notes>
+        <note category="location">src/app/account/local-only-page.component.ts:53,54</note>
+      </notes>
+      <segment>
+        <source>Do you run this server? Sign in as its administrator to switch it to External, so that other devices can open it.</source>
+      </segment>
+    </unit>
+    <unit id="2910565668320100598">
+      <notes>
+        <note category="location">src/app/account/local-only-page.component.ts:58,59</note>
+      </notes>
+      <segment>
+        <source>Sign in as the server&apos;s administrator</source>
+      </segment>
+    </unit>
+    <unit id="5207635742003539443">
+      <notes>
+        <note category="location">src/app/account/local-only-page.component.ts:62,63</note>
+        <note category="location">src/app/account/login-page.component.html:8</note>
+        <note category="location">src/app/account/login-page.component.html:135,136</note>
+      </notes>
+      <segment>
+        <source>Sign in</source>
+      </segment>
+    </unit>
+    <unit id="2717277378283692070">
+      <notes>
+        <note category="location">src/app/account/local-only-page.component.ts:77</note>
+      </notes>
+      <segment>
+        <source>Local mode – SFE</source>
+      </segment>
+    </unit>
+    <unit id="6802536849847579382">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:6</note>
+        <note category="location">src/app/account/login-page.component.html:145,146</note>
+      </notes>
+      <segment>
+        <source>Recover the account</source>
+      </segment>
+    </unit>
+    <unit id="3892930114007180187">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:17,18</note>
+      </notes>
+      <segment>
+        <source> For a server administrator who is locked out or forgot their password: the server shows a one-time code where it runs, for whoever runs it. For other accounts, ask an administrator. </source>
+      </segment>
+    </unit>
+    <unit id="6744680104995488982">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:40,41</note>
+      </notes>
+      <segment>
+        <source>Show a recovery code for this account where the server runs</source>
+      </segment>
+    </unit>
+    <unit id="2236426001254668946">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:45,46</note>
+      </notes>
+      <segment>
+        <source>Show a recovery code on the server</source>
+      </segment>
+    </unit>
+    <unit id="2368055465450923155">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:48,53</note>
+      </notes>
+      <segment>
+        <source> If this is a server administrator&apos;s account, its code is now shown in SFE&apos;s console window (for a service, in <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">recovery-code.txt</pc>, next to <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">setup-code.txt</pc> in SFE&apos;s data folder). It works once, for <ph id="2" equiv="ICU" disp="{codeMinutes(), plural, one {{{ codeMinutes() }} minute} other
+                    {{{ codeMinutes() }} minutes}}" subFlows="374669861833161383"/>. </source>
+      </segment>
+    </unit>
+    <unit id="3023394972653842807">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:50,51</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {<ph id="0" equiv="INTERPOLATION"/> minute} other {<ph id="1" equiv="INTERPOLATION"/> minutes}}</source>
+      </segment>
+    </unit>
+    <unit id="6972572680647013293">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:54,55</note>
+      </notes>
+      <segment>
+        <source>Recovery code</source>
+      </segment>
+    </unit>
+    <unit id="8117382979747921797">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:91,92</note>
+      </notes>
+      <segment>
+        <source>Set the new password, unlock the account and sign in</source>
+      </segment>
+    </unit>
+    <unit id="7295185204079889321">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:95,96</note>
+      </notes>
+      <segment>
+        <source>Set the password and sign in</source>
+      </segment>
+    </unit>
+    <unit id="365978614960155220">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:100,101</note>
+      </notes>
+      <segment>
+        <source>Go back to signing in</source>
+      </segment>
+    </unit>
+    <unit id="8890553633144307762">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:104,105</note>
+        <note category="location">src/app/account/setup-page.component.html:136,137</note>
+        <note category="location">src/app/account/setup-page.component.html:276,277</note>
+      </notes>
+      <segment>
+        <source>Back</source>
+      </segment>
+    </unit>
+    <unit id="1945532763583496027">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:128</note>
+      </notes>
+      <segment>
+        <source>Keep me signed in on this device</source>
+      </segment>
+    </unit>
+    <unit id="3357903561006976328">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:129</note>
+      </notes>
+      <segment>
+        <source>Leave it off on a shared computer.</source>
+      </segment>
+    </unit>
+    <unit id="1537319718681161672">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:134,135</note>
+      </notes>
+      <segment>
+        <source>Sign in with this name and password</source>
+      </segment>
+    </unit>
+    <unit id="6485607522426743439">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:138</note>
+      </notes>
+      <segment>
+        <source>Locked out, or forgot your password?</source>
+      </segment>
+    </unit>
+    <unit id="3023454570444833683">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:141,142</note>
+      </notes>
+      <segment>
+        <source>Recover a server administrator&apos;s account with a code the server shows where it runs</source>
+      </segment>
+    </unit>
+    <unit id="2940637820502273007">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:149,150</note>
+      </notes>
+      <segment>
+        <source>Or browse without an account</source>
+      </segment>
+    </unit>
+    <unit id="1447298750255731521">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:155,156</note>
+      </notes>
+      <segment>
+        <source>Browse <ph id="0" equiv="INTERPOLATION" disp="{{ tenant.name }}"/> as a visitor: you can look, not change anything</source>
+      </segment>
+    </unit>
+    <unit id="2238421228809512523">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:167</note>
+      </notes>
+      <segment>
+        <source>The server is in recovery mode.</source>
+      </segment>
+    </unit>
+    <unit id="1620381608079040741">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:169,170</note>
+      </notes>
+      <segment>
+        <source>Reset an administrator&apos;s password, or create an administrator</source>
+      </segment>
+    </unit>
+    <unit id="4418331024118293418">
+      <notes>
+        <note category="location">src/app/account/login-page.component.html:172,173</note>
+        <note category="location">src/app/account/setup-page.component.html:6</note>
+      </notes>
+      <segment>
+        <source>Recover an administrator</source>
+      </segment>
+    </unit>
+    <unit id="6591690340135816417">
+      <notes>
+        <note category="location">src/app/account/login-page.component.ts:49</note>
+      </notes>
+      <segment>
+        <source>Sign in – SFE</source>
+      </segment>
+    </unit>
+    <unit id="1566931777753257559">
+      <notes>
+        <note category="location">src/app/account/login-page.component.ts:74</note>
+      </notes>
+      <segment>
+        <source>Could not load the sign-in page: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
+      </segment>
+    </unit>
+    <unit id="5772075302796591639">
+      <notes>
+        <note category="location">src/app/account/login-page.component.ts:86</note>
+      </notes>
+      <segment>
+        <source>Your account isn&apos;t in any space yet: ask an administrator to add it to one.</source>
+      </segment>
+    </unit>
+    <unit id="684538641027261122">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:7</note>
+      </notes>
+      <segment>
+        <source>Windows service</source>
+      </segment>
+    </unit>
+    <unit id="5583215801024579982">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:8,9</note>
+      </notes>
+      <segment>
+        <source>Add &quot;Setup&quot;: { &quot;Code&quot;: &quot;…&quot; } to the &quot;Sfe&quot; section of appsettings.json, next to SFE&apos;s program, or set the system environment variable Sfe__Setup__Code. Then restart the SFE service.</source>
+      </segment>
+    </unit>
+    <unit id="4857435423406995139">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:12</note>
+      </notes>
+      <segment>
+        <source>systemd service</source>
+      </segment>
+    </unit>
+    <unit id="4492392747334017294">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:13,14</note>
+      </notes>
+      <segment>
+        <source>Add Environment=Sfe__Setup__Code=… to the [Service] section of SFE&apos;s unit (systemctl edit sfe), then restart it (systemctl restart sfe).</source>
+      </segment>
+    </unit>
+    <unit id="4852613043555272563">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:17</note>
+      </notes>
+      <segment>
+        <source>IIS</source>
+      </segment>
+    </unit>
+    <unit id="2081325894239824365">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:18,19</note>
+      </notes>
+      <segment>
+        <source>Add &lt;environmentVariable name=&quot;Sfe__Setup__Code&quot; value=&quot;…&quot; /&gt; to the environmentVariables of the site&apos;s web.config (or set it in IIS Manager&apos;s configuration editor), then recycle the application pool.</source>
+      </segment>
+    </unit>
+    <unit id="4279197087356830609">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:22</note>
+      </notes>
+      <segment>
+        <source>Container</source>
+      </segment>
+    </unit>
+    <unit id="6468396786126610798">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:23,24</note>
+      </notes>
+      <segment>
+        <source>Give the container the environment variable Sfe__Setup__Code (docker run -e, the environment of a compose file, or the container settings of your NAS), then restart it.</source>
+      </segment>
+    </unit>
+    <unit id="588491865039591877">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:27</note>
+      </notes>
+      <segment>
+        <source>AppImage</source>
+      </segment>
+    </unit>
+    <unit id="8092560056907691685">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:28,29</note>
+      </notes>
+      <segment>
+        <source>Add &quot;Setup&quot;: { &quot;Code&quot;: &quot;…&quot; } to the &quot;Sfe&quot; section of ~/.config/sfe/appsettings.json, or start SFE with the environment variable Sfe__Setup__Code. Then start it again.</source>
+      </segment>
+    </unit>
+    <unit id="9203871705727731966">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:32</note>
+      </notes>
+      <segment>
+        <source>Portable package</source>
+      </segment>
+    </unit>
+    <unit id="7905843076643518226">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:33,34</note>
+      </notes>
+      <segment>
+        <source>Add &quot;Setup&quot;: { &quot;Code&quot;: &quot;…&quot; } to the &quot;Sfe&quot; section of appsettings.json, next to SFE&apos;s program, or start it with the environment variable Sfe__Setup__Code. Then start it again.</source>
+      </segment>
+    </unit>
+    <unit id="2539417730193048168">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:37</note>
+      </notes>
+      <segment>
+        <source>Configuration or environment variable</source>
+      </segment>
+    </unit>
+    <unit id="601879057931071578">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:38,39</note>
+      </notes>
+      <segment>
+        <source>Set the environment variable Sfe__Setup__Code (or Sfe:Setup:Code in the configuration files), then restart the server.</source>
+      </segment>
+    </unit>
+    <unit id="2781354241091105201">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:45</note>
+      </notes>
+      <segment>
+        <source>It&apos;s shown in the Windows event log (Applications).</source>
+      </segment>
+    </unit>
+    <unit id="657204078700292902">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:46</note>
+      </notes>
+      <segment>
+        <source>It&apos;s shown in SFE&apos;s log (journalctl -u sfe).</source>
+      </segment>
+    </unit>
+    <unit id="4028876984729913420">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:47</note>
+      </notes>
+      <segment>
+        <source>It&apos;s shown in the site&apos;s log.</source>
+      </segment>
+    </unit>
+    <unit id="6614417566234620694">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:48</note>
+      </notes>
+      <segment>
+        <source>It&apos;s shown in the container&apos;s log (docker logs).</source>
+      </segment>
+    </unit>
+    <unit id="9110701885168661353">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:49</note>
+        <note category="location">src/app/account/setup-code.component.ts:50</note>
+      </notes>
+      <segment>
+        <source>It&apos;s shown in the window where SFE runs.</source>
+      </segment>
+    </unit>
+    <unit id="8269447912077597644">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:51</note>
+      </notes>
+      <segment>
+        <source>It&apos;s shown in the window or the log where SFE runs.</source>
+      </segment>
+    </unit>
+    <unit id="364304634249497298">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:62</note>
+      </notes>
+      <segment>
+        <source>It&apos;s also kept in <ph id="0" equiv="file" disp="file"/>.</source>
+      </segment>
+    </unit>
+    <unit id="3336187164514274211">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:64</note>
+      </notes>
+      <segment>
+        <source>It&apos;s also kept in ~/.config/sfe/<ph id="0" equiv="file" disp="file"/>.</source>
+      </segment>
+    </unit>
+    <unit id="8217493795022809421">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:65</note>
+      </notes>
+      <segment>
+        <source>It&apos;s also kept in <ph id="0" equiv="file" disp="file"/> in SFE&apos;s folder.</source>
+      </segment>
+    </unit>
+    <unit id="265730158633943977">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:79,82</note>
+      </notes>
+      <segment>
+        <source>The server&apos;s setup code is too short: it needs at least <ph id="0" equiv="INTERPOLATION" disp="{{ minimumCodeLength() }}"/> characters.</source>
+      </segment>
+    </unit>
+    <unit id="7220953642297829367">
+      <notes>
+        <note category="location">src/app/account/setup-code.component.ts:85,86</note>
+      </notes>
+      <segment>
+        <source>Other ways SFE runs</source>
+      </segment>
+    </unit>
+    <unit id="7317226385445783972">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:8</note>
+      </notes>
+      <segment>
+        <source>Set up SFE</source>
+      </segment>
+    </unit>
+    <unit id="7102075992666089988">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:12,14</note>
+      </notes>
+      <segment>
+        <source>Step <ph id="0" equiv="INTERPOLATION" disp="{{ number }}"/> of <ph id="1" equiv="INTERPOLATION_1" disp="{{ stepCount() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="7747535879240984854">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:16,17</note>
+        <note category="location">src/app/migration/migration-page.component.html:13,14</note>
+      </notes>
+      <segment>
+        <source>Could not reach the server: <ph id="0" equiv="INTERPOLATION" disp="{{ error }}"/></source>
+      </segment>
+    </unit>
+    <unit id="6432229858163668596">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:17</note>
+        <note category="location">src/app/account/setup-page.component.html:53,54</note>
+        <note category="location">src/app/migration/migration-page.component.html:14</note>
+        <note category="location">src/app/migration/migration-page.component.html:43,44</note>
+      </notes>
+      <segment>
+        <source>Ask the server again</source>
+      </segment>
+    </unit>
+    <unit id="6650633628037596693">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:18,19</note>
+        <note category="location">src/app/account/setup-page.component.html:57,58</note>
+        <note category="location">src/app/migration/migration-page.component.html:15,16</note>
+        <note category="location">src/app/settings/settings-panel.component.html:12,13</note>
+      </notes>
+      <segment>
+        <source>Try again</source>
+      </segment>
+    </unit>
+    <unit id="2350277008103935739">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:24,27</note>
+      </notes>
+      <segment>
+        <source> SFE has no administrator yet. So that only the person running the server can create one, the server first needs a <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">setup code</pc> of at least <ph id="1" equiv="INTERPOLATION" disp="{{ info()!.minimumCodeLength }}"/> characters, given in its environment. This page then asks for it. </source>
+      </segment>
+    </unit>
+    <unit id="2464213380986919305">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:33,34</note>
+      </notes>
+      <segment>
+        <source>Pick a long code nobody can guess. After the setup, it&apos;s only asked for again to confirm an update after an upgrade.</source>
+      </segment>
+    </unit>
+    <unit id="6587255889044379153">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:38,39</note>
+        <note category="location">src/app/migration/migration-page.component.html:127,128</note>
+      </notes>
+      <segment>
+        <source>Ask the server whether it has a setup code now</source>
+      </segment>
+    </unit>
+    <unit id="3555090147337707286">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:42,43</note>
+        <note category="location">src/app/migration/migration-page.component.html:47,48</note>
+        <note category="location">src/app/migration/migration-page.component.html:131,132</note>
+      </notes>
+      <segment>
+        <source>Check again</source>
+      </segment>
+    </unit>
+    <unit id="3780506019073904622">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:65,66</note>
+      </notes>
+      <segment>
+        <source> The server is in recovery mode. Enter the setup code, then either the name of a local administrator to give them a new password, or a new name to add an administrator. Turn recovery off afterwards (Sfe:Setup:Recover). </source>
+      </segment>
+    </unit>
+    <unit id="5066802611812105769">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:71,72</note>
+      </notes>
+      <segment>
+        <source> Welcome. SFE needs three things: the setup code that proves you run this server, the folder of your library, and an administrator account. </source>
+      </segment>
+    </unit>
+    <unit id="1020732716418946003">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:76,77</note>
+        <note category="location">src/app/migration/migration-page.component.html:136,137</note>
+      </notes>
+      <segment>
+        <source>Setup code</source>
+      </segment>
+    </unit>
+    <unit id="7563843915602902093">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:90,92</note>
+      </notes>
+      <segment>
+        <source>SFE made this code when it started. <ph id="0" equiv="INTERPOLATION" disp="{{ codeWhere() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="1687514541320170041">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:93,94</note>
+        <note category="location">src/app/migration/migration-page.component.html:150,151</note>
+      </notes>
+      <segment>
+        <source>The code given in the server&apos;s environment (Sfe:Setup:Code).</source>
+      </segment>
+    </unit>
+    <unit id="4578075097622597878">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:107,108</note>
+      </notes>
+      <segment>
+        <source>Check the setup code and go on</source>
+      </segment>
+    </unit>
+    <unit id="3885497195825665706">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:111,112</note>
+        <note category="location">src/app/account/setup-page.component.html:145,146</note>
+      </notes>
+      <segment>
+        <source>Next</source>
+      </segment>
+    </unit>
+    <unit id="7800310000687696096">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:118,119</note>
+      </notes>
+      <segment>
+        <source>Welcome. SFE needs two things: the folder of your library, and an administrator account.</source>
+      </segment>
+    </unit>
+    <unit id="1726804824062017810">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:122,123</note>
+      </notes>
+      <segment>
+        <source> How will SFE be used, where are your photos, videos and music, and who may open SFE? You can change all of it later in Administration › System › Installation, except going back from External to Local. </source>
+      </segment>
+    </unit>
+    <unit id="2286701403166501273">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:132,133</note>
+        <note category="location">src/app/account/setup-page.component.ts:85</note>
+      </notes>
+      <segment>
+        <source>Go back to the setup code</source>
+      </segment>
+    </unit>
+    <unit id="1643545963460166084">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:141,142</note>
+      </notes>
+      <segment>
+        <source>Save these and go on to the administrator</source>
+      </segment>
+    </unit>
+    <unit id="4418683624558045559">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:152,153</note>
+      </notes>
+      <segment>
+        <source>Enter the name of a local administrator to give them a new password, or a new name to add an administrator.</source>
+      </segment>
+    </unit>
+    <unit id="3401963183365118314">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:156,158</note>
+      </notes>
+      <segment>
+        <source> Create the administrator of this server. Your library, its index, tags and settings become the first <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">space</pc>, which you can name here. You can add more spaces, and accounts for other people, later in Administration. </source>
+      </segment>
+    </unit>
+    <unit id="73242108056164513">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:162,163</note>
+      </notes>
+      <segment>
+        <source>Administrator&apos;s name</source>
+      </segment>
+    </unit>
+    <unit id="2411724819388389668">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:206,207</note>
+      </notes>
+      <segment>
+        <source>At least <ph id="0" equiv="INTERPOLATION" disp="{{ info()!.minimumPasswordLength }}"/> characters.</source>
+      </segment>
+    </unit>
+    <unit id="7441103317091517170">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:212,213</note>
+      </notes>
+      <segment>
+        <source>Password again</source>
+      </segment>
+    </unit>
+    <unit id="986236205117541316">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:227,228</note>
+      </notes>
+      <segment>
+        <source>Name of the first space</source>
+      </segment>
+    </unit>
+    <unit id="6387398676172754028">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:239,240</note>
+      </notes>
+      <segment>
+        <source>A space holds one library and says who may see it, for example Family. You can rename it later.</source>
+      </segment>
+    </unit>
+    <unit id="8085872896631884069">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:254</note>
+      </notes>
+      <segment>
+        <source>Sign me in when SFE starts on this computer</source>
+      </segment>
+    </unit>
+    <unit id="3606519260701529717">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:256,257</note>
+      </notes>
+      <segment>
+        <source> The browser SFE opens when it starts signs you in without your password. Only for SFE used on this computer alone; you can switch it off in Administration › System › Start-up. </source>
+      </segment>
+    </unit>
+    <unit id="2134376099470609841">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:280</note>
+      </notes>
+      <segment>
+        <source>Restore the administrator</source>
+      </segment>
+    </unit>
+    <unit id="9120429066560042653">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:282</note>
+      </notes>
+      <segment>
+        <source>Create the administrator</source>
+      </segment>
+    </unit>
+    <unit id="3059379641822787937">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:290,291</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">SFE is set up.</pc> One more thing: the new network setting applies once SFE starts again.</source>
+      </segment>
+    </unit>
+    <unit id="9058744675005371966">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.html:292,293</note>
+      </notes>
+      <segment>
+        <source>Close SFE and start it again (or restart its service). Until then, it keeps answering at this address.</source>
+      </segment>
+    </unit>
+    <unit id="6250956828258186744">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.ts:86</note>
+      </notes>
+      <segment>
+        <source>Go back to the library folder</source>
+      </segment>
+    </unit>
+    <unit id="1212505886683106745">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.ts:89</note>
+      </notes>
+      <segment>
+        <source>Give the administrator the new password and sign in</source>
+      </segment>
+    </unit>
+    <unit id="4247972180573441311">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.ts:90</note>
+      </notes>
+      <segment>
+        <source>Create the administrator and sign in</source>
+      </segment>
+    </unit>
+    <unit id="6621089620894465664">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.ts:97</note>
+      </notes>
+      <segment>
+        <source>Setup – SFE</source>
+      </segment>
+    </unit>
+    <unit id="3317586253347147483">
+      <notes>
+        <note category="location">src/app/account/setup-page.component.ts:198</note>
+      </notes>
+      <segment>
+        <source>Too many attempts: wait a minute, then try again.</source>
+      </segment>
+    </unit>
     <unit id="2557623954339695776">
       <notes>
         <note category="location">src/app/connections/connection-settings.ts:10</note>
@@ -2536,6 +3694,207 @@ Space “Holiday photos”
         <source>TB</source>
       </segment>
     </unit>
+    <unit id="5244908902385589051">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:6</note>
+      </notes>
+      <segment>
+        <source>SFE is up to date</source>
+      </segment>
+    </unit>
+    <unit id="8201159651173633008">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:8</note>
+      </notes>
+      <segment>
+        <source>Update SFE</source>
+      </segment>
+    </unit>
+    <unit id="1736207057693564409">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:19,20</note>
+      </notes>
+      <segment>
+        <source>The databases and settings now belong to SFE <ph id="0" equiv="INTERPOLATION" disp="{{ info.appVersion }}"/>.</source>
+      </segment>
+    </unit>
+    <unit id="8964689690603204715">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:32,33</note>
+      </notes>
+      <segment>
+        <source>Open SFE</source>
+      </segment>
+    </unit>
+    <unit id="8588046469703060656">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:35,36</note>
+      </notes>
+      <segment>
+        <source>SFE can&apos;t read its database yet, so it doesn&apos;t know whether an update is due. It keeps trying.</source>
+      </segment>
+    </unit>
+    <unit id="7761786212733581283">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:51,53</note>
+      </notes>
+      <segment>
+        <source> The databases belong to SFE <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ info.databaseVersion }}"/></pc>, a later version than this one (<ph id="2" equiv="INTERPOLATION_1" disp="{{ info.appVersion }}"/>), which can&apos;t use them. Install SFE <ph id="3" equiv="INTERPOLATION" disp="{{ info.databaseVersion }}"/> again, or restore a backup made with this version. </source>
+      </segment>
+    </unit>
+    <unit id="3714623057305168332">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:57,58</note>
+      </notes>
+      <segment>
+        <source>Updating to SFE <ph id="0" equiv="INTERPOLATION" disp="{{ info.appVersion }}"/>… Keep this page open.</source>
+      </segment>
+    </unit>
+    <unit id="8644086309320617479">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:68,70</note>
+      </notes>
+      <segment>
+        <source>This server now runs SFE <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ info.appVersion }}"/></pc>; its databases and settings belong to SFE <pc id="2" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="3" equiv="INTERPOLATION_1" disp="{{ info.databaseVersion }}"/></pc>.</source>
+      </segment>
+    </unit>
+    <unit id="389140092936150187">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:71,72</note>
+      </notes>
+      <segment>
+        <source>This server now runs SFE <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ info.appVersion }}"/></pc>; its databases and settings belong to an earlier version (before 1.37.0).</source>
+      </segment>
+    </unit>
+    <unit id="9149415797510963135">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:74,75</note>
+      </notes>
+      <segment>
+        <source>They must be updated before anyone can use SFE again. Nothing has been changed yet.</source>
+      </segment>
+    </unit>
+    <unit id="8795416469939461641">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:79,80</note>
+      </notes>
+      <segment>
+        <source>The update stopped: <ph id="0" equiv="INTERPOLATION" disp="{{ info.error }}"/></source>
+      </segment>
+    </unit>
+    <unit id="8561715482075235142">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:80,81</note>
+      </notes>
+      <segment>
+        <source>Fix the problem (the server&apos;s log says more), then start the update again.</source>
+      </segment>
+    </unit>
+    <unit id="5574909544126829265">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:84</note>
+        <note category="location">src/app/migration/migration-page.component.html:85,86</note>
+      </notes>
+      <segment>
+        <source>What changed</source>
+      </segment>
+    </unit>
+    <unit id="358759296883334220">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:115,117</note>
+      </notes>
+      <segment>
+        <source> So that only the person running the server can update it, the server first needs a <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">setup code</pc> of at least <ph id="1" equiv="INTERPOLATION" disp="{{ info.minimumCodeLength }}"/> characters, given in its environment. This page then asks for it. </source>
+      </segment>
+    </unit>
+    <unit id="7227701003519479233">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:148,149</note>
+      </notes>
+      <segment>
+        <source>The code SFE made at its setup. <ph id="0" equiv="INTERPOLATION" disp="{{ codeWhere(info) }}"/></source>
+      </segment>
+    </unit>
+    <unit id="6781468199177316762">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:161,163</note>
+      </notes>
+      <segment>
+        <source>A backup holds the databases and the configuration files, to go back to SFE <ph id="0" equiv="INTERPOLATION" disp="{{ info.databaseVersion }}"/> if needed.</source>
+      </segment>
+    </unit>
+    <unit id="1353764882056529392">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:164,165</note>
+      </notes>
+      <segment>
+        <source>A backup holds the databases and the configuration files, to go back to the earlier version if needed.</source>
+      </segment>
+    </unit>
+    <unit id="6315119040202829014">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:167</note>
+      </notes>
+      <segment>
+        <source>It holds password hashes: keep it somewhere safe.</source>
+      </segment>
+    </unit>
+    <unit id="4731478155182506465">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:172,173</note>
+      </notes>
+      <segment>
+        <source>Download a zip file of the databases and configuration files</source>
+      </segment>
+    </unit>
+    <unit id="8176226444906368770">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:177</note>
+      </notes>
+      <segment>
+        <source>Download a backup</source>
+      </segment>
+    </unit>
+    <unit id="253714094634466572">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:184,185</note>
+      </notes>
+      <segment>
+        <source>Downloading <ph id="0" equiv="INTERPOLATION" disp="{{ link.fileName }}"/> (<ph id="1" equiv="INTERPOLATION_1" disp="{{ size(link.size) }}"/>).</source>
+      </segment>
+    </unit>
+    <unit id="5066898464790085805">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:194,195</note>
+      </notes>
+      <segment>
+        <source>Update the databases and settings to this version</source>
+      </segment>
+    </unit>
+    <unit id="7385588999494940969">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:199</note>
+      </notes>
+      <segment>
+        <source>Start the update again</source>
+      </segment>
+    </unit>
+    <unit id="697924051210858942">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.html:201</note>
+      </notes>
+      <segment>
+        <source>Start the update</source>
+      </segment>
+    </unit>
+    <unit id="182273484435298830">
+      <notes>
+        <note category="location">src/app/migration/migration-page.component.ts:51</note>
+      </notes>
+      <segment>
+        <source>Update – SFE</source>
+      </segment>
+    </unit>
     <unit id="1395493186609386132">
       <notes>
         <note category="location">src/app/settings/settings-form.service.ts:267</note>
@@ -2622,14 +3981,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Ask the server for the settings again</source>
-      </segment>
-    </unit>
-    <unit id="6650633628037596693">
-      <notes>
-        <note category="location">src/app/settings/settings-panel.component.html:12,13</note>
-      </notes>
-      <segment>
-        <source>Try again</source>
       </segment>
     </unit>
     <unit id="4235471210141610852">

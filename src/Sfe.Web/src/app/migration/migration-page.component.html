@@ -1,15 +1,22 @@
 <section class="account-card wide migration-card">
     <header class="account-head">
-        <span class="brand"><svg sfeIcon="folder"></svg><span>SFE</span></span>
-        <h1>{{ done() ? 'SFE is up to date' : 'Update SFE' }}</h1>
+        <span class="brand"><svg sfeIcon="folder"></svg><span translate="no">SFE</span></span>
+        <h1>
+            @if (done()) {
+                <ng-container i18n>SFE is up to date</ng-container>
+            } @else {
+                <ng-container i18n>Update SFE</ng-container>
+            }
+        </h1>
     </header>
     @if (loadError(); as error) {
-        <p class="form-error" role="alert">The server is not reachable: {{ error }}</p>
-        <button type="button" class="button" title="Ask the server again" (click)="load()">Try again</button>
+        <p class="form-error" role="alert" i18n>Could not reach the server: {{ error }}</p>
+        <button type="button" class="button" title="Ask the server again" i18n-title (click)="load()" i18n
+        >Try again</button>
     } @else if (info(); as info) {
         @switch (done() ? 'done' : info.status) {
             @case ('done') {
-                <p>The databases and settings now belong to SFE {{ info.appVersion }}.</p>
+                <p i18n>The databases and settings now belong to SFE {{ info.appVersion }}.</p>
                 <ul class="migration-log">
                     @for (line of info.log; track $index) {
                         <li>{{ line }}</li>
@@ -19,11 +26,14 @@
                     type="button"
                     class="button primary account-submit"
                     title="Open the library"
+                    i18n-title
                     (click)="open()"
+                    i18n
                 >Open SFE</button>
             }
             @case ('unavailable') {
-                <p>SFE cannot read its database yet, so it does not know whether an update is due. It keeps trying.</p>
+                <p i18n>SFE can't read its database yet, so it doesn't know whether an update is due. It keeps
+                trying.</p>
                 @if (info.error) {
                     <p class="form-error">{{ info.error }}</p>
                 }
@@ -31,21 +41,21 @@
                     type="button"
                     class="button account-submit"
                     title="Ask the server again"
+                    i18n-title
                     (click)="load()"
+                    i18n
                 >Check again</button>
             }
             @case ('newer') {
-                <p>
+                <p i18n>
                     The databases belong to SFE <strong>{{ info.databaseVersion }}</strong>, a later version than this
-                    one
-                    ({{ info.appVersion }}). This version cannot use them: install SFE {{ info.databaseVersion }} again,
-                    or restore
-                    a backup made with this version.
+                    one ({{ info.appVersion }}), which can't use them. Install SFE {{ info.databaseVersion }} again, or
+                    restore a backup made with this version.
                 </p>
             }
             @case ('running') {
-                <p class="migration-running"><span class="spinner"></span>Updating to SFE {{ info.appVersion }}… Keep
-                this page open.</p>
+                <p class="migration-running"><span class="spinner"></span><ng-container i18n>Updating to
+                SFE {{ info.appVersion }}… Keep this page open.</ng-container></p>
                 <ul class="migration-log">
                     @for (line of info.log; track $index) {
                         <li>{{ line }}</li>
@@ -54,27 +64,28 @@
             }
             @default {
                 <p>
-                    This server now runs SFE <strong>{{ info.appVersion }}</strong>; its databases and settings belong
-                    to
                     @if (info.databaseVersion) {
-                        SFE <strong>{{ info.databaseVersion }}</strong>.
+                        <ng-container i18n>This server now runs SFE <strong>{{ info.appVersion }}</strong>; its
+                        databases and settings belong to SFE <strong>{{ info.databaseVersion }}</strong>.</ng-container>
                     } @else {
-                        an earlier version (before 1.37.0).
+                        <ng-container i18n>This server now runs SFE <strong>{{ info.appVersion }}</strong>; its
+                        databases and settings belong to an earlier version (before 1.37.0).</ng-container>
                     }
-                    They must be updated before anyone can use SFE again. Nothing has been changed yet.
+                    <ng-container i18n>They must be updated before anyone can use SFE again. Nothing has been changed
+                    yet.</ng-container>
                 </p>
                 @if (info.status === 'failed') {
                     <div class="form-error" role="alert">
-                        <p>The update stopped: {{ info.error }}</p>
-                        <p>Fix the problem (see the server's log), then start the update again.</p>
+                        <p i18n>The update stopped: {{ info.error }}</p>
+                        <p i18n>Fix the problem (the server's log says more), then start the update again.</p>
                     </div>
                 }
                 @if (info.changes.length) {
-                    <section class="migration-changes" aria-label="What changed">
-                        <h2>What changed</h2>
+                    <section class="migration-changes" aria-label="What changed" i18n-aria-label>
+                        <h2 i18n>What changed</h2>
                         @for (entry of info.changes; track entry.version) {
                             <article class="migration-version">
-                                <h3>SFE {{ entry.version }}</h3>
+                                <h3 translate="no">SFE {{ entry.version }}</h3>
                                 @for (section of entry.sections; track section.title) {
                                     <h4>{{ section.title }}</h4>
                                     <ul>
@@ -100,11 +111,10 @@
         @if (!done() && (info.status === 'required' || info.status === 'failed' || info.status === 'newer')) {
             @if (!info.codeConfigured) {
                 <div class="account-steps">
-                    <p>
-                        So that only the person running the server can update it, the server first needs a <strong>setup
-                        code</strong>
-                        of at least {{ info.minimumCodeLength }} characters, given in its environment; this page then
-                        asks for it.
+                    <p i18n>
+                        So that only the person running the server can update it, the server first needs a
+                        <strong>setup code</strong> of at least {{ info.minimumCodeLength }} characters, given in its
+                        environment. This page then asks for it.
                     </p>
                     <sfe-setup-code-steps
                         [hosting]="info.hosting"
@@ -115,13 +125,15 @@
                         type="button"
                         class="button primary"
                         title="Ask the server whether it has a setup code now"
+                        i18n-title
                         (click)="load()"
+                        i18n
                     >Check again</button>
                 </div>
             } @else {
                 <form class="account-form" novalidate (submit)="start($event)">
                     <div class="field">
-                        <label class="field-label" for="migration-code">Setup code</label>
+                        <label class="field-label" for="migration-code" i18n>Setup code</label>
                         <input
                             id="migration-code"
                             type="password"
@@ -133,9 +145,10 @@
                         >
                         <span class="field-hint" id="migration-code-hint">
                             @if (info.codeGenerated) {
-                                The code SFE made at its setup: {{ codeWhere(info) }}.
+                                <ng-container i18n>The code SFE made at its setup. {{ codeWhere(info) }}</ng-container>
                             } @else {
-                                The code given in the server's environment (Sfe:Setup:Code).
+                                <ng-container i18n>The code given in the server's environment
+                                (Sfe:Setup:Code).</ng-container>
                             }
                         </span>
                         @if (codeError(); as error) {
@@ -144,22 +157,30 @@
                     </div>
                     <div class="migration-backup">
                         <p class="field-hint">
-                            A backup holds the databases and the configuration files, to go back to SFE
-                            {{ info.databaseVersion ?? 'of before' }} if needed. It holds password hashes: keep it somewhere safe.
+                            @if (info.databaseVersion) {
+                                <ng-container i18n>A backup holds the databases and the configuration files, to go back
+                                to SFE {{ info.databaseVersion }} if needed.</ng-container>
+                            } @else {
+                                <ng-container i18n>A backup holds the databases and the configuration files, to go back
+                                to the earlier version if needed.</ng-container>
+                            }
+                            <ng-container i18n>It holds password hashes: keep it somewhere safe.</ng-container>
                         </p>
                         <button
                             type="button"
                             class="button"
                             title="Download a zip file of the databases and configuration files"
+                            i18n-title
                             [disabled]="busy() || !code()"
                             (click)="backup()"
                         >
-                            <svg sfeIcon="download"></svg>Download a backup
+                            <svg sfeIcon="download"></svg><ng-container i18n>Download a backup</ng-container>
                         </button>
                         @if (backedUp(); as link) {
                             <span
                                 class="field-hint"
                                 role="status"
+                                i18n
                             >Downloading {{ link.fileName }} ({{ size(link.size) }}).</span>
                         }
                     </div>
@@ -171,9 +192,14 @@
                             type="submit"
                             class="button primary account-submit"
                             title="Update the databases and settings to this version"
+                            i18n-title
                             [disabled]="busy() || !code()"
                         >
-                            {{ info.status === 'failed' ? 'Start the update again' : 'Start the update' }}
+                            @if (info.status === 'failed') {
+                                <ng-container i18n>Start the update again</ng-container>
+                            } @else {
+                                <ng-container i18n>Start the update</ng-container>
+                            }
                         </button>
                     }
                 </form>

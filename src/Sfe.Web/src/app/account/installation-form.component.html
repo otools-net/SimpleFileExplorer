@@ -1,9 +1,9 @@
 @let view = settings();
 @if (view.mode; as mode) {
     <fieldset class="field installation-mode">
-        <legend class="field-label">How SFE is used</legend>
+        <legend class="field-label" i18n>How SFE is used</legend>
         @if (mode.locked) {
-            <p class="installation-locked"><code>{{ mode.value }}</code><span class="field-hint">Set by
+            <p class="installation-locked"><code>{{ mode.value }}</code><span class="field-hint" i18n>Set by
             {{ mode.lockedBy }}.</span></p>
         } @else {
             <label class="check">
@@ -15,8 +15,8 @@
                     [disabled]="!localAllowed()"
                     (change)="chosenMode.set('local')"
                 >
-                <span>Local
-                    <span class="field-hint">SFE on your own computer: only this computer opens it, and only
+                <span><ng-container i18n>Local</ng-container>
+                    <span class="field-hint" i18n>SFE on your own computer: only this computer can open it, and only
                     administrators sign in.</span>
                 </span>
             </label>
@@ -28,11 +28,11 @@
                     [checked]="chosenMode() === 'external'"
                     (change)="chosenMode.set('external')"
                 >
-                <span>External
-                    <span class="field-hint">
-                        Other people open SFE from their devices, over the network or the internet. The library folders
-                        and ffmpeg are then set in
-                        the server's configuration (environment variables or a settings file), not on this page.
+                <span><ng-container i18n>External</ng-container>
+                    <span class="field-hint" i18n>
+                        Other people open SFE from their devices, over the network or the internet. The library folder
+                        and ffmpeg are then set in the server's configuration (environment variables or a settings
+                        file), not on this page.
                     </span>
                 </span>
             </label>
@@ -47,26 +47,27 @@
 }
 
 <div class="field">
-    <span class="field-label">Library folder</span>
+    <span class="field-label" i18n>Library folder</span>
     @if (view.root.locked) {
-        <p class="installation-locked"><code>{{ view.root.value || 'not set' }}</code><span class="field-hint">Set by
+        <p class="installation-locked"><code>{{ view.root.value || notSet }}</code><span class="field-hint" i18n>Set by
         {{ view.root.lockedBy }}.</span></p>
     } @else if (external()) {
-        <p class="installation-locked"><code>{{ view.root.value || 'not set' }}</code>
-            <span class="field-hint">An External server takes it from its configuration (Sfe__Root in its environment,
-            or appsettings.json).</span></p>
+        <p class="installation-locked"><code>{{ view.root.value || notSet }}</code>
+            <span class="field-hint" i18n>An External server takes it from its configuration (<code>Sfe__Root</code> in
+            its environment, or <code>appsettings.json</code>).</span></p>
     } @else {
         <sfe-folder-picker
             [source]="folders"
             [initial]="root()"
             placeholder="Pick the folder of your photos, videos and music"
+            i18n-placeholder
             (picked)="root.set($event)"
-            (failed)="problem.set('Could not list the folders: ' + $event)"
+            (failed)="listFailed($event)"
         />
-        <span class="field-hint">The folder whose files SFE shows, with everything below it. Click a folder to choose
-        it; click again inside it to go deeper.</span>
+        <span class="field-hint" i18n>SFE shows the files of this folder and of every folder inside it. Click a folder
+        to choose it; click again inside it to go deeper.</span>
         @if (!view.rootExists && root() === view.root.value) {
-            <span class="field-error">This folder does not exist on the server now: pick another.</span>
+            <span class="field-error" i18n>This folder isn't on the server any more: pick another one.</span>
         }
     }
     @if (errors()['root']; as error) {
@@ -75,29 +76,30 @@
 </div>
 
 <fieldset class="field installation-network">
-    <legend class="field-label">Who can open SFE</legend>
+    <legend class="field-label" i18n>Who can open SFE</legend>
     @if (view.urls.locked) {
-        <p class="installation-locked"><code>{{ view.urls.value }}</code><span class="field-hint">Set by
+        <p class="installation-locked"><code>{{ view.urls.value }}</code><span class="field-hint" i18n>Set by
         {{ view.urls.lockedBy }}.</span></p>
     } @else {
         @if (view.mode && chosenMode() === 'local') {
-            <p class="installation-local">Only this computer, as SFE is Local<span class="field-hint">Open it at
-            http://localhost:{{ port() }}.</span></p>
+            <p class="installation-local"><ng-container i18n>Only this computer, as SFE is Local</ng-container><span
+                class="field-hint" i18n>Open it at http://localhost:{{ port() }}.</span></p>
         } @else {
             <label class="check">
                 <input type="radio" name="installation-network" [checked]="!network()" (change)="network.set(false)">
-                <span>Only this computer<span class="field-hint">Open it at http://localhost:{{ port() }}.</span></span>
+                <span><ng-container i18n>Only this computer</ng-container><span class="field-hint" i18n>Open it at
+                http://localhost:{{ port() }}.</span></span>
             </label>
             <label class="check">
                 <input type="radio" name="installation-network" [checked]="network()" (change)="network.set(true)">
-                <span>Also the other devices of my network
-                    <span class="field-hint">Phones, TVs and other computers at home open http://<em>this computer's
-                    name or address</em>:{{ port() }}. Everyone still signs in.</span>
+                <span><ng-container i18n>The other devices on my network too</ng-container>
+                    <span class="field-hint" i18n>Phones, TVs and other computers at home open http://<em>this
+                    computer's name or address</em>:{{ port() }}. Everyone still signs in.</span>
                 </span>
             </label>
         }
         <div class="field installation-port">
-            <label class="field-label" for="installation-port">Port</label>
+            <label class="field-label" for="installation-port" i18n>Port</label>
             <input
                 id="installation-port"
                 type="number"
@@ -114,30 +116,30 @@
 </fieldset>
 
 <div class="field installation-ffmpeg">
-    <span class="field-label">ffmpeg <span class="field-hint">(optional)</span></span>
+    <span class="field-label"><span translate="no">ffmpeg </span><span class="field-hint" i18n>(optional)</span></span>
     <p class="system-ffmpeg" [attr.data-found]="view.ffmpegFound ? 'yes' : 'no'">
         @if (view.ffmpegFound; as found) {
-            <span class="system-badge found"><svg sfeIcon="check"></svg>Found</span>
+            <span class="system-badge found"><svg sfeIcon="check"></svg><ng-container i18n>Found</ng-container></span>
             <code>{{ found }}</code>
             @if (view.ffmpegVersion) {
-                <span class="muted">version {{ view.ffmpegVersion }}</span>
+                <span class="muted" i18n>version {{ view.ffmpegVersion }}</span>
             }
         } @else {
-            <span class="system-badge missing"><svg sfeIcon="close"></svg>Not found</span>
+            <span class="system-badge missing"><svg sfeIcon="close"></svg><ng-container i18n>Not found</ng-container
+            ></span>
         }
     </p>
-    <span class="field-hint">
-        ffmpeg makes the video thumbnails, trickplay, durations and converted videos. Without it, everything else works.
-        To add it,
-        download it from ffmpeg.org, unzip it, then pick its folder here.
+    <span class="field-hint" i18n>
+        ffmpeg makes the video thumbnails, the previews along the timeline, the durations and the converted videos.
+        Everything else works without it. To add it, download it from ffmpeg.org, unzip it, then pick its folder here.
     </span>
     @if (view.ffmpegPath.locked) {
-        <p class="installation-locked"><code>{{ view.ffmpegPath.value || 'ffmpeg' }}</code><span class="field-hint">Set
-        by {{ view.ffmpegPath.lockedBy }}.</span></p>
+        <p class="installation-locked"><code>{{ view.ffmpegPath.value || 'ffmpeg' }}</code><span class="field-hint"
+            i18n>Set by {{ view.ffmpegPath.lockedBy }}.</span></p>
     } @else if (external()) {
         <p class="installation-locked"><code>{{ view.ffmpegPath.value || 'ffmpeg' }}</code>
-            <span class="field-hint">An External server takes it from its configuration (Sfe__Thumbnails__FfmpegPath in
-            its environment, or appsettings.json).</span></p>
+            <span class="field-hint" i18n>An External server takes it from its configuration
+            (<code>Sfe__Thumbnails__FfmpegPath</code> in its environment, or <code>appsettings.json</code>).</span></p>
     } @else {
         <div class="installation-ffmpeg-path">
             <input
@@ -145,7 +147,9 @@
                 type="text"
                 spellcheck="false"
                 placeholder="ffmpeg (looked for on the PATH)"
+                i18n-placeholder
                 aria-label="ffmpeg's program or folder"
+                i18n-aria-label
                 [value]="ffmpeg()"
                 (input)="ffmpeg.set(valueOf($event))"
             >
@@ -153,17 +157,19 @@
                 type="button"
                 class="button small"
                 title="Pick the folder ffmpeg is in"
+                i18n-title
                 (click)="pickFfmpeg.set(!pickFfmpeg())"
             >
-                <svg sfeIcon="folder"></svg>Browse
+                <svg sfeIcon="folder"></svg><ng-container i18n>Browse</ng-container>
             </button>
         </div>
         @if (pickFfmpeg()) {
             <sfe-folder-picker
                 [source]="folders"
                 placeholder="Pick the folder ffmpeg is in (or its bin folder)"
+                i18n-placeholder
                 (picked)="ffmpeg.set($event)"
-                (failed)="problem.set('Could not list the folders: ' + $event)"
+                (failed)="listFailed($event)"
             />
         }
     }

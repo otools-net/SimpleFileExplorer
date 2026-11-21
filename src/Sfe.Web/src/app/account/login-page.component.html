@@ -1,19 +1,24 @@
 <section class="account-card">
     <header class="account-head">
-        <span class="brand"><svg sfeIcon="folder"></svg><span>SFE</span></span>
-        <h1>{{ recovering() ? 'Recover the account' : 'Sign in' }}</h1>
+        <span class="brand"><svg sfeIcon="folder"></svg><span translate="no">SFE</span></span>
+        <h1>
+            @if (recovering()) {
+                <ng-container i18n>Recover the account</ng-container>
+            } @else {
+                <ng-container i18n>Sign in</ng-container>
+            }
+        </h1>
     </header>
     @if (!session()) {
         <div class="tag-loading"><span class="spinner"></span></div>
     } @else if (recovering()) {
         <form class="account-form" novalidate (submit)="recover($event)">
-            <p class="field-hint">
-                For a server administrator locked out, or who forgot the password: the server shows a one-time code
-                where
-                it runs, for whoever runs it. Other accounts: ask an administrator.
+            <p class="field-hint" i18n>
+                For a server administrator who is locked out or forgot their password: the server shows a one-time
+                code where it runs, for whoever runs it. For other accounts, ask an administrator.
             </p>
             <div class="field">
-                <label class="field-label" for="recover-name">Name</label>
+                <label class="field-label" for="recover-name" i18n>Name</label>
                 <input
                     id="recover-name"
                     type="text"
@@ -33,18 +38,20 @@
                     type="button"
                     class="button primary account-submit"
                     title="Show a recovery code for this account where the server runs"
+                    i18n-title
                     [disabled]="busy() || !userName().trim()"
                     (click)="requestCode()"
+                    i18n
                 >Show a recovery code on the server</button>
             } @else {
-                <p class="field-hint" role="status">
+                <p class="field-hint" role="status" i18n>
                     If this is a server administrator's account, its code is now shown in SFE's console window (for a
-                    service: in <code>recovery-code.txt</code>, beside <code>setup-code.txt</code> in SFE's data
-                    folder). It
-                    works for {{ codeMinutes() }} minutes, once.
+                    service, in <code>recovery-code.txt</code>, next to <code>setup-code.txt</code> in SFE's data
+                    folder). It works once, for {codeMinutes(), plural, one {{{ codeMinutes() }} minute} other
+                    {{{ codeMinutes() }} minutes}}.
                 </p>
                 <div class="field">
-                    <label class="field-label" for="recover-code">Recovery code</label>
+                    <label class="field-label" for="recover-code" i18n>Recovery code</label>
                     <input
                         id="recover-code"
                         type="text"
@@ -60,7 +67,7 @@
                     }
                 </div>
                 <div class="field">
-                    <label class="field-label" for="recover-password">New password</label>
+                    <label class="field-label" for="recover-password" i18n>New password</label>
                     <input id="recover-password" type="password" autocomplete="new-password" required
                            [value]="password()" (input)="password.set(valueOf($event))">
                     @if (errors()['password']; as error) {
@@ -68,11 +75,11 @@
                     }
                 </div>
                 <div class="field">
-                    <label class="field-label" for="recover-confirm">New password again</label>
+                    <label class="field-label" for="recover-confirm" i18n>New password again</label>
                     <input id="recover-confirm" type="password" autocomplete="new-password" required
                            [value]="confirm()" (input)="confirm.set(valueOf($event))">
                     @if (mismatch()) {
-                        <span class="field-error">The two passwords differ.</span>
+                        <span class="field-error" i18n>The two passwords differ.</span>
                     }
                 </div>
                 @if (error(); as error) {
@@ -82,20 +89,24 @@
                     type="submit"
                     class="button primary account-submit"
                     title="Set the new password, unlock the account and sign in"
+                    i18n-title
                     [disabled]="busy() || !userName().trim() || !code().trim() || !password() || password() !== confirm()"
+                    i18n
                 >Set the password and sign in</button>
             }
             <button
                 type="button"
                 class="button account-submit"
-                title="Back to signing in"
+                title="Go back to signing in"
+                i18n-title
                 (click)="leaveRecovery()"
+                i18n
             >Back</button>
         </form>
     } @else {
         <form class="account-form" novalidate (submit)="signIn($event)">
             <div class="field">
-                <label class="field-label" for="login-name">Name</label>
+                <label class="field-label" for="login-name" i18n>Name</label>
                 <input
                     id="login-name"
                     type="text"
@@ -108,38 +119,41 @@
                 >
             </div>
             <div class="field">
-                <label class="field-label" for="login-password">Password</label>
+                <label class="field-label" for="login-password" i18n>Password</label>
                 <input id="login-password" type="password" autocomplete="current-password" required
                        [value]="password()" (input)="password.set(valueOf($event))">
             </div>
             <label class="check">
                 <input type="checkbox" [checked]="remember()" (change)="remember.set(checkedOf($event))">
-                <span>Keep me signed in on this device<span class="field-hint">Leave it off on a shared
-                computer.</span></span>
+                <span><ng-container i18n>Keep me signed in on this device</ng-container><span class="field-hint"
+                    i18n>Leave it off on a shared computer.</span></span>
             </label>
             @if (error(); as error) {
                 <p class="form-error" role="alert">{{ error }}</p>
             }
             <button type="submit" class="button primary account-submit" title="Sign in with this name and password"
-                    [disabled]="busy() || !userName().trim() || !password()">Sign in</button>
+                    i18n-title [disabled]="busy() || !userName().trim() || !password()" i18n>Sign in</button>
         </form>
         <p class="field-hint account-foot">
-            Locked out, or forgot the password?
+            <ng-container i18n>Locked out, or forgot your password?</ng-container>
             <a
                 href=""
                 title="Recover a server administrator's account with a code the server shows where it runs"
+                i18n-title
                 (click)="startRecovery($event)"
+                i18n
             >Recover the account</a>
         </p>
         @if (session()!.guestTenants.length) {
             <section class="account-guest">
-                <h2>Or browse without an account</h2>
+                <h2 i18n>Or browse without an account</h2>
                 <div class="account-guest-list">
                     @for (tenant of session()!.guestTenants; track tenant.slug) {
                         <button
                             type="button"
                             class="button"
-                            [title]="'Browse ' + tenant.name + ' as a guest: viewing only'"
+                            title="Browse {{ tenant.name }} as a visitor: you can look, not change anything"
+                            i18n-title
                             (click)="browseAsGuest(tenant.slug)"
                         >
                             <svg sfeIcon="space"></svg>{{ tenant.name }}
@@ -150,9 +164,11 @@
         }
         @if (session()!.setupAvailable) {
             <p class="field-hint account-foot">
-                The server is in recovery mode. <a
+                <ng-container i18n>The server is in recovery mode.</ng-container> <a
                     routerLink="/setup"
-                    title="Reset the password of an administrator, or create one"
+                    title="Reset an administrator's password, or create an administrator"
+                    i18n-title
+                    i18n
                 >Recover an administrator</a>
             </p>
         }

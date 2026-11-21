@@ -48,7 +48,7 @@ export class MigrationPageComponent implements OnInit {
     protected readonly size = formatSize;
 
     constructor() {
-        inject(Title).setTitle('Update – SFE');
+        inject(Title).setTitle($localize`Update – SFE`);
         inject(DestroyRef).onDestroy(() => this.stopPolling());
     }
 
