@@ -10,7 +10,6 @@ import { TasksSectionComponent } from './tasks-section.component';
 import {
     ALL_DAYS,
     describeSchedule,
-    formatDays,
     formatInterval,
     fromLocalInputs,
     nextRunOf,
@@ -108,11 +107,14 @@ describe('task wording', () => {
         expect(formatInterval(360)).toBe('every 6 hours');
         expect(formatInterval(1440)).toBe('every day');
         expect(formatInterval(2880)).toBe('every 2 days');
-        expect(formatDays(ALL_DAYS)).toBe('every day');
-        expect(formatDays(0b011_1110)).toBe('on weekdays');
-        expect(formatDays(1 << 1)).toMatch(/^on \S+$/);
         expect(describeSchedule(schedule())).toMatch(/^Every day at /);
+        expect(describeSchedule(schedule({ days: 0b011_1110 }))).toMatch(/^Every weekday at /);
+        expect(describeSchedule(schedule({ days: 0b100_0001 }))).toMatch(/^At weekends, at /);
+        expect(describeSchedule(schedule({ days: 1 << 1 }))).toMatch(/^On \S+ at /);
+        expect(describeSchedule(schedule({ days: (1 << 1) | (1 << 3) }))).toMatch(/^On \S+ and \S+ at /);
         expect(describeSchedule(schedule({ kind: 'interval', intervalMinutes: 120 }))).toMatch(/^Every 2 hours, from /);
+        expect(describeSchedule(schedule({ kind: 'interval', intervalMinutes: 1440 }))).toMatch(/^Every day, from /);
+        expect(describeSchedule(schedule({ kind: 'once' }))).toMatch(/^Once, /);
     });
 
     it('round-trips local dates and times', () => {
@@ -168,14 +170,15 @@ describe('TasksSectionComponent', () => {
         ]);
         const scan = card('Index scan').querySelector('.task-next')!.textContent!;
         expect(scan).toContain('in 5 hours');
-        expect(scan).toContain('schedule: every day at');
-        expect(scan).toContain('“Movies”');
-        expect(card('Trickplay').querySelector('.task-next')!.textContent).toContain('automatic check, every 6 hours');
+        expect(scan).toContain('From the schedule “Every day at');
+        expect(scan).toContain('scanning “Movies”');
+        expect(card('Trickplay').querySelector('.task-next')!.textContent).toContain('Automatic check, every 6 hours');
         expect(card('Similar videos').querySelector('.task-next')!.textContent).toContain('Not planned');
         // Thumbnails can't be scheduled or started, only stopped.
         expect(card('Thumbnails').querySelector('.task-next')).toBeNull();
         expect(buttonNamed(card('Thumbnails'), 'Run now')).toBeUndefined();
-        expect(element.querySelector('.task-summary')!.textContent).toContain('next: trickplay');
+        expect(element.querySelector('.task-summary')!.textContent).toContain('Running: Thumbnails');
+        expect(element.querySelector('.task-summary')!.textContent).toContain('Next: Trickplay, ');
     });
 
     it('shows the tab asked for, and counts what runs and the schedules for the tab bar', async () => {
@@ -291,6 +294,8 @@ describe('ScheduleFormComponent', () => {
             expect.objectContaining({ task: 'trickplay', kind: 'weekly', days: ALL_DAYS, path: null }),
         );
         expect(element.querySelectorAll('.schedule-preview time')).toHaveLength(2);
+        // The words and the first time stay apart (Angular drops spaces between elements).
+        expect(element.querySelector('.schedule-preview')!.textContent).toMatch(/Next runs: \S/);
 
         api.createSchedule.mockResolvedValue(schedule({ task: 'trickplay', nextRun: runs[0] }));
         const saved = vi.fn();

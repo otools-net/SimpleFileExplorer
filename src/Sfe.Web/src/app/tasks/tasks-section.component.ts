@@ -12,7 +12,8 @@ import {
     viewChild,
 } from '@angular/core';
 import { Api } from '../core/api.service';
-import { formatDate, formatElapsed, joinParts, plural } from '../core/format';
+import { formatDate, formatElapsed, joinParts } from '../core/format';
+import { textLocale } from '../core/i18n/icu';
 import { TaskInfo, TaskKind, TaskRunSummary } from '../core/task.models';
 import { TaskOverview, TaskSchedule } from './task.models';
 import { ToastService } from '../core/toast.service';
@@ -43,10 +44,10 @@ const REFRESH_MS = 2000;
 export type TasksTab = 'tasks' | 'schedules' | 'history';
 
 const STATES: Record<TaskInfo['state'], string> = {
-    idle: 'Idle',
-    running: 'Running',
-    disabled: 'Off',
-    unavailable: 'Unavailable',
+    idle: $localize`:state of a background task:Idle`,
+    running: $localize`:state of a background task:Running`,
+    disabled: $localize`:state of a background task:Off`,
+    unavailable: $localize`:state of a background task:Unavailable`,
 };
 
 const CANCEL_QUESTIONS: Partial<Record<TaskKind, string>> = {
@@ -87,11 +88,14 @@ export class TasksSectionComponent {
     protected readonly outcomes = OUTCOMES;
     protected readonly cancelQuestions = CANCEL_QUESTIONS;
     protected readonly target = target;
-    protected readonly plural = plural;
     protected readonly formatDate = formatDate;
     protected readonly formatMoment = formatMoment;
     protected readonly formatRelative = formatRelative;
     protected readonly describe = describeSchedule;
+    protected readonly toggleTitles = {
+        on: $localize`Turn this schedule off (it is kept but doesn't run)`,
+        off: $localize`Turn this schedule on`,
+    };
 
     protected readonly overview = signal<TaskOverview | null>(null);
     protected readonly error = signal<string | null>(null);
@@ -126,26 +130,25 @@ export class TasksSectionComponent {
             .map((task) => ({ task, next: nextRunOf(task, overview.schedules) }))
             .filter((entry): entry is { task: TaskInfo; next: NextRun } => entry.next !== null)
             .sort((a, b) => Date.parse(a.next.at) - Date.parse(b.next.at))[0];
-        const running = overview.tasks
-            .filter((t) => t.state === 'running')
-            .map((t) => TASK_NAMES[t.task].toLowerCase());
+        const running = overview.tasks.filter((t) => t.state === 'running').map((t) => TASK_NAMES[t.task]);
+        const list = new Intl.ListFormat(textLocale(), { type: 'conjunction' }).format(running);
         return joinParts([
-            running.length ? `Running: ${running.join(', ')}` : 'Nothing running',
-            next ? `next: ${nextRunText(next.task, next.next, this.now())}` : 'nothing planned',
+            running.length ? $localize`Running: ${list}:tasks:` : $localize`Nothing running`,
+            next ? nextRunText(next.task, next.next, this.now()) : $localize`Nothing planned`,
         ]);
     });
 
-    /** Weekly times follow the server's clock: said when its zone isn't the browser's. */
-    protected readonly zoneNote = computed(() => {
+    /** Weekly times follow the server's clock: its zone, when it isn't the browser's. */
+    protected readonly serverZone = computed(() => {
         const zone = this.overview()?.timeZone;
         const browser = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        return zone && zone !== browser ? `; weekly and daily times follow the server's clock (${zone})` : '';
+        return zone && zone !== browser ? zone : null;
     });
 
-    protected readonly trickplayEvery = computed(() => {
-        const every = this.overview()?.tasks.find((t) => t.task === 'trickplay')?.automaticEvery;
-        return every ? ` every ${plural(every, 'hour')}` : ' when it is turned on';
-    });
+    /** Hours between trickplay's own checks; null when it doesn't check by itself. */
+    protected readonly trickplayEvery = computed(
+        () => this.overview()?.tasks.find((t) => t.task === 'trickplay')?.automaticEvery ?? null,
+    );
 
     constructor() {
         void this.refresh();
@@ -161,13 +164,16 @@ export class TasksSectionComponent {
     }
 
     protected nextSource(task: TaskInfo, next: NextRun): string {
-        if (!next.schedule)
-            return task.automaticEvery
-                ? `automatic check, ${formatInterval(task.automaticEvery * 60)} (Trickplay › Settings)`
-                : 'automatic';
-        const where = target(next.schedule.task, next.schedule.path);
-        const scanned = where && task.task === 'scan' ? `, ${where}` : '';
-        return `schedule: ${uncapitalize(describeSchedule(next.schedule))}${scanned}`;
+        if (!next.schedule) {
+            if (!task.automaticEvery) return $localize`:a run the task plans itself:Automatic`;
+            const every = formatInterval(task.automaticEvery * 60);
+            return $localize`Automatic check, ${every}:interval: (Trickplay › Settings)`;
+        }
+        const when = describeSchedule(next.schedule);
+        const where = task.task === 'scan' ? target('scan', next.schedule.path) : null;
+        return where
+            ? $localize`From the schedule “${when}:schedule:”, scanning ${where}:folder:`
+            : $localize`From the schedule “${when}:schedule:”`;
     }
 
     protected elapsed(startedAt: string): string {
@@ -175,10 +181,24 @@ export class TasksSectionComponent {
     }
 
     protected startTitle(task: TaskInfo): string {
-        if (!task.canStart) return task.state === 'running' ? 'Already running' : 'Turned off, or ffmpeg is missing';
+        if (!task.canStart)
+            return task.state === 'running'
+                ? $localize`It is already running.`
+                : $localize`It is turned off, or ffmpeg is missing.`;
         return task.task === 'scan'
-            ? 'Scan the folder browsed last and its sub-folders (asks first)'
-            : `Start ${TASK_NAMES[task.task].toLowerCase()} now`;
+            ? $localize`Scan the folder browsed last and its sub-folders (asks first)`
+            : $localize`Start the task “${TASK_NAMES[task.task]}:task:” now`;
+    }
+
+    protected cancelTitle(task: TaskInfo): string {
+        const name = TASK_NAMES[task.task];
+        return CANCEL_QUESTIONS[task.task]
+            ? $localize`Stop the task “${name}:task:” (asks first)`
+            : $localize`Stop the task “${name}:task:”`;
+    }
+
+    protected scheduleTitle(task: TaskInfo): string {
+        return $localize`Plan runs of the task “${TASK_NAMES[task.task]}:task:” at set times`;
     }
 
     protected async start(task: TaskInfo): Promise<void> {
@@ -293,13 +313,10 @@ export class TasksSectionComponent {
     }
 }
 
-/** "Every day at 3:00" → "every day at 3:00", leaving the dates and times inside as they are. */
-function uncapitalize(text: string): string {
-    return text.charAt(0).toLowerCase() + text.slice(1);
-}
-
-/** A planned run, as the summary says it: "scan of “Photos” in 2 hours" (a scan names its folder). */
+/** A planned run, as the summary says it: "Next: Index scan of “Photos”, today 03:00" (a scan names its folder). */
 function nextRunText(task: TaskInfo, next: NextRun, now: number): string {
-    const of = next.schedule?.task === 'scan' ? ` of ${target('scan', next.schedule.path)}` : '';
-    return `${TASK_NAMES[task.task].toLowerCase()}${of} ${formatMoment(next.at, now)}`;
+    const name = TASK_NAMES[task.task];
+    const when = formatMoment(next.at, now);
+    if (next.schedule?.task !== 'scan') return $localize`Next: ${name}:task:, ${when}:moment:`;
+    return $localize`Next: ${name}:task: of ${target('scan', next.schedule.path)}:folder:, ${when}:moment:`;
 }

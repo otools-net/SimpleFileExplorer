@@ -192,6 +192,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   System, Video streams and the access token pages say things in full sentences with the same words everywhere
   (colours, space, task); **My account › Preferences** is now **My account › Settings** (its address is unchanged);
   a token's space reads "Every space" instead of "Every library". Their texts are ready for translation.
+- **Background tasks, Logs and Connections reworded**: when a task runs next, its schedules ("Every weekday at
+  03:00", days listed as "Mon, Wed and Fri") and the summary at the top say it in whole sentences, with task names
+  as written ("Next: Index scan of “Movies”, today 03:00"); the add buttons of Administration › Connections read
+  **Add for this space** and **Add for the server**; a group's choice reads **Reads it** / **Reads and changes it**;
+  the log's retention line and a connection's index status are full sentences. Their texts are ready for
+  translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

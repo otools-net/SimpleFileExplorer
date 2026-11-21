@@ -227,7 +227,7 @@ describe('LogsSectionComponent', () => {
 
         expect(root.querySelector('.logs-space')).toBeNull();
         expect(root.querySelector('.log-space')).toBeNull();
-        expect(root.textContent).toContain('a copy goes to a file per day.');
+        expect(root.textContent).toContain('Entries are kept 30 days. A copy goes to a file per day.');
         expect(root.textContent).toContain('This page shows the entries of Library.');
     });
 

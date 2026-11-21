@@ -16,13 +16,13 @@ export const LOG_LEVELS: LogLevelName[] = [
 ];
 
 export const LEVEL_NAMES: Record<LogLevelName, string> = {
-    trace: 'Trace',
-    debug: 'Debug',
-    information: 'Info',
-    warning: 'Warning',
-    securityWarning: 'Security warning',
-    error: 'Error',
-    critical: 'Critical',
+    trace: $localize`:severity of a log entry:Trace`,
+    debug: $localize`:severity of a log entry:Debug`,
+    information: $localize`:severity of a log entry:Info`,
+    warning: $localize`:severity of a log entry:Warning`,
+    securityWarning: $localize`:severity of a log entry:Security warning`,
+    error: $localize`:severity of a log entry:Error`,
+    critical: $localize`:severity of a log entry:Critical`,
 };
 
 /** All spaces (server administrators), only the server's own entries, or one space by id. */

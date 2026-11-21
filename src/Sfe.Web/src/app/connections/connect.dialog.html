@@ -1,101 +1,136 @@
 <sfe-sheet #sheet [heading]="heading()">
     @if (waiting(); as waiting) {
-    <p>
-        Sign in on the page that opened, allow access, then paste here the code it shows. @if (waiting.address) {
-        <a [href]="waiting.address" target="_blank" rel="noopener">Open the page again</a>
-        }
-    </p>
-    @for (field of waiting.fields; track field.id) {
-    <label class="field">
-        <span>{{ field.label }}</span>
-        <input
-            type="text"
-            autocomplete="off"
-            [attr.data-field]="field.id"
-            [value]="fields()[field.id] ?? ''"
-            (input)="setField(field.id, value($event))"
-        />
-    </label>
-    } } @else if (kinds().length === 0) {
-    <p class="field-hint" data-no-kinds>
-        No kind of connection is configured on this server yet: its administrators set one up in Administration ›
-        Connections.
-    </p>
-    } @else { @if (!reconnecting()) {
-    <label class="field">
-        <span>Kind</span>
-        <select data-kind (change)="chooseKind(value($event))">
-            @for (kind of kinds(); track kind.kind) {
-            <option [value]="kind.kind" [selected]="kind.kind === kindId()">{{ kind.name }}</option>
+        <p>
+            <ng-container i18n>Sign in on the page that opened, allow access, then paste here the code it
+            shows.</ng-container>
+            @if (waiting.address) {
+                <a [href]="waiting.address" target="_blank" rel="noopener" i18n>Open the page again</a>
             }
-        </select>
-    </label>
-    <label class="field">
-        <span>Name <span class="field-hint">as people will see it</span></span>
-        <input type="text" data-name [value]="name()" (input)="name.set(value($event))" />
-        @if (errors()['name']; as error) {
-        <span class="field-error">{{ error }}</span>
+        </p>
+        @for (field of waiting.fields; track field.id) {
+            <label class="field">
+                <span>{{ field.label }}</span>
+                <input
+                    type="text"
+                    autocomplete="off"
+                    [attr.data-field]="field.id"
+                    [value]="fields()[field.id] ?? ''"
+                    (input)="setField(field.id, value($event))"
+                />
+            </label>
         }
-    </label>
-    <label class="field">
-        <span>Folder <span class="field-hint">shown as the connection's root; empty for all of it</span></span>
-        <input type="text" data-root placeholder="/Photos" [value]="rootPath()" (input)="rootPath.set(value($event))" />
-        @if (errors()['rootPath']; as error) {
-        <span class="field-error">{{ error }}</span>
+    } @else if (kinds().length === 0) {
+        <p class="field-hint" data-no-kinds i18n>
+            No kind of connection is set up on this server yet. Its administrators set one up in Administration ›
+            Connections.
+        </p>
+    } @else {
+        @if (!reconnecting()) {
+            <label class="field">
+                <span i18n="the kind of storage, such as Dropbox">Kind</span>
+                <select data-kind (change)="chooseKind(value($event))">
+                    @for (kind of kinds(); track kind.kind) {
+                        <option [value]="kind.kind" [selected]="kind.kind === kindId()">{{ kind.name }}</option>
+                    }
+                </select>
+            </label>
+            <label class="field">
+                <span>
+                    <ng-container i18n>Name</ng-container>
+                    <span class="field-hint" i18n>As people will see it.</span>
+                </span>
+                <input type="text" data-name [value]="name()" (input)="name.set(value($event))" />
+                @if (errors()['name']; as error) {
+                    <span class="field-error">{{ error }}</span>
+                }
+            </label>
+            <label class="field">
+                <span>
+                    <ng-container i18n>Folder</ng-container>
+                    <span class="field-hint" i18n>Shown as the top of the connection. Leave it empty for all of
+                    it.</span>
+                </span>
+                <input
+                    type="text"
+                    data-root
+                    placeholder="/Photos"
+                    i18n-placeholder="an example of a folder"
+                    [value]="rootPath()"
+                    (input)="rootPath.set(value($event))"
+                />
+                @if (errors()['rootPath']; as error) {
+                    <span class="field-error">{{ error }}</span>
+                }
+            </label>
         }
-    </label>
-    } @if (methods().length > 1) {
-    <label class="field">
-        <span>How to sign in</span>
-        <select data-method (change)="method.set($any(value($event)))">
-            @for (m of methods(); track m.kind) {
-            <option [value]="m.kind" [selected]="m.kind === method()"> {{ methodNames[m.kind] ?? m.kind }} </option>
-            }
-        </select>
-    </label>
-    } @for (field of methodFields(); track field.id) {
-    <label class="field">
-        <span>{{ field.label }}</span>
-        <input
-            [type]="field.type === 'secret' ? 'password' : 'text'"
-            autocomplete="off"
-            [attr.data-field]="field.id"
-            [value]="fields()[field.id] ?? ''"
-            (input)="setField(field.id, value($event))"
-        />
-    </label>
-    } } @for (error of errors() | keyvalue; track error.key) { @if (error.key !== 'name' && error.key !== 'rootPath') {
-    <p class="field-error">{{ error.value }}</p>
-    } } @if (problem(); as problem) {
-    <p class="field-error" data-problem>{{ problem }}</p>
+        @if (methods().length > 1) {
+            <label class="field">
+                <span i18n>How to sign in</span>
+                <select data-method (change)="method.set($any(value($event)))">
+                    @for (m of methods(); track m.kind) {
+                        <option [value]="m.kind" [selected]="m.kind === method()">
+                            {{ methodNames[m.kind] ?? m.kind }}
+                        </option>
+                    }
+                </select>
+            </label>
+        }
+        @for (field of methodFields(); track field.id) {
+            <label class="field">
+                <span>{{ field.label }}</span>
+                <input
+                    [type]="field.type === 'secret' ? 'password' : 'text'"
+                    autocomplete="off"
+                    [attr.data-field]="field.id"
+                    [value]="fields()[field.id] ?? ''"
+                    (input)="setField(field.id, value($event))"
+                />
+            </label>
+        }
+    }
+    @for (error of errors() | keyvalue; track error.key) {
+        @if (error.key !== 'name' && error.key !== 'rootPath') {
+            <p class="field-error">{{ error.value }}</p>
+        }
+    }
+    @if (problem(); as problem) {
+        <p class="field-error" data-problem>{{ problem }}</p>
     }
     <span sheetFooter class="spacer"></span>
-    <button sheetFooter type="button" class="button" title="Close without connecting (Esc)" (click)="close()">
-        Cancel
-    </button>
+    <button
+        sheetFooter
+        type="button"
+        class="button"
+        title="Close without connecting (Esc)"
+        i18n-title
+        (click)="close()"
+        i18n
+    >Cancel</button>
     @if (waiting()) {
-    <button
-        sheetFooter
-        type="button"
-        class="button primary"
-        data-complete
-        title="Send the code to finish signing in"
-        [sfeBusy]="busy()"
-        [disabled]="busy()"
-        (click)="complete()"
-        >Connect</button
-    >
+        <button
+            sheetFooter
+            type="button"
+            class="button primary"
+            data-complete
+            title="Send the code to finish signing in"
+            i18n-title
+            [sfeBusy]="busy()"
+            [disabled]="busy()"
+            (click)="complete()"
+            i18n
+        >Connect</button>
     } @else if (kinds().length > 0) {
-    <button
-        sheetFooter
-        type="button"
-        class="button primary"
-        data-start
-        title="Sign in to the storage"
-        [sfeBusy]="busy()"
-        [disabled]="busy() || !kindId()"
-        (click)="start()"
-        >Continue</button
-    >
+        <button
+            sheetFooter
+            type="button"
+            class="button primary"
+            data-start
+            title="Sign in to the storage"
+            i18n-title
+            [sfeBusy]="busy()"
+            [disabled]="busy() || !kindId()"
+            (click)="start()"
+            i18n
+        >Continue</button>
     }
 </sfe-sheet>

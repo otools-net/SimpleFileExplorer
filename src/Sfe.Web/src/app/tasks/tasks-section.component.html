@@ -2,7 +2,7 @@
     <p class="task-summary" aria-live="polite">{{ summary }}</p>
 }
 @if (error()) {
-    <p class="form-error">Could not read the tasks: {{ error() }}</p>
+    <p class="form-error" i18n>Could not read the tasks: {{ error() }}</p>
 }
 
 <div id="tasks-panel-tasks" class="task-cards" [hidden]="tab() !== 'tasks'">
@@ -25,10 +25,11 @@
                         <button
                             type="button"
                             class="button small danger"
-                            [title]="'Stop ' + names[task.task].toLowerCase() + (cancelQuestions[task.task] ? ' (asks first)' : '')"
+                            [title]="cancelTitle(task)"
                             [sfeBusy]="busy() === task.task + ':cancel'"
                             [disabled]="busy() !== null"
                             (click)="cancel(task)"
+                            i18n="stops a running task"
                         >Cancel</button>
                     }
                     @if (task.task !== 'thumbnails') {
@@ -39,22 +40,25 @@
                             [sfeBusy]="busy() === task.task + ':start'"
                             [disabled]="busy() !== null || !task.canStart"
                             (click)="start(task)"
-                        ><svg sfeIcon="play"></svg>Run now</button>
+                        ><svg sfeIcon="play"></svg><ng-container i18n>Run now</ng-container></button>
                     }
                     @if (task.canSchedule) {
                         <button
                             type="button"
                             class="button small"
-                            [title]="'Plan runs of ' + names[task.task].toLowerCase() + ' at set times'"
+                            [title]="scheduleTitle(task)"
                             (click)="newSchedule(task.task)"
-                        ><svg sfeIcon="clock"></svg>Schedule</button>
+                        ><svg sfeIcon="clock"></svg><ng-container
+                            i18n="opens a new schedule for this task">Schedule</ng-container></button>
                     }
                     @if (task.task === 'trickplay') {
                         <button
                             type="button"
                             class="icon-button small ghost"
                             aria-label="Details"
-                            title="The videos being given trickplay, and those waiting"
+                            i18n-aria-label
+                            title="Show the videos being given trickplay, and those waiting"
+                            i18n-title
                             (click)="openTrickplay.emit()"
                         ><svg sfeIcon="more"></svg></button>
                     }
@@ -75,12 +79,13 @@
             <dl class="task-times">
                 @if (task.lastRun; as last) {
                     <div>
-                        <dt>Last run</dt>
+                        <dt i18n>Last run</dt>
                         <dd>
                             <button
                                 type="button"
                                 class="link-button"
                                 title="Show this run and its log in the history"
+                                i18n-title
                                 (click)="showRun(last)"
                             >
                                 <span class="task-outcome" [class]="last.outcome">{{ outcomes[last.outcome] }}</span>
@@ -94,7 +99,7 @@
                 }
                 @if (task.canSchedule) {
                     <div class="task-next" [class.planned]="next">
-                        <dt>Next run</dt>
+                        <dt i18n>Next run</dt>
                         <dd>
                             @if (next) {
                                 <time
@@ -104,8 +109,15 @@
                                 <span class="task-relative">{{ formatRelative(next.at, now()) }}</span>
                                 <span class="field-hint">{{ nextSource(task, next) }}</span>
                             } @else {
-                                <span class="field-hint">Not planned: only when
-                                started{{ task.task === 'scan' ? ' from the menu or here' : ' by hand' }}.</span>
+                                <span class="field-hint">
+                                    @if (task.task === 'scan') {
+                                        <ng-container i18n>Not planned: it runs only when started from the menu or
+                                        here.</ng-container>
+                                    } @else {
+                                        <ng-container i18n>Not planned: it runs only when started by
+                                        hand.</ng-container>
+                                    }
+                                </span>
                             }
                         </dd>
                     </div>
@@ -121,16 +133,21 @@
 
 <div id="tasks-panel-schedules" class="task-schedules" [hidden]="tab() !== 'schedules'">
     <div class="task-schedules-intro">
-        <p class="settings-intro">Start tasks at set times, once or again and again. Times are those of this
-        browser{{ zoneNote() }}. A run that comes due while the task is already running, or while the server is off, is
-        skipped.</p>
+        <p class="settings-intro">
+            <ng-container i18n>Start tasks at set times, once or repeatedly. Times are those of this browser. A run that
+            comes due while the task is already running, or while the server is off, is skipped.</ng-container>
+            @if (serverZone(); as zone) {
+                <ng-container i18n>Daily and weekly times follow the server's clock ({{ zone }}).</ng-container>
+            }
+        </p>
         @if (!draft()) {
             <button
                 type="button"
                 class="button small primary"
                 title="Add a schedule"
+                i18n-title
                 (click)="newSchedule('scan')"
-            ><svg sfeIcon="plus"></svg>New schedule</button>
+            ><svg sfeIcon="plus"></svg><ng-container i18n>New schedule</ng-container></button>
         }
     </div>
     @if (draft(); as draft) {
@@ -141,10 +158,10 @@
             <li class="schedule-row" [class.off]="!schedule.enabled">
                 <label
                     class="schedule-toggle"
-                    [title]="schedule.enabled ? 'Turn this schedule off (kept, but it doesn\'t run)' : 'Turn this schedule on'"
+                    [title]="schedule.enabled ? toggleTitles.on : toggleTitles.off"
                 >
                     <input type="checkbox" [checked]="schedule.enabled" (change)="toggle(schedule)">
-                    <span class="visually-hidden">On</span>
+                    <span class="visually-hidden" i18n="the schedule runs">On</span>
                 </label>
                 <span class="task-icon small"><svg [sfeIcon]="icons[schedule.task]"></svg></span>
                 <span class="schedule-main">
@@ -170,7 +187,8 @@
                         <span
                             class="field-hint"
                             [title]="formatDate(schedule.lastRun)"
-                        >last {{ formatMoment(schedule.lastRun, now()) }}</span>
+                            i18n
+                        >last run {{ formatMoment(schedule.lastRun, now()) }}</span>
                     }
                 </span>
                 <span class="schedule-actions">
@@ -178,14 +196,18 @@
                         type="button"
                         class="icon-button small ghost"
                         aria-label="Edit"
+                        i18n-aria-label
                         title="Change this schedule"
+                        i18n-title
                         (click)="edit(schedule)"
                     ><svg sfeIcon="settings"></svg></button>
                     <button
                         type="button"
                         class="icon-button small ghost danger"
                         aria-label="Delete"
+                        i18n-aria-label
                         title="Delete this schedule (asks first)"
+                        i18n-title
                         (click)="remove(schedule)"
                     ><svg sfeIcon="close"></svg></button>
                 </span>
@@ -193,8 +215,15 @@
         }
     </ul>
     @if (overview() && !overview()!.schedules.length && !draft()) {
-        <p class="muted task-empty">No schedules yet. Trickplay still checks for new videos by
-        itself{{ trickplayEvery() }}.</p>
+        <p class="muted task-empty">
+            @if (trickplayEvery(); as every) {
+                <ng-container i18n>No schedules yet. Trickplay still checks for new videos by itself every
+                {every, plural, one {hour} other {{{ every }} hours}}.</ng-container>
+            } @else {
+                <ng-container i18n>No schedules yet. Trickplay still checks for new videos by itself when it is
+                turned on.</ng-container>
+            }
+        </p>
     }
 </div>
 

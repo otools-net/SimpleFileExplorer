@@ -1,39 +1,47 @@
 @if (setup(); as setup) {
     <p data-offered>
         @if (setup.offered) {
-            {{ setup.name }} is offered: people with the rights can connect their storage.
+            <ng-container i18n>{{ setup.name }} is offered: people with the rights can connect their
+            storage.</ng-container>
         } @else {
-            {{ setup.name }} is not offered yet: register an app at the provider, then type its app key in the Settings
-            tab.
+            <ng-container i18n>{{ setup.name }} is not offered yet. Register an app at the provider, then type its app
+            key in the Settings tab.</ng-container>
         }
     </p>
     <label class="field">
-        <span
-            >Return address
-            <span class="field-hint"
-                >register it at the provider (redirect URI) exactly as shown; when it can't match, people copy a code
-                instead</span
-            ></span
-        >
+        <span>
+            <ng-container i18n>Return address</ng-container>
+            <span class="field-hint" i18n>Register it at the provider (as the redirect URI) exactly as shown. When it
+            can't match, people copy a code instead.</span>
+        </span>
         <span class="return-address">
             <input type="text" readonly data-return-address [value]="setup.returnAddress" />
-            <button type="button" class="button small" title="Copy the address" (click)="copyAddress()">Copy</button>
+            <button
+                type="button"
+                class="button small"
+                title="Copy the address"
+                i18n-title
+                (click)="copyAddress()"
+                i18n
+            >Copy</button>
         </span>
     </label>
     @if (setup.appSecret !== null) {
         <label class="field">
-            <span
-                >App secret
+            <span>
+                <ng-container i18n>App secret</ng-container>
                 <span class="field-hint" data-secret-state>
                     @switch (setup.appSecret) {
                         @case ('configuration') {
-                            set in the server's configuration, which wins over this one
+                            <ng-container i18n>Set in the server's configuration, which wins over this
+                            one.</ng-container>
                         }
                         @case ('page') {
-                            set; never shown again: type a new one to replace it
+                            <ng-container i18n>Set, and never shown again. Type a new one to replace
+                            it.</ng-container>
                         }
                         @default {
-                            optional: sign-ins work without it
+                            <ng-container i18n>Optional: sign-ins work without it.</ng-container>
                         }
                     }
                 </span>
@@ -55,21 +63,23 @@
                 class="button"
                 data-save-secret
                 title="Save the app secret (kept by the server, never shown again)"
+                i18n-title
                 [sfeBusy]="busy()"
                 [disabled]="busy() || !secret()"
                 (click)="saveSecret()"
-                >Save secret</button
-            >
+                i18n
+            >Save secret</button>
             @if (setup.appSecret === 'page') {
                 <button
                     type="button"
                     class="button"
                     data-remove-secret
-                    title="Remove the app secret"
+                    title="Remove the app secret (asks first)"
+                    i18n-title
                     [disabled]="busy()"
                     (click)="removeSecret()"
-                    >Remove secret</button
-                >
+                    i18n
+                >Remove secret</button>
             }
         </div>
     }
@@ -79,11 +89,12 @@
             class="button"
             data-test
             title="Check the app key and secret with the provider"
+            i18n-title
             [sfeBusy]="busy()"
             [disabled]="busy()"
             (click)="test()"
-            >Test</button
-        >
+            i18n
+        >Test</button>
     </div>
     @if (result(); as result) {
         <p [class]="result.ok ? 'field-hint' : 'field-error'" data-test-result>{{ result.message }}</p>

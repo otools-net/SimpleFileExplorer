@@ -1,12 +1,13 @@
 <div class="task-history-bar">
-    <label class="visually-hidden" for="task-history-filter">Task</label>
+    <label class="visually-hidden" for="task-history-filter" i18n>Task</label>
     <select
         id="task-history-filter"
         class="task-history-filter"
         title="Show the runs of one task"
+        i18n-title
         (change)="setFilter(valueOf($event))"
     >
-        <option value="" [selected]="!filter()">All tasks</option>
+        <option value="" [selected]="!filter()" i18n>All tasks</option>
         @for (kind of kinds; track kind) {
             <option [value]="kind" [selected]="filter() === kind">{{ names[kind] }}</option>
         }
@@ -17,19 +18,22 @@
         type="button"
         class="button small"
         title="Change how long the runs are kept"
+        i18n-title
         (click)="openSettings.emit()"
-    ><svg sfeIcon="settings"></svg>Keep for…</button>
+    ><svg sfeIcon="settings"></svg><ng-container i18n>Keep for…</ng-container></button>
     <button
         type="button"
         class="button small danger"
         title="Delete the history of finished runs (asks first)"
+        i18n-title
         [sfeBusy]="clearing()"
         [disabled]="clearing() || !runs().length"
         (click)="clear()"
+        i18n
     >Clear history</button>
 </div>
 @if (error()) {
-    <p class="form-error">Could not read the history: {{ error() }}</p>
+    <p class="form-error" i18n>Could not read the history: {{ error() }}</p>
 }
 <ul class="task-runs">
     @for (run of runs(); track run.id) {
@@ -39,7 +43,7 @@
                 type="button"
                 class="task-run-head"
                 [attr.aria-expanded]="open"
-                [title]="open ? 'Hide the log' : 'Show the log of this run'"
+                [title]="open ? logTitles.open : logTitles.closed"
                 (click)="toggle(run)"
             >
                 @if (run.outcome === 'running') {
@@ -68,8 +72,9 @@
                             <ol>
                                 @for (line of details.log; track $index) {
                                     @if (details.omitted && $index === half(details)) {
-                                        <li class="task-log-omitted">… {{ plural(details.omitted, 'line') }} left out
-                                        …</li>
+                                        <li class="task-log-omitted" i18n>… {details.omitted, plural,
+                                        one {{{ details.omitted }} line}
+                                        other {{{ details.omitted }} lines}} left out …</li>
                                     }
                                     <li [class]="'level-' + line.level.toLowerCase()">
                                         <time>{{ time(line.time) }}</time><span class="task-log-level">{{ line.level }}</span><span>{{ line.message }}</span>
@@ -77,10 +82,10 @@
                                 }
                             </ol>
                         } @else {
-                            <p class="muted">Nothing was logged.</p>
+                            <p class="muted" i18n>Nothing was logged.</p>
                         }
                     } @else {
-                        <p class="muted">Loading the log…</p>
+                        <p class="muted" i18n>Loading the log…</p>
                     }
                 </div>
             }
@@ -88,15 +93,23 @@
     }
 </ul>
 @if (!runs().length && loaded()) {
-    <p class="muted task-empty">No runs recorded{{ filter() ? ' for this task' : '' }} yet.</p>
+    <p class="muted task-empty">
+        @if (filter()) {
+            <ng-container i18n>No runs of this task recorded yet.</ng-container>
+        } @else {
+            <ng-container i18n>No runs recorded yet.</ng-container>
+        }
+    </p>
 }
 @if (next() !== null) {
     <button
         type="button"
         class="button small task-more"
         title="Show older runs"
+        i18n-title
         [sfeBusy]="loading()"
         [disabled]="loading()"
         (click)="loadMore()"
+        i18n
     >Load older runs</button>
 }

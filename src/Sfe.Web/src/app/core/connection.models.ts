@@ -129,9 +129,9 @@ export interface ProviderTest {
 
 /** The words of a level, for people. */
 export const LEVEL_NAMES: Record<ConnectionLevelName, string> = {
-    account: 'Only me',
-    library: 'This space',
-    server: 'The server',
+    account: $localize`:level of a connection:Only me`,
+    library: $localize`:level of a connection:This space`,
+    server: $localize`:level of a connection:The server`,
 };
 
 /** `GET api/connections/{id}/browse`: a page of a connection's folder, in the library's listing shape. */

@@ -33,6 +33,11 @@ const PREVIEW_DELAY_MS = 300;
 
 type Unit = 'minutes' | 'hours' | 'days';
 const UNIT_MINUTES: Record<Unit, number> = { minutes: 1, hours: 60, days: 1440 };
+const UNIT_NAMES: Record<Unit, string> = {
+    minutes: $localize`:unit of a schedule's interval:minutes`,
+    hours: $localize`:unit of a schedule's interval:hours`,
+    days: $localize`:unit of a schedule's interval:days`,
+};
 
 /** What the form starts from: a schedule to change, or the task (and folder) of a new one. */
 export interface ScheduleDraft {
@@ -66,11 +71,12 @@ export class ScheduleFormComponent {
     protected readonly week = WEEK_ORDER;
     protected readonly dayNames = DAY_NAMES;
     protected readonly units: Unit[] = ['minutes', 'hours', 'days'];
+    protected readonly unitNames = UNIT_NAMES;
     protected readonly repeats: [RepeatChoice, string][] = [
-        ['once', 'Once'],
-        ['interval', 'Repeatedly'],
-        ['daily', 'Every day'],
-        ['weekly', 'On some days of the week'],
+        ['once', $localize`:how often a schedule runs:Once`],
+        ['interval', $localize`:how often a schedule runs:Repeatedly`],
+        ['daily', $localize`:how often a schedule runs:Every day`],
+        ['weekly', $localize`:how often a schedule runs:On some days of the week`],
     ];
     protected readonly formatDate = formatDate;
     protected readonly formatMoment = formatMoment;
@@ -119,7 +125,7 @@ export class ScheduleFormComponent {
             clearTimeout(timer);
             if (!value) {
                 this.preview.set([]);
-                this.previewError.set('Enter a date and a time.');
+                this.previewError.set($localize`Enter a date and a time.`);
                 return;
             }
             timer = setTimeout(() => void this.loadPreview(value), PREVIEW_DELAY_MS);

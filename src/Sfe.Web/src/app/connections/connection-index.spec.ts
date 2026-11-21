@@ -36,8 +36,9 @@ describe('The index of a connection, in words', () => {
         );
         const text = describeIndex(status({ listing: true, lastSync: null, tooLong: 2, lastError: 'Gone.' }), NOW);
         expect(text).toContain('A full listing is under way');
-        expect(text).toContain('2 items left out (path too long)');
-        expect(text).toContain('Last sync stopped: Gone.');
+        expect(text).toContain('2 items left out (their paths are too long)');
+        expect(text).toContain('The last sync stopped: Gone.');
+        expect(describeIndex(status({ tooLong: 1 }), NOW)).toContain('1 item left out (its path is too long)');
     });
 
     it('names the connection a run of the task synced, never a private one', () => {

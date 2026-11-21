@@ -380,7 +380,7 @@ describe('Connections', () => {
             expect(el.querySelector<HTMLInputElement>('[data-return-address]')!.value).toBe(
                 'https://sfe/api/connections/oauth/callback',
             );
-            expect(el.querySelector('[data-secret-state]')!.textContent).toContain('optional');
+            expect(el.querySelector('[data-secret-state]')!.textContent).toContain('Optional');
 
             const secret = el.querySelector<HTMLInputElement>('[data-secret]')!;
             type(secret, 'top-secret');

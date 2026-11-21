@@ -2,6 +2,7 @@ import { Api } from '../core/api.service';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { ConnectionLevelName } from '../core/config.models';
 import { ConfigService } from '../core/config.service';
+import { icu } from '../core/i18n/icu';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { checkedOf, valueOf } from '../shared/events';
@@ -107,6 +108,14 @@ export class ConnectionsSectionComponent {
     protected made(connection: ConnectionInfo): void {
         this.toasts.show(`“${connection.name}” is connected.`);
         void this.load();
+    }
+
+    protected addTitle(level: ConnectionLevelName): string {
+        return icu(
+            $localize`{level, select, account {Sign in to a storage and add it for yourself only} \
+library {Sign in to a storage and add it for this space} other {Sign in to a storage and add it for the server}}`,
+            { level },
+        );
     }
 
     protected kindName(kind: string): string {

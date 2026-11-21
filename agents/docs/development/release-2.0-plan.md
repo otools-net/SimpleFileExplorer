@@ -114,10 +114,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     the area; titles built with `+` now `title="… {{ }}" i18n-title` or `$localize` in code; confirms and toasts
     left for 2.8. Readability baselines raised by the added lines: `admin-page.component.ts` 500 → 521, its
     template 474 → 501, `admin-sections.ts` 435 → 499.
-  - [ ] **2.4d tasks, logs and connections** (`app/tasks/`, `app/logs/`, `app/connections/`; ~120 template texts
-    and the wording helpers of `tasks.ts`: `formatInterval`, `formatDays`, `describeSchedule`, `formatMoment`,
-    `target`, the summary's `nextRunText` glue lower-cased names and capitalised fragments into sentences — make
-    each sentence one ICU message, e.g. `{unit, select, day {{n, plural, …}} …}`).
+  - [x] **2.4d tasks, logs and connections** (`app/tasks/`, `app/logs/`, `app/connections/`). Done 2026-11-21:
+    7 files at 0 unmarked texts (140 gone); `tasks.ts` helpers are whole ICU messages (`describeSchedule` one
+    `select` per kind, no `capitalize`/`uncapitalize`, `formatDays` gone, days joined by `Intl.ListFormat`); task
+    names never lower-cased into sentences (titles quote them: “Index scan”); `LEVEL_NAMES` (connections, in
+    `core/`) marked; level-dependent buttons and titles as ICU `select`; `plural()` out of the area; the connect
+    dialog's template re-indented by hand. Toasts, confirms and `connections-landing.ts` left for 2.8.
   Toasts and confirms of these areas stay for 2.8 (as in 2.3).
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
@@ -268,8 +270,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-21):** steps 1.1 to 2.3 and 2.4a–2.4c done (see their ticks; 2.4 was split in four).
-  Next: **2.4d** (tasks, logs, connections), then 2.5–2.8. Texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md)
+- **Last session (2026-11-21):** steps 1.1 to 2.3 and 2.4a–2.4d done (see their ticks; 2.4 was split in four).
+  Next: **2.5** (library, listing and menus: likely too big for one session, split it first), then 2.6–2.8. Texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md)
   says how; `app/access/` is a worked example.
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
@@ -297,6 +299,8 @@ Where the work stands, for a session that picks it up. Update it at the end of e
     become real breaks or vanish; a regex `\b` became an invisible backspace in a spec): write texts with the
     Write / Edit tools, and count lengths by characters
     (`[...line].length`; `awk length` counts bytes, and `“ ”` are 3).
+  - Edit scripts (`rep(old, new)` over a file) are safest written to the scratchpad with the Write tool and run with
+    `node <file>`: a long quoted heredoc failed in the Bash tool ("unexpected EOF while looking for matching `'`").
   - Templates are not Prettier-formatted: never run `prettier --write` on an `.html` (it re-indents everything).
   - The first `dotnet test` after a client build (`npm test` builds too) fails on a stale `wwwroot` chunk ("No file
     exists for the asset"): run it again, the second build succeeds.

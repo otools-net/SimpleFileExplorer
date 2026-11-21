@@ -1,33 +1,33 @@
-import { formatDate, formatTime, plural } from '../core/format';
+import { formatDate, formatTime } from '../core/format';
+import { icu, textLocale } from '../core/i18n/icu';
 import { TaskInfo, TaskKind, TaskOutcome, TaskTrigger } from '../core/task.models';
 import { ScheduleKind, TaskSchedule, TaskScheduleInput } from './task.models';
 
 /*
  * Wording of the background tasks, their schedules and runs, shared by the "Background tasks" dialog's parts.
+ * Every sentence is one message (ICU for counts and choices): names are never lower-cased into another sentence.
  */
 
 export const TASK_NAMES: Record<TaskKind, string> = {
-    scan: 'Index scan',
-    trickplay: 'Trickplay',
-    similarVideos: 'Similar videos',
-    thumbnails: 'Thumbnails',
-    trashPurge: 'Trash purge',
-    transfer: 'Transfer',
-    connectionIndex: 'Connection index',
+    scan: $localize`:background task:Index scan`,
+    trickplay: $localize`:background task:Trickplay`,
+    similarVideos: $localize`:background task:Similar videos`,
+    thumbnails: $localize`:background task:Thumbnails`,
+    trashPurge: $localize`:background task:Trash purge`,
+    transfer: $localize`:background task:Transfer`,
+    connectionIndex: $localize`:background task:Connection index`,
 };
 
 export const TASK_PURPOSES: Record<TaskKind, string> = {
-    scan: 'Brings the search index up to date with the folders on the disk.',
-    trickplay: 'Looks for videos without trickplay (the frames shown above the seek bar) and creates it.',
-    similarVideos: 'Compares the indexed videos to find copies in other files.',
-    thumbnails: 'Rendered as the listings show photos and videos; they can be stopped, not scheduled.',
-    trashPurge:
-        'Deletes for good what has been in the trash longer than its settings say. ' +
-        'Also runs by itself when the trash is used.',
-    transfer: 'Copies and moves between the library and connections.',
-    connectionIndex:
-        'Brings the index of each connection opened in this library up to date with its files (from their ' +
-        'names, sizes and dates; nothing is downloaded). Also runs when a connection is opened.',
+    scan: $localize`Brings the index up to date with the library's folders.`,
+    trickplay: $localize`Finds videos without trickplay (the frames shown above the seek bar) and makes it.`,
+    similarVideos: $localize`Compares the indexed videos to find the same video in other files.`,
+    thumbnails: $localize`Made as listings show photos and videos. They can be stopped, not scheduled.`,
+    trashPurge: $localize`Deletes for good what has been in the trash longer than its settings allow. \
+Also runs by itself when the trash is used.`,
+    transfer: $localize`Copies and moves items between the library and connections.`,
+    connectionIndex: $localize`Brings the index of each connection opened in this space up to date with its files, \
+from their names, sizes and dates (nothing is downloaded). Also runs when a connection is opened.`,
 };
 
 export const TASK_ICONS: Record<TaskKind, string> = {
@@ -44,12 +44,12 @@ export const TASK_ICONS: Record<TaskKind, string> = {
 export const SCHEDULABLE: TaskKind[] = ['scan', 'trickplay', 'similarVideos', 'trashPurge', 'connectionIndex'];
 
 export const OUTCOMES: Record<TaskOutcome, string> = {
-    running: 'Running',
-    completed: 'Completed',
-    cancelled: 'Cancelled',
-    failed: 'Failed',
-    interrupted: 'Interrupted',
-    skipped: 'Skipped',
+    running: $localize`:outcome of a task's run:Running`,
+    completed: $localize`:outcome of a task's run:Completed`,
+    cancelled: $localize`:outcome of a task's run:Cancelled`,
+    failed: $localize`:outcome of a task's run:Failed`,
+    interrupted: $localize`:outcome of a task's run:Interrupted`,
+    skipped: $localize`:outcome of a task's run:Skipped`,
 };
 
 export const OUTCOME_ICONS: Record<TaskOutcome, string> = {
@@ -61,10 +61,11 @@ export const OUTCOME_ICONS: Record<TaskOutcome, string> = {
     skipped: 'clock',
 };
 
+/** How a run was started, shown after its date and length. */
 export const TRIGGERS: Record<TaskTrigger, string> = {
-    manual: 'started by hand',
-    schedule: 'scheduled',
-    automatic: 'automatic',
+    manual: $localize`:how a task's run started:Started by hand`,
+    schedule: $localize`:how a task's run started:Scheduled`,
+    automatic: $localize`:how a task's run started:Automatic`,
 };
 
 /** Every day of the week, as a schedule's `days`. */
@@ -88,27 +89,38 @@ export const WEEK_ORDER: number[] = (() => {
 /** What a task covers: the folder of a scan, the connection a sync of the index ran on (unnamed: a private one). */
 export function target(task: TaskKind, path: string | null | undefined): string | null {
     if (task === 'connectionIndex') return path ? `“${path}”` : null;
-    return task === 'scan' ? (path ? `“${path}”` : 'whole library') : null;
+    return task === 'scan' ? (path ? `“${path}”` : $localize`:what a scan covers:Whole library`) : null;
 }
 
-/** "Every 6 hours", "every 2 days", "every 90 minutes". */
+/** An interval as whole days, hours or minutes, for the ICU messages below. */
+function intervalParts(minutes: number): { unit: 'day' | 'hour' | 'minute'; n: number } {
+    if (minutes % 1440 === 0) return { unit: 'day', n: minutes / 1440 };
+    if (minutes % 60 === 0) return { unit: 'hour', n: minutes / 60 };
+    return { unit: 'minute', n: minutes };
+}
+
+/** "every 6 hours", "every day", "every 90 minutes": inside a sentence. */
 export function formatInterval(minutes: number): string {
-    if (minutes % 1440 === 0) return minutes === 1440 ? 'every day' : `every ${plural(minutes / 1440, 'day')}`;
-    if (minutes % 60 === 0) return minutes === 60 ? 'every hour' : `every ${plural(minutes / 60, 'hour')}`;
-    return `every ${plural(minutes, 'minute')}`;
+    return icu(
+        $localize`:how often, inside a sentence:{unit, select, \
+day {{n, plural, one {every day} other {every # days}}} \
+hour {{n, plural, one {every hour} other {every # hours}}} \
+other {{n, plural, one {every minute} other {every # minutes}}}}`,
+        intervalParts(minutes),
+    );
 }
 
-/** "Mon, Wed, Fri", or "every day". */
-export function formatDays(days: number): string {
-    if ((days & ALL_DAYS) === ALL_DAYS) return 'every day';
-    if (days === 0b011_1110) return 'on weekdays';
-    if (days === 0b100_0001) return 'at weekends';
-    return (
-        'on ' +
-        WEEK_ORDER.filter((day) => days & (1 << day))
-            .map((day) => DAY_NAMES[day])
-            .join(', ')
-    );
+/** Day names joined as the browser's language does ("Mon, Wed and Fri"). */
+function dayList(days: number): string {
+    const names = WEEK_ORDER.filter((day) => days & (1 << day)).map((day) => DAY_NAMES[day]);
+    return new Intl.ListFormat(textLocale(), { type: 'conjunction' }).format(names);
+}
+
+/** The days of a weekly schedule, for the message of `describeSchedule`. */
+function weekKind(days: number): string {
+    if ((days & ALL_DAYS) === ALL_DAYS) return 'all';
+    if (days === 0b011_1110) return 'weekdays';
+    return days === 0b100_0001 ? 'weekends' : 'some';
 }
 
 /** When a schedule runs, in words: "Every day at 03:00", "Once, 12 Oct 2026, 22:00". */
@@ -117,16 +129,25 @@ export function describeSchedule(
 ): string {
     switch (schedule.kind) {
         case 'once':
-            return `Once, ${formatDate(schedule.start)}`;
+            return $localize`:when a schedule runs:Once, ${formatDate(schedule.start)}:date:`;
         case 'interval':
-            return `${capitalize(formatInterval(schedule.intervalMinutes))}, from ${formatDate(schedule.start)}`;
+            return icu(
+                $localize`:when a schedule runs:{unit, select, \
+day {{n, plural, one {Every day} other {Every # days}}} \
+hour {{n, plural, one {Every hour} other {Every # hours}}} \
+other {{n, plural, one {Every minute} other {Every # minutes}}}}, from {date}`,
+                { ...intervalParts(schedule.intervalMinutes), date: formatDate(schedule.start) },
+            );
         default:
-            return `${capitalize(formatDays(schedule.days))} at ${formatTime(schedule.start)}`;
+            return icu(
+                $localize`:when a schedule runs:{days, select, \
+all {Every day at {time}} \
+weekdays {Every weekday at {time}} \
+weekends {At weekends, at {time}} \
+other {On {list} at {time}}}`,
+                { days: weekKind(schedule.days), list: dayList(schedule.days), time: formatTime(schedule.start) },
+            );
     }
-}
-
-function capitalize(text: string): string {
-    return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 const relative = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
@@ -136,7 +157,7 @@ const weekday = new Intl.DateTimeFormat(undefined, { weekday: 'long' });
 export function formatRelative(value: string, now = Date.now()): string {
     const seconds = (Date.parse(value) - now) / 1000;
     const size = Math.abs(seconds);
-    if (size < 45) return seconds >= 0 ? 'in a few seconds' : 'just now';
+    if (size < 45) return seconds >= 0 ? $localize`in a few seconds` : $localize`just now`;
     if (size < 90 * 60) return relative.format(Math.round(seconds / 60), 'minute');
     if (size < 36 * 3600) return relative.format(Math.round(seconds / 3600), 'hour');
     return relative.format(Math.round(seconds / 86400), 'day');
@@ -149,10 +170,11 @@ export function formatMoment(value: string, now = Date.now()): string {
     today.setHours(0, 0, 0, 0);
     const days = Math.round((new Date(date).setHours(0, 0, 0, 0) - today.getTime()) / 86_400_000);
     const time = formatTime(value);
-    if (days === 0) return `today ${time}`;
-    if (days === 1) return `tomorrow ${time}`;
-    if (days === -1) return `yesterday ${time}`;
-    if (days > 1 && days < 7) return `${weekday.format(date)} ${time}`;
+    if (days === 0) return $localize`:a moment, alone or inside a sentence:today ${time}:time:`;
+    if (days === 1) return $localize`:a moment, alone or inside a sentence:tomorrow ${time}:time:`;
+    if (days === -1) return $localize`:a moment, alone or inside a sentence:yesterday ${time}:time:`;
+    if (days > 1 && days < 7)
+        return $localize`:a moment, day of the week then time:${weekday.format(date)}:weekday: ${time}:time:`;
     return formatDate(value);
 }
 
@@ -178,10 +200,10 @@ export function nextRunOf(task: TaskInfo, schedules: TaskSchedule[]): NextRun | 
 
 /** Where a schedule stands when it has no next run. */
 export function scheduleStatus(schedule: TaskSchedule, now = Date.now()): string {
-    if (!schedule.enabled) return 'Off';
-    if (schedule.kind === 'once')
-        return schedule.lastRun ? 'Done' : Date.parse(schedule.start) <= now ? 'Missed (the server was off)' : '';
-    return '';
+    if (!schedule.enabled) return $localize`:a schedule turned off:Off`;
+    if (schedule.kind !== 'once') return '';
+    if (schedule.lastRun) return $localize`:a schedule that ran once:Done`;
+    return Date.parse(schedule.start) <= now ? $localize`Missed (the server was off)` : '';
 }
 
 /** Local date ("2026-10-10") and time ("03:00") of an ISO moment, for date and time inputs. */

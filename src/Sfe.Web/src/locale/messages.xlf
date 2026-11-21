@@ -472,6 +472,9 @@
         <note category="location">src/app/access/folder-access.component.html:128,129</note>
         <note category="location">src/app/access/group-editor.component.html:162,163</note>
         <note category="location">src/app/access/space-editor.component.html:193,194</note>
+        <note category="location">src/app/connections/connect.dialog.html:108,109</note>
+        <note category="location">src/app/tasks/schedule-form.component.html:146,147</note>
+        <note category="location">src/app/tasks/tasks-section.component.html:33,35</note>
         <note category="location">src/app/tokens/token-create.component.html:132,133</note>
       </notes>
       <segment>
@@ -497,6 +500,8 @@
         <note category="location">src/app/account/account-section.component.html:73,74</note>
         <note category="location">src/app/admin/admin-page.component.html:461,462</note>
         <note category="location">src/app/admin/installation-section.component.html:57,58</note>
+        <note category="location">src/app/connections/connections-section.component.html:48,49</note>
+        <note category="location">src/app/tasks/schedule-form.component.html:138,139</note>
       </notes>
       <segment>
         <source>Save</source>
@@ -749,6 +754,7 @@
         <note category="location">src/app/access/accounts-page.component.html:144,145</note>
         <note category="location">src/app/access/space-detail.component.html:102,103</note>
         <note category="location">src/app/access/space-detail.component.html:216,217</note>
+        <note category="location">src/app/tasks/tasks-section.component.html:199</note>
       </notes>
       <segment>
         <source>Edit</source>
@@ -758,6 +764,7 @@
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:153</note>
         <note category="location">src/app/access/space-detail.component.html:227</note>
+        <note category="location">src/app/connections/connections-section.component.html:220,221</note>
       </notes>
       <segment>
         <source>Remove</source>
@@ -769,6 +776,7 @@
         <note category="location">src/app/access/space-detail.component.html:111,112</note>
         <note category="location">src/app/access/space-detail.component.html:225</note>
         <note category="location">src/app/access/spaces-page.component.html:59,60</note>
+        <note category="location">src/app/tasks/tasks-section.component.html:208</note>
       </notes>
       <segment>
         <source>Delete</source>
@@ -793,6 +801,7 @@
     <unit id="4825233135680864761">
       <notes>
         <note category="location">src/app/access/accounts-page.component.ts:20</note>
+        <note category="location">src/app/logs/logs-section.component.ts:176</note>
         <note category="location">src/app/tokens/token-parts.ts:40</note>
       </notes>
       <segment>
@@ -915,6 +924,8 @@
     <unit id="7046259383943324039">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:40</note>
+        <note category="location">src/app/connections/connect.dialog.html:49</note>
+        <note category="location">src/app/tasks/schedule-form.component.html:19,20</note>
       </notes>
       <segment>
         <source>Folder</source>
@@ -1156,6 +1167,8 @@
     <unit id="9215033217818992636">
       <notes>
         <note category="location">src/app/access/folder-access.component.ts:21</note>
+        <note category="location">src/app/connections/connections-section.component.html:64,65</note>
+        <note category="location">src/app/connections/connections-section.component.html:112</note>
         <note category="description">folder access level</note>
       </notes>
       <segment>
@@ -1251,6 +1264,7 @@
         <note category="location">src/app/access/space-editor.component.html:12,13</note>
         <note category="location">src/app/account/login-page.component.html:21,22</note>
         <note category="location">src/app/account/login-page.component.html:109,110</note>
+        <note category="location">src/app/connections/connect.dialog.html:39</note>
         <note category="location">src/app/tokens/token-create.component.html:37,38</note>
       </notes>
       <segment>
@@ -3682,6 +3696,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/admin/admin-page.component.html:330</note>
         <note category="location">src/app/admin/admin-page.component.ts:75</note>
+        <note category="location">src/app/core/connection.models.ts:133</note>
       </notes>
       <segment>
         <source>This space</source>
@@ -3979,6 +3994,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:30</note>
         <note category="location">src/app/admin/system-section.component.html:27</note>
+        <note category="location">src/app/logs/logs-section.component.ts:175</note>
         <note category="description">administration group</note>
       </notes>
       <segment>
@@ -4436,6 +4452,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:262</note>
         <note category="location">src/app/settings/tabs/library-settings.ts:48</note>
+        <note category="location">src/app/tasks/tasks.ts:14</note>
       </notes>
       <segment>
         <source>Similar videos</source>
@@ -4477,6 +4494,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:283</note>
         <note category="location">src/app/settings/tabs/preview-settings.ts:13</note>
+        <note category="location">src/app/tasks/tasks.ts:15</note>
       </notes>
       <segment>
         <source>Thumbnails</source>
@@ -4494,6 +4512,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:291</note>
         <note category="location">src/app/settings/tabs/preview-settings.ts:109</note>
+        <note category="location">src/app/tasks/tasks.ts:13</note>
       </notes>
       <segment>
         <source>Trickplay</source>
@@ -5222,6 +5241,228 @@ Space “Holiday photos”
         <source>for <ph id="0" equiv="elapsed" disp="formatElapsed(seconds)"/></source>
       </segment>
     </unit>
+    <unit id="596775884271313805">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:4,5</note>
+      </notes>
+      <segment>
+        <source>Sign in on the page that opened, allow access, then paste here the code it shows.</source>
+      </segment>
+    </unit>
+    <unit id="2593893764001940171">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:7,8</note>
+      </notes>
+      <segment>
+        <source>Open the page again</source>
+      </segment>
+    </unit>
+    <unit id="7694867984022600833">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:24,25</note>
+      </notes>
+      <segment>
+        <source> No kind of connection is set up on this server yet. Its administrators set one up in Administration › Connections. </source>
+      </segment>
+    </unit>
+    <unit id="6599752784987327249">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:30,31</note>
+        <note category="description">the kind of storage, such as Dropbox</note>
+      </notes>
+      <segment>
+        <source>Kind</source>
+      </segment>
+    </unit>
+    <unit id="329566639187877173">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:40,41</note>
+      </notes>
+      <segment>
+        <source>As people will see it.</source>
+      </segment>
+    </unit>
+    <unit id="4081216171436739694">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:50,51</note>
+      </notes>
+      <segment>
+        <source>Shown as the top of the connection. Leave it empty for all of it.</source>
+      </segment>
+    </unit>
+    <unit id="3042658343326962386">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:57</note>
+        <note category="description">an example of a folder</note>
+      </notes>
+      <segment>
+        <source>/Photos</source>
+      </segment>
+    </unit>
+    <unit id="7709180100710535745">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:68,69</note>
+      </notes>
+      <segment>
+        <source>How to sign in</source>
+      </segment>
+    </unit>
+    <unit id="7373407161874100798">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:104,105</note>
+      </notes>
+      <segment>
+        <source>Close without connecting (Esc)</source>
+      </segment>
+    </unit>
+    <unit id="6807212378543733446">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:115,116</note>
+      </notes>
+      <segment>
+        <source>Send the code to finish signing in</source>
+      </segment>
+    </unit>
+    <unit id="813263746069473514">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:121,122</note>
+      </notes>
+      <segment>
+        <source>Connect</source>
+      </segment>
+    </unit>
+    <unit id="7358948538071152093">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:128,129</note>
+      </notes>
+      <segment>
+        <source>Sign in to the storage</source>
+      </segment>
+    </unit>
+    <unit id="6962699013778688473">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.html:134,135</note>
+      </notes>
+      <segment>
+        <source>Continue</source>
+      </segment>
+    </unit>
+    <unit id="4392282689309541057">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.ts:17</note>
+        <note category="description">a way to sign in</note>
+      </notes>
+      <segment>
+        <source>Sign in at the provider and come back here</source>
+      </segment>
+    </unit>
+    <unit id="5023616495605426591">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.ts:18</note>
+        <note category="description">a way to sign in</note>
+      </notes>
+      <segment>
+        <source>Sign in at the provider and copy the code it shows</source>
+      </segment>
+    </unit>
+    <unit id="2266080571098149629">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.ts:19</note>
+        <note category="description">a way to sign in</note>
+      </notes>
+      <segment>
+        <source>Name and password</source>
+      </segment>
+    </unit>
+    <unit id="8697104145975833142">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.ts:20</note>
+        <note category="description">a way to sign in</note>
+      </notes>
+      <segment>
+        <source>Name and key</source>
+      </segment>
+    </unit>
+    <unit id="5621007634647947405">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.ts:69</note>
+      </notes>
+      <segment>
+        <source>Sign “<ph id="0" equiv="connection" disp="again.name"/>” in again</source>
+      </segment>
+    </unit>
+    <unit id="4663546352192132772">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.ts:73,74</note>
+      </notes>
+      <segment>
+        <source>{level, select, account {Add a connection for yourself} library {Add a connection for this space} other {Add a connection for the server}}</source>
+      </segment>
+    </unit>
+    <unit id="626020177375002643">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.ts:169</note>
+      </notes>
+      <segment>
+        <source>This sign-in has ended (too late, or already used). Start again.</source>
+      </segment>
+    </unit>
+    <unit id="4340552138631629069">
+      <notes>
+        <note category="location">src/app/connections/connect.dialog.ts:180</note>
+      </notes>
+      <segment>
+        <source>The server refused.</source>
+      </segment>
+    </unit>
+    <unit id="7778749517730911604">
+      <notes>
+        <note category="location">src/app/connections/connection-index.ts:11</note>
+      </notes>
+      <segment>
+        <source>Not indexed in this space yet. It will be when someone first opens the connection here.</source>
+      </segment>
+    </unit>
+    <unit id="7817470586908309435">
+      <notes>
+        <note category="location">src/app/connections/connection-index.ts:13</note>
+      </notes>
+      <segment>
+        <source>Syncing…</source>
+      </segment>
+    </unit>
+    <unit id="4608207167103414332">
+      <notes>
+        <note category="location">src/app/connections/connection-index.ts:14</note>
+      </notes>
+      <segment>
+        <source>A full listing is under way. It carries on at the next sync.</source>
+      </segment>
+    </unit>
+    <unit id="3970434788315783581">
+      <notes>
+        <note category="location">src/app/connections/connection-index.ts:18,19</note>
+      </notes>
+      <segment>
+        <source>{files, plural, one {# file} other {# files}} and {folders, plural, one {# folder} other {# folders}}, synced {when}</source>
+      </segment>
+    </unit>
+    <unit id="2680089723709493281">
+      <notes>
+        <note category="location">src/app/connections/connection-index.ts:26</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# item left out (its path is too long)} other {# items left out (their paths are too long)}}</source>
+      </segment>
+    </unit>
+    <unit id="1430855904412507845">
+      <notes>
+        <note category="location">src/app/connections/connection-index.ts:31</note>
+      </notes>
+      <segment>
+        <source>The last sync stopped: <ph id="0" equiv="reason" disp="status.lastError"/></source>
+      </segment>
+    </unit>
     <unit id="1294087843952092532">
       <notes>
         <note category="location">src/app/connections/connection-settings.ts:11</note>
@@ -5382,6 +5623,367 @@ Space “Holiday photos”
         <source>What nobody looked at for this long is removed.</source>
       </segment>
     </unit>
+    <unit id="6375773516599462505">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:5,6</note>
+      </notes>
+      <segment>
+        <source> Connections are turned off on this server (Administration › Connections › Settings). </source>
+      </segment>
+    </unit>
+    <unit id="3775616989689093817">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:19,20</note>
+      </notes>
+      <segment>
+        <source>{VAR_SELECT, select, library {Add for this space} server {Add for the server} other {Add}}</source>
+      </segment>
+    </unit>
+    <unit id="253050740734315231">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:24,25</note>
+      </notes>
+      <segment>
+        <source>No connections yet. Add one to reach files kept in a storage outside the library.</source>
+      </segment>
+    </unit>
+    <unit id="2945150453065668148">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:44,45</note>
+      </notes>
+      <segment>
+        <source>Save the name</source>
+      </segment>
+    </unit>
+    <unit id="4991358387795601748">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:58,59</note>
+        <note category="location">src/app/connections/connections-section.component.html:81,82</note>
+      </notes>
+      <segment>
+        <source>Sign in again</source>
+      </segment>
+    </unit>
+    <unit id="3500458863157551898">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:61,63</note>
+        <note category="location">src/app/connections/connections-section.component.html:123,124</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:108</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:49</note>
+        <note category="location">src/app/tasks/tasks.ts:203</note>
+        <note category="description">the connection is turned off</note>
+      </notes>
+      <segment>
+        <source>Off</source>
+      </segment>
+    </unit>
+    <unit id="1222108121975334759">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:77,78</note>
+      </notes>
+      <segment>
+        <source>Sign in to the storage again (the same connection, for the same people)</source>
+      </segment>
+    </unit>
+    <unit id="560677588056073573">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:87,88</note>
+      </notes>
+      <segment>
+        <source>Rename it, make it read only, turn it off, choose who uses it or remove it</source>
+      </segment>
+    </unit>
+    <unit id="3897348120591552265">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:92,93</note>
+      </notes>
+      <segment>
+        <source>Manage</source>
+      </segment>
+    </unit>
+    <unit id="6437367682275810633">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:100,101</note>
+      </notes>
+      <segment>
+        <source>Rename the connection</source>
+      </segment>
+    </unit>
+    <unit id="6041115344061899387">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:104,105</note>
+      </notes>
+      <segment>
+        <source>Rename</source>
+      </segment>
+    </unit>
+    <unit id="300092246368146069">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:113,114</note>
+      </notes>
+      <segment>
+        <source>Nothing in it is changed through SFE.</source>
+      </segment>
+    </unit>
+    <unit id="4808125825586374717">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:124,125</note>
+      </notes>
+      <segment>
+        <source>It is kept, with who uses it, but nobody can open it.</source>
+      </segment>
+    </unit>
+    <unit id="5101360111956147263">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:130,131</note>
+      </notes>
+      <segment>
+        <source>Index in this space</source>
+      </segment>
+    </unit>
+    <unit id="3243640855656612591">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:136,137</note>
+      </notes>
+      <segment>
+        <source>Read what changed in the storage now and update this space&apos;s index of it</source>
+      </segment>
+    </unit>
+    <unit id="1498168401303816680">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:141,142</note>
+      </notes>
+      <segment>
+        <source>Sync now</source>
+      </segment>
+    </unit>
+    <unit id="7099012818264483454">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:144,145</note>
+      </notes>
+      <segment>
+        <source>Spaces it is offered to</source>
+      </segment>
+    </unit>
+    <unit id="6934147017898922922">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:152,153</note>
+      </notes>
+      <segment>
+        <source>Every space, including those made later</source>
+      </segment>
+    </unit>
+    <unit id="2725633160680595767">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:168,169</note>
+      </notes>
+      <segment>
+        <source>Groups of this space</source>
+      </segment>
+    </unit>
+    <unit id="3716063446310319590">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:177,178</note>
+      </notes>
+      <segment>
+        <source>Doesn&apos;t see it</source>
+      </segment>
+    </unit>
+    <unit id="8353337353686902137">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:182,183</note>
+      </notes>
+      <segment>
+        <source>Reads it</source>
+      </segment>
+    </unit>
+    <unit id="2780949742370177570">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:187,188</note>
+      </notes>
+      <segment>
+        <source>Reads and changes it</source>
+      </segment>
+    </unit>
+    <unit id="3742465337477738849">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:195,196</note>
+      </notes>
+      <segment>
+        <source>Hide some of its folders from groups or accounts, or make them read only</source>
+      </segment>
+    </unit>
+    <unit id="4661571960091472498">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:200,201</note>
+      </notes>
+      <segment>
+        <source>Folder rules…</source>
+      </segment>
+    </unit>
+    <unit id="7941692847572231326">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:216,217</note>
+      </notes>
+      <segment>
+        <source>Remove the connection; its files stay where they are (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="6306133157821268698">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.ts:115,116</note>
+      </notes>
+      <segment>
+        <source>{level, select, account {Sign in to a storage and add it for yourself only} library {Sign in to a storage and add it for this space} other {Sign in to a storage and add it for the server}}</source>
+      </segment>
+    </unit>
+    <unit id="8798387615834213196">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:4,5</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{ setup.name }}"/> is offered: people with the rights can connect their storage.</source>
+      </segment>
+    </unit>
+    <unit id="4570664167348385516">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:7,8</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{ setup.name }}"/> is not offered yet. Register an app at the provider, then type its app key in the Settings tab.</source>
+      </segment>
+    </unit>
+    <unit id="1919344583697282613">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:13</note>
+      </notes>
+      <segment>
+        <source>Return address</source>
+      </segment>
+    </unit>
+    <unit id="4637021313725916011">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:14,15</note>
+      </notes>
+      <segment>
+        <source>Register it at the provider (as the redirect URI) exactly as shown. When it can&apos;t match, people copy a code instead.</source>
+      </segment>
+    </unit>
+    <unit id="1140132275549779580">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:22,23</note>
+      </notes>
+      <segment>
+        <source>Copy the address</source>
+      </segment>
+    </unit>
+    <unit id="4323470180912194028">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:26,27</note>
+        <note category="location">src/app/tokens/token-create.component.html:27,28</note>
+      </notes>
+      <segment>
+        <source>Copy</source>
+      </segment>
+    </unit>
+    <unit id="8816432904093617752">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:32</note>
+      </notes>
+      <segment>
+        <source>App secret</source>
+      </segment>
+    </unit>
+    <unit id="316246699855619615">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:36,37</note>
+      </notes>
+      <segment>
+        <source>Set in the server&apos;s configuration, which wins over this one.</source>
+      </segment>
+    </unit>
+    <unit id="6335858859770523296">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:40,41</note>
+      </notes>
+      <segment>
+        <source>Set, and never shown again. Type a new one to replace it.</source>
+      </segment>
+    </unit>
+    <unit id="1957870954087182492">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:44</note>
+      </notes>
+      <segment>
+        <source>Optional: sign-ins work without it.</source>
+      </segment>
+    </unit>
+    <unit id="7683634098560862936">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:65,66</note>
+      </notes>
+      <segment>
+        <source>Save the app secret (kept by the server, never shown again)</source>
+      </segment>
+    </unit>
+    <unit id="8603235770697157653">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:71,72</note>
+      </notes>
+      <segment>
+        <source>Save secret</source>
+      </segment>
+    </unit>
+    <unit id="4353337007245491752">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:77,78</note>
+      </notes>
+      <segment>
+        <source>Remove the app secret (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="3343422677813127233">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:82,83</note>
+      </notes>
+      <segment>
+        <source>Remove secret</source>
+      </segment>
+    </unit>
+    <unit id="894853152209714673">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:91,92</note>
+      </notes>
+      <segment>
+        <source>Check the app key and secret with the provider</source>
+      </segment>
+    </unit>
+    <unit id="6563391987554512024">
+      <notes>
+        <note category="location">src/app/connections/provider-setup.component.html:97,98</note>
+      </notes>
+      <segment>
+        <source>Test</source>
+      </segment>
+    </unit>
+    <unit id="4645609569705949286">
+      <notes>
+        <note category="location">src/app/core/connection.models.ts:132</note>
+        <note category="description">level of a connection</note>
+      </notes>
+      <segment>
+        <source>Only me</source>
+      </segment>
+    </unit>
+    <unit id="44436403874863322">
+      <notes>
+        <note category="location">src/app/core/connection.models.ts:134</note>
+        <note category="description">level of a connection</note>
+      </notes>
+      <segment>
+        <source>The server</source>
+      </segment>
+    </unit>
     <unit id="2021928621838842498">
       <notes>
         <note category="location">src/app/core/format.ts:8</note>
@@ -5425,6 +6027,356 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>TB</source>
+      </segment>
+    </unit>
+    <unit id="8183561498065807804">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:5,6</note>
+      </notes>
+      <segment>
+        <source>Search the log</source>
+      </segment>
+    </unit>
+    <unit id="6162693758764653365">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:11,12</note>
+        <note category="description">words searched for in the log</note>
+      </notes>
+      <segment>
+        <source>Text</source>
+      </segment>
+    </unit>
+    <unit id="7395858288297695775">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:15,16</note>
+      </notes>
+      <segment>
+        <source>Search messages, loggers and errors</source>
+      </segment>
+    </unit>
+    <unit id="774391844776736961">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:17,18</note>
+      </notes>
+      <segment>
+        <source>Finds entries with these words in their message, logger&apos;s name or error, ignoring case</source>
+      </segment>
+    </unit>
+    <unit id="1886539807371342904">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:26,27</note>
+      </notes>
+      <segment>
+        <source>Read the log again</source>
+      </segment>
+    </unit>
+    <unit id="1102717806459547726">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:29</note>
+      </notes>
+      <segment>
+        <source>Refresh</source>
+      </segment>
+    </unit>
+    <unit id="6491474782694268231">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:33,34</note>
+      </notes>
+      <segment>
+        <source>Severity</source>
+      </segment>
+    </unit>
+    <unit id="5203279511751768967">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:49,51</note>
+        <note category="description">first day of the log shown</note>
+      </notes>
+      <segment>
+        <source>From</source>
+      </segment>
+    </unit>
+    <unit id="7627118214415019952">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:52,53</note>
+      </notes>
+      <segment>
+        <source>Show the entries from this day on</source>
+      </segment>
+    </unit>
+    <unit id="1640609344969975994">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:59,61</note>
+        <note category="description">last day of the log shown</note>
+      </notes>
+      <segment>
+        <source>To</source>
+      </segment>
+    </unit>
+    <unit id="1956197412338063063">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:62,63</note>
+      </notes>
+      <segment>
+        <source>Show the entries up to the end of this day</source>
+      </segment>
+    </unit>
+    <unit id="8946906119075338535">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:70,71</note>
+        <note category="location">src/app/tokens/token-create.component.html:68,69</note>
+      </notes>
+      <segment>
+        <source>Space</source>
+      </segment>
+    </unit>
+    <unit id="4481473960712109274">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:72,73</note>
+      </notes>
+      <segment>
+        <source>Show the entries of one space, or the server&apos;s own</source>
+      </segment>
+    </unit>
+    <unit id="719971679872786870">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:80,81</note>
+      </notes>
+      <segment>
+        <source>All spaces and the server</source>
+      </segment>
+    </unit>
+    <unit id="1417571411470809088">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:82,83</note>
+      </notes>
+      <segment>
+        <source>The server only</source>
+      </segment>
+    </unit>
+    <unit id="3709954547873875968">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:96,97</note>
+      </notes>
+      <segment>
+        <source>Show every entry again</source>
+      </segment>
+    </unit>
+    <unit id="6559246822757089203">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:100,101</note>
+      </notes>
+      <segment>
+        <source>Clear filters</source>
+      </segment>
+    </unit>
+    <unit id="394199743799359285">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:111,112</note>
+      </notes>
+      <segment>
+        <source>Change how long entries are kept, and whether they are saved to files</source>
+      </segment>
+    </unit>
+    <unit id="6845814098096157400">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:115</note>
+        <note category="location">src/app/tasks/task-history.component.html:23</note>
+      </notes>
+      <segment>
+        <source>Keep for…</source>
+      </segment>
+    </unit>
+    <unit id="6967118431259341519">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:120,122</note>
+      </notes>
+      <segment>
+        <source>Could not read the log: <ph id="0" equiv="INTERPOLATION" disp="{{ error() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="8084207325112209302">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:138,139</note>
+      </notes>
+      <segment>
+        <source>An error is attached to this entry</source>
+      </segment>
+    </unit>
+    <unit id="8772116786769251214">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:141,143</note>
+        <note category="description">a log entry has an error</note>
+      </notes>
+      <segment>
+        <source>error</source>
+      </segment>
+    </unit>
+    <unit id="5259793670475462181">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:147,148</note>
+        <note category="description">the part of the server that wrote the entry</note>
+      </notes>
+      <segment>
+        <source>Logger </source>
+      </segment>
+    </unit>
+    <unit id="9112423951523310156">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:161</note>
+      </notes>
+      <segment>
+        <source>No entries match these filters.</source>
+      </segment>
+    </unit>
+    <unit id="8348718198361116456">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:163</note>
+      </notes>
+      <segment>
+        <source>Nothing logged yet.</source>
+      </segment>
+    </unit>
+    <unit id="7940169418779831881">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:171,172</note>
+      </notes>
+      <segment>
+        <source>Show older entries</source>
+      </segment>
+    </unit>
+    <unit id="4879787332391854647">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.html:178</note>
+      </notes>
+      <segment>
+        <source> Load older entries </source>
+      </segment>
+    </unit>
+    <unit id="3556616767683369914">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.ts:44</note>
+      </notes>
+      <segment>
+        <source>Show less of this entry</source>
+      </segment>
+    </unit>
+    <unit id="8370064812154750722">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.ts:45</note>
+      </notes>
+      <segment>
+        <source>Show the whole entry</source>
+      </segment>
+    </unit>
+    <unit id="4845191509180388032">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.ts:65,66</note>
+      </notes>
+      <segment>
+        <source>{days, plural, =0 {Entries are kept forever.} one {Entries are kept # day.} other {Entries are kept # days.}}</source>
+      </segment>
+    </unit>
+    <unit id="6971004148262767251">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>A copy goes to a file per day in <ph id="0" equiv="folder" disp="folder"/>.</source>
+      </segment>
+    </unit>
+    <unit id="7584415874737199890">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.ts:74</note>
+      </notes>
+      <segment>
+        <source>A copy goes to a file per day.</source>
+      </segment>
+    </unit>
+    <unit id="28913325115281999">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.ts:79</note>
+      </notes>
+      <segment>
+        <source>This page shows the entries of <ph id="0" equiv="space" disp="name"/>.</source>
+      </segment>
+    </unit>
+    <unit id="3575862795685482382">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.ts:80</note>
+      </notes>
+      <segment>
+        <source>This page shows the entries of this space.</source>
+      </segment>
+    </unit>
+    <unit id="7379478707825046632">
+      <notes>
+        <note category="location">src/app/logs/logs-section.component.ts:171</note>
+      </notes>
+      <segment>
+        <source>Show the entries of severity “<ph id="0" equiv="level" disp="LEVEL_NAMES[level]"/>” (none ticked: every severity)</source>
+      </segment>
+    </unit>
+    <unit id="7869196447743949096">
+      <notes>
+        <note category="location">src/app/logs/logs.ts:19</note>
+        <note category="description">severity of a log entry</note>
+      </notes>
+      <segment>
+        <source>Trace</source>
+      </segment>
+    </unit>
+    <unit id="3422890808980876594">
+      <notes>
+        <note category="location">src/app/logs/logs.ts:20</note>
+        <note category="description">severity of a log entry</note>
+      </notes>
+      <segment>
+        <source>Debug</source>
+      </segment>
+    </unit>
+    <unit id="314315645942131479">
+      <notes>
+        <note category="location">src/app/logs/logs.ts:21</note>
+        <note category="description">severity of a log entry</note>
+      </notes>
+      <segment>
+        <source>Info</source>
+      </segment>
+    </unit>
+    <unit id="6759205696902713848">
+      <notes>
+        <note category="location">src/app/logs/logs.ts:22</note>
+        <note category="description">severity of a log entry</note>
+      </notes>
+      <segment>
+        <source>Warning</source>
+      </segment>
+    </unit>
+    <unit id="8068748181579631092">
+      <notes>
+        <note category="location">src/app/logs/logs.ts:23</note>
+        <note category="description">severity of a log entry</note>
+      </notes>
+      <segment>
+        <source>Security warning</source>
+      </segment>
+    </unit>
+    <unit id="1519954996184640001">
+      <notes>
+        <note category="location">src/app/logs/logs.ts:24</note>
+        <note category="description">severity of a log entry</note>
+      </notes>
+      <segment>
+        <source>Error</source>
+      </segment>
+    </unit>
+    <unit id="2437478124199610198">
+      <notes>
+        <note category="location">src/app/logs/logs.ts:25</note>
+        <note category="description">severity of a log entry</note>
+      </notes>
+      <segment>
+        <source>Critical</source>
       </segment>
     </unit>
     <unit id="5244908902385589051">
@@ -8289,15 +9241,6 @@ Space “Holiday photos”
         <source>Keep the library folder alive</source>
       </segment>
     </unit>
-    <unit id="3500458863157551898">
-      <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:108</note>
-        <note category="description">keep alive</note>
-      </notes>
-      <segment>
-        <source>Off</source>
-      </segment>
-    </unit>
     <unit id="563656999691832315">
       <notes>
         <note category="location">src/app/settings/tabs/system-settings.ts:109</note>
@@ -8408,6 +9351,962 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>“When it is on a network share” looks at each one on its own.</source>
+      </segment>
+    </unit>
+    <unit id="4894487638830723539">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:3</note>
+      </notes>
+      <segment>
+        <source>Change the schedule</source>
+      </segment>
+    </unit>
+    <unit id="542851973129017989">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:5</note>
+        <note category="location">src/app/tasks/tasks-section.component.html:150</note>
+      </notes>
+      <segment>
+        <source>New schedule</source>
+      </segment>
+    </unit>
+    <unit id="4578192247039196794">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:10,11</note>
+        <note category="location">src/app/tasks/task-history.component.html:2,3</note>
+      </notes>
+      <segment>
+        <source>Task</source>
+      </segment>
+    </unit>
+    <unit id="4729014765922164923">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:20</note>
+        <note category="location">src/app/tasks/tasks.ts:92</note>
+      </notes>
+      <segment>
+        <source>Whole library</source>
+      </segment>
+    </unit>
+    <unit id="1898561508094728075">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:27,28</note>
+      </notes>
+      <segment>
+        <source>Path from the top of the library, such as Movies/Series. Leave it empty to scan the whole library.</source>
+      </segment>
+    </unit>
+    <unit id="5831959151852803859">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:34,35</note>
+      </notes>
+      <segment>
+        <source>Runs</source>
+      </segment>
+    </unit>
+    <unit id="6189397065139465013">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:43,44</note>
+      </notes>
+      <segment>
+        <source>Every</source>
+      </segment>
+    </unit>
+    <unit id="8932917860978648376">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:52</note>
+      </notes>
+      <segment>
+        <source>Unit</source>
+      </segment>
+    </unit>
+    <unit id="840951359074313455">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:65,66</note>
+      </notes>
+      <segment>
+        <source>Days</source>
+      </segment>
+    </unit>
+    <unit id="8990769651805334695">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:82,84</note>
+        <note category="location">src/app/tasks/schedule-form.component.html:100,101</note>
+        <note category="location">src/app/tasks/tasks-section.component.html:164,165</note>
+        <note category="description">the date a schedule runs once</note>
+      </notes>
+      <segment>
+        <source>On</source>
+      </segment>
+    </unit>
+    <unit id="2354812006691850358">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:84</note>
+      </notes>
+      <segment>
+        <source>Starting on</source>
+      </segment>
+    </unit>
+    <unit id="4241163040926675470">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:91,92</note>
+        <note category="description">the time a schedule runs</note>
+      </notes>
+      <segment>
+        <source>At</source>
+      </segment>
+    </unit>
+    <unit id="5880344513790241992">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:101,102</note>
+      </notes>
+      <segment>
+        <source>When off, the schedule is kept but doesn&apos;t run.</source>
+      </segment>
+    </unit>
+    <unit id="2033082391151570734">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:110,111</note>
+      </notes>
+      <segment>
+        <source>Off: it won&apos;t run until it is turned on.</source>
+      </segment>
+    </unit>
+    <unit id="1244133882252258038">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:113</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {Next run: } other {Next runs: }}</source>
+      </segment>
+    </unit>
+    <unit id="592231477706083368">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:122,123</note>
+      </notes>
+      <segment>
+        <source>It won&apos;t run: that time has passed.</source>
+      </segment>
+    </unit>
+    <unit id="4432330529919382613">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:132,133</note>
+      </notes>
+      <segment>
+        <source>Save the schedule</source>
+      </segment>
+    </unit>
+    <unit id="6822657631987977093">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.html:142,143</note>
+      </notes>
+      <segment>
+        <source>Close the form without saving</source>
+      </segment>
+    </unit>
+    <unit id="982745398054129955">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.ts:37</note>
+        <note category="description">unit of a schedule&apos;s interval</note>
+      </notes>
+      <segment>
+        <source>minutes</source>
+      </segment>
+    </unit>
+    <unit id="3370839803061654054">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.ts:38</note>
+        <note category="description">unit of a schedule&apos;s interval</note>
+      </notes>
+      <segment>
+        <source>hours</source>
+      </segment>
+    </unit>
+    <unit id="7036284206110282007">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.ts:39</note>
+        <note category="description">unit of a schedule&apos;s interval</note>
+      </notes>
+      <segment>
+        <source>days</source>
+      </segment>
+    </unit>
+    <unit id="4843029585279212168">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.ts:76</note>
+        <note category="description">how often a schedule runs</note>
+      </notes>
+      <segment>
+        <source>Once</source>
+      </segment>
+    </unit>
+    <unit id="8855017289506283348">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.ts:77</note>
+        <note category="description">how often a schedule runs</note>
+      </notes>
+      <segment>
+        <source>Repeatedly</source>
+      </segment>
+    </unit>
+    <unit id="6174308501997156278">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.ts:78</note>
+        <note category="description">how often a schedule runs</note>
+      </notes>
+      <segment>
+        <source>Every day</source>
+      </segment>
+    </unit>
+    <unit id="7667730692545847887">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.ts:79</note>
+        <note category="description">how often a schedule runs</note>
+      </notes>
+      <segment>
+        <source>On some days of the week</source>
+      </segment>
+    </unit>
+    <unit id="2846813466782334716">
+      <notes>
+        <note category="location">src/app/tasks/schedule-form.component.ts:128</note>
+      </notes>
+      <segment>
+        <source>Enter a date and a time.</source>
+      </segment>
+    </unit>
+    <unit id="5860585375888536121">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:6,7</note>
+      </notes>
+      <segment>
+        <source>Show the runs of one task</source>
+      </segment>
+    </unit>
+    <unit id="6032284119684448967">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:10,11</note>
+      </notes>
+      <segment>
+        <source>All tasks</source>
+      </segment>
+    </unit>
+    <unit id="5695345659744600676">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:20,21</note>
+      </notes>
+      <segment>
+        <source>Change how long the runs are kept</source>
+      </segment>
+    </unit>
+    <unit id="1420989157499289151">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:27,28</note>
+      </notes>
+      <segment>
+        <source>Delete the history of finished runs (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="3371190801768479896">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:33,34</note>
+      </notes>
+      <segment>
+        <source>Clear history</source>
+      </segment>
+    </unit>
+    <unit id="5608657808190532884">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:36,38</note>
+      </notes>
+      <segment>
+        <source>Could not read the history: <ph id="0" equiv="INTERPOLATION" disp="{{ error() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="3917406639168989313">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:75,78</note>
+      </notes>
+      <segment>
+        <source>… <ph id="0" equiv="ICU" disp="{details.omitted, plural,
+                                        one {{{ details.omitted }} line}
+                                        other {{{ details.omitted }} lines}}" subFlows="7508782842846990742"/> left out …</source>
+      </segment>
+    </unit>
+    <unit id="51559806616939678">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:75,76</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {<ph id="0" equiv="INTERPOLATION"/> line} other {<ph id="1" equiv="INTERPOLATION"/> lines}}</source>
+      </segment>
+    </unit>
+    <unit id="180771158451331999">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:85,86</note>
+      </notes>
+      <segment>
+        <source>Nothing was logged.</source>
+      </segment>
+    </unit>
+    <unit id="1549971880046689688">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:88,89</note>
+      </notes>
+      <segment>
+        <source>Loading the log…</source>
+      </segment>
+    </unit>
+    <unit id="8475446845152886016">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:98</note>
+      </notes>
+      <segment>
+        <source>No runs of this task recorded yet.</source>
+      </segment>
+    </unit>
+    <unit id="186464586388013881">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:100</note>
+      </notes>
+      <segment>
+        <source>No runs recorded yet.</source>
+      </segment>
+    </unit>
+    <unit id="2433957701304552961">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:108,109</note>
+      </notes>
+      <segment>
+        <source>Show older runs</source>
+      </segment>
+    </unit>
+    <unit id="883794993880258640">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.html:114,115</note>
+      </notes>
+      <segment>
+        <source>Load older runs</source>
+      </segment>
+    </unit>
+    <unit id="3425672094492067158">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.ts:39</note>
+      </notes>
+      <segment>
+        <source>Hide the log</source>
+      </segment>
+    </unit>
+    <unit id="5700060813143711578">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.ts:40</note>
+      </notes>
+      <segment>
+        <source>Show the log of this run</source>
+      </segment>
+    </unit>
+    <unit id="6219873661023924313">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.ts:58</note>
+      </notes>
+      <segment>
+        <source>Runs are kept {days, plural, one {# day} other {# days}}.</source>
+      </segment>
+    </unit>
+    <unit id="2899571089519355819">
+      <notes>
+        <note category="location">src/app/tasks/task-history.component.ts:59</note>
+      </notes>
+      <segment>
+        <source>Runs are kept until the history is cleared.</source>
+      </segment>
+    </unit>
+    <unit id="8025964101999090844">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:5,8</note>
+      </notes>
+      <segment>
+        <source>Could not read the tasks: <ph id="0" equiv="INTERPOLATION" disp="{{ error() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="1442537757726795809">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:43</note>
+      </notes>
+      <segment>
+        <source>Run now</source>
+      </segment>
+    </unit>
+    <unit id="5433782699501161466">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:52,54</note>
+        <note category="description">opens a new schedule for this task</note>
+      </notes>
+      <segment>
+        <source>Schedule</source>
+      </segment>
+    </unit>
+    <unit id="5028777105388019087">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:59</note>
+      </notes>
+      <segment>
+        <source>Details</source>
+      </segment>
+    </unit>
+    <unit id="7510010522502632199">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:60,61</note>
+      </notes>
+      <segment>
+        <source>Show the videos being given trickplay, and those waiting</source>
+      </segment>
+    </unit>
+    <unit id="5738776740832108487">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:82,83</note>
+      </notes>
+      <segment>
+        <source>Last run</source>
+      </segment>
+    </unit>
+    <unit id="2529886402827227028">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:87,88</note>
+      </notes>
+      <segment>
+        <source>Show this run and its log in the history</source>
+      </segment>
+    </unit>
+    <unit id="6159730550025074361">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:102,103</note>
+      </notes>
+      <segment>
+        <source>Next run</source>
+      </segment>
+    </unit>
+    <unit id="4544452112403881908">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:114,115</note>
+      </notes>
+      <segment>
+        <source>Not planned: it runs only when started from the menu or here.</source>
+      </segment>
+    </unit>
+    <unit id="2307080611663716324">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:117,118</note>
+      </notes>
+      <segment>
+        <source>Not planned: it runs only when started by hand.</source>
+      </segment>
+    </unit>
+    <unit id="6708292892266077248">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:137,138</note>
+      </notes>
+      <segment>
+        <source>Start tasks at set times, once or repeatedly. Times are those of this browser. A run that comes due while the task is already running, or while the server is off, is skipped.</source>
+      </segment>
+    </unit>
+    <unit id="4995498150333944406">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:140,141</note>
+      </notes>
+      <segment>
+        <source>Daily and weekly times follow the server&apos;s clock (<ph id="0" equiv="INTERPOLATION" disp="{{ zone }}"/>).</source>
+      </segment>
+    </unit>
+    <unit id="8475963246767262943">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:147,148</note>
+      </notes>
+      <segment>
+        <source>Add a schedule</source>
+      </segment>
+    </unit>
+    <unit id="1454363573679027794">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:191,192</note>
+      </notes>
+      <segment>
+        <source>last run <ph id="0" equiv="INTERPOLATION" disp="{{ formatMoment(schedule.lastRun, now()) }}"/></source>
+      </segment>
+    </unit>
+    <unit id="7163695734964144632">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:200,201</note>
+      </notes>
+      <segment>
+        <source>Change this schedule</source>
+      </segment>
+    </unit>
+    <unit id="7433043306261295495">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:209,210</note>
+      </notes>
+      <segment>
+        <source>Delete this schedule (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="2954320049250181820">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:220,222</note>
+      </notes>
+      <segment>
+        <source>No schedules yet. Trickplay still checks for new videos by itself every <ph id="0" equiv="ICU" disp="{every, plural, one {hour} other {{{ every }} hours}}" subFlows="3533347883622268056"/>.</source>
+      </segment>
+    </unit>
+    <unit id="7268965816127875955">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:221,222</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {hour} other {<ph id="0" equiv="INTERPOLATION"/> hours}}</source>
+      </segment>
+    </unit>
+    <unit id="6781763067303001969">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.html:223,224</note>
+      </notes>
+      <segment>
+        <source>No schedules yet. Trickplay still checks for new videos by itself when it is turned on.</source>
+      </segment>
+    </unit>
+    <unit id="2616424795873364335">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:47</note>
+        <note category="description">state of a background task</note>
+      </notes>
+      <segment>
+        <source>Idle</source>
+      </segment>
+    </unit>
+    <unit id="2956098160626271284">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:48</note>
+        <note category="location">src/app/tasks/tasks.ts:47</note>
+        <note category="description">state of a background task</note>
+      </notes>
+      <segment>
+        <source>Running</source>
+      </segment>
+    </unit>
+    <unit id="5643561794785412000">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:50</note>
+        <note category="description">state of a background task</note>
+      </notes>
+      <segment>
+        <source>Unavailable</source>
+      </segment>
+    </unit>
+    <unit id="5867622289725510899">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:96</note>
+      </notes>
+      <segment>
+        <source>Turn this schedule off (it is kept but doesn&apos;t run)</source>
+      </segment>
+    </unit>
+    <unit id="672436372581754947">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:97</note>
+      </notes>
+      <segment>
+        <source>Turn this schedule on</source>
+      </segment>
+    </unit>
+    <unit id="1398169185453364354">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:136</note>
+      </notes>
+      <segment>
+        <source>Running: <ph id="0" equiv="tasks" disp="list"/></source>
+      </segment>
+    </unit>
+    <unit id="2595957878214203134">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:136</note>
+      </notes>
+      <segment>
+        <source>Nothing running</source>
+      </segment>
+    </unit>
+    <unit id="7063470657634861343">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:137</note>
+      </notes>
+      <segment>
+        <source>Nothing planned</source>
+      </segment>
+    </unit>
+    <unit id="810888510148304696">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:168</note>
+        <note category="location">src/app/tasks/tasks.ts:68</note>
+        <note category="description">a run the task plans itself</note>
+      </notes>
+      <segment>
+        <source>Automatic</source>
+      </segment>
+    </unit>
+    <unit id="6794930372954320506">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:170</note>
+      </notes>
+      <segment>
+        <source>Automatic check, <ph id="0" equiv="interval" disp="every"/> (Trickplay › Settings)</source>
+      </segment>
+    </unit>
+    <unit id="2831458545845469260">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:175</note>
+      </notes>
+      <segment>
+        <source>From the schedule “<ph id="0" equiv="schedule" disp="when"/>”, scanning <ph id="1" equiv="folder" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="3028779631797518494">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:176</note>
+      </notes>
+      <segment>
+        <source>From the schedule “<ph id="0" equiv="schedule" disp="when"/>”</source>
+      </segment>
+    </unit>
+    <unit id="7774249371380200834">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:186</note>
+      </notes>
+      <segment>
+        <source>It is already running.</source>
+      </segment>
+    </unit>
+    <unit id="5199695120219177398">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:187</note>
+      </notes>
+      <segment>
+        <source>It is turned off, or ffmpeg is missing.</source>
+      </segment>
+    </unit>
+    <unit id="1528266021531355615">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:189</note>
+      </notes>
+      <segment>
+        <source>Scan the folder browsed last and its sub-folders (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="3303205619454851715">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:190</note>
+      </notes>
+      <segment>
+        <source>Start the task “<ph id="0" equiv="task" disp="TASK_NAMES[task.task]"/>” now</source>
+      </segment>
+    </unit>
+    <unit id="6753390850377143273">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:196</note>
+      </notes>
+      <segment>
+        <source>Stop the task “<ph id="0" equiv="task" disp="name"/>” (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="7991231813592400304">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:197</note>
+      </notes>
+      <segment>
+        <source>Stop the task “<ph id="0" equiv="task" disp="name"/>”</source>
+      </segment>
+    </unit>
+    <unit id="14377876625881960">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:201</note>
+      </notes>
+      <segment>
+        <source>Plan runs of the task “<ph id="0" equiv="task" disp="TASK_NAMES[task.task]"/>” at set times</source>
+      </segment>
+    </unit>
+    <unit id="8978792193885106752">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:320</note>
+      </notes>
+      <segment>
+        <source>Next: <ph id="0" equiv="task" disp="name"/>, <ph id="1" equiv="moment" disp="when"/></source>
+      </segment>
+    </unit>
+    <unit id="4089869072298847927">
+      <notes>
+        <note category="location">src/app/tasks/tasks-section.component.ts:321</note>
+      </notes>
+      <segment>
+        <source>Next: <ph id="0" equiv="task" disp="name"/> of <ph id="1" equiv="folder" disp="target(&apos;scan&apos;, next.schedule.path)"/>, <ph id="2" equiv="moment" disp="when"/></source>
+      </segment>
+    </unit>
+    <unit id="847124162117254237">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:12</note>
+        <note category="description">background task</note>
+      </notes>
+      <segment>
+        <source>Index scan</source>
+      </segment>
+    </unit>
+    <unit id="4143903274782459181">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:16</note>
+        <note category="description">background task</note>
+      </notes>
+      <segment>
+        <source>Trash purge</source>
+      </segment>
+    </unit>
+    <unit id="8402696305361715603">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:17</note>
+        <note category="description">background task</note>
+      </notes>
+      <segment>
+        <source>Transfer</source>
+      </segment>
+    </unit>
+    <unit id="2772921679319901433">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:18</note>
+        <note category="description">background task</note>
+      </notes>
+      <segment>
+        <source>Connection index</source>
+      </segment>
+    </unit>
+    <unit id="4893159397918067575">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:22</note>
+      </notes>
+      <segment>
+        <source>Brings the index up to date with the library&apos;s folders.</source>
+      </segment>
+    </unit>
+    <unit id="7407678682950760610">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:23</note>
+      </notes>
+      <segment>
+        <source>Finds videos without trickplay (the frames shown above the seek bar) and makes it.</source>
+      </segment>
+    </unit>
+    <unit id="8670343320652579187">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:24</note>
+      </notes>
+      <segment>
+        <source>Compares the indexed videos to find the same video in other files.</source>
+      </segment>
+    </unit>
+    <unit id="7555053925848924017">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:25</note>
+      </notes>
+      <segment>
+        <source>Made as listings show photos and videos. They can be stopped, not scheduled.</source>
+      </segment>
+    </unit>
+    <unit id="4091114366585020311">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:26</note>
+      </notes>
+      <segment>
+        <source>Deletes for good what has been in the trash longer than its settings allow. Also runs by itself when the trash is used.</source>
+      </segment>
+    </unit>
+    <unit id="2832583699175331044">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:28</note>
+      </notes>
+      <segment>
+        <source>Copies and moves items between the library and connections.</source>
+      </segment>
+    </unit>
+    <unit id="626638000884212559">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:29,30</note>
+      </notes>
+      <segment>
+        <source>Brings the index of each connection opened in this space up to date with its files, from their names, sizes and dates (nothing is downloaded). Also runs when a connection is opened.</source>
+      </segment>
+    </unit>
+    <unit id="1161299114153631702">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:48</note>
+        <note category="description">outcome of a task&apos;s run</note>
+      </notes>
+      <segment>
+        <source>Completed</source>
+      </segment>
+    </unit>
+    <unit id="4043049091728011235">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:49</note>
+        <note category="description">outcome of a task&apos;s run</note>
+      </notes>
+      <segment>
+        <source>Cancelled</source>
+      </segment>
+    </unit>
+    <unit id="7256395947475975935">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:50</note>
+        <note category="description">outcome of a task&apos;s run</note>
+      </notes>
+      <segment>
+        <source>Failed</source>
+      </segment>
+    </unit>
+    <unit id="7085679729777397411">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:51</note>
+        <note category="description">outcome of a task&apos;s run</note>
+      </notes>
+      <segment>
+        <source>Interrupted</source>
+      </segment>
+    </unit>
+    <unit id="7611487429832462405">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:52</note>
+        <note category="description">outcome of a task&apos;s run</note>
+      </notes>
+      <segment>
+        <source>Skipped</source>
+      </segment>
+    </unit>
+    <unit id="9033317102520766305">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:66</note>
+        <note category="description">how a task&apos;s run started</note>
+      </notes>
+      <segment>
+        <source>Started by hand</source>
+      </segment>
+    </unit>
+    <unit id="9172233176401579786">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:67</note>
+        <note category="description">how a task&apos;s run started</note>
+      </notes>
+      <segment>
+        <source>Scheduled</source>
+      </segment>
+    </unit>
+    <unit id="3839560537371882281">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:105,106</note>
+        <note category="description">how often, inside a sentence</note>
+      </notes>
+      <segment>
+        <source>{unit, select, day {{n, plural, one {every day} other {every # days}}} hour {{n, plural, one {every hour} other {every # hours}}} other {{n, plural, one {every minute} other {every # minutes}}}}</source>
+      </segment>
+    </unit>
+    <unit id="9034138470223831938">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:132</note>
+        <note category="description">when a schedule runs</note>
+      </notes>
+      <segment>
+        <source>Once, <ph id="0" equiv="date" disp="formatDate(schedule.start)"/></source>
+      </segment>
+    </unit>
+    <unit id="2704356942573694353">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:135,136</note>
+        <note category="description">when a schedule runs</note>
+      </notes>
+      <segment>
+        <source>{unit, select, day {{n, plural, one {Every day} other {Every # days}}} hour {{n, plural, one {Every hour} other {Every # hours}}} other {{n, plural, one {Every minute} other {Every # minutes}}}}, from {date}</source>
+      </segment>
+    </unit>
+    <unit id="2921504417612430966">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:143</note>
+        <note category="description">when a schedule runs</note>
+      </notes>
+      <segment>
+        <source>{days, select, all {Every day at <ph id="0" equiv="time"/>} weekdays {Every weekday at <ph id="1" equiv="time"/>} weekends {At weekends, at <ph id="2" equiv="time"/>} other {On <ph id="3" equiv="list"/> at <ph id="4" equiv="time"/>}}</source>
+      </segment>
+    </unit>
+    <unit id="6075324500130970362">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:160</note>
+      </notes>
+      <segment>
+        <source>in a few seconds</source>
+      </segment>
+    </unit>
+    <unit id="4733690367258997247">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:160</note>
+      </notes>
+      <segment>
+        <source>just now</source>
+      </segment>
+    </unit>
+    <unit id="6689672267111773066">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:173</note>
+        <note category="description">a moment, alone or inside a sentence</note>
+      </notes>
+      <segment>
+        <source>today <ph id="0" equiv="time" disp="time"/></source>
+      </segment>
+    </unit>
+    <unit id="3851410917745975418">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:174</note>
+        <note category="description">a moment, alone or inside a sentence</note>
+      </notes>
+      <segment>
+        <source>tomorrow <ph id="0" equiv="time" disp="time"/></source>
+      </segment>
+    </unit>
+    <unit id="848569671517297913">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:175</note>
+        <note category="description">a moment, alone or inside a sentence</note>
+      </notes>
+      <segment>
+        <source>yesterday <ph id="0" equiv="time" disp="time"/></source>
+      </segment>
+    </unit>
+    <unit id="2221655877372652461">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:177</note>
+        <note category="description">a moment, day of the week then time</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="weekday" disp="weekday.format(date)"/> <ph id="1" equiv="time" disp="time"/></source>
+      </segment>
+    </unit>
+    <unit id="397098723873502323">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:205</note>
+        <note category="location">src/app/tokens/token-create.component.html:122,123</note>
+        <note category="description">a schedule that ran once</note>
+      </notes>
+      <segment>
+        <source>Done</source>
+      </segment>
+    </unit>
+    <unit id="1022858078044554145">
+      <notes>
+        <note category="location">src/app/tasks/tasks.ts:206</note>
+      </notes>
+      <segment>
+        <source>Missed (the server was off)</source>
       </segment>
     </unit>
     <unit id="8205940332007726431">
@@ -8548,14 +10447,6 @@ Space “Holiday photos”
         <source>Copy the token to the clipboard</source>
       </segment>
     </unit>
-    <unit id="4323470180912194028">
-      <notes>
-        <note category="location">src/app/tokens/token-create.component.html:27,28</note>
-      </notes>
-      <segment>
-        <source>Copy</source>
-      </segment>
-    </unit>
     <unit id="2395938952972290640">
       <notes>
         <note category="location">src/app/tokens/token-create.component.html:30,32</note>
@@ -8588,14 +10479,6 @@ Space “Holiday photos”
         <source>Expires after</source>
       </segment>
     </unit>
-    <unit id="8946906119075338535">
-      <notes>
-        <note category="location">src/app/tokens/token-create.component.html:68,69</note>
-      </notes>
-      <segment>
-        <source>Space</source>
-      </segment>
-    </unit>
     <unit id="8249524835915970641">
       <notes>
         <note category="location">src/app/tokens/token-create.component.html:70,71</note>
@@ -8626,14 +10509,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Close: the token isn&apos;t shown again</source>
-      </segment>
-    </unit>
-    <unit id="397098723873502323">
-      <notes>
-        <note category="location">src/app/tokens/token-create.component.html:122,123</note>
-      </notes>
-      <segment>
-        <source>Done</source>
       </segment>
     </unit>
     <unit id="3503362739200648481">

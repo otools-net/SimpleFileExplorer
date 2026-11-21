@@ -1,7 +1,9 @@
 @if (tab() === 'setup') {
     <sfe-provider-setup kind="dropbox" />
 } @else if (!enabled()) {
-    <p class="field-hint" data-off> Connections are off on this server (Administration › Connections › Settings). </p>
+    <p class="field-hint" data-off i18n>
+        Connections are turned off on this server (Administration › Connections › Settings).
+    </p>
 } @else {
     @if (loadError(); as error) {
         <p class="form-error">{{ error }}</p>
@@ -12,15 +14,15 @@
                 type="button"
                 class="button"
                 [attr.data-add]="level"
-                [title]="'Sign in to a storage and add it: ' + levelNames[level].toLowerCase()"
+                [title]="addTitle(level)"
                 (click)="add(dialog, level)"
-                ><svg sfeIcon="plus"></svg
-                >Add{{ tab() === 'mine' ? '' : ' (' + levelNames[level].toLowerCase() + ')' }}</button
-            >
+            ><svg sfeIcon="plus"></svg><ng-container i18n>{level, select, library {Add for this space}
+                server {Add for the server} other {Add}}</ng-container></button>
         }
     </div>
     @if (view() && shown().length === 0) {
-        <p class="field-hint" data-none>No connection yet.</p>
+        <p class="field-hint" data-none i18n>No connections yet. Add one to reach files kept in a storage outside the
+        library.</p>
     }
     <ul class="connection-list">
         @for (item of shown(); track item.connection.id) {
@@ -36,9 +38,14 @@
                             (input)="renaming.set({ id: connection.id, name: value($event) })"
                             (keydown.enter)="saveName()"
                         />
-                        <button type="button" class="button small" title="Save the name" (click)="saveName()">
-                            Save
-                        </button>
+                        <button
+                            type="button"
+                            class="button small"
+                            title="Save the name"
+                            i18n-title
+                            (click)="saveName()"
+                            i18n
+                        >Save</button>
                     } @else {
                         <strong>{{ connection.name }}</strong>
                     }
@@ -48,13 +55,13 @@
                             <span class="access-badge">{{ levelNames[connection.level] }}</span>
                         }
                         @if (connection.state === 'needsReconnecting') {
-                            <span class="access-badge danger" data-reconnect-needed>Sign in again</span>
+                            <span class="access-badge danger" data-reconnect-needed i18n>Sign in again</span>
                         }
                         @if (connection.disabled) {
-                            <span class="access-badge danger">Off</span>
+                            <span class="access-badge danger" i18n="the connection is turned off">Off</span>
                         }
                         @if (connection.readOnly) {
-                            <span class="access-badge">Read only</span>
+                            <span class="access-badge" i18n>Read only</span>
                         }
                     </span>
                 </div>
@@ -67,20 +74,22 @@
                             type="button"
                             class="button small"
                             data-sign-in-again
-                            title="Sign in to the storage again (same connection, same people)"
+                            title="Sign in to the storage again (the same connection, for the same people)"
+                            i18n-title
                             (click)="reconnect(dialog, connection)"
-                            >Sign in again</button
-                        >
+                            i18n
+                        >Sign in again</button>
                     }
                     <button
                         type="button"
                         class="button small"
                         data-manage
-                        title="Rename, read only, turn off, who uses it, remove"
+                        title="Rename it, make it read only, turn it off, choose who uses it or remove it"
+                        i18n-title
                         [attr.aria-expanded]="openId() === connection.id"
                         (click)="togglePanel(connection.id, item.manage)"
-                        >Manage</button
-                    >
+                        i18n
+                    >Manage</button>
                 </div>
                 @if (openId() === connection.id) {
                     <div class="connection-users">
@@ -88,21 +97,21 @@
                             <button
                                 type="button"
                                 class="link-button"
-                                title="Rename it"
+                                title="Rename the connection"
+                                i18n-title
                                 (click)="startRename(connection)"
-                            >
-                                Rename
-                            </button>
+                                i18n
+                            >Rename</button>
                             <label class="check">
                                 <input
                                     type="checkbox"
                                     [checked]="connection.readOnly"
                                     (change)="change(connection.id, { readOnly: checked($event) })"
                                 />
-                                <span
-                                    >Read only
-                                    <span class="field-hint">nothing is changed in it through SFE</span></span
-                                >
+                                <span>
+                                    <ng-container i18n>Read only</ng-container>
+                                    <span class="field-hint" i18n>Nothing in it is changed through SFE.</span>
+                                </span>
                             </label>
                             <label class="check">
                                 <input
@@ -110,27 +119,29 @@
                                     [checked]="connection.disabled"
                                     (change)="change(connection.id, { disabled: checked($event) })"
                                 />
-                                <span
-                                    >Off
-                                    <span class="field-hint">kept, with who uses it, but nobody opens it</span></span
-                                >
+                                <span>
+                                    <ng-container i18n="the connection is turned off">Off</ng-container>
+                                    <span class="field-hint" i18n>It is kept, with who uses it, but nobody can open
+                                    it.</span>
+                                </span>
                             </label>
                         }
                         @if (index(); as status) {
-                            <h4>Index in this space</h4>
+                            <h4 i18n>Index in this space</h4>
                             <p class="field-hint" data-index-status>{{ describeIndex(status) }}</p>
                             <button
                                 type="button"
                                 class="button small"
                                 data-sync-now
                                 title="Read what changed in the storage now and update this space's index of it"
+                                i18n-title
                                 [disabled]="status.running"
                                 (click)="syncNow(connection.id)"
-                                >Sync now</button
-                            >
+                                i18n
+                            >Sync now</button>
                         }
                         @if (item.manage && connection.level === 'server') {
-                            <h4>Spaces it is offered to</h4>
+                            <h4 i18n>Spaces it is offered to</h4>
                             <label class="check">
                                 <input
                                     type="checkbox"
@@ -138,7 +149,7 @@
                                     [checked]="connection.allTenants"
                                     (change)="setLibrary(connection, 'all', checked($event))"
                                 />
-                                <span>Every space, those made later too</span>
+                                <span i18n>Every space, including those made later</span>
                             </label>
                             @if (!connection.allTenants) {
                                 @for (library of view()?.libraries ?? []; track library.id) {
@@ -154,7 +165,7 @@
                             }
                         }
                         @if (sharedHere(connection)) {
-                            <h4>Groups of this space</h4>
+                            <h4 i18n>Groups of this space</h4>
                             @for (group of view()?.groups ?? []; track group.id) {
                                 <label class="field connection-group">
                                     <span>{{ group.name }}</span>
@@ -162,15 +173,18 @@
                                         [attr.data-group]="group.id"
                                         (change)="setGroup(connection, group.id, value($event))"
                                     >
-                                        <option value="" [selected]="groupLevel(connection, group.id) === ''">
-                                            Doesn't see it
-                                        </option>
-                                        <option value="read" [selected]="groupLevel(connection, group.id) === 'read'">
-                                            Reads
-                                        </option>
-                                        <option value="write" [selected]="groupLevel(connection, group.id) === 'write'">
-                                            Reads and changes
-                                        </option>
+                                        <option value="" [selected]="groupLevel(connection, group.id) === ''" i18n
+                                        >Doesn't see it</option>
+                                        <option
+                                            value="read"
+                                            [selected]="groupLevel(connection, group.id) === 'read'"
+                                            i18n
+                                        >Reads it</option>
+                                        <option
+                                            value="write"
+                                            [selected]="groupLevel(connection, group.id) === 'write'"
+                                            i18n
+                                        >Reads and changes it</option>
                                     </select>
                                 </label>
                             }
@@ -178,11 +192,12 @@
                                 type="button"
                                 class="button small"
                                 data-folder-rules
-                                title="Hide folders of it from some groups or accounts, or make them read only"
+                                title="Hide some of its folders from groups or accounts, or make them read only"
+                                i18n-title
                                 [attr.aria-expanded]="folderRules()?.id === connection.id"
                                 (click)="toggleFolderRules(connection)"
-                                >Folder rules…</button
-                            >
+                                i18n
+                            >Folder rules…</button>
                             @if (folderRules(); as rules) {
                                 @if (rules.id === connection.id) {
                                     <sfe-folder-access
@@ -198,10 +213,11 @@
                                 type="button"
                                 class="button small danger"
                                 data-remove
-                                title="Remove the connection (its files stay where they are)"
+                                title="Remove the connection; its files stay where they are (asks first)"
+                                i18n-title
                                 (click)="remove(item)"
-                                >Remove</button
-                            >
+                                i18n
+                            >Remove</button>
                         }
                     </div>
                 }

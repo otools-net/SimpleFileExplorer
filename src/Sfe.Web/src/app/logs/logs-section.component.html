@@ -3,16 +3,19 @@
             class="logs-filters"
             role="search"
             aria-label="Search the log"
+            i18n-aria-label
             (submit)="$event.preventDefault(); search()"
         >
             <div class="logs-filter-row">
                 <label class="logs-text">
-                    <span class="visually-hidden">Text</span>
+                    <span class="visually-hidden" i18n="words searched for in the log">Text</span>
                     <svg sfeIcon="search"></svg>
                     <input
                         type="search"
                         placeholder="Search messages, loggers and errors"
-                        title="Text found in the message, the logger's name or the error (ignoring case)"
+                        i18n-placeholder
+                        title="Finds entries with these words in their message, logger's name or error, ignoring case"
+                        i18n-title
                         [value]="filters().text"
                         (input)="setText(valueOf($event))"
                     >
@@ -21,17 +24,18 @@
                     type="submit"
                     class="button small"
                     title="Read the log again"
+                    i18n-title
                     [sfeBusy]="loading() && !paging()"
-                ><svg sfeIcon="refresh"></svg>Refresh</button>
+                ><svg sfeIcon="refresh"></svg><ng-container i18n>Refresh</ng-container></button>
             </div>
             <div class="logs-filter-row">
                 <fieldset class="logs-levels">
-                    <legend class="visually-hidden">Severity</legend>
+                    <legend class="visually-hidden" i18n>Severity</legend>
                     @for (level of levels; track level) {
                         <label
                             class="logs-level-chip"
                             [class]="'level-' + level"
-                            [title]="'Show ' + levelNames[level] + ' entries (none ticked: every severity)'"
+                            [title]="levelTitle(level)"
                         >
                             <input
                                 type="checkbox"
@@ -42,35 +46,40 @@
                     }
                 </fieldset>
                 <label class="logs-day">
-                    <span>From</span>
+                    <span i18n="first day of the log shown">From</span>
                     <input
                         type="date"
-                        title="Entries from this day on"
+                        title="Show the entries from this day on"
+                        i18n-title
                         [value]="filters().fromDay"
                         (change)="setDay('fromDay', valueOf($event))"
                     >
                 </label>
                 <label class="logs-day">
-                    <span>To</span>
+                    <span i18n="last day of the log shown">To</span>
                     <input
                         type="date"
-                        title="Entries up to the end of this day"
+                        title="Show the entries up to the end of this day"
+                        i18n-title
                         [value]="filters().toDay"
                         (change)="setDay('toDay', valueOf($event))"
                     >
                 </label>
                 @if (allSpaces()) {
                     <label class="logs-space">
-                        <span class="visually-hidden">Space</span>
+                        <span class="visually-hidden" i18n>Space</span>
                         <select
                             title="Show the entries of one space, or the server's own"
+                            i18n-title
                             (change)="setSpace(valueOf($event))"
                         >
                             <option
                                 value="all"
                                 [selected]="filters().space === 'all'"
+                                i18n
                             >All spaces and the server</option>
-                            <option value="server" [selected]="filters().space === 'server'">The server only</option>
+                            <option value="server" [selected]="filters().space === 'server'" i18n
+                            >The server only</option>
                             @for (space of spaces(); track space.id) {
                                 <option
                                     [value]="space.id"
@@ -85,7 +94,9 @@
                         type="button"
                         class="button small"
                         title="Show every entry again"
+                        i18n-title
                         (click)="clearFilters()"
+                        i18n
                     >Clear filters</button>
                 }
             </div>
@@ -98,21 +109,22 @@
                 type="button"
                 class="button small"
                 title="Change how long entries are kept, and whether they are saved to files"
+                i18n-title
                 (click)="openSettings.emit()"
             >
-                <svg sfeIcon="settings"></svg>Keep for…
+                <svg sfeIcon="settings"></svg><ng-container i18n>Keep for…</ng-container>
             </button>
         </div>
 
         @if (error()) {
-            <p class="form-error">Could not read the log: {{ error() }}</p>
+            <p class="form-error" i18n>Could not read the log: {{ error() }}</p>
         }
         <ul class="log-entries" aria-live="polite">
             @for (entry of entries(); track entry.id) {
                 @let open = openId() === entry.id;
                 <li class="log-entry" [class]="'level-' + entry.level" [class.open]="open">
                     <button type="button" class="log-entry-head" [attr.aria-expanded]="open"
-                            [title]="open ? 'Show less' : 'Show the whole entry'" (click)="toggle(entry)">
+                            [title]="open ? entryTitles.open : entryTitles.closed" (click)="toggle(entry)">
                         <time [attr.datetime]="entry.timestamp">{{ time(entry.timestamp) }}</time>
                         <span class="log-level">{{ levelNames[entry.level] }}</span>
                         @if (allSpaces()) {
@@ -121,12 +133,20 @@
                         <span class="log-category" [title]="entry.category">{{ short(entry.category) }}</span>
                         <span class="log-message">{{ entry.message }}</span>
                         @if (entry.exception && !open) {
-                            <span class="log-has-error" title="An error is attached">error</span>
+                            <span
+                                class="log-has-error"
+                                title="An error is attached to this entry"
+                                i18n-title
+                                i18n="a log entry has an error"
+                            >error</span>
                         }
                     </button>
                     @if (open) {
                         <div class="log-entry-details">
-                            <p><span class="muted">Logger</span> {{ entry.category }}</p>
+                            <p>
+                                <span class="muted" i18n="the part of the server that wrote the entry">Logger </span>
+                                <span translate="no">{{ entry.category }}</span>
+                            </p>
                             @if (entry.exception) {
                                 <pre class="log-exception">{{ entry.exception }}</pre>
                             }
@@ -136,16 +156,24 @@
             }
         </ul>
         @if (!entries().length && loaded() && !error()) {
-            <p class="muted task-empty">{{ filtered() ? 'No entries match these filters.' : 'Nothing logged yet.' }}</p>
+            <p class="muted task-empty">
+                @if (filtered()) {
+                    <ng-container i18n>No entries match these filters.</ng-container>
+                } @else {
+                    <ng-container i18n>Nothing logged yet.</ng-container>
+                }
+            </p>
         }
         @if (next() !== null) {
             <button
                 type="button"
                 class="button small task-more"
                 title="Show older entries"
+                i18n-title
                 [sfeBusy]="paging()"
                 [disabled]="loading()"
                 (click)="loadMore()"
+                i18n
             >
                 Load older entries
             </button>

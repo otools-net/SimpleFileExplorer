@@ -48,8 +48,9 @@ configuration can fix them.
 
 ![My account › Connections](../images/admin-account-connections.png)
 
-**Add** opens the form: the kind, the name people will see, and the **folder** of the storage shown as the
-connection's root (empty for all of it).
+**Add** (on My account; **Add for this space** or **Add for the server** on Administration › Connections) opens the
+form: the kind, the name people will see, and the **folder** of the storage shown as the top of the connection (empty
+for all of it).
 
 ![Adding a connection](../images/connections-add.png)
 
@@ -71,8 +72,8 @@ A sign-in lasts 10 minutes and works once, for the account that started it.
   signing in to another Dropbox account than before is said, as people then see other files. Until then, opening the
   connection says it must be signed in to again, with a link here for those who can; the others are told to ask
   whoever manages it.
-- **Who uses it** (space and server connections): **Groups of this space** — doesn't see it, reads, or reads and
-  changes; for a server connection, the **spaces it is offered to** (every space, or some), then each space's
+- **Who uses it** (space and server connections): **Groups of this space** — **Doesn't see it**, **Reads it** or
+  **Reads and changes it**; for a server connection, the **spaces it is offered to** (every space, or some), then each space's
   administrators choose their groups.
 - **Folder rules…** (space and server connections, for those who manage the space's connections): see below.
 - **Index in this space**: where the space's index of the connection stands (files and folders, when it was last

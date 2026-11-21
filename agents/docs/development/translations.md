@@ -79,6 +79,14 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
 - Error messages shown with a prefix (`Could not load the spaces: …`): keep the reason alone in the signal and write
   the sentence in the template (`<p i18n>Could not load the spaces: {{ error }}</p>`).
 
+- A `$localize` description ends at the next `:` (`` :meaning|description:Text ``): a description with a colon in
+  it cuts the text. Write descriptions without colons.
+- ICU arguments inside a `$localize` message (`{time}` in `{days, select, all {Every day at {time}} …}`) show as
+  `<ph equiv="time"/>` in `messages.xlf`; `icu()` fills them at run time. Values that the sentence needs go in as ICU
+  arguments rather than `${}` placeholders when they sit inside a `select` or `plural` case.
+- A sentence built from a name lower-cased into another sentence (`'Stop ' + name.toLowerCase()`) can't be
+  translated: quote the name as written (`Stop the task “${name}:task:”`), or give each case its own message.
+
 - `$localize` at module level (the settings tabs, `EXTERNAL_PLAYERS`) runs when the module is imported: a translation
   loaded at run time must be loaded before the app's modules are (`main.ts` importing the app dynamically after
   `loadTranslations()`); a build per language has no such issue.

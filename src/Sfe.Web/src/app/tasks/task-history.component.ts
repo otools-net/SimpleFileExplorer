@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
-import { formatDate, formatElapsed, joinParts, plural } from '../core/format';
+import { formatDate, formatElapsed, joinParts } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { TaskKind, TaskRunSummary } from '../core/task.models';
 import { TaskRunDetails } from './task.models';
 import { ToastService } from '../core/toast.service';
@@ -34,7 +35,10 @@ export class TaskHistoryComponent {
     protected readonly outcomes = OUTCOMES;
     protected readonly icons = OUTCOME_ICONS;
     protected readonly target = target;
-    protected readonly plural = plural;
+    protected readonly logTitles = {
+        open: $localize`Hide the log`,
+        closed: $localize`Show the log of this run`,
+    };
 
     protected readonly filter = signal<TaskKind | null>(null);
     protected readonly runs = signal<TaskRunSummary[]>([]);
@@ -50,7 +54,9 @@ export class TaskHistoryComponent {
 
     protected readonly retentionText = computed(() => {
         const days = this.retentionDays();
-        return days > 0 ? `Runs are kept ${plural(days, 'day')}.` : 'Runs are kept until cleared.';
+        return days > 0
+            ? icu($localize`Runs are kept {days, plural, one {# day} other {# days}}.`, { days })
+            : $localize`Runs are kept until the history is cleared.`;
     });
 
     /** The first page again (and the open log), unless older runs were loaded. */

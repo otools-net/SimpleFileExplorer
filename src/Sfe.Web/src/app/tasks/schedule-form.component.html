@@ -1,7 +1,13 @@
-<h3>{{ draft().schedule ? 'Change schedule' : 'New schedule' }}</h3>
+<h3>
+    @if (draft().schedule) {
+        <ng-container i18n>Change the schedule</ng-container>
+    } @else {
+        <ng-container i18n>New schedule</ng-container>
+    }
+</h3>
 <div class="schedule-grid">
     <div class="field">
-        <label class="field-label" for="schedule-task">Task</label>
+        <label class="field-label" for="schedule-task" i18n>Task</label>
         <select id="schedule-task" [value]="task()" (change)="task.set(valueOf($event))">
             @for (kind of tasks; track kind) {
                 <option [value]="kind" [selected]="kind === task()">{{ names[kind] }}</option>
@@ -10,20 +16,22 @@
     </div>
     @if (task() === 'scan') {
         <div class="field">
-            <label class="field-label" for="schedule-path">Folder</label>
-            <input id="schedule-path" type="text" placeholder="Whole library" aria-describedby="schedule-path-hint"
+            <label class="field-label" for="schedule-path" i18n>Folder</label>
+            <input id="schedule-path" type="text" placeholder="Whole library" i18n-placeholder
+                   aria-describedby="schedule-path-hint"
                    [value]="path()" (input)="path.set(valueOf($event))">
             <span
                 class="field-hint"
                 id="schedule-path-hint"
-            >Path from the library root, like Movies/Series. Empty: the whole library.</span>
+                i18n
+            >Path from the top of the library, such as Movies/Series. Leave it empty to scan the whole library.</span>
             @if (errors()['path']) {
                 <span class="field-error">{{ errors()['path'] }}</span>
             }
         </div>
     }
     <div class="field">
-        <label class="field-label" for="schedule-repeat">Runs</label>
+        <label class="field-label" for="schedule-repeat" i18n>Runs</label>
         <select id="schedule-repeat" (change)="repeat.set(valueOf($event))">
             @for (choice of repeats; track choice[0]) {
                 <option [value]="choice[0]" [selected]="choice[0] === repeat()">{{ choice[1] }}</option>
@@ -32,7 +40,7 @@
     </div>
     @if (repeat() === 'interval') {
         <div class="field">
-            <label class="field-label" for="schedule-every">Every</label>
+            <label class="field-label" for="schedule-every" i18n>Every</label>
             <span class="schedule-every">
                 <input
                     id="schedule-every"
@@ -41,9 +49,9 @@
                     [value]="every()"
                     (input)="every.set(numberOf($event))"
                 >
-                <select aria-label="Unit" (change)="unit.set(valueOf($event))">
+                <select aria-label="Unit" i18n-aria-label (change)="unit.set(valueOf($event))">
                     @for (choice of units; track choice) {
-                        <option [value]="choice" [selected]="choice === unit()">{{ choice }}</option>
+                        <option [value]="choice" [selected]="choice === unit()">{{ unitNames[choice] }}</option>
                     }
                 </select>
             </span>
@@ -54,7 +62,7 @@
     }
     @if (repeat() === 'weekly') {
         <fieldset class="field schedule-days">
-            <legend class="field-label">Days</legend>
+            <legend class="field-label" i18n>Days</legend>
             <span class="schedule-day-list">
                 @for (day of week; track day) {
                     <label class="schedule-day" [class.on]="hasDay(day)">
@@ -69,12 +77,18 @@
     }
     @if (repeat() === 'once' || repeat() === 'interval') {
         <div class="field">
-            <label class="field-label" for="schedule-date">{{ repeat() === 'once' ? 'On' : 'Starting on' }}</label>
+            <label class="field-label" for="schedule-date">
+                @if (repeat() === 'once') {
+                    <ng-container i18n="the date a schedule runs once">On</ng-container>
+                } @else {
+                    <ng-container i18n>Starting on</ng-container>
+                }
+            </label>
             <input id="schedule-date" type="date" [value]="date()" (input)="date.set(valueOf($event))">
         </div>
     }
     <div class="field">
-        <label class="field-label" for="schedule-time">At</label>
+        <label class="field-label" for="schedule-time" i18n="the time a schedule runs">At</label>
         <input id="schedule-time" type="time" [value]="time()" (input)="time.set(valueOf($event))">
         @if (errors()['start']) {
             <span class="field-error">{{ errors()['start'] }}</span>
@@ -82,7 +96,10 @@
     </div>
     <label class="check">
         <input type="checkbox" [checked]="enabled()" (change)="enabled.set(checkedOf($event))">
-        <span><strong>On</strong><span class="field-hint">When off, the schedule is kept but doesn't run.</span></span>
+        <span>
+            <strong i18n="the schedule runs">On</strong>
+            <span class="field-hint" i18n>When off, the schedule is kept but doesn't run.</span>
+        </span>
     </label>
 </div>
 <div class="schedule-preview" aria-live="polite">
@@ -90,10 +107,10 @@
     @if (previewError()) {
         <span class="field-error">{{ previewError() }}</span>
     } @else if (!enabled()) {
-        <span>Off: it won't run until turned on.</span>
+        <span i18n>Off: it won't run until it is turned on.</span>
     } @else if (preview().length) {
         <span>
-            Next {{ preview().length === 1 ? 'run' : 'runs' }}:
+            <ng-container i18n>{preview().length, plural, one {Next run: } other {Next runs: }}</ng-container>
             @for (run of preview(); track run; let first = $first) {
                 <time
                     [attr.datetime]="run"
@@ -102,7 +119,7 @@
             }
         </span>
     } @else {
-        <span>It won't run: the time is past.</span>
+        <span i18n>It won't run: that time has passed.</span>
     }
 </div>
 @if (errors()['schedule'] || errors()['task'] || errors()['kind']) {
@@ -113,14 +130,18 @@
         type="button"
         class="button primary small"
         title="Save the schedule"
+        i18n-title
         [sfeBusy]="saving()"
         [disabled]="saving() || !value()"
         (click)="save()"
+        i18n
     >Save</button>
     <button
         type="button"
         class="button small"
         title="Close the form without saving"
+        i18n-title
         (click)="cancelled.emit()"
+        i18n
     >Cancel</button>
 </div>

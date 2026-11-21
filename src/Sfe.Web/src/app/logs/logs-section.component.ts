@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { plural } from '../core/format';
+import { joinParts } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { LogEntry, LogLevelName, LogSearchResult } from './log.models';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
@@ -39,6 +40,10 @@ export class LogsSectionComponent {
     protected readonly levels = LOG_LEVELS;
     protected readonly levelNames = LEVEL_NAMES;
     protected readonly short = shortCategory;
+    protected readonly entryTitles = {
+        open: $localize`Show less of this entry`,
+        closed: $localize`Show the whole entry`,
+    };
 
     protected readonly filters = signal<LogFilters>(NO_FILTERS);
     protected readonly result = signal<LogSearchResult | null>(null);
@@ -56,17 +61,24 @@ export class LogsSectionComponent {
     protected readonly keptText = computed(() => {
         const result = this.result();
         if (!result) return '';
-        const kept =
-            result.retentionDays > 0
-                ? `Entries are kept ${plural(result.retentionDays, 'day')}`
-                : 'Entries are kept forever';
-        const files = result.writeFiles
-            ? `; a copy goes to a file per day${result.filesDirectory ? ` in ${result.filesDirectory}` : ''}`
-            : '';
+        const kept = icu(
+            $localize`{days, plural, =0 {Entries are kept forever.} one {Entries are kept # day.} \
+other {Entries are kept # days.}}`,
+            { days: Math.max(result.retentionDays, 0) },
+        );
+        const folder = result.filesDirectory;
+        const files = !result.writeFiles
+            ? null
+            : folder
+              ? $localize`A copy goes to a file per day in ${folder}:folder:.`
+              : $localize`A copy goes to a file per day.`;
+        const name = this.config.tenant()?.name;
         const scope = result.allSpaces
-            ? ''
-            : ` This page shows the entries of ${this.config.tenant()?.name ?? 'this space'}.`;
-        return `${kept}${files}.${scope}`;
+            ? null
+            : name
+              ? $localize`This page shows the entries of ${name}:space:.`
+              : $localize`This page shows the entries of this space.`;
+        return joinParts([kept, files, scope], ' ');
     });
 
     private typing: ReturnType<typeof setTimeout> | undefined;
@@ -155,9 +167,13 @@ export class LogsSectionComponent {
         this.openId.update((id) => (id === entry.id ? null : entry.id));
     }
 
+    protected levelTitle(level: LogLevelName): string {
+        return $localize`Show the entries of severity “${LEVEL_NAMES[level]}:level:” (none ticked: every severity)`;
+    }
+
     protected spaceName(tenantId: number | null): string {
-        if (tenantId === null) return 'Server';
-        return this.spaces().find((space) => space.id === tenantId)?.name ?? `Space ${tenantId}`;
+        if (tenantId === null) return $localize`:where a log entry comes from:Server`;
+        return this.spaces().find((space) => space.id === tenantId)?.name ?? $localize`Space ${tenantId}:id:`;
     }
 
     protected time(value: string): string {

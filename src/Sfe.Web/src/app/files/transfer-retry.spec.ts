@@ -138,6 +138,6 @@ describe('Retrying a transfer', () => {
 describe('The transfer task kind', () => {
     it('has a name and a purpose in the task history', () => {
         expect(TASK_NAMES.transfer).toBe('Transfer');
-        expect(TASK_PURPOSES.transfer).toBe('Copies and moves between the library and connections.');
+        expect(TASK_PURPOSES.transfer).toBe('Copies and moves items between the library and connections.');
     });
 });
