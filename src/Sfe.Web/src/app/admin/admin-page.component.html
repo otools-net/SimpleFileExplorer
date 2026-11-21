@@ -1,10 +1,12 @@
 @if (unreachable(); as error) {
-    <sfe-empty-state icon="close" heading="The server is not reachable" [text]="error" />
+    <sfe-empty-state icon="close" heading="Could not reach the server" i18n-heading [text]="error" />
 } @else if (ready() && empty()) {
     <sfe-empty-state
         icon="lock"
         heading="Nothing to administer"
-        text="This session has no rights to change the space, its settings or the server."
+        i18n-heading
+        text="You don't have the rights to change this space, its settings or the server."
+        i18n-text
     />
 } @else if (ready()) {
     <header class="topbar admin-topbar">
@@ -17,21 +19,24 @@
         >
             <svg sfeIcon="left"></svg>
         </button>
-        <span class="brand"><svg sfeIcon="folder"></svg><span>SFE</span></span>
-        <h1 class="admin-title">Administration</h1>
+        <span class="brand"><svg sfeIcon="folder"></svg><span translate="no">SFE</span></span>
+        <h1 class="admin-title" i18n>Administration</h1>
     </header>
     <div class="admin-layout" [class.section-list]="sectionList()">
         @if (!phone() || sectionList()) {
-            <nav class="admin-nav" aria-label="Administration sections">
+            <nav class="admin-nav" aria-label="Administration sections" i18n-aria-label>
                 <div class="admin-search" role="search">
                     <svg sfeIcon="search" class="search-icon"></svg>
                     <input
                         #searchBox
                         type="search"
                         placeholder="Find a setting…"
+                        i18n-placeholder
                         aria-label="Find a setting or a page"
+                        i18n-aria-label
                         [attr.aria-controls]="searching() ? 'admin-search-results' : null"
-                        title="Find the settings and pages whose name or description has these words (Enter opens the first one, Esc clears)"
+                        title="Find the settings and pages whose name or description has these words (Enter opens the first one, Esc clears the box)"
+                        i18n-title
                         spellcheck="false"
                         autocomplete="off"
                         enterkeyhint="go"
@@ -44,7 +49,9 @@
                             type="button"
                             class="icon-button ghost small admin-search-clear"
                             aria-label="Clear the search"
+                            i18n-aria-label
                             title="Clear the search and show the sections again (Esc)"
+                            i18n-title
                             (click)="query.set(''); searchBox.focus()"
                         >
                             <svg sfeIcon="close"></svg>
@@ -53,7 +60,7 @@
                 </div>
                 @if (searching()) {
                     <p class="admin-search-count" role="status">{{ resultsCount() }}</p>
-                    <ul class="admin-search-results" id="admin-search-results" aria-label="Found">
+                    <ul class="admin-search-results" id="admin-search-results" aria-label="Found" i18n-aria-label>
                         @for (result of shownResults(); track $index) {
                             <li>
                                 <a
@@ -61,7 +68,7 @@
                                     [queryParams]="resultParams(result)"
                                     [state]="linkState()"
                                     [replaceUrl]="!phone()"
-                                    [title]="'Open ' + result.where + (result.setting ? ' at this setting' : '')"
+                                    [title]="result.setting ? openAtSetting(result.where) : openPlace(result.where)"
                                     (click)="found(result)"
                                 >
                                     <span class="admin-search-title"><ng-container
@@ -80,7 +87,7 @@
                         }
                     </ul>
                 }
-                @for (group of searching() ? [] : groups(); track group.title) {
+                @for (group of searching() ? [] : groups(); track group.id) {
                     <h2>{{ group.title }}</h2>
                     <ul>
                         @for (item of group.sections; track item.id) {
@@ -147,13 +154,13 @@
         <main class="admin-main">
             @if (overview()) {
                 <header class="admin-head">
-                    <h2>Administration</h2>
-                    <p>Everything this account can change or look at, by section.</p>
+                    <h2 i18n>Administration</h2>
+                    <p i18n>Everything you can change or look at, by section.</p>
                 </header>
                 <div class="admin-overview">
-                    @for (group of groups(); track group.title) {
-                        <section class="admin-overview-group" [attr.aria-labelledby]="groupId(group.title)">
-                            <h3 [id]="groupId(group.title)">{{ group.title }}</h3>
+                    @for (group of groups(); track group.id) {
+                        <section class="admin-overview-group" [attr.aria-labelledby]="groupId(group.id)">
+                            <h3 [id]="groupId(group.id)">{{ group.title }}</h3>
                             <div class="admin-cards">
                                 @for (item of group.sections; track item.id) {
                                     <article class="admin-card" [class.has-error]="faulty(item.subpages)">
@@ -163,7 +170,8 @@
                                             [queryParams]="{ section: item.id }"
                                             [state]="historyState"
                                             replaceUrl
-                                            [title]="'Open ' + item.title"
+                                            title="Open {{ item.title }}"
+                                            i18n-title
                                         >
                                             <svg [sfeIcon]="item.icon"></svg>
                                             <span>{{ item.title }}</span>
@@ -198,7 +206,7 @@
             } @else if (!sectionList()) {
                 <header class="admin-head">
                     <!-- Where this page is: Administration › group › section › sub-page (phones leave the group out). -->
-                    <nav class="admin-crumbs" aria-label="Breadcrumb">
+                    <nav class="admin-crumbs" aria-label="Breadcrumb" i18n-aria-label>
                         <ol>
                             <li>
                                 @if (phone()) {
@@ -206,7 +214,9 @@
                                         type="button"
                                         class="admin-crumb-link"
                                         title="Show the list of sections"
+                                        i18n-title
                                         (click)="back()"
+                                        i18n
                                     >Administration</button>
                                 } @else {
                                     <a
@@ -214,20 +224,23 @@
                                         [state]="historyState"
                                         replaceUrl
                                         title="Show every section"
+                                        i18n-title
+                                        i18n
                                     >Administration</a>
                                 }
                             </li>
                             <li class="admin-crumb-group">
                                 @if (phone()) {
-                                    {{ section().group }}
+                                    {{ groupTitle() }}
                                 } @else {
                                     <a
                                         routerLink="/admin"
                                         [fragment]="groupId(section().group)"
                                         [state]="historyState"
                                         replaceUrl
-                                        [title]="'Show the sections of ' + section().group"
-                                    >{{ section().group }}</a>
+                                        title="Show the sections of {{ groupTitle() }}"
+                                        i18n-title
+                                    >{{ groupTitle() }}</a>
                                 }
                             </li>
                             @if (section().subpages.length > 1) {
@@ -237,7 +250,8 @@
                                         [queryParams]="{ section: section().id }"
                                         [state]="stayState()"
                                         replaceUrl
-                                        [title]="'Open the first page of ' + section().title"
+                                        title="Open the first page of {{ section().title }}"
+                                        i18n-title
                                     >{{ section().title }}</a>
                                 </li>
                                 <li aria-current="page">{{ subpage().title }}</li>
@@ -275,7 +289,7 @@
                                     <span class="tracking-badge">{{ badge }}</span>
                                 }
                                 @if (faulty([item])) {
-                                    <span class="settings-tab-error"><span class="visually-hidden"> (needs
+                                    <span class="settings-tab-error"><span class="visually-hidden" i18n> (needs
                                     fixing)</span></span>
                                 }
                             </button>
@@ -295,6 +309,7 @@
                                 class="settings-tabs settings-level"
                                 role="tablist"
                                 aria-label="Settings of"
+                                i18n-aria-label
                                 (keydown)="onLevelKey($event)"
                             >
                                 <button
@@ -305,10 +320,15 @@
                                     aria-controls="settings-level-panel"
                                     [attr.aria-selected]="form.level() === 'tenant'"
                                     [tabIndex]="form.level() === 'tenant' ? 0 : -1"
-                                    title="This space's own settings, over the server's: they apply to this space only"
+                                    title="This space's own settings, used instead of the server's: they apply to this space only"
+                                    i18n-title
                                     (click)="form.useLevel('tenant')"
                                 >
-                                    This space{{ config.tenant() ? ' (' + config.tenant()!.name + ')' : '' }}
+                                    @if (config.tenant(); as tenant) {
+                                        <ng-container i18n>This space ({{ tenant.name }})</ng-container>
+                                    } @else {
+                                        <ng-container i18n>This space</ng-container>
+                                    }
                                     <ng-container
                                         [ngTemplateOutlet]="levelMark"
                                         [ngTemplateOutletContext]="{ $implicit: 'tenant' }"
@@ -323,9 +343,10 @@
                                     [attr.aria-selected]="form.level() === 'server'"
                                     [tabIndex]="form.level() === 'server' ? 0 : -1"
                                     title="The server's settings: the defaults of every space, and what the whole server shares"
+                                    i18n-title
                                     (click)="form.useLevel('server')"
                                 >
-                                    Whole server
+                                    <ng-container i18n>Whole server</ng-container>
                                     <ng-container
                                         [ngTemplateOutlet]="levelMark"
                                         [ngTemplateOutletContext]="{ $implicit: 'server' }"
@@ -410,31 +431,34 @@
                         <label
                             class="check settings-show-all"
                             title="Show every setting instead of only the most used ones"
+                            i18n-title
                         >
                             <input
                                 type="checkbox"
                                 [checked]="form.showAll()"
                                 (change)="form.setShowAll(checked($event))"
-                            ><span>Show all settings</span>
+                            ><span i18n>Show all settings</span>
                         </label>
                         <button
                             type="button"
                             class="button"
                             [disabled]="!form.customized()"
-                            [title]="form.customized() ? resetHint() : 'Nothing saved yet'"
+                            [title]="resetHint()"
                             (click)="form.reset()"
+                            i18n
                         >Reset to defaults</button>
                     }
                     @if (form.changed()) {
                         <button
                             type="button"
                             class="button"
-                            [title]="form.levels().length > 1 ? 'Undo the changes not saved yet, on every page of both tabs' : 'Undo the changes not saved yet, on every page'"
+                            [title]="discardHint()"
                             (click)="form.discard()"
+                            i18n
                         >Discard</button>
                     }
                     <button type="button" class="button primary" [title]="saveHint()"
-                            [disabled]="form.saving() || !form.changed()" (click)="save()">Save</button>
+                            [disabled]="form.saving() || !form.changed()" (click)="save()" i18n>Save</button>
                 </footer>
             }
         </main>
@@ -454,7 +478,8 @@
         <span
             class="admin-mark"
             title="Changed settings, not saved yet"
-        ><span class="visually-hidden"> (not saved)</span></span>
+            i18n-title
+        ><span class="visually-hidden" i18n> (not saved)</span></span>
     }
 </ng-template>
 
@@ -464,11 +489,13 @@
         <span
             class="admin-mark error"
             title="Some settings here need fixing"
-        ><span class="visually-hidden"> (needs fixing)</span></span>
+            i18n-title
+        ><span class="visually-hidden" i18n> (needs fixing)</span></span>
     } @else if (changed(pages)) {
         <span
             class="admin-mark"
             title="Changed settings, not saved yet"
-        ><span class="visually-hidden"> (not saved)</span></span>
+            i18n-title
+        ><span class="visually-hidden" i18n> (not saved)</span></span>
     }
 </ng-template>

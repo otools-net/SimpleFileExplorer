@@ -188,6 +188,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   settings, the update page, the Local mode page and My account's settings and password say things in full sentences
   (the recovery code's lifetime, where a code the server made is shown and kept); browsing a space without an account
   is called browsing as a visitor. Their texts are ready for translation.
+- **Administration pages reworded**: the sections' descriptions, the overview, the save bar, Keep alive › Status,
+  System, Video streams and the access token pages say things in full sentences with the same words everywhere
+  (colours, space, task); **My account › Preferences** is now **My account › Settings** (its address is unchanged);
+  a token's space reads "Every space" instead of "Every library". Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

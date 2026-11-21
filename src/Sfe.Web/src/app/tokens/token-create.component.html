@@ -1,9 +1,9 @@
-<sfe-sheet #sheet [heading]="secret() ? 'Your new token' : 'New access token'" [wide]="true" (closed)="forget()">
+<sfe-sheet #sheet [heading]="heading()" [wide]="true" (closed)="forget()">
     @if (secret(); as secret) {
         <div class="token-secret">
-            <p class="access-note token-once">
+            <p class="access-note token-once" i18n>
                 <strong>Copy the token now: you won't see it again.</strong>
-                SFE keeps only a fingerprint of it. If it is lost, revoke it and make another.
+                SFE keeps only a fingerprint of it. If you lose it, revoke it and make another.
             </p>
             <div class="token-secret-row">
                 <input
@@ -13,6 +13,7 @@
                     readonly
                     spellcheck="false"
                     aria-label="The new token"
+                    i18n-aria-label
                     [value]="secret"
                     (focus)="selectAll($event)"
                 >
@@ -20,10 +21,12 @@
                     type="button"
                     class="button primary"
                     title="Copy the token to the clipboard"
+                    i18n-title
                     (click)="copy()"
+                    i18n
                 >Copy</button>
             </div>
-            <p class="field-hint">
+            <p class="field-hint" i18n>
                 A program sends it in the header <code>Authorization: Bearer</code> followed by the token. It acts as
                 you, within what you chose; your password stays yours.
             </p>
@@ -31,23 +34,24 @@
     } @else {
         <form class="access-form" novalidate (submit)="create($event)">
             <div class="field">
-                <label class="field-label" for="token-name">Name</label>
+                <label class="field-label" for="token-name" i18n>Name</label>
                 <input
                     id="token-name"
                     type="text"
                     autocomplete="off"
-                    placeholder="e.g. Backup script"
+                    placeholder="For example Backup script"
+                    i18n-placeholder
                     [value]="name()"
                     (input)="name.set(valueOf($event))"
                 >
-                <span class="field-hint">What the token is for, to recognise it in the list.</span>
+                <span class="field-hint" i18n>What the token is for, so you recognise it in the list.</span>
                 @if (errors()['name']; as error) {
                     <span class="field-error">{{ error }}</span>
                 }
             </div>
             <div class="access-columns">
                 <div class="field">
-                    <label class="field-label" for="token-expiry">Expires after</label>
+                    <label class="field-label" for="token-expiry" i18n>Expires after</label>
                     <select id="token-expiry" (change)="chooseDays($event)">
                         @for (choice of choices(); track choice.label) {
                             <option
@@ -61,9 +65,9 @@
                     }
                 </div>
                 <div class="field">
-                    <label class="field-label" for="token-library">Library</label>
+                    <label class="field-label" for="token-library" i18n>Space</label>
                     <select id="token-library" (change)="chooseTenant($event)">
-                        <option value="" [selected]="tenantId() === null">Every library of yours</option>
+                        <option value="" [selected]="tenantId() === null" i18n>All your spaces</option>
                         @for (tenant of tenants(); track tenant.id) {
                             <option
                                 [value]="tenant.id"
@@ -78,8 +82,8 @@
             </div>
             <label class="check">
                 <input type="checkbox" [checked]="everyRight()" (change)="everyRight.set(checkedOf($event))">
-                <span>Every right of yours<span class="field-hint">The token may do whatever your account may do,
-                now and later. Untick it to choose fewer.</span></span>
+                <span><ng-container i18n>All your rights</ng-container><span class="field-hint" i18n>The token may do
+                whatever your account may do, now and later. Untick it to choose fewer.</span></span>
             </label>
             @if (!everyRight()) {
                 @for (area of areas(); track area.title) {
@@ -111,8 +115,10 @@
             sheetFooter
             type="button"
             class="button primary"
-            title="Close: the token is not shown again"
+            title="Close: the token isn't shown again"
+            i18n-title
             (click)="sheet.close()"
+            i18n
         >Done</button>
     } @else {
         <button
@@ -120,7 +126,9 @@
             type="button"
             class="button"
             title="Close without making a token (Esc)"
+            i18n-title
             (click)="sheet.close()"
+            i18n
         >Cancel</button>
     }
     @if (!secret()) {
@@ -132,8 +140,10 @@
             type="button"
             class="button primary"
             title="Make the token"
+            i18n-title
             [disabled]="saving() || !name().trim()"
             (click)="create()"
+            i18n
         >Create</button>
     }
 </sfe-sheet>

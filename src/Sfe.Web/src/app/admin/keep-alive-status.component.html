@@ -6,18 +6,20 @@
             <button
                 type="button"
                 class="button small"
-                title="Ping the library folder now, also while keep alive is off, to try the share"
+                title="Ping the library folder now, even while keep alive is off, to try the share"
+                i18n-title
                 [sfeBusy]="pinging()"
                 [disabled]="pinging()"
                 (click)="ping()"
-            ><svg sfeIcon="refresh"></svg>Ping now</button>
+            ><svg sfeIcon="refresh"></svg><ng-container i18n>Ping now</ng-container></button>
             <button
                 type="button"
                 class="button small"
                 title="Turn keep alive on or off, and change how often it pings"
+                i18n-title
                 (click)="openSettings.emit()"
             >
-                <svg sfeIcon="settings"></svg>Settings</button>
+                <svg sfeIcon="settings"></svg><ng-container i18n>Settings</ng-container></button>
         </div>
     </div>
     <ul class="keep-alive-list">
@@ -25,7 +27,11 @@
             <li class="keep-alive-row" [class.failed]="folder.error" [attr.data-path]="folder.path">
                 <svg [sfeIcon]="folder.error ? 'close' : folder.lastPing ? 'check' : 'clock'"></svg>
                 <span class="keep-alive-folder">
-                    <span class="keep-alive-name">{{ folder.isRoot ? 'Library folder' : folder.path }}</span>
+                    @if (folder.isRoot) {
+                        <span class="keep-alive-name" i18n>Library folder</span>
+                    } @else {
+                        <span class="keep-alive-name">{{ folder.path }}</span>
+                    }
                     <span class="keep-alive-network">{{ network(folder) }}</span>
                     @if (folder.error) {
                         <span class="keep-alive-error">{{ failure(folder) }}</span>
@@ -34,7 +40,11 @@
                 <span class="keep-alive-detail">{{ detail(folder) }}</span>
             </li>
         } @empty {
-            <li class="muted">No ping since the server
-            started{{ view()?.mode === 'off' ? ': keep alive is off. Ping now tries the library folder once.' : '.' }}</li>
+            @if (view()?.mode === 'off') {
+                <li class="muted" i18n>No ping since the server started: keep alive is off. Ping now tries the library
+                folder once.</li>
+            } @else {
+                <li class="muted" i18n>No ping since the server started.</li>
+            }
         }
     </ul>

@@ -140,6 +140,7 @@
         <note category="location">src/app/access/account-editor.component.html:55</note>
         <note category="location">src/app/account/login-page.component.html:122,123</note>
         <note category="location">src/app/account/setup-page.component.html:192,193</note>
+        <note category="location">src/app/admin/admin-sections.ts:80</note>
       </notes>
       <segment>
         <source>Password</source>
@@ -412,6 +413,7 @@
     <unit id="5611592591303869712">
       <notes>
         <note category="location">src/app/access/account-editor.component.html:229,230</note>
+        <note category="location">src/app/admin/admin-sections.ts:220</note>
       </notes>
       <segment>
         <source>Status</source>
@@ -470,6 +472,7 @@
         <note category="location">src/app/access/folder-access.component.html:128,129</note>
         <note category="location">src/app/access/group-editor.component.html:162,163</note>
         <note category="location">src/app/access/space-editor.component.html:193,194</note>
+        <note category="location">src/app/tokens/token-create.component.html:132,133</note>
       </notes>
       <segment>
         <source>Cancel</source>
@@ -480,6 +483,7 @@
         <note category="location">src/app/access/account-editor.component.html:280</note>
         <note category="location">src/app/access/group-editor.component.html:173</note>
         <note category="location">src/app/access/space-editor.component.html:204</note>
+        <note category="location">src/app/tokens/token-create.component.html:147,148</note>
       </notes>
       <segment>
         <source>Create</source>
@@ -491,6 +495,8 @@
         <note category="location">src/app/access/group-editor.component.html:175</note>
         <note category="location">src/app/access/space-editor.component.html:206</note>
         <note category="location">src/app/account/account-section.component.html:73,74</note>
+        <note category="location">src/app/admin/admin-page.component.html:461,462</note>
+        <note category="location">src/app/admin/installation-section.component.html:57,58</note>
       </notes>
       <segment>
         <source>Save</source>
@@ -549,6 +555,7 @@
     <unit id="8892298510283706466">
       <notes>
         <note category="location">src/app/access/account-editor.component.ts:135</note>
+        <note category="location">src/app/tokens/token-parts.ts:66</note>
       </notes>
       <segment>
         <source>{count, plural, one {# right} other {# rights}}</source>
@@ -576,6 +583,7 @@
         <note category="location">src/app/access/folder-access.component.html:93</note>
         <note category="location">src/app/access/space-detail.component.html:123</note>
         <note category="location">src/app/access/spaces-page.component.ts:50,51</note>
+        <note category="location">src/app/admin/admin-sections.ts:333</note>
       </notes>
       <segment>
         <source>Accounts</source>
@@ -785,6 +793,7 @@
     <unit id="4825233135680864761">
       <notes>
         <note category="location">src/app/access/accounts-page.component.ts:20</note>
+        <note category="location">src/app/tokens/token-parts.ts:40</note>
       </notes>
       <segment>
         <source>Space <ph id="0" equiv="id" disp="id"/></source>
@@ -1097,6 +1106,7 @@
     <unit id="4086606389696938932">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:223,224</note>
+        <note category="location">src/app/admin/admin-sections.ts:25</note>
       </notes>
       <segment>
         <source>Account</source>
@@ -1241,6 +1251,7 @@
         <note category="location">src/app/access/space-editor.component.html:12,13</note>
         <note category="location">src/app/account/login-page.component.html:21,22</note>
         <note category="location">src/app/account/login-page.component.html:109,110</note>
+        <note category="location">src/app/tokens/token-create.component.html:37,38</note>
       </notes>
       <segment>
         <source>Name</source>
@@ -1273,6 +1284,7 @@
     <unit id="7773254636625730688">
       <notes>
         <note category="location">src/app/access/group-editor.component.html:33</note>
+        <note category="location">src/app/tokens/token-parts.ts:101</note>
       </notes>
       <segment>
         <source>Rights</source>
@@ -1504,6 +1516,8 @@
     <unit id="7385160636957089888">
       <notes>
         <note category="location">src/app/access/space-detail.component.html:9,10</note>
+        <note category="location">src/app/admin/admin-sections.ts:27</note>
+        <note category="location">src/app/admin/system-section.component.html:33</note>
       </notes>
       <segment>
         <source>Library</source>
@@ -1883,6 +1897,9 @@
       <notes>
         <note category="location">src/app/access/space-editor.component.html:24,25</note>
         <note category="location">src/app/account/installation-form.component.html:50,51</note>
+        <note category="location">src/app/admin/keep-alive-status.component.html:31,32</note>
+        <note category="location">src/app/admin/system-section.component.html:35</note>
+        <note category="location">src/app/admin/system-section.component.html:58</note>
       </notes>
       <segment>
         <source>Library folder</source>
@@ -2421,6 +2438,7 @@ Space “Holiday photos”
     <unit id="3823219296477075982">
       <notes>
         <note category="location">src/app/account/account-section.component.html:82,83</note>
+        <note category="location">src/app/admin/admin-page.component.html:458,459</note>
       </notes>
       <segment>
         <source>Discard</source>
@@ -2585,6 +2603,8 @@ Space “Holiday photos”
     <unit id="602821270955747507">
       <notes>
         <note category="location">src/app/account/installation-form.component.html:122</note>
+        <note category="location">src/app/admin/admin-page.component.html:63</note>
+        <note category="location">src/app/admin/system-section.component.html:41</note>
       </notes>
       <segment>
         <source>Found</source>
@@ -2593,6 +2613,7 @@ Space “Holiday photos”
     <unit id="3268095459835706851">
       <notes>
         <note category="location">src/app/account/installation-form.component.html:125,126</note>
+        <note category="location">src/app/admin/system-section.component.html:44,45</note>
       </notes>
       <segment>
         <source>version <ph id="0" equiv="INTERPOLATION" disp="{{ view.ffmpegVersion }}"/></source>
@@ -2601,6 +2622,7 @@ Space “Holiday photos”
     <unit id="6595008830732269870">
       <notes>
         <note category="location">src/app/account/installation-form.component.html:128</note>
+        <note category="location">src/app/admin/system-section.component.html:48</note>
       </notes>
       <segment>
         <source>Not found</source>
@@ -2721,8 +2743,8 @@ Space “Holiday photos”
     </unit>
     <unit id="210483899932808258">
       <notes>
-        <note category="location">src/app/account/local-only-page.component.ts:47,48</note>
-        <note category="location">src/app/account/local-only-page.component.ts:51,52</note>
+        <note category="location">src/app/account/local-only-page.component.ts:48,49</note>
+        <note category="location">src/app/account/local-only-page.component.ts:52,53</note>
         <note category="location">src/app/account/setup-page.component.html:297,298</note>
         <note category="location">src/app/account/setup-page.component.html:301,302</note>
         <note category="location">src/app/migration/migration-page.component.html:28,29</note>
@@ -2733,7 +2755,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8625511586552764048">
       <notes>
-        <note category="location">src/app/account/local-only-page.component.ts:53,54</note>
+        <note category="location">src/app/account/local-only-page.component.ts:54,55</note>
       </notes>
       <segment>
         <source>Do you run this server? Sign in as its administrator to switch it to External, so that other devices can open it.</source>
@@ -2741,7 +2763,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2910565668320100598">
       <notes>
-        <note category="location">src/app/account/local-only-page.component.ts:58,59</note>
+        <note category="location">src/app/account/local-only-page.component.ts:59,60</note>
       </notes>
       <segment>
         <source>Sign in as the server&apos;s administrator</source>
@@ -2749,7 +2771,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5207635742003539443">
       <notes>
-        <note category="location">src/app/account/local-only-page.component.ts:62,63</note>
+        <note category="location">src/app/account/local-only-page.component.ts:63,64</note>
         <note category="location">src/app/account/login-page.component.html:8</note>
         <note category="location">src/app/account/login-page.component.html:135,136</note>
       </notes>
@@ -2759,7 +2781,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2717277378283692070">
       <notes>
-        <note category="location">src/app/account/local-only-page.component.ts:77</note>
+        <note category="location">src/app/account/local-only-page.component.ts:78</note>
       </notes>
       <segment>
         <source>Local mode – SFE</source>
@@ -3264,6 +3286,7 @@ Space “Holiday photos”
     <unit id="1020732716418946003">
       <notes>
         <note category="location">src/app/account/setup-page.component.html:76,77</note>
+        <note category="location">src/app/admin/installation-section.component.html:13,14</note>
         <note category="location">src/app/migration/migration-page.component.html:136,137</note>
       </notes>
       <segment>
@@ -3476,17 +3499,1727 @@ Space “Holiday photos”
     <unit id="3317586253347147483">
       <notes>
         <note category="location">src/app/account/setup-page.component.ts:198</note>
+        <note category="location">src/app/admin/installation-section.component.ts:49</note>
       </notes>
       <segment>
         <source>Too many attempts: wait a minute, then try again.</source>
       </segment>
     </unit>
+    <unit id="5268577827874422507">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:2</note>
+      </notes>
+      <segment>
+        <source>Could not reach the server</source>
+      </segment>
+    </unit>
+    <unit id="2530528277516496066">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:6,7</note>
+      </notes>
+      <segment>
+        <source>Nothing to administer</source>
+      </segment>
+    </unit>
+    <unit id="9017716460550705825">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:8,9</note>
+      </notes>
+      <segment>
+        <source>You don&apos;t have the rights to change this space, its settings or the server.</source>
+      </segment>
+    </unit>
+    <unit id="7844706011418789951">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:23,24</note>
+        <note category="location">src/app/admin/admin-page.component.html:157,158</note>
+        <note category="location">src/app/admin/admin-page.component.html:220,221</note>
+        <note category="location">src/app/admin/admin-page.component.html:229,230</note>
+        <note category="location">src/app/admin/admin-page.component.ts:259</note>
+      </notes>
+      <segment>
+        <source>Administration</source>
+      </segment>
+    </unit>
+    <unit id="458225083737472482">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:27</note>
+      </notes>
+      <segment>
+        <source>Administration sections</source>
+      </segment>
+    </unit>
+    <unit id="4163916140875979763">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:33,34</note>
+      </notes>
+      <segment>
+        <source>Find a setting…</source>
+      </segment>
+    </unit>
+    <unit id="8540188762229456175">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:35,36</note>
+      </notes>
+      <segment>
+        <source>Find a setting or a page</source>
+      </segment>
+    </unit>
+    <unit id="9059650888394249114">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:38,39</note>
+      </notes>
+      <segment>
+        <source>Find the settings and pages whose name or description has these words (Enter opens the first one, Esc clears the box)</source>
+      </segment>
+    </unit>
+    <unit id="7318865687848137496">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:51,52</note>
+      </notes>
+      <segment>
+        <source>Clear the search</source>
+      </segment>
+    </unit>
+    <unit id="8164474516211292983">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:53,54</note>
+      </notes>
+      <segment>
+        <source>Clear the search and show the sections again (Esc)</source>
+      </segment>
+    </unit>
+    <unit id="4176219690298877452">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:158,159</note>
+      </notes>
+      <segment>
+        <source>Everything you can change or look at, by section.</source>
+      </segment>
+    </unit>
+    <unit id="3845078135101348106">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:173,174</note>
+      </notes>
+      <segment>
+        <source>Open <ph id="0" equiv="INTERPOLATION" disp="{{ item.title }}"/></source>
+      </segment>
+    </unit>
+    <unit id="7172610509240246759">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:209</note>
+      </notes>
+      <segment>
+        <source>Breadcrumb</source>
+      </segment>
+    </unit>
+    <unit id="5396542763651228874">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:216,217</note>
+      </notes>
+      <segment>
+        <source>Show the list of sections</source>
+      </segment>
+    </unit>
+    <unit id="2487938692370417981">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:226,227</note>
+      </notes>
+      <segment>
+        <source>Show every section</source>
+      </segment>
+    </unit>
+    <unit id="3956758284297701768">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:241,242</note>
+      </notes>
+      <segment>
+        <source>Show the sections of <ph id="0" equiv="INTERPOLATION" disp="{{ groupTitle() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="2955662143270094602">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:253,254</note>
+      </notes>
+      <segment>
+        <source>Open the first page of <ph id="0" equiv="INTERPOLATION" disp="{{ section().title }}"/></source>
+      </segment>
+    </unit>
+    <unit id="2567928900463420486">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:293</note>
+        <note category="location">src/app/admin/admin-page.component.html:493</note>
+      </notes>
+      <segment>
+        <source> (needs fixing)</source>
+      </segment>
+    </unit>
+    <unit id="8032804866656253913">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:311,312</note>
+      </notes>
+      <segment>
+        <source>Settings of</source>
+      </segment>
+    </unit>
+    <unit id="8329910461142884035">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:323,324</note>
+      </notes>
+      <segment>
+        <source>This space&apos;s own settings, used instead of the server&apos;s: they apply to this space only</source>
+      </segment>
+    </unit>
+    <unit id="4349270100415141379">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:328,329</note>
+      </notes>
+      <segment>
+        <source>This space (<ph id="0" equiv="INTERPOLATION" disp="{{ tenant.name }}"/>)</source>
+      </segment>
+    </unit>
+    <unit id="3857924785932255369">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:330</note>
+        <note category="location">src/app/admin/admin-page.component.ts:75</note>
+      </notes>
+      <segment>
+        <source>This space</source>
+      </segment>
+    </unit>
+    <unit id="1081733523517002856">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:345,346</note>
+      </notes>
+      <segment>
+        <source>The server&apos;s settings: the defaults of every space, and what the whole server shares</source>
+      </segment>
+    </unit>
+    <unit id="5552665062432999263">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:349</note>
+        <note category="location">src/app/admin/admin-page.component.ts:76</note>
+      </notes>
+      <segment>
+        <source>Whole server</source>
+      </segment>
+    </unit>
+    <unit id="536610637334312079">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:433,434</note>
+        <note category="location">src/app/settings/settings-panel.component.html:28,29</note>
+      </notes>
+      <segment>
+        <source>Show every setting instead of only the most used ones</source>
+      </segment>
+    </unit>
+    <unit id="2294727580763071220">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:440,441</note>
+        <note category="location">src/app/settings/settings-panel.component.html:32,33</note>
+      </notes>
+      <segment>
+        <source>Show all settings</source>
+      </segment>
+    </unit>
+    <unit id="7773671942343493215">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:449,450</note>
+      </notes>
+      <segment>
+        <source>Reset to defaults</source>
+      </segment>
+    </unit>
+    <unit id="5261447906628082484">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:480,481</note>
+        <note category="location">src/app/admin/admin-page.component.html:497,498</note>
+      </notes>
+      <segment>
+        <source>Changed settings, not saved yet</source>
+      </segment>
+    </unit>
+    <unit id="8472403611476670392">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:482</note>
+        <note category="location">src/app/admin/admin-page.component.html:499</note>
+      </notes>
+      <segment>
+        <source> (not saved)</source>
+      </segment>
+    </unit>
+    <unit id="6454231238185442756">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.html:491,492</note>
+      </notes>
+      <segment>
+        <source>Some settings here need fixing</source>
+      </segment>
+    </unit>
+    <unit id="4576117176436794057">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:191</note>
+      </notes>
+      <segment>
+        <source>Back to the sections</source>
+      </segment>
+    </unit>
+    <unit id="7236929489494486140">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:191</note>
+      </notes>
+      <segment>
+        <source>Back to the library</source>
+      </segment>
+    </unit>
+    <unit id="3968962107389212895">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:207</note>
+      </notes>
+      <segment>
+        <source>The first {limit, number} of {count, number} found: add words to narrow them down.</source>
+      </segment>
+    </unit>
+    <unit id="9077841280946532318">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:211</note>
+      </notes>
+      <segment>
+        <source>{count, plural, =0 {Nothing found} one {# found} other {# found}}</source>
+      </segment>
+    </unit>
+    <unit id="5853220976119511648">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:216</note>
+      </notes>
+      <segment>
+        <source>Open <ph id="0" equiv="place" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="6073458638608131210">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:217</note>
+      </notes>
+      <segment>
+        <source>Open <ph id="0" equiv="place" disp="where"/> at this setting</source>
+      </segment>
+    </unit>
+    <unit id="5556628535331352229">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:226</note>
+      </notes>
+      <segment>
+        <source>Not saved yet: <ph id="0" equiv="pages" disp="changed.join(&apos;, &apos;)"/>; also in <ph id="1" equiv="levels" disp="others.join(&apos;, &apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="9044466139427444392">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:227</note>
+      </notes>
+      <segment>
+        <source>Not saved yet: <ph id="0" equiv="pages" disp="changed.join(&apos;, &apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="2353952272869974278">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:228</note>
+      </notes>
+      <segment>
+        <source>Not saved yet in <ph id="0" equiv="levels" disp="others.join(&apos;, &apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="8087235969397973279">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:232</note>
+      </notes>
+      <segment>
+        <source>This space has settings of its own</source>
+      </segment>
+    </unit>
+    <unit id="3856601031694131542">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:233</note>
+      </notes>
+      <segment>
+        <source>Following the server&apos;s settings</source>
+      </segment>
+    </unit>
+    <unit id="7530901117333047547">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:234</note>
+      </notes>
+      <segment>
+        <source>Using saved settings</source>
+      </segment>
+    </unit>
+    <unit id="5433172809500112054">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:234</note>
+      </notes>
+      <segment>
+        <source>Using the server&apos;s configuration</source>
+      </segment>
+    </unit>
+    <unit id="1464515136037050555">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:239</note>
+      </notes>
+      <segment>
+        <source>Undo the changes not saved yet, on every page of both tabs</source>
+      </segment>
+    </unit>
+    <unit id="6774866820039145160">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:240</note>
+      </notes>
+      <segment>
+        <source>Undo the changes not saved yet, on every page</source>
+      </segment>
+    </unit>
+    <unit id="410830363757343395">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:244</note>
+      </notes>
+      <segment>
+        <source>Nothing saved yet</source>
+      </segment>
+    </unit>
+    <unit id="5828595803093106490">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:246</note>
+      </notes>
+      <segment>
+        <source>Forget the space&apos;s own settings and use the server&apos;s again (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="6421739913374575258">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:247</note>
+      </notes>
+      <segment>
+        <source>Forget the saved settings and go back to the server&apos;s configuration (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="598239863654032311">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:251</note>
+      </notes>
+      <segment>
+        <source>Save and apply the settings changed in both tabs: the whole server&apos;s, then this space&apos;s</source>
+      </segment>
+    </unit>
+    <unit id="336490905177668092">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:253</note>
+      </notes>
+      <segment>
+        <source>Save and apply the settings of every page, for everyone using this space</source>
+      </segment>
+    </unit>
+    <unit id="3477804007741549894">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:254</note>
+      </notes>
+      <segment>
+        <source>Save and apply the settings of every page, for everyone using this server</source>
+      </segment>
+    </unit>
+    <unit id="2123805987941487613">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:262</note>
+      </notes>
+      <segment>
+        <source>Administration – SFE</source>
+      </segment>
+    </unit>
+    <unit id="4721602624937320440">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:266</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="page" disp="this.subpage().title"/> – <ph id="1" equiv="section" disp="section.title"/> – Administration – SFE</source>
+      </segment>
+    </unit>
+    <unit id="7714903196521167137">
+      <notes>
+        <note category="location">src/app/admin/admin-page.component.ts:267</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="section" disp="section.title"/> – Administration – SFE</source>
+      </segment>
+    </unit>
+    <unit id="3532447128426313609">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:26</note>
+        <note category="description">administration group</note>
+      </notes>
+      <segment>
+        <source>Viewing</source>
+      </segment>
+    </unit>
+    <unit id="3250391385569692601">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:28</note>
+        <note category="description">administration group</note>
+      </notes>
+      <segment>
+        <source>Media</source>
+      </segment>
+    </unit>
+    <unit id="5278627882107105833">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:29</note>
+        <note category="description">administration group</note>
+      </notes>
+      <segment>
+        <source>Access</source>
+      </segment>
+    </unit>
+    <unit id="2188854519574316630">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:30</note>
+        <note category="location">src/app/admin/system-section.component.html:27</note>
+        <note category="description">administration group</note>
+      </notes>
+      <segment>
+        <source>Server</source>
+      </segment>
+    </unit>
+    <unit id="4930506384627295710">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:49</note>
+        <note category="location">src/app/admin/admin-sections.ts:76</note>
+        <note category="location">src/app/admin/keep-alive-status.component.html:22</note>
+        <note category="description">administration page</note>
+      </notes>
+      <segment>
+        <source>Settings</source>
+      </segment>
+    </unit>
+    <unit id="8893390761160292681">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:69</note>
+      </notes>
+      <segment>
+        <source>My account</source>
+      </segment>
+    </unit>
+    <unit id="1942579123035088788">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:71</note>
+      </notes>
+      <segment>
+        <source>Your own settings, kept by the server for every device you sign in on, and your password.</source>
+      </segment>
+    </unit>
+    <unit id="1077265167249548238">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:77</note>
+      </notes>
+      <segment>
+        <source>Your own settings, used instead of the space&apos;s, on every device you sign in on.</source>
+      </segment>
+    </unit>
+    <unit id="7973606424763093768">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:80</note>
+      </notes>
+      <segment>
+        <source>The password you sign in with.</source>
+      </segment>
+    </unit>
     <unit id="2557623954339695776">
       <notes>
+        <note category="location">src/app/admin/admin-sections.ts:83</note>
+        <note category="location">src/app/admin/admin-sections.ts:345</note>
+        <note category="location">src/app/admin/admin-sections.ts:352</note>
         <note category="location">src/app/connections/connection-settings.ts:10</note>
       </notes>
       <segment>
         <source>Connections</source>
+      </segment>
+    </unit>
+    <unit id="2903022112103053017">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:84</note>
+      </notes>
+      <segment>
+        <source>Your own storage elsewhere (Dropbox), seen only by you.</source>
+      </segment>
+    </unit>
+    <unit id="7630362802781892981">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:93</note>
+      </notes>
+      <segment>
+        <source>Interface</source>
+      </segment>
+    </unit>
+    <unit id="4076177529375333043">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:95</note>
+      </notes>
+      <segment>
+        <source>Colours, listings and the search box: the defaults of the space and of the server.</source>
+      </segment>
+    </unit>
+    <unit id="2655039760925868187">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:99</note>
+      </notes>
+      <segment>
+        <source>The default theme, this browser&apos;s own theme, and how text files read.</source>
+      </segment>
+    </unit>
+    <unit id="8671234314555525900">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:100</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:46</note>
+      </notes>
+      <segment>
+        <source>Appearance</source>
+      </segment>
+    </unit>
+    <unit id="3872970144078034681">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:105</note>
+      </notes>
+      <segment>
+        <source>How many items a listing loads, the pictures on folders, and the resolutions and durations shown.</source>
+      </segment>
+    </unit>
+    <unit id="7824266831434362876">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:107</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:13</note>
+      </notes>
+      <segment>
+        <source>Browsing</source>
+      </segment>
+    </unit>
+    <unit id="7422081018251767997">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:112</note>
+      </notes>
+      <segment>
+        <source>How many results a search loads, how it&apos;s put into words as you type, and which searches are remembered.</source>
+      </segment>
+    </unit>
+    <unit id="4580988005648117665">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:114</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:110</note>
+      </notes>
+      <segment>
+        <source>Search</source>
+      </segment>
+    </unit>
+    <unit id="6321629750851370838">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:122</note>
+      </notes>
+      <segment>
+        <source>Playback</source>
+      </segment>
+    </unit>
+    <unit id="5947864283754532329">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:124</note>
+      </notes>
+      <segment>
+        <source>The video player, an app to open videos in, and how videos reach the browser: from a data server, or converted by this one.</source>
+      </segment>
+    </unit>
+    <unit id="6921475968201448007">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:129</note>
+      </notes>
+      <segment>
+        <source>The player&apos;s jumps and loop, and the app the viewer&apos;s ▶ button opens videos and audio in.</source>
+      </segment>
+    </unit>
+    <unit id="7683705529753923369">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:130</note>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:31</note>
+      </notes>
+      <segment>
+        <source>Player</source>
+      </segment>
+    </unit>
+    <unit id="4667633965811793809">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:135</note>
+      </notes>
+      <segment>
+        <source>Where files are streamed from, and how the server converts the videos a browser can&apos;t play.</source>
+      </segment>
+    </unit>
+    <unit id="8872285976030977366">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:136</note>
+        <note category="location">src/app/settings/tabs/playback-settings.ts:116</note>
+      </notes>
+      <segment>
+        <source>Streaming</source>
+      </segment>
+    </unit>
+    <unit id="6964215951741243112">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:141</note>
+      </notes>
+      <segment>
+        <source>Video streams</source>
+      </segment>
+    </unit>
+    <unit id="5913715834284744913">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:142</note>
+      </notes>
+      <segment>
+        <source>The videos the server is converting now, in every space, and who is watching them.</source>
+      </segment>
+    </unit>
+    <unit id="2035140506994982921">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:150</note>
+      </notes>
+      <segment>
+        <source>Scanning</source>
+      </segment>
+    </unit>
+    <unit id="8381397961931454716">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:152</note>
+      </notes>
+      <segment>
+        <source>What scans leave out, which files are photos, videos and audio, and what scans read from them.</source>
+      </segment>
+    </unit>
+    <unit id="827300122257957846">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:157</note>
+      </notes>
+      <segment>
+        <source>The folders and files scans leave out, and hidden items.</source>
+      </segment>
+    </unit>
+    <unit id="3672402570538331121">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:158</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:9</note>
+      </notes>
+      <segment>
+        <source>What to scan</source>
+      </segment>
+    </unit>
+    <unit id="3372678468695151635">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:163</note>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:72</note>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:135</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:33</note>
+      </notes>
+      <segment>
+        <source>Excluded folders</source>
+      </segment>
+    </unit>
+    <unit id="5265870627763092658">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:164</note>
+      </notes>
+      <segment>
+        <source>The folders kept out of scans, trickplay or thumbnails: add, change and remove them.</source>
+      </segment>
+    </unit>
+    <unit id="8803369453016977462">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:169</note>
+      </notes>
+      <segment>
+        <source>Which extensions are photos, videos and audio.</source>
+      </segment>
+    </unit>
+    <unit id="6125391559813574136">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:170</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:61</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:64</note>
+      </notes>
+      <segment>
+        <source>File types</source>
+      </segment>
+    </unit>
+    <unit id="117119628106210292">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:175</note>
+      </notes>
+      <segment>
+        <source>What scans read from files (fingerprints, resolutions, durations), and how many folders they read at once.</source>
+      </segment>
+    </unit>
+    <unit id="4973087105311508591">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:177</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:102</note>
+      </notes>
+      <segment>
+        <source>Indexing</source>
+      </segment>
+    </unit>
+    <unit id="4730016237617113117">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:185</note>
+        <note category="location">src/app/settings/tabs/files-settings.ts:44</note>
+      </notes>
+      <segment>
+        <source>File management</source>
+      </segment>
+    </unit>
+    <unit id="5954338844679539430">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:187</note>
+      </notes>
+      <segment>
+        <source>The trash, uploads in progress, the names new files and folders may have, and where SFE keeps its work files.</source>
+      </segment>
+    </unit>
+    <unit id="3418677553313974490">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:192</note>
+      </notes>
+      <segment>
+        <source>Trash</source>
+      </segment>
+    </unit>
+    <unit id="6178084694132721708">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:193</note>
+      </notes>
+      <segment>
+        <source>What was moved to the trash: restore it, or delete it for good.</source>
+      </segment>
+    </unit>
+    <unit id="1604823060459595401">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:199</note>
+      </notes>
+      <segment>
+        <source>Uploads</source>
+      </segment>
+    </unit>
+    <unit id="6052368383063924253">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:200</note>
+      </notes>
+      <segment>
+        <source>Everyone&apos;s unfinished uploads: how far they got, and cancelling them.</source>
+      </segment>
+    </unit>
+    <unit id="4762585341469932930">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:205</note>
+      </notes>
+      <segment>
+        <source>How deleting works, how long the trash keeps things, limits of copies, uploads and zips, names, and where SFE keeps its work files.</source>
+      </segment>
+    </unit>
+    <unit id="3237669241623156165">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:213</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:94</note>
+      </notes>
+      <segment>
+        <source>Keep alive</source>
+      </segment>
+    </unit>
+    <unit id="388022409127324044">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:215</note>
+      </notes>
+      <segment>
+        <source>Stops the file server from dropping the library folder&apos;s connection while nobody uses it.</source>
+      </segment>
+    </unit>
+    <unit id="3621289933744200424">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:221</note>
+      </notes>
+      <segment>
+        <source>Whether the library folder is on a network share and what the last pings found; ping it now.</source>
+      </segment>
+    </unit>
+    <unit id="1627398470021783924">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:227</note>
+      </notes>
+      <segment>
+        <source>Whether the library folder is kept alive, how often, and how long a ping may take.</source>
+      </segment>
+    </unit>
+    <unit id="7886570921510760899">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:234</note>
+        <note category="location">src/app/settings/tabs/library-settings.ts:100</note>
+      </notes>
+      <segment>
+        <source>Tags</source>
+      </segment>
+    </unit>
+    <unit id="777572264505933722">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:236</note>
+      </notes>
+      <segment>
+        <source>Create, edit and delete tags; the tag sidebar and the tag history.</source>
+      </segment>
+    </unit>
+    <unit id="5194865723601669076">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:240</note>
+      </notes>
+      <segment>
+        <source>All tags</source>
+      </segment>
+    </unit>
+    <unit id="8720606184016040178">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:241</note>
+      </notes>
+      <segment>
+        <source>Create, edit and delete the space&apos;s tags.</source>
+      </segment>
+    </unit>
+    <unit id="7449073064598000206">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:244</note>
+      </notes>
+      <segment>
+        <source>How many tags the sidebar shows, and the history of the tags given.</source>
+      </segment>
+    </unit>
+    <unit id="3414857355250876097">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:250</note>
+        <note category="location">src/app/settings/tabs/library-settings.ts:9</note>
+      </notes>
+      <segment>
+        <source>Duplicates &amp; moves</source>
+      </segment>
+    </unit>
+    <unit id="6398476499333338651">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:252</note>
+      </notes>
+      <segment>
+        <source>Identical files, similar videos, and tagged files that were moved or renamed.</source>
+      </segment>
+    </unit>
+    <unit id="3587873128318078848">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:256</note>
+        <note category="location">src/app/settings/tabs/library-settings.ts:14</note>
+      </notes>
+      <segment>
+        <source>Duplicates</source>
+      </segment>
+    </unit>
+    <unit id="7882849162220749183">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:257</note>
+      </notes>
+      <segment>
+        <source>Groups of identical files, and removing the extra copies.</source>
+      </segment>
+    </unit>
+    <unit id="8714539619500735356">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:262</note>
+        <note category="location">src/app/settings/tabs/library-settings.ts:48</note>
+      </notes>
+      <segment>
+        <source>Similar videos</source>
+      </segment>
+    </unit>
+    <unit id="810952790643026862">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:263</note>
+      </notes>
+      <segment>
+        <source>Videos showing the same pictures as other files: another resolution, quality or format, or trimmed.</source>
+      </segment>
+    </unit>
+    <unit id="8792115987582122005">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:269</note>
+      </notes>
+      <segment>
+        <source>Moved files</source>
+      </segment>
+    </unit>
+    <unit id="6687028346999576316">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:270</note>
+      </notes>
+      <segment>
+        <source>Tagged files that are no longer where they were, and where they went.</source>
+      </segment>
+    </unit>
+    <unit id="8724943327882103372">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:275</note>
+      </notes>
+      <segment>
+        <source>The smallest duplicates, how alike similar videos must be, and how moved files keep their tags.</source>
+      </segment>
+    </unit>
+    <unit id="6907161397537530258">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:283</note>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:13</note>
+      </notes>
+      <segment>
+        <source>Thumbnails</source>
+      </segment>
+    </unit>
+    <unit id="8611217001439566979">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:285</note>
+      </notes>
+      <segment>
+        <source>The thumbnails of photos and videos in the listings and the viewer.</source>
+      </segment>
+    </unit>
+    <unit id="8414932350776289558">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:291</note>
+        <note category="location">src/app/settings/tabs/preview-settings.ts:109</note>
+      </notes>
+      <segment>
+        <source>Trickplay</source>
+      </segment>
+    </unit>
+    <unit id="1923887870753195881">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:293</note>
+      </notes>
+      <segment>
+        <source>Frames along each video, shown above the player&apos;s seek bar and when the pointer is over a video.</source>
+      </segment>
+    </unit>
+    <unit id="5306473977542913614">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:298</note>
+      </notes>
+      <segment>
+        <source>Activity</source>
+      </segment>
+    </unit>
+    <unit id="6443611490933727190">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:299</note>
+      </notes>
+      <segment>
+        <source>What the trickplay task is working on, what is waiting, and what it did last.</source>
+      </segment>
+    </unit>
+    <unit id="742254974842465624">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:304</note>
+      </notes>
+      <segment>
+        <source>Which videos get trickplay, its frames, and how much of the server it uses.</source>
+      </segment>
+    </unit>
+    <unit id="7172558586224768124">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:311</note>
+        <note category="location">src/app/settings/tabs/files-settings.ts:9</note>
+      </notes>
+      <segment>
+        <source>Picture editor</source>
+      </segment>
+    </unit>
+    <unit id="1481402924938113573">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:313</note>
+      </notes>
+      <segment>
+        <source>Where the pictures edited in the viewer are saved, and their quality.</source>
+      </segment>
+    </unit>
+    <unit id="5039837485095030727">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:319</note>
+      </notes>
+      <segment>
+        <source>Spaces &amp; accounts</source>
+      </segment>
+    </unit>
+    <unit id="7169552009858531231">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:321</note>
+      </notes>
+      <segment>
+        <source>Who can sign in, which spaces they see, and what they may do in each. A space is one library with its own groups and accounts.</source>
+      </segment>
+    </unit>
+    <unit id="660809762116764762">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:326</note>
+      </notes>
+      <segment>
+        <source>Spaces</source>
+      </segment>
+    </unit>
+    <unit id="9221518691925790453">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:327</note>
+      </notes>
+      <segment>
+        <source>Each space&apos;s library, groups, accounts and visitors.</source>
+      </segment>
+    </unit>
+    <unit id="7384320684082850891">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:334</note>
+      </notes>
+      <segment>
+        <source>Everyone who can sign in, with the spaces each one sees and their groups there.</source>
+      </segment>
+    </unit>
+    <unit id="1819621373596655639">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:347</note>
+      </notes>
+      <segment>
+        <source>Storage outside the libraries (Dropbox): whether the server may connect to it, and how.</source>
+      </segment>
+    </unit>
+    <unit id="4509181762723196018">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:353</note>
+      </notes>
+      <segment>
+        <source>The space&apos;s and the server&apos;s connections, and who uses them.</source>
+      </segment>
+    </unit>
+    <unit id="730703184011067892">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:359</note>
+      </notes>
+      <segment>
+        <source>Dropbox</source>
+      </segment>
+    </unit>
+    <unit id="7557862381908026336">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:360</note>
+      </notes>
+      <segment>
+        <source>The app this server signs in to Dropbox through.</source>
+      </segment>
+    </unit>
+    <unit id="3426490015982424811">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:363</note>
+      </notes>
+      <segment>
+        <source>Which kinds and levels of connections this server allows.</source>
+      </segment>
+    </unit>
+    <unit id="3015544348988736098">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:369</note>
+      </notes>
+      <segment>
+        <source>Background tasks</source>
+      </segment>
+    </unit>
+    <unit id="5089793497105466619">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:371</note>
+      </notes>
+      <segment>
+        <source>What is running now, when each task runs next, the schedules that start them, and their logs.</source>
+      </segment>
+    </unit>
+    <unit id="6904866445262015585">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:376</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:9</note>
+      </notes>
+      <segment>
+        <source>Tasks</source>
+      </segment>
+    </unit>
+    <unit id="1667315428606567828">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:377</note>
+      </notes>
+      <segment>
+        <source>What is running now and when each task runs next; start or cancel them.</source>
+      </segment>
+    </unit>
+    <unit id="7988633056301568717">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:382</note>
+      </notes>
+      <segment>
+        <source>Schedules</source>
+      </segment>
+    </unit>
+    <unit id="2627367526746377728">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:383</note>
+      </notes>
+      <segment>
+        <source>When the tasks start by themselves.</source>
+      </segment>
+    </unit>
+    <unit id="186236568870281953">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:388</note>
+        <note category="location">src/app/settings/tabs/library-settings.ts:116</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:14</note>
+      </notes>
+      <segment>
+        <source>History</source>
+      </segment>
+    </unit>
+    <unit id="2076847359280339117">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:389</note>
+      </notes>
+      <segment>
+        <source>The tasks&apos; past runs, with their logs.</source>
+      </segment>
+    </unit>
+    <unit id="659847165899982536">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:392</note>
+      </notes>
+      <segment>
+        <source>How long runs and their logs are kept.</source>
+      </segment>
+    </unit>
+    <unit id="4804785061014590286">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:398</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:32</note>
+      </notes>
+      <segment>
+        <source>Logs</source>
+      </segment>
+    </unit>
+    <unit id="6374694221782748275">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:400</note>
+      </notes>
+      <segment>
+        <source>The messages, warnings and errors the server logged, searchable by text, date and severity, and how long they are kept.</source>
+      </segment>
+    </unit>
+    <unit id="1980504865097627824">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:405</note>
+      </notes>
+      <segment>
+        <source>Log</source>
+      </segment>
+    </unit>
+    <unit id="7996783602753923716">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:406</note>
+      </notes>
+      <segment>
+        <source>The messages, warnings and errors the server logged, searchable by text, date and severity.</source>
+      </segment>
+    </unit>
+    <unit id="667099567228161735">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:409</note>
+      </notes>
+      <segment>
+        <source>How long the log is kept, and whether it&apos;s also saved to files.</source>
+      </segment>
+    </unit>
+    <unit id="29832309535656200">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:415</note>
+      </notes>
+      <segment>
+        <source>System</source>
+      </segment>
+    </unit>
+    <unit id="3081024595317466043">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:417</note>
+      </notes>
+      <segment>
+        <source>The server&apos;s version, library folder and ffmpeg, what it does when it starts, its API and backups.</source>
+      </segment>
+    </unit>
+    <unit id="1726363342938046830">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:422</note>
+      </notes>
+      <segment>
+        <source>About</source>
+      </segment>
+    </unit>
+    <unit id="3535282279183818597">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:423</note>
+      </notes>
+      <segment>
+        <source>The server&apos;s version, its library folder, the ffmpeg it found, and its API reference.</source>
+      </segment>
+    </unit>
+    <unit id="7419787782755641631">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:429</note>
+        <note category="location">src/app/admin/installation-section.component.html:3,4</note>
+      </notes>
+      <segment>
+        <source>Installation</source>
+      </segment>
+    </unit>
+    <unit id="3148007398244530942">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:430</note>
+      </notes>
+      <segment>
+        <source>The first space&apos;s library folder, who can open SFE, and ffmpeg, behind the setup code.</source>
+      </segment>
+    </unit>
+    <unit id="7906550301772724948">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:435</note>
+      </notes>
+      <segment>
+        <source>What SFE does when it starts on this computer.</source>
+      </segment>
+    </unit>
+    <unit id="744533273062091875">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:436</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:64</note>
+      </notes>
+      <segment>
+        <source>Start-up</source>
+      </segment>
+    </unit>
+    <unit id="3465942650835858981">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:441</note>
+      </notes>
+      <segment>
+        <source>Maintenance</source>
+      </segment>
+    </unit>
+    <unit id="8705453912255442572">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:442</note>
+      </notes>
+      <segment>
+        <source>A backup of the databases and configuration files.</source>
+      </segment>
+    </unit>
+    <unit id="1268722694193300324">
+      <notes>
+        <note category="location">src/app/admin/installation-section.component.html:5,7</note>
+      </notes>
+      <segment>
+        <source> The folder of the first space, who can open SFE and where ffmpeg is. Only the person running the server may change them: enter the setup code first. SFE showed it when it started the first time and keeps it in data/setup-code.txt in its folder, unless the server&apos;s configuration sets one. </source>
+      </segment>
+    </unit>
+    <unit id="5208745037139145267">
+      <notes>
+        <note category="location">src/app/admin/installation-section.component.html:28,29</note>
+      </notes>
+      <segment>
+        <source>Check the setup code and show the installation settings</source>
+      </segment>
+    </unit>
+    <unit id="4545041448523656285">
+      <notes>
+        <note category="location">src/app/admin/installation-section.component.html:32</note>
+      </notes>
+      <segment>
+        <source>Unlock</source>
+      </segment>
+    </unit>
+    <unit id="5450872041469934086">
+      <notes>
+        <note category="location">src/app/admin/installation-section.component.html:38,39</note>
+      </notes>
+      <segment>
+        <source> With another library folder, the first space shows other files: the next scan treats the files of the old folder as gone (tagged ones are kept as moved files for a while). </source>
+      </segment>
+    </unit>
+    <unit id="7472679179024733924">
+      <notes>
+        <note category="location">src/app/admin/installation-section.component.html:47,48</note>
+      </notes>
+      <segment>
+        <source>The new network setting applies once SFE starts again: restart it (or its service).</source>
+      </segment>
+    </unit>
+    <unit id="1505301326406497272">
+      <notes>
+        <note category="location">src/app/admin/installation-section.component.html:53,54</note>
+      </notes>
+      <segment>
+        <source>Save the installation settings</source>
+      </segment>
+    </unit>
+    <unit id="1499473300305375401">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.html:9,10</note>
+      </notes>
+      <segment>
+        <source>Ping the library folder now, even while keep alive is off, to try the share</source>
+      </segment>
+    </unit>
+    <unit id="1613529003143952750">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.html:14</note>
+      </notes>
+      <segment>
+        <source>Ping now</source>
+      </segment>
+    </unit>
+    <unit id="7418091036641789233">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.html:18,19</note>
+      </notes>
+      <segment>
+        <source>Turn keep alive on or off, and change how often it pings</source>
+      </segment>
+    </unit>
+    <unit id="675808317932229936">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.html:44,45</note>
+      </notes>
+      <segment>
+        <source>No ping since the server started: keep alive is off. Ping now tries the library folder once.</source>
+      </segment>
+    </unit>
+    <unit id="350955387861497961">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.html:47,48</note>
+      </notes>
+      <segment>
+        <source>No ping since the server started.</source>
+      </segment>
+    </unit>
+    <unit id="3005733994488366409">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:47</note>
+      </notes>
+      <segment>
+        <source>Could not read the status: <ph id="0" equiv="reason" disp="error"/></source>
+      </segment>
+    </unit>
+    <unit id="7555232803199723455">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:52</note>
+      </notes>
+      <segment>
+        <source>Off: the library folder isn&apos;t pinged. Turn it on in Settings.</source>
+      </segment>
+    </unit>
+    <unit id="6082060965495469743">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:54</note>
+      </notes>
+      <segment>
+        <source>{failing, plural, one {# folder not answering} other {# folders not answering}}</source>
+      </segment>
+    </unit>
+    <unit id="7157054112412537439">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:59,60</note>
+      </notes>
+      <segment>
+        <source>On for folders on a network share, every {seconds, plural, one {# second} other {# seconds}}.</source>
+      </segment>
+    </unit>
+    <unit id="2128621017321616211">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:63</note>
+      </notes>
+      <segment>
+        <source>On, every {seconds, plural, one {# second} other {# seconds}}.</source>
+      </segment>
+    </unit>
+    <unit id="6018685109278277402">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:72</note>
+      </notes>
+      <segment>
+        <source>Not checked yet</source>
+      </segment>
+    </unit>
+    <unit id="7065861296344533852">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>On a network share</source>
+      </segment>
+    </unit>
+    <unit id="3566629234460717768">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:75</note>
+      </notes>
+      <segment>
+        <source>Not on a network share, so not pinged (choose “Always” to ping it anyway)</source>
+      </segment>
+    </unit>
+    <unit id="4020741367443635487">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:76</note>
+      </notes>
+      <segment>
+        <source>Not on a network share</source>
+      </segment>
+    </unit>
+    <unit id="4899635762796860749">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:82</note>
+      </notes>
+      <segment>
+        <source>Failing since <ph id="0" equiv="date" disp="formatDate(folder.failingSince)"/>. <ph id="1" equiv="reason" disp="error"/></source>
+      </segment>
+    </unit>
+    <unit id="1595696461425987461">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:87</note>
+      </notes>
+      <segment>
+        <source>Waiting for an answer</source>
+      </segment>
+    </unit>
+    <unit id="5039233570645453294">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:89</note>
+      </notes>
+      <segment>
+        <source>Last ping <ph id="0" equiv="date" disp="formatDate(folder.lastPing)"/></source>
+      </segment>
+    </unit>
+    <unit id="2177956477404511332">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:92</note>
+        <note category="description">duration in milliseconds</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="ms" disp="ms"/> ms</source>
+      </segment>
+    </unit>
+    <unit id="6685340882062392943">
+      <notes>
+        <note category="location">src/app/admin/keep-alive-status.component.ts:94</note>
+      </notes>
+      <segment>
+        <source>file written</source>
+      </segment>
+    </unit>
+    <unit id="5621597867547268354">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:7,8</note>
+      </notes>
+      <segment>
+        <source>Backup</source>
+      </segment>
+    </unit>
+    <unit id="4438096129245751917">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:9,11</note>
+      </notes>
+      <segment>
+        <source> A zip file of the databases (accounts, spaces, and every space&apos;s index and tags) and of the configuration files. Thumbnails and trickplay are left out: they are made again. It holds password hashes and connection strings: keep it somewhere safe. </source>
+      </segment>
+    </unit>
+    <unit id="7350521599765101819">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:19,20</note>
+      </notes>
+      <segment>
+        <source>Download a backup of the databases and configuration files (zip)</source>
+      </segment>
+    </unit>
+    <unit id="8176226444906368770">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:21</note>
+        <note category="location">src/app/migration/migration-page.component.html:177</note>
+      </notes>
+      <segment>
+        <source>Download a backup</source>
+      </segment>
+    </unit>
+    <unit id="2724055831234181057">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:29</note>
+      </notes>
+      <segment>
+        <source>Version</source>
+      </segment>
+    </unit>
+    <unit id="6413514884883484792">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:31</note>
+      </notes>
+      <segment>
+        <source>Commit</source>
+      </segment>
+    </unit>
+    <unit id="7955287665086887432">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:50,52</note>
+      </notes>
+      <segment>
+        <source> Looked for <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ info.ffmpeg.configured }}"/></pc>. Without it, there are no video thumbnails, trickplay, video resolutions and durations, or converted videos. Pick its folder in System › Installation. </source>
+      </segment>
+    </unit>
+    <unit id="836302299174689560">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:58,59</note>
+      </notes>
+      <segment>
+        <source>Could not read it: <ph id="0" equiv="INTERPOLATION" disp="{{ infoError() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="4638721191486861150">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:67,68</note>
+      </notes>
+      <segment>
+        <source>The documentation of the server&apos;s API, in a new tab</source>
+      </segment>
+    </unit>
+    <unit id="2700336898947656205">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:69</note>
+      </notes>
+      <segment>
+        <source>API reference</source>
+      </segment>
+    </unit>
+    <unit id="3581028895223323026">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:11</note>
+      </notes>
+      <segment>
+        <source>Turned off in this space: videos the browser can&apos;t play aren&apos;t converted (Playback › Streaming).</source>
+      </segment>
+    </unit>
+    <unit id="3084596691032156052">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:12</note>
+      </notes>
+      <segment>
+        <source>Videos the browser can&apos;t play are converted while they play.</source>
+      </segment>
+    </unit>
+    <unit id="1624847481095722566">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:13</note>
+      </notes>
+      <segment>
+        <source>Every video is converted while it plays.</source>
+      </segment>
+    </unit>
+    <unit id="7724242344164811541">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:44</note>
+      </notes>
+      <segment>
+        <source>Converting now</source>
+      </segment>
+    </unit>
+    <unit id="4994511216055481186">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:62,63</note>
+      </notes>
+      <segment>
+        <source>No video is being converted.</source>
+      </segment>
+    </unit>
+    <unit id="8546616932134910890">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:83</note>
+      </notes>
+      <segment>
+        <source>Could not read the streams: <ph id="0" equiv="reason" disp="error"/></source>
+      </segment>
+    </unit>
+    <unit id="2411061826461419991">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:87,88</note>
+      </notes>
+      <segment>
+        <source>ffmpeg can&apos;t be found: set its path (Thumbnails:FfmpegPath) in the server&apos;s configuration file. System › About says where it looks.</source>
+      </segment>
+    </unit>
+    <unit id="593263277209526434">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:95,96</note>
+      </notes>
+      <segment>
+        <source>At most {count, plural, one {# video} other {# videos}} at once on the whole server; more viewers wait for one to end.</source>
+      </segment>
+    </unit>
+    <unit id="2895747618881739814">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:127</note>
+      </notes>
+      <segment>
+        <source>Visitor</source>
+      </segment>
+    </unit>
+    <unit id="6414016414130697850">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:130</note>
+        <note category="description">a stream&apos;s start</note>
+      </notes>
+      <segment>
+        <source>from <ph id="0" equiv="time" disp="formatDuration(stream.start)"/></source>
+      </segment>
+    </unit>
+    <unit id="7821424545865081006">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:131</note>
+      </notes>
+      <segment>
+        <source>from the start</source>
+      </segment>
+    </unit>
+    <unit id="447824299150886908">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:132</note>
+      </notes>
+      <segment>
+        <source>converted</source>
+      </segment>
+    </unit>
+    <unit id="5899335047291565795">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:132</note>
+      </notes>
+      <segment>
+        <source>repackaged</source>
+      </segment>
+    </unit>
+    <unit id="6953424478138186124">
+      <notes>
+        <note category="location">src/app/admin/video-streams.component.ts:134</note>
+        <note category="description">how long a stream has run</note>
+      </notes>
+      <segment>
+        <source>for <ph id="0" equiv="elapsed" disp="formatElapsed(seconds)"/></source>
       </segment>
     </unit>
     <unit id="1294087843952092532">
@@ -3847,14 +5580,6 @@ Space “Holiday photos”
         <source>Download a zip file of the databases and configuration files</source>
       </segment>
     </unit>
-    <unit id="8176226444906368770">
-      <notes>
-        <note category="location">src/app/migration/migration-page.component.html:177</note>
-      </notes>
-      <segment>
-        <source>Download a backup</source>
-      </segment>
-    </unit>
     <unit id="253714094634466572">
       <notes>
         <note category="location">src/app/migration/migration-page.component.html:184,185</note>
@@ -3997,22 +5722,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>The settings here are only shown in the full view.</source>
-      </segment>
-    </unit>
-    <unit id="536610637334312079">
-      <notes>
-        <note category="location">src/app/settings/settings-panel.component.html:28,29</note>
-      </notes>
-      <segment>
-        <source>Show every setting instead of only the most used ones</source>
-      </segment>
-    </unit>
-    <unit id="2294727580763071220">
-      <notes>
-        <note category="location">src/app/settings/settings-panel.component.html:32,33</note>
-      </notes>
-      <segment>
-        <source>Show all settings</source>
       </segment>
     </unit>
     <unit id="4243471749319754665">
@@ -4313,14 +6022,6 @@ Space “Holiday photos”
         <source>Shows the number of each line on the left.</source>
       </segment>
     </unit>
-    <unit id="8671234314555525900">
-      <notes>
-        <note category="location">src/app/settings/tabs/appearance-settings.ts:46</note>
-      </notes>
-      <segment>
-        <source>Appearance</source>
-      </segment>
-    </unit>
     <unit id="859441694065520011">
       <notes>
         <note category="location">src/app/settings/tabs/appearance-settings.ts:47,48</note>
@@ -4537,14 +6238,6 @@ Space “Holiday photos”
         <source>Only scripts and other programs using the API ask for pages; the app itself uses the page size above.</source>
       </segment>
     </unit>
-    <unit id="7824266831434362876">
-      <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:13</note>
-      </notes>
-      <segment>
-        <source>Browsing</source>
-      </segment>
-    </unit>
     <unit id="2663912515245168797">
       <notes>
         <note category="location">src/app/settings/tabs/browsing-settings.ts:16</note>
@@ -4747,14 +6440,6 @@ Space “Holiday photos”
         <source>With 720, videos of 1280×720 and 1000×1000 are HR, and one of 854×480 is LR. The searches r:hr and r:lr use both thresholds, whether the marks are shown or not.</source>
       </segment>
     </unit>
-    <unit id="4580988005648117665">
-      <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:110</note>
-      </notes>
-      <segment>
-        <source>Search</source>
-      </segment>
-    </unit>
     <unit id="5968132631442328843">
       <notes>
         <note category="location">src/app/settings/tabs/browsing-settings.ts:113</note>
@@ -4843,14 +6528,6 @@ Space “Holiday photos”
         <source>Each browser keeps its own searches: they never reach the server or other devices.</source>
       </segment>
     </unit>
-    <unit id="7172558586224768124">
-      <notes>
-        <note category="location">src/app/settings/tabs/files-settings.ts:9</note>
-      </notes>
-      <segment>
-        <source>Picture editor</source>
-      </segment>
-    </unit>
     <unit id="2611840781787759251">
       <notes>
         <note category="location">src/app/settings/tabs/files-settings.ts:10</note>
@@ -4922,14 +6599,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>PNG pictures are saved without loss; other formats are saved as PNG.</source>
-      </segment>
-    </unit>
-    <unit id="4730016237617113117">
-      <notes>
-        <note category="location">src/app/settings/tabs/files-settings.ts:44</note>
-      </notes>
-      <segment>
-        <source>File management</source>
       </segment>
     </unit>
     <unit id="4000172853977120710">
@@ -5164,28 +6833,12 @@ Space “Holiday photos”
         <source>In the library (a hidden .sfe folder at its top), they stay on the library&apos;s drive, so moving a file there is instant. In the server&apos;s data folder, the library holds nothing of SFE&apos;s, but large files are copied from one drive to the other. The name .sfe at the top of the library stays reserved either way.</source>
       </segment>
     </unit>
-    <unit id="3414857355250876097">
-      <notes>
-        <note category="location">src/app/settings/tabs/library-settings.ts:9</note>
-      </notes>
-      <segment>
-        <source>Duplicates &amp; moves</source>
-      </segment>
-    </unit>
     <unit id="1806202980495942251">
       <notes>
         <note category="location">src/app/settings/tabs/library-settings.ts:10</note>
       </notes>
       <segment>
         <source>Find identical files in the library, and keep the tags of files that are moved, renamed, or whose drive was missing during a scan. Both work from the index: scan folders to keep it up to date.</source>
-      </segment>
-    </unit>
-    <unit id="3587873128318078848">
-      <notes>
-        <note category="location">src/app/settings/tabs/library-settings.ts:14</note>
-      </notes>
-      <segment>
-        <source>Duplicates</source>
       </segment>
     </unit>
     <unit id="6937015734563033379">
@@ -5250,14 +6903,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>The two files are compared byte for byte first, so an identical copy always stays. Only groups with the right “Delete duplicates” can remove copies; with “Always delete permanently” (File management), they are deleted for good.</source>
-      </segment>
-    </unit>
-    <unit id="8714539619500735356">
-      <notes>
-        <note category="location">src/app/settings/tabs/library-settings.ts:48</note>
-      </notes>
-      <segment>
-        <source>Similar videos</source>
       </segment>
     </unit>
     <unit id="5867298964461076870">
@@ -5356,14 +7001,6 @@ Space “Holiday photos”
         <source>Missing files not found again in that time are forgotten, with their tags. 0: until found or forgotten by hand.</source>
       </segment>
     </unit>
-    <unit id="7886570921510760899">
-      <notes>
-        <note category="location">src/app/settings/tabs/library-settings.ts:100</note>
-      </notes>
-      <segment>
-        <source>Tags</source>
-      </segment>
-    </unit>
     <unit id="3982403428275430291">
       <notes>
         <note category="location">src/app/settings/tabs/library-settings.ts:103</note>
@@ -5386,15 +7023,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>How many tags each section of the sidebar shows.</source>
-      </segment>
-    </unit>
-    <unit id="186236568870281953">
-      <notes>
-        <note category="location">src/app/settings/tabs/library-settings.ts:116</note>
-        <note category="location">src/app/settings/tabs/system-settings.ts:14</note>
-      </notes>
-      <segment>
-        <source>History</source>
       </segment>
     </unit>
     <unit id="5305326899836714713">
@@ -5475,14 +7103,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>IINA (macOS)</source>
-      </segment>
-    </unit>
-    <unit id="7683705529753923369">
-      <notes>
-        <note category="location">src/app/settings/tabs/playback-settings.ts:31</note>
-      </notes>
-      <segment>
-        <source>Player</source>
       </segment>
     </unit>
     <unit id="3739311706692458197">
@@ -5668,14 +7288,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>They play through Ruffle, a Flash Player emulator that comes with SFE. A movie can only read the files of its own folder, and never acts as the person watching it.</source>
-      </segment>
-    </unit>
-    <unit id="8872285976030977366">
-      <notes>
-        <note category="location">src/app/settings/tabs/playback-settings.ts:116</note>
-      </notes>
-      <segment>
-        <source>Streaming</source>
       </segment>
     </unit>
     <unit id="4903609420495999825">
@@ -5866,14 +7478,6 @@ Space “Holiday photos”
         <source>Those already made are still shown. “Scans and previews…” in a folder&apos;s menu, or Scanning › Excluded folders, adds and removes folders here too.</source>
       </segment>
     </unit>
-    <unit id="6907161397537530258">
-      <notes>
-        <note category="location">src/app/settings/tabs/preview-settings.ts:13</note>
-      </notes>
-      <segment>
-        <source>Thumbnails</source>
-      </segment>
-    </unit>
     <unit id="477181226282824446">
       <notes>
         <note category="location">src/app/settings/tabs/preview-settings.ts:16</note>
@@ -6002,16 +7606,6 @@ Space “Holiday photos”
         <source>It concerns animated images shown through their thumbnail. Each time, the whole file is downloaded.</source>
       </segment>
     </unit>
-    <unit id="3372678468695151635">
-      <notes>
-        <note category="location">src/app/settings/tabs/preview-settings.ts:72</note>
-        <note category="location">src/app/settings/tabs/preview-settings.ts:135</note>
-        <note category="location">src/app/settings/tabs/scanning-settings.ts:33</note>
-      </notes>
-      <segment>
-        <source>Excluded folders</source>
-      </segment>
-    </unit>
     <unit id="4211164494079429592">
       <notes>
         <note category="location">src/app/settings/tabs/preview-settings.ts:75</note>
@@ -6061,14 +7655,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>A thumbnail taking longer is given up, and tried again the next time it is asked for.</source>
-      </segment>
-    </unit>
-    <unit id="8414932350776289558">
-      <notes>
-        <note category="location">src/app/settings/tabs/preview-settings.ts:109</note>
-      </notes>
-      <segment>
-        <source>Trickplay</source>
       </segment>
     </unit>
     <unit id="6233608758332906094">
@@ -6295,14 +7881,6 @@ Space “Holiday photos”
         <source>A video taking longer is skipped until it, or these settings, change.</source>
       </segment>
     </unit>
-    <unit id="3672402570538331121">
-      <notes>
-        <note category="location">src/app/settings/tabs/scanning-settings.ts:9</note>
-      </notes>
-      <segment>
-        <source>What to scan</source>
-      </segment>
-    </unit>
     <unit id="9109618195562940141">
       <notes>
         <note category="location">src/app/settings/tabs/scanning-settings.ts:12</note>
@@ -6391,15 +7969,6 @@ Space “Holiday photos”
         <source>Includes items marked hidden or system (on Linux and macOS, names starting with a dot), in listings and in scans.</source>
       </segment>
     </unit>
-    <unit id="6125391559813574136">
-      <notes>
-        <note category="location">src/app/settings/tabs/scanning-settings.ts:61</note>
-        <note category="location">src/app/settings/tabs/scanning-settings.ts:64</note>
-      </notes>
-      <segment>
-        <source>File types</source>
-      </segment>
-    </unit>
     <unit id="6274305908761369037">
       <notes>
         <note category="location">src/app/settings/tabs/scanning-settings.ts:66</note>
@@ -6480,14 +8049,6 @@ Space “Holiday photos”
         <source>The text viewer already knows .txt, .log, .md, .json, .xml, code and scripts.</source>
       </segment>
     </unit>
-    <unit id="4973087105311508591">
-      <notes>
-        <note category="location">src/app/settings/tabs/scanning-settings.ts:102</note>
-      </notes>
-      <segment>
-        <source>Indexing</source>
-      </segment>
-    </unit>
     <unit id="1853395974422033336">
       <notes>
         <note category="location">src/app/settings/tabs/scanning-settings.ts:105</note>
@@ -6560,14 +8121,6 @@ Space “Holiday photos”
         <source>Higher is faster on SSDs and fast network drives; lower is gentler on spinning disks.</source>
       </segment>
     </unit>
-    <unit id="6904866445262015585">
-      <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:9</note>
-      </notes>
-      <segment>
-        <source>Tasks</source>
-      </segment>
-    </unit>
     <unit id="4132100578515590852">
       <notes>
         <note category="location">src/app/settings/tabs/system-settings.ts:10,11</note>
@@ -6590,14 +8143,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Runs that finished longer ago are forgotten, with their logs. 0: until cleared by hand.</source>
-      </segment>
-    </unit>
-    <unit id="4804785061014590286">
-      <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:32</note>
-      </notes>
-      <segment>
-        <source>Logs</source>
       </segment>
     </unit>
     <unit id="1491760929003188276">
@@ -6654,14 +8199,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>The logs folder is next to the database and the thumbnails (data/logs unless the server&apos;s configuration says otherwise). The files are written even while the database can&apos;t be.</source>
-      </segment>
-    </unit>
-    <unit id="744533273062091875">
-      <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:64</note>
-      </notes>
-      <segment>
-        <source>Start-up</source>
       </segment>
     </unit>
     <unit id="5192687558796811602">
@@ -6726,14 +8263,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>It uses a link that works once, for a minute, from this computer only, and only while the server has a single administrator. Anyone who can start SFE here gets in as the administrator.</source>
-      </segment>
-    </unit>
-    <unit id="3237669241623156165">
-      <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:94</note>
-      </notes>
-      <segment>
-        <source>Keep alive</source>
       </segment>
     </unit>
     <unit id="5548779864362722387">
@@ -6881,13 +8410,475 @@ Space “Holiday photos”
         <source>“When it is on a network share” looks at each one on its own.</source>
       </segment>
     </unit>
+    <unit id="8205940332007726431">
+      <notes>
+        <note category="location">src/app/tokens/all-tokens.component.ts:23,24</note>
+        <note category="location">src/app/tokens/all-tokens.component.ts:25,26</note>
+      </notes>
+      <segment>
+        <source>Find a token</source>
+      </segment>
+    </unit>
+    <unit id="2318499300007213647">
+      <notes>
+        <note category="location">src/app/tokens/all-tokens.component.ts:27,28</note>
+      </notes>
+      <segment>
+        <source>Show only the tokens whose name or account contains these letters</source>
+      </segment>
+    </unit>
+    <unit id="3256514875556468623">
+      <notes>
+        <note category="location">src/app/tokens/all-tokens.component.ts:44,45</note>
+      </notes>
+      <segment>
+        <source>No token matches.</source>
+      </segment>
+    </unit>
+    <unit id="3201632981049822501">
+      <notes>
+        <note category="location">src/app/tokens/all-tokens.component.ts:46,47</note>
+      </notes>
+      <segment>
+        <source>No account has a token.</source>
+      </segment>
+    </unit>
+    <unit id="3078408627068036018">
+      <notes>
+        <note category="location">src/app/tokens/all-tokens.component.ts:90</note>
+      </notes>
+      <segment>
+        <source>Could not load the tokens: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
+      </segment>
+    </unit>
+    <unit id="1311326701029908353">
+      <notes>
+        <note category="location">src/app/tokens/my-tokens.component.html:2,4</note>
+      </notes>
+      <segment>
+        <source> A token lets a program or a script use SFE&apos;s API as you, without your password: it sends the token with each request. Give each program its own token, and revoke a program&apos;s token when it no longer needs it.
+</source>
+      </segment>
+    </unit>
+    <unit id="2119163121648771064">
+      <notes>
+        <note category="location">src/app/tokens/my-tokens.component.html:7,8</note>
+      </notes>
+      <segment>
+        <source> Access tokens are switched off on this server: no token can be made, and those below are refused until they are switched on again. </source>
+      </segment>
+    </unit>
+    <unit id="215729537217144976">
+      <notes>
+        <note category="location">src/app/tokens/my-tokens.component.html:16,17</note>
+      </notes>
+      <segment>
+        <source>Make a token for a program or a script</source>
+      </segment>
+    </unit>
+    <unit id="5382715531175540381">
+      <notes>
+        <note category="location">src/app/tokens/my-tokens.component.html:20</note>
+      </notes>
+      <segment>
+        <source>New token</source>
+      </segment>
+    </unit>
+    <unit id="5365583404382140005">
+      <notes>
+        <note category="location">src/app/tokens/my-tokens.component.html:27,28</note>
+      </notes>
+      <segment>
+        <source>Revoke all your tokens: the programs using them are refused from now on</source>
+      </segment>
+    </unit>
+    <unit id="3297056827948046782">
+      <notes>
+        <note category="location">src/app/tokens/my-tokens.component.html:31,32</note>
+      </notes>
+      <segment>
+        <source>Revoke all</source>
+      </segment>
+    </unit>
+    <unit id="4573092850260582807">
+      <notes>
+        <note category="location">src/app/tokens/my-tokens.component.html:43,44</note>
+      </notes>
+      <segment>
+        <source>No tokens yet.</source>
+      </segment>
+    </unit>
+    <unit id="8509959623762501811">
+      <notes>
+        <note category="location">src/app/tokens/my-tokens.component.ts:47</note>
+      </notes>
+      <segment>
+        <source>Could not load your tokens: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
+      </segment>
+    </unit>
+    <unit id="1191190127095591993">
+      <notes>
+        <note category="location">src/app/tokens/my-tokens.component.ts:68</note>
+      </notes>
+      <segment>
+        <source>{revoked, plural, one {# token} other {# tokens}} revoked.</source>
+      </segment>
+    </unit>
+    <unit id="5922580539815985718">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:5,7</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Copy the token now: you won&apos;t see it again.</pc> SFE keeps only a fingerprint of it. If you lose it, revoke it and make another. </source>
+      </segment>
+    </unit>
+    <unit id="3151690182930433011">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:15,16</note>
+      </notes>
+      <segment>
+        <source>The new token</source>
+      </segment>
+    </unit>
+    <unit id="5015426279821032180">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:23,24</note>
+      </notes>
+      <segment>
+        <source>Copy the token to the clipboard</source>
+      </segment>
+    </unit>
+    <unit id="4323470180912194028">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:27,28</note>
+      </notes>
+      <segment>
+        <source>Copy</source>
+      </segment>
+    </unit>
+    <unit id="2395938952972290640">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:30,32</note>
+      </notes>
+      <segment>
+        <source> A program sends it in the header <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">Authorization: Bearer</pc> followed by the token. It acts as you, within what you chose; your password stays yours. </source>
+      </segment>
+    </unit>
+    <unit id="5028211543411996705">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:42,43</note>
+      </notes>
+      <segment>
+        <source>For example Backup script</source>
+      </segment>
+    </unit>
+    <unit id="2678207923309953370">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:47,48</note>
+      </notes>
+      <segment>
+        <source>What the token is for, so you recognise it in the list.</source>
+      </segment>
+    </unit>
+    <unit id="4843729222427721416">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:54,55</note>
+      </notes>
+      <segment>
+        <source>Expires after</source>
+      </segment>
+    </unit>
+    <unit id="8946906119075338535">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:68,69</note>
+      </notes>
+      <segment>
+        <source>Space</source>
+      </segment>
+    </unit>
+    <unit id="8249524835915970641">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:70,71</note>
+      </notes>
+      <segment>
+        <source>All your spaces</source>
+      </segment>
+    </unit>
+    <unit id="5103256809811357076">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:85</note>
+      </notes>
+      <segment>
+        <source>All your rights</source>
+      </segment>
+    </unit>
+    <unit id="3296085402204507085">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:85,86</note>
+      </notes>
+      <segment>
+        <source>The token may do whatever your account may do, now and later. Untick it to choose fewer.</source>
+      </segment>
+    </unit>
+    <unit id="3021815929600677509">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:118,119</note>
+      </notes>
+      <segment>
+        <source>Close: the token isn&apos;t shown again</source>
+      </segment>
+    </unit>
+    <unit id="397098723873502323">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:122,123</note>
+      </notes>
+      <segment>
+        <source>Done</source>
+      </segment>
+    </unit>
+    <unit id="3503362739200648481">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:128,129</note>
+      </notes>
+      <segment>
+        <source>Close without making a token (Esc)</source>
+      </segment>
+    </unit>
+    <unit id="5771509887327098476">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.html:142,143</note>
+      </notes>
+      <segment>
+        <source>Make the token</source>
+      </segment>
+    </unit>
+    <unit id="6366248053361625317">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.ts:60</note>
+      </notes>
+      <segment>
+        <source>Your new token</source>
+      </segment>
+    </unit>
+    <unit id="1190117656763632308">
+      <notes>
+        <note category="location">src/app/tokens/token-create.component.ts:60</note>
+      </notes>
+      <segment>
+        <source>New access token</source>
+      </segment>
+    </unit>
     <unit id="6636034901982104135">
       <notes>
+        <note category="location">src/app/tokens/token-pages.ts:7</note>
+        <note category="location">src/app/tokens/token-pages.ts:15</note>
         <note category="location">src/app/tokens/token-settings.ts:9</note>
         <note category="location">src/app/tokens/token-settings.ts:14</note>
       </notes>
       <segment>
         <source>Access tokens</source>
+      </segment>
+    </unit>
+    <unit id="6414337526450834175">
+      <notes>
+        <note category="location">src/app/tokens/token-pages.ts:8</note>
+      </notes>
+      <segment>
+        <source>Tokens that let your programs and scripts use the API as you, without your password.</source>
+      </segment>
+    </unit>
+    <unit id="4574852613336284029">
+      <notes>
+        <note category="location">src/app/tokens/token-pages.ts:16</note>
+      </notes>
+      <segment>
+        <source>The accounts&apos; access tokens: where they work and when they were last used; revoke them.</source>
+      </segment>
+    </unit>
+    <unit id="78550226371287021">
+      <notes>
+        <note category="location">src/app/tokens/token-pages.ts:23</note>
+      </notes>
+      <segment>
+        <source>Token settings</source>
+      </segment>
+    </unit>
+    <unit id="1953456943216311205">
+      <notes>
+        <note category="location">src/app/tokens/token-pages.ts:24</note>
+      </notes>
+      <segment>
+        <source>Whether accounts may make access tokens, how long a token may last and how many each account may have.</source>
+      </segment>
+    </unit>
+    <unit id="8542568275115626925">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:24</note>
+      </notes>
+      <segment>
+        <source>7 days</source>
+      </segment>
+    </unit>
+    <unit id="7152095234138763013">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:25</note>
+      </notes>
+      <segment>
+        <source>30 days</source>
+      </segment>
+    </unit>
+    <unit id="9019651111955599289">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:26</note>
+      </notes>
+      <segment>
+        <source>90 days</source>
+      </segment>
+    </unit>
+    <unit id="4022869046575091075">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:27</note>
+      </notes>
+      <segment>
+        <source>1 year</source>
+      </segment>
+    </unit>
+    <unit id="519628265585455614">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:39</note>
+      </notes>
+      <segment>
+        <source>Every space</source>
+      </segment>
+    </unit>
+    <unit id="302496457334125957">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:49</note>
+      </notes>
+      <segment>
+        <source>Revoked <ph id="0" equiv="date" disp="formatDate(token.revoked)"/></source>
+      </segment>
+    </unit>
+    <unit id="1496089013221904398">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:51</note>
+        <note category="location">src/app/tokens/token-parts.ts:83</note>
+      </notes>
+      <segment>
+        <source>Never expires</source>
+      </segment>
+    </unit>
+    <unit id="3321712340688140677">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:53</note>
+      </notes>
+      <segment>
+        <source>Expired <ph id="0" equiv="date" disp="expires"/></source>
+      </segment>
+    </unit>
+    <unit id="2119651351858997822">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:54</note>
+      </notes>
+      <segment>
+        <source>Expires <ph id="0" equiv="date" disp="expires"/></source>
+      </segment>
+    </unit>
+    <unit id="4890478738575011995">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:56</note>
+      </notes>
+      <segment>
+        <source>Created <ph id="0" equiv="date" disp="formatDate(token.created)"/></source>
+      </segment>
+    </unit>
+    <unit id="3383147275471169235">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:58</note>
+      </notes>
+      <segment>
+        <source>Last used <ph id="0" equiv="date" disp="formatDate(token.lastUsed)"/></source>
+      </segment>
+    </unit>
+    <unit id="6232726849371176493">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:58</note>
+      </notes>
+      <segment>
+        <source>Never used</source>
+      </segment>
+    </unit>
+    <unit id="2004381572793700331">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:67</note>
+      </notes>
+      <segment>
+        <source>All of the account&apos;s rights</source>
+      </segment>
+    </unit>
+    <unit id="2941279004883798689">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:82</note>
+      </notes>
+      <segment>
+        <source>The longest allowed</source>
+      </segment>
+    </unit>
+    <unit id="5372171865006698150">
+      <notes>
+        <note category="location">src/app/tokens/token-parts.ts:85</note>
+      </notes>
+      <segment>
+        <source>{days, plural, one {# day} other {# days}} (the longest allowed)</source>
+      </segment>
+    </unit>
+    <unit id="3967129306511739640">
+      <notes>
+        <note category="location">src/app/tokens/token-row.component.ts:14</note>
+      </notes>
+      <segment>
+        <source>The first characters of the token</source>
+      </segment>
+    </unit>
+    <unit id="7096440230985171865">
+      <notes>
+        <note category="location">src/app/tokens/token-row.component.ts:18,19</note>
+      </notes>
+      <segment>
+        <source>Revoked</source>
+      </segment>
+    </unit>
+    <unit id="464749780222721589">
+      <notes>
+        <note category="location">src/app/tokens/token-row.component.ts:20,21</note>
+      </notes>
+      <segment>
+        <source>Expired</source>
+      </segment>
+    </unit>
+    <unit id="8923946796684339047">
+      <notes>
+        <note category="location">src/app/tokens/token-row.component.ts:38,39</note>
+      </notes>
+      <segment>
+        <source>Revoke <ph id="0" equiv="INTERPOLATION" disp="{{ token().name }}"/>: the programs using it are refused from now on</source>
+      </segment>
+    </unit>
+    <unit id="135077277733987408">
+      <notes>
+        <note category="location">src/app/tokens/token-row.component.ts:42,43</note>
+      </notes>
+      <segment>
+        <source>Revoke</source>
+      </segment>
+    </unit>
+    <unit id="3638409606121030215">
+      <notes>
+        <note category="location">src/app/tokens/token-row.component.ts:63</note>
+        <note category="description">where a token was last used from</note>
+      </notes>
+      <segment>
+        <source> from <ph id="0" equiv="address" disp="address"/></source>
       </segment>
     </unit>
     <unit id="5527191798614450608">

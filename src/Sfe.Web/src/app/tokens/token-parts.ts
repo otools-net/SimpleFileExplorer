@@ -1,7 +1,8 @@
 import { SessionTenant } from '../core/access.models';
 import { AccessTokenInfo, AccessTokensConfig } from '../core/access-token.models';
 import { ClientConfig } from '../core/config.models';
-import { formatDate, joinParts, plural } from '../core/format';
+import { formatDate, joinParts } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { RightDefinition } from '../access/access.models';
 
 /** Where a token stands: usable, past its expiry, or revoked. */
@@ -20,10 +21,10 @@ export interface RightArea {
 }
 
 const USUAL_LIVES: ExpiryChoice[] = [
-    { days: 7, label: '7 days' },
-    { days: 30, label: '30 days' },
-    { days: 90, label: '90 days' },
-    { days: 365, label: '1 year' },
+    { days: 7, label: $localize`7 days` },
+    { days: 30, label: $localize`30 days` },
+    { days: 90, label: $localize`90 days` },
+    { days: 365, label: $localize`1 year` },
 ];
 
 /** Whether `token` still works at `now` (as far as the token itself tells: its account may have lost rights). */
@@ -33,26 +34,37 @@ export function tokenState(token: AccessTokenInfo, now = Date.now()): TokenState
     return 'active';
 }
 
-/** The library a token works in, by name; every library of its account when it names none. */
+/** The space a token works in, by name; every space of its account when it names none. */
 export function tokenLibrary(token: AccessTokenInfo, tenants: readonly SessionTenant[]): string {
-    if (token.tenantId === null) return 'Every library';
-    return tenants.find((tenant) => tenant.id === token.tenantId)?.name ?? `Library ${token.tenantId}`;
+    if (token.tenantId === null) return $localize`Every space`;
+    return tenants.find((tenant) => tenant.id === token.tenantId)?.name ?? $localize`Space ${token.tenantId}:id:`;
 }
 
 /** When a token was made, when it ends (or ended) and when it was last used, as one line. */
 export function tokenDates(token: AccessTokenInfo, now = Date.now()): string {
     const state = tokenState(token, now);
-    const end = token.expires ? `${state === 'expired' ? 'Expired' : 'Expires'} ${formatDate(token.expires)}` : null;
+    const expires = token.expires ? formatDate(token.expires) : null;
+    const end =
+        state === 'revoked'
+            ? $localize`Revoked ${formatDate(token.revoked)}:date:`
+            : expires === null
+              ? $localize`Never expires`
+              : state === 'expired'
+                ? $localize`Expired ${expires}:date:`
+                : $localize`Expires ${expires}:date:`;
     return joinParts([
-        `Created ${formatDate(token.created)}`,
-        state === 'revoked' ? `Revoked ${formatDate(token.revoked)}` : (end ?? 'Never expires'),
-        token.lastUsed ? `Last used ${formatDate(token.lastUsed)}` : 'Never used',
+        $localize`Created ${formatDate(token.created)}:date:`,
+        end,
+        token.lastUsed ? $localize`Last used ${formatDate(token.lastUsed)}:date:` : $localize`Never used`,
     ]);
 }
 
 /** What a token may do, in a few words: all its account's rights, or how many of them. */
 export function rightsSummary(token: AccessTokenInfo): string {
-    return token.rights.length ? plural(token.rights.length, 'right') : "All of the account's rights";
+    const count = token.rights.length;
+    return count
+        ? icu($localize`{count, plural, one {# right} other {# rights}}`, { count })
+        : $localize`All of the account's rights`;
 }
 
 /** What `api/config` tells of tokens (`true`, or an object with their longest life); null when they are off. */
@@ -67,10 +79,13 @@ export function tokensConfig(config: ClientConfig | null): AccessTokensConfig | 
  * last.
  */
 export function expiryChoices(maxLifetimeDays: number | undefined): ExpiryChoice[] {
-    if (maxLifetimeDays === undefined) return [...USUAL_LIVES, { days: null, label: 'The longest allowed' }];
-    if (maxLifetimeDays <= 0) return [...USUAL_LIVES, { days: null, label: 'Never expires' }];
+    if (maxLifetimeDays === undefined) return [...USUAL_LIVES, { days: null, label: $localize`The longest allowed` }];
+    if (maxLifetimeDays <= 0) return [...USUAL_LIVES, { days: null, label: $localize`Never expires` }];
     const shorter = USUAL_LIVES.filter((choice) => choice.days! < maxLifetimeDays);
-    return [...shorter, { days: null, label: `${plural(maxLifetimeDays, 'day')} (the longest allowed)` }];
+    const label = icu($localize`{days, plural, one {# day} other {# days}} (the longest allowed)`, {
+        days: maxLifetimeDays,
+    });
+    return [...shorter, { days: null, label }];
 }
 
 /** The expiry sent for a life of `days` from `now`; null lets the server give the longest. */
@@ -83,7 +98,7 @@ export function expiryOf(days: number | null, now = new Date()): string | null {
  * needs a right to manage accounts), else by id.
  */
 export function rightAreas(own: readonly string[], catalog: readonly RightDefinition[] | null): RightArea[] {
-    if (!catalog) return [{ title: 'Rights', rights: own.map((id) => ({ id, title: id, description: '' })) }];
+    if (!catalog) return [{ title: $localize`Rights`, rights: own.map((id) => ({ id, title: id, description: '' })) }];
     const held = new Set(own);
     const areas = new Map<string, RightArea>();
     for (const right of catalog.filter((definition) => held.has(definition.id))) {

@@ -17,6 +17,7 @@ import {
     viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { icu } from '../core/i18n/icu';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { redirected } from '../core/api.service';
@@ -49,6 +50,7 @@ import {
     AdminSubpage,
     findSection,
     findSubpage,
+    ADMIN_GROUP_TITLES,
     groupId,
     groupsOf,
     locateSettings,
@@ -69,7 +71,10 @@ const FROM_LIST = 'sfeFromList';
 const PHONE = '(max-width: 760px)';
 
 /** The level tabs' names, in the save bar. */
-const LEVEL_TITLES: Partial<Record<SettingLevel, string>> = { tenant: 'This space', server: 'Whole server' };
+const LEVEL_TITLES: Partial<Record<SettingLevel, string>> = {
+    tenant: $localize`:settings level:This space`,
+    server: $localize`:settings level:Whole server`,
+};
 
 export { leaveAdminPage } from './leave-admin-page';
 
@@ -183,7 +188,7 @@ export class AdminPageComponent implements OnInit {
         this.sectionList() ? { ...this.historyState, [FROM_LIST]: true } : this.historyState,
     );
     protected readonly backHint = computed(() =>
-        this.phone() && !this.sectionList() ? 'Back to the sections' : 'Back to the library',
+        this.phone() && !this.sectionList() ? $localize`Back to the sections` : $localize`Back to the library`,
     );
     /** The settings tab of settings-schema.ts on screen, if any. */
     protected readonly settingsShown = computed(() =>
@@ -198,17 +203,18 @@ export class AdminPageComponent implements OnInit {
     protected readonly shownResults = computed(() => this.results().slice(0, ADMIN_SEARCH_LIMIT));
     protected readonly resultsCount = computed(() => {
         const count = this.results().length;
-        return count === 0
-            ? 'Nothing found'
-            : count > ADMIN_SEARCH_LIMIT
-              ? `The first ${ADMIN_SEARCH_LIMIT} of ${count} found: add words to narrow them`
-              : count === 1
-                ? '1 found'
-                : `${count} found`;
+        return count > ADMIN_SEARCH_LIMIT
+            ? icu($localize`The first {limit, number} of {count, number} found: add words to narrow them down.`, {
+                  limit: ADMIN_SEARCH_LIMIT,
+                  count,
+              })
+            : icu($localize`{count, plural, =0 {Nothing found} one {# found} other {# found}}`, { count });
     });
     /** The setting picked among the results, brought into view once its sub-page shows it. */
     private readonly reveal = signal<string | null>(null);
     protected readonly valueOf = valueOf;
+    protected readonly openPlace = (where: string) => $localize`Open ${where}:place:`;
+    protected readonly openAtSetting = (where: string) => $localize`Open ${where}:place: at this setting`;
 
     protected readonly saveStatus = computed(() => {
         const changed = [...this.form.changedTabs()].map((id) => this.titleOfSettings(id)).filter(Boolean);
@@ -216,35 +222,50 @@ export class AdminPageComponent implements OnInit {
             .filter((level) => level !== this.form.level())
             .map((level) => LEVEL_TITLES[level]);
         if (changed.length)
-            return `Not saved yet: ${changed.join(', ')}${others.length ? `; also in ${others.join(', ')}` : ''}`;
-        if (others.length) return `Not saved yet in ${others.join(', ')}`;
+            return others.length
+                ? $localize`Not saved yet: ${changed.join(', ')}:pages:; also in ${others.join(', ')}:levels:`
+                : $localize`Not saved yet: ${changed.join(', ')}:pages:`;
+        if (others.length) return $localize`Not saved yet in ${others.join(', ')}:levels:`;
         // Servers without levels answer without states: their settings are the server's.
         if (this.form.states() && this.form.level() === 'tenant')
-            return this.form.customized() ? 'This space has settings of its own' : "Following the server's settings";
-        return this.form.customized() ? 'Using saved settings' : "Using the server's configuration";
+            return this.form.customized()
+                ? $localize`This space has settings of its own`
+                : $localize`Following the server's settings`;
+        return this.form.customized() ? $localize`Using saved settings` : $localize`Using the server's configuration`;
     });
+    protected readonly groupTitle = computed(() => ADMIN_GROUP_TITLES[this.section().group]);
+    protected readonly discardHint = computed(() =>
+        this.form.levels().length > 1
+            ? $localize`Undo the changes not saved yet, on every page of both tabs`
+            : $localize`Undo the changes not saved yet, on every page`,
+    );
     protected readonly resetHint = computed(() =>
-        this.form.states() && this.form.level() === 'tenant'
-            ? "Forget the space's own settings and follow the server's again (asks first)"
-            : "Forget the saved settings and go back to the server's configuration (asks first)",
+        !this.form.customized()
+            ? $localize`Nothing saved yet`
+            : this.form.states() && this.form.level() === 'tenant'
+            ? $localize`Forget the space's own settings and use the server's again (asks first)`
+            : $localize`Forget the saved settings and go back to the server's configuration (asks first)`,
     );
     protected readonly saveHint = computed(() =>
         this.form.changedLevels().size > 1
-            ? "Save and apply the settings changed in both tabs: the whole server's, then this space's"
+            ? $localize`Save and apply the settings changed in both tabs: the whole server's, then this space's`
             : this.form.states() && this.form.level() === 'tenant'
-              ? 'Save and apply the settings of every page, for everyone using this space'
-              : 'Save and apply the settings of every page, for everyone using this server',
+              ? $localize`Save and apply the settings of every page, for everyone using this space`
+              : $localize`Save and apply the settings of every page, for everyone using this server`,
     );
 
     constructor() {
         // A right click on the page (not on a link, a field or a menu of its own): back, reload, its address.
-        usePageMenu(inject(ContextMenu).pageTarget('Administration'));
+        usePageMenu(inject(ContextMenu).pageTarget($localize`Administration`));
         const title = inject(Title);
         effect(() => {
-            if (this.overview() || this.sectionList()) return title.setTitle('Administration – SFE');
+            if (this.overview() || this.sectionList()) return title.setTitle($localize`Administration – SFE`);
             const section = this.section();
-            const page = section.subpages.length > 1 ? `${this.subpage().title} – ` : '';
-            title.setTitle(`${page}${section.title} – Administration – SFE`);
+            title.setTitle(
+                section.subpages.length > 1
+                    ? $localize`${this.subpage().title}:page: – ${section.title}:section: – Administration – SFE`
+                    : $localize`${section.title}:section: – Administration – SFE`,
+            );
         });
         // The address of a sub-page that moved (a bookmark, history): replaced by where it is now.
         effect(() => {

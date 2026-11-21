@@ -20,9 +20,21 @@ export interface AdminSubpage {
     rights: readonly Right[];
 }
 
+/** The groups of sections in the sidebar, by key (the key makes the overview's anchors: never translated). */
+export const ADMIN_GROUP_TITLES = {
+    account: $localize`:administration group:Account`,
+    viewing: $localize`:administration group:Viewing`,
+    library: $localize`:administration group:Library`,
+    media: $localize`:administration group:Media`,
+    access: $localize`:administration group:Access`,
+    server: $localize`:administration group:Server`,
+} as const;
+
+export type AdminGroup = keyof typeof ADMIN_GROUP_TITLES;
+
 export interface AdminSection {
     id: string;
-    group: string;
+    group: AdminGroup;
     title: string;
     icon: string;
     description: string;
@@ -31,7 +43,12 @@ export interface AdminSection {
 }
 
 /** The settings of a tab: those with its section's right in the library, and server administrators. */
-const settingsPage = (settings: string, description?: string, title = 'Settings', id = 'settings'): AdminSubpage => ({
+const settingsPage = (
+    settings: string,
+    description?: string,
+    title = $localize`:administration page:Settings`,
+    id = 'settings',
+): AdminSubpage => ({
     id,
     title,
     description,
@@ -48,22 +65,23 @@ const page = (id: string, title: string, description: string, ...rights: Right[]
 export const ADMIN_SECTIONS: AdminSection[] = [
     {
         id: 'account',
-        group: 'Account',
-        title: 'My account',
+        group: 'account',
+        title: $localize`My account`,
         icon: 'user',
-        description: 'Your own preferences, kept by the server for every device you sign in on, and your password.',
+        description: $localize`Your own settings, kept by the server for every device you sign in on, and your \
+password.`,
         subpages: [
             page(
                 'preferences',
-                'Preferences',
-                "Your own choices over the space's settings, kept by the server for every device you sign in on.",
+                $localize`:administration page:Settings`,
+                $localize`Your own settings, used instead of the space's, on every device you sign in on.`,
                 Rights.ownPreferences,
             ),
-            page('password', 'Password', 'The password you sign in with.', Rights.ownPassword),
+            page('password', $localize`Password`, $localize`The password you sign in with.`, Rights.ownPassword),
             page(
                 'connections',
-                'Connections',
-                'Your own storage elsewhere (Dropbox), seen only by you.',
+                $localize`Connections`,
+                $localize`Your own storage elsewhere (Dropbox), seen only by you.`,
                 Rights.ownConnections,
             ),
             MY_TOKENS_PAGE,
@@ -71,231 +89,249 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     },
     {
         id: 'interface',
-        group: 'Viewing',
-        title: 'Interface',
+        group: 'viewing',
+        title: $localize`Interface`,
         icon: 'theme',
-        description: 'Colors, listings and the search box: the defaults of the library and of the server.',
+        description: $localize`Colours, listings and the search box: the defaults of the space and of the server.`,
         subpages: [
             settingsPage(
                 'appearance',
-                "The default theme, and this browser's own; how text files read.",
-                'Appearance',
+                $localize`The default theme, this browser's own theme, and how text files read.`,
+                $localize`Appearance`,
                 'appearance',
             ),
             settingsPage(
                 'browsing',
-                'How many items a listing loads, the pictures on folders, and the resolutions and durations shown.',
-                'Browsing',
+                $localize`How many items a listing loads, the pictures on folders, and the resolutions and durations \
+shown.`,
+                $localize`Browsing`,
                 'browsing',
             ),
             settingsPage(
                 'search',
-                'How many results a search loads, its wording as you type, and the searches remembered.',
-                'Search',
+                $localize`How many results a search loads, how it's put into words as you type, and which searches \
+are remembered.`,
+                $localize`Search`,
                 'search',
             ),
         ],
     },
     {
         id: 'playback',
-        group: 'Viewing',
-        title: 'Playback',
+        group: 'viewing',
+        title: $localize`Playback`,
         icon: 'play',
-        description:
-            'The video player, an app to open videos in, and how videos reach the browser: from a data server, ' +
-            'or converted by this one.',
+        description: $localize`The video player, an app to open videos in, and how videos reach the browser: from a \
+data server, or converted by this one.`,
         subpages: [
             settingsPage(
                 'player',
-                "The player's jumps and loop, and the app the viewer's ▶ button opens videos and audio in.",
-                'Player',
+                $localize`The player's jumps and loop, and the app the viewer's ▶ button opens videos and audio in.`,
+                $localize`Player`,
                 'player',
             ),
             settingsPage(
                 'streaming',
-                "Where files are streamed from, and how the server converts the videos a browser can't play.",
-                'Streaming',
+                $localize`Where files are streamed from, and how the server converts the videos a browser can't play.`,
+                $localize`Streaming`,
                 'streaming',
             ),
             page(
                 'streams',
-                'Video streams',
-                'The videos the server converts now, in every space, and who watches them.',
+                $localize`Video streams`,
+                $localize`The videos the server is converting now, in every space, and who is watching them.`,
                 Rights.viewStreams,
             ),
         ],
     },
     {
         id: 'scanning',
-        group: 'Library',
-        title: 'Scanning',
+        group: 'library',
+        title: $localize`Scanning`,
         icon: 'scan',
-        description: 'What scans leave out, which files are photos, videos and audio, and what scans read from them.',
+        description: $localize`What scans leave out, which files are photos, videos and audio, and what scans read \
+from them.`,
         subpages: [
             settingsPage(
                 'skipped',
-                'The folders and files scans leave out, and hidden items.',
-                'What to scan',
+                $localize`The folders and files scans leave out, and hidden items.`,
+                $localize`What to scan`,
                 'skipped',
             ),
             page(
                 'exclusions',
-                'Excluded folders',
-                'The folders kept out of scans, trickplay or thumbnails: add, change and remove them.',
+                $localize`Excluded folders`,
+                $localize`The folders kept out of scans, trickplay or thumbnails: add, change and remove them.`,
                 Rights.excludeFolders,
             ),
-            settingsPage('fileTypes', 'Which extensions are photos, videos and audio.', 'File types', 'types'),
+            settingsPage(
+                'fileTypes',
+                $localize`Which extensions are photos, videos and audio.`,
+                $localize`File types`,
+                'types',
+            ),
             settingsPage(
                 'indexing',
-                'What scans read from files (fingerprints, resolutions, durations), and how many folders at once.',
-                'Indexing',
+                $localize`What scans read from files (fingerprints, resolutions, durations), and how many folders \
+they read at once.`,
+                $localize`Indexing`,
                 'indexing',
             ),
         ],
     },
     {
         id: 'files',
-        group: 'Library',
-        title: 'File management',
+        group: 'library',
+        title: $localize`File management`,
         icon: 'folder',
-        description:
-            'The trash, uploads under way, the names new files and folders may have, ' +
-            'and where SFE keeps its work files.',
+        description: $localize`The trash, uploads in progress, the names new files and folders may have, and where \
+SFE keeps its work files.`,
         subpages: [
             page(
                 'trash',
-                'Trash',
-                'What was deleted to the trash: restore it, or delete it for good.',
+                $localize`Trash`,
+                $localize`What was moved to the trash: restore it, or delete it for good.`,
                 Rights.deleteFiles,
                 Rights.deletePermanently,
             ),
             page(
                 'uploads',
-                'Uploads',
-                'Uploads not finished yet, by everyone: how far they got, and cancelling them.',
+                $localize`Uploads`,
+                $localize`Everyone's unfinished uploads: how far they got, and cancelling them.`,
                 Rights.fileSettings,
             ),
             settingsPage(
                 'files',
-                'How deleting works, how long the trash keeps things, limits of copies, uploads and zips, names, ' +
-                    'and where SFE keeps its work files.',
+                $localize`How deleting works, how long the trash keeps things, limits of copies, uploads and zips, \
+names, and where SFE keeps its work files.`,
             ),
         ],
     },
     {
         id: 'keepAlive',
-        group: 'Library',
-        title: 'Keep alive',
+        group: 'library',
+        title: $localize`Keep alive`,
         icon: 'refresh',
-        description:
-            "Keeping the library folder's connection to its file server from being dropped while nobody uses it.",
+        description: $localize`Stops the file server from dropping the library folder's connection while nobody uses \
+it.`,
         subpages: [
             page(
                 'status',
-                'Status',
-                'Whether the library folder is on a network share, and what the last pings found; ping it now.',
+                $localize`Status`,
+                $localize`Whether the library folder is on a network share and what the last pings found; ping it \
+now.`,
                 Rights.keepAliveSettings,
             ),
             settingsPage(
                 'keepAlive',
-                'Whether the library folder is kept alive, how often, and the time limit of a ping.',
+                $localize`Whether the library folder is kept alive, how often, and how long a ping may take.`,
             ),
         ],
     },
     {
         id: 'tags',
-        group: 'Library',
-        title: 'Tags',
+        group: 'library',
+        title: $localize`Tags`,
         icon: 'tag',
-        description: 'Create, edit and delete tags; the tag sidebar and its history.',
+        description: $localize`Create, edit and delete tags; the tag sidebar and the tag history.`,
         subpages: [
-            page('list', 'All tags', 'Create, edit and delete the tags of the library.', Rights.manageTags),
-            settingsPage('tags', 'How many tags the sidebar shows, and the history of the tags given.'),
+            page(
+                'list',
+                $localize`All tags`,
+                $localize`Create, edit and delete the space's tags.`,
+                Rights.manageTags,
+            ),
+            settingsPage('tags', $localize`How many tags the sidebar shows, and the history of the tags given.`),
         ],
     },
     {
         id: 'tracking',
-        group: 'Library',
-        title: 'Duplicates & moves',
+        group: 'library',
+        title: $localize`Duplicates & moves`,
         icon: 'copy',
-        description: 'Identical files, similar videos, and tagged files that were moved or renamed.',
+        description: $localize`Identical files, similar videos, and tagged files that were moved or renamed.`,
         subpages: [
             page(
                 'duplicates',
-                'Duplicates',
-                'Groups of identical files, and removing the extra copies.',
+                $localize`Duplicates`,
+                $localize`Groups of identical files, and removing the extra copies.`,
                 Rights.duplicates,
             ),
             page(
                 'similar',
-                'Similar videos',
-                'Videos showing the same pictures in other files: another resolution, quality or format, or trimmed.',
+                $localize`Similar videos`,
+                $localize`Videos showing the same pictures as other files: another resolution, quality or format, or \
+trimmed.`,
                 Rights.similarVideos,
             ),
             page(
                 'missing',
-                'Moved files',
-                'Tagged files that are no longer where they were, and where they went.',
+                $localize`Moved files`,
+                $localize`Tagged files that are no longer where they were, and where they went.`,
                 Rights.missingFiles,
             ),
             settingsPage(
                 'tracking',
-                'The smallest duplicates, how alike similar videos are, and how moved files keep their tags.',
+                $localize`The smallest duplicates, how alike similar videos must be, and how moved files keep their \
+tags.`,
             ),
         ],
     },
     {
         id: 'thumbnails',
-        group: 'Media',
-        title: 'Thumbnails',
+        group: 'media',
+        title: $localize`Thumbnails`,
         icon: 'image',
-        description: 'The previews of photos and videos in the listings and the viewer.',
+        description: $localize`The thumbnails of photos and videos in the listings and the viewer.`,
         subpages: [settingsPage('thumbnails')],
     },
     {
         id: 'trickplay',
-        group: 'Media',
-        title: 'Trickplay',
+        group: 'media',
+        title: $localize`Trickplay`,
         icon: 'trickplay',
-        description: "Frames along each video, shown above the player's seek bar and when hovering a video.",
+        description: $localize`Frames along each video, shown above the player's seek bar and when the pointer is over \
+a video.`,
         subpages: [
             page(
                 'activity',
-                'Activity',
-                'What the trickplay job works on, what waits, and what it did last.',
+                $localize`Activity`,
+                $localize`What the trickplay task is working on, what is waiting, and what it did last.`,
                 Rights.manageTrickplay,
             ),
-            settingsPage('trickplay', 'Which videos get trickplay, its frames, and how much of the server it uses.'),
+            settingsPage(
+                'trickplay',
+                $localize`Which videos get trickplay, its frames, and how much of the server it uses.`,
+            ),
         ],
     },
     {
         id: 'editor',
-        group: 'Media',
-        title: 'Picture editor',
+        group: 'media',
+        title: $localize`Picture editor`,
         icon: 'crop',
-        description: 'Where the pictures cropped in the viewer are saved, and their quality.',
+        description: $localize`Where the pictures edited in the viewer are saved, and their quality.`,
         subpages: [settingsPage('editor')],
     },
     {
         id: 'access',
-        group: 'Access',
-        title: 'Spaces & accounts',
+        group: 'access',
+        title: $localize`Spaces & accounts`,
         icon: 'group',
-        description:
-            'Who can sign in, which spaces they see, and what they may do in each. A space is one library with its ' +
-            'own groups and accounts.',
+        description: $localize`Who can sign in, which spaces they see, and what they may do in each. A space is one \
+library with its own groups and accounts.`,
         subpages: [
             page(
                 'spaces',
-                'Spaces',
-                "Each space's library, groups, accounts and visitors.",
+                $localize`Spaces`,
+                $localize`Each space's library, groups, accounts and visitors.`,
                 Rights.manageTenants,
                 Rights.manageMembers,
             ),
             page(
                 'accounts',
-                'Accounts',
-                'Everyone who can sign in, with the spaces each one sees and their groups there.',
+                $localize`Accounts`,
+                $localize`Everyone who can sign in, with the spaces each one sees and their groups there.`,
                 Rights.manageUsers,
                 Rights.manageMembers,
             ),
@@ -305,80 +341,107 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     },
     {
         id: 'connections',
-        group: 'Server',
-        title: 'Connections',
+        group: 'server',
+        title: $localize`Connections`,
         icon: 'globe',
-        description: 'Storage outside the libraries (Dropbox): whether the server may connect to it, and how.',
+        description: $localize`Storage outside the libraries (Dropbox): whether the server may connect to it, and \
+how.`,
         subpages: [
             page(
                 'connections',
-                'Connections',
-                "The space's and the server's connections, and who uses them.",
+                $localize`Connections`,
+                $localize`The space's and the server's connections, and who uses them.`,
                 Rights.libraryConnections,
                 Rights.serverConnections,
             ),
-            page('setup', 'Dropbox', 'The app this server signs in to Dropbox through.', Rights.serverSettings),
-            settingsPage('connections', 'Which kinds and levels of connections this server allows.'),
+            page(
+                'setup',
+                $localize`Dropbox`,
+                $localize`The app this server signs in to Dropbox through.`,
+                Rights.serverSettings,
+            ),
+            settingsPage('connections', $localize`Which kinds and levels of connections this server allows.`),
         ],
     },
     {
         id: 'tasks',
-        group: 'Server',
-        title: 'Background tasks',
+        group: 'server',
+        title: $localize`Background tasks`,
         icon: 'clock',
-        description: 'What runs now, when each task runs next, the schedules that start them, and their logs.',
+        description: $localize`What is running now, when each task runs next, the schedules that start them, and \
+their logs.`,
         subpages: [
             page(
                 'tasks',
-                'Tasks',
-                'What runs now and when each task runs next; start or cancel them.',
+                $localize`Tasks`,
+                $localize`What is running now and when each task runs next; start or cancel them.`,
                 Rights.viewTasks,
             ),
-            page('schedules', 'Schedules', 'When the tasks start by themselves.', Rights.scheduleTasks),
-            page('history', 'History', 'The past runs of the tasks, with their logs.', Rights.viewTasks),
-            settingsPage('tasks', 'How long runs and their logs are kept.'),
+            page(
+                'schedules',
+                $localize`Schedules`,
+                $localize`When the tasks start by themselves.`,
+                Rights.scheduleTasks,
+            ),
+            page(
+                'history',
+                $localize`History`,
+                $localize`The tasks' past runs, with their logs.`,
+                Rights.viewTasks,
+            ),
+            settingsPage('tasks', $localize`How long runs and their logs are kept.`),
         ],
     },
     {
         id: 'logs',
-        group: 'Server',
-        title: 'Logs',
+        group: 'server',
+        title: $localize`Logs`,
         icon: 'docs',
-        description:
-            'The messages, warnings and errors the server logged, searchable by text, date and severity, ' +
-            'and how long they are kept.',
+        description: $localize`The messages, warnings and errors the server logged, searchable by text, date and \
+severity, and how long they are kept.`,
         subpages: [
             page(
                 'entries',
-                'Log',
-                'The messages, warnings and errors the server logged, searchable by text, date and severity.',
+                $localize`Log`,
+                $localize`The messages, warnings and errors the server logged, searchable by text, date and severity.`,
                 Rights.viewLogs,
             ),
-            settingsPage('logs', 'How long the log is kept, and whether it is also saved to files.'),
+            settingsPage('logs', $localize`How long the log is kept, and whether it's also saved to files.`),
         ],
     },
     {
         id: 'system',
-        group: 'Server',
-        title: 'System',
+        group: 'server',
+        title: $localize`System`,
         icon: 'power',
-        description: "The server's version, library folder and ffmpeg, what it does at start, its API and backups.",
+        description: $localize`The server's version, library folder and ffmpeg, what it does when it starts, its API \
+and backups.`,
         subpages: [
             page(
                 'about',
-                'About',
-                "The server's version, its library folder, the ffmpeg it found, and its API reference.",
+                $localize`About`,
+                $localize`The server's version, its library folder, the ffmpeg it found, and its API reference.`,
                 Rights.serverSettings,
                 Rights.apiDocs,
             ),
             page(
                 'installation',
-                'Installation',
-                "The first space's library folder, who can open SFE, and ffmpeg, behind the setup code.",
+                $localize`Installation`,
+                $localize`The first space's library folder, who can open SFE, and ffmpeg, behind the setup code.`,
                 Rights.serverSettings,
             ),
-            settingsPage('startup', 'What SFE does when it starts on this computer.', 'Start-up', 'startup'),
-            page('maintenance', 'Maintenance', 'A backup of the databases and configuration files.', Rights.backup),
+            settingsPage(
+                'startup',
+                $localize`What SFE does when it starts on this computer.`,
+                $localize`Start-up`,
+                'startup',
+            ),
+            page(
+                'maintenance',
+                $localize`Maintenance`,
+                $localize`A backup of the databases and configuration files.`,
+                Rights.backup,
+            ),
         ],
     },
 ];
@@ -395,17 +458,18 @@ export function movedPage(section: string | null, page: string | null): { sectio
 }
 
 /** The sections by group, in order, for the sidebar. */
-export function groupsOf(sections: AdminSection[]): { title: string; sections: AdminSection[] }[] {
-    return [...new Set(sections.map((s) => s.group))].map((title) => ({
-        title,
-        sections: sections.filter((s) => s.group === title),
+export function groupsOf(sections: AdminSection[]): { id: AdminGroup; title: string; sections: AdminSection[] }[] {
+    return [...new Set(sections.map((s) => s.group))].map((id) => ({
+        id,
+        title: ADMIN_GROUP_TITLES[id],
+        sections: sections.filter((s) => s.group === id),
     }));
 }
 
 export const ADMIN_GROUPS = groupsOf(ADMIN_SECTIONS);
 
 /** The id of a group's heading on the overview, the breadcrumbs' link to it. */
-export const groupId = (group: string) => `admin-group-${group.toLowerCase()}`;
+export const groupId = (group: AdminGroup) => `admin-group-${group}`;
 
 /** The sections and sub-pages a session sees: those with one of their rights (`canAny`). */
 export function visibleSections(canAny: (rights: readonly string[]) => boolean): AdminSection[] {

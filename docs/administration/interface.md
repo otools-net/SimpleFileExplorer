@@ -23,7 +23,7 @@ installed on the reader's device, used where a font is "The font named below"); 
 (`.txt`, `.md`, `README`…) and for **code, logs and settings**: the font, text size, line height, width, margins,
 wrapping and line numbers (`Sfe:Reading:…`, see [Configuration](../configuration.md)).
 
-Each account can make its own (**My account › Preferences**, or **Save as my default** in the reading settings), and
+Each account can make its own (**My account › Settings**, or **Save as my default** in the reading settings), and
 each browser keeps its own changes over them.
 
 ## Browsing

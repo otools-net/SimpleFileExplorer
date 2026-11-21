@@ -11,9 +11,14 @@ import { rightsSummary, tokenDates, tokenLibrary, tokenState } from './token-par
     template: `
         <div class="access-row-main">
             <strong>{{ token().name }}</strong>
-            <code class="token-prefix" title="The first characters of the token">{{ token().prefix }}…</code>
+            <code class="token-prefix" title="The first characters of the token" i18n-title
+                >{{ token().prefix }}…</code>
             @if (state() !== 'active') {
-                <span class="access-badge danger">{{ state() === 'revoked' ? 'Revoked' : 'Expired' }}</span>
+                @if (state() === 'revoked') {
+                    <span class="access-badge danger" i18n>Revoked</span>
+                } @else {
+                    <span class="access-badge danger" i18n>Expired</span>
+                }
             }
         </div>
         <div class="access-row-detail">
@@ -30,8 +35,10 @@ import { rightsSummary, tokenDates, tokenLibrary, tokenState } from './token-par
                 <button
                     type="button"
                     class="button small"
-                    [title]="'Revoke ' + token().name + ': the programs using it are refused from now on'"
+                    title="Revoke {{ token().name }}: the programs using it are refused from now on"
+                    i18n-title
                     (click)="revoke.emit(token())"
+                    i18n
                 >Revoke</button>
             }
         </div>
@@ -52,6 +59,7 @@ export class TokenRowComponent {
     protected readonly dates = computed(() => tokenDates(this.token()));
     protected readonly from = computed(() => {
         const address = this.token().lastUsedFrom;
-        return this.showAccount() && address ? ` from ${address}` : '';
+        if (!this.showAccount() || !address) return '';
+        return $localize`:where a token was last used from: from ${address}:address:`;
     });
 }

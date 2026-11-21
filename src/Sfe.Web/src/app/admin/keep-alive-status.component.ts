@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
-import { formatDate, plural } from '../core/format';
+import { formatDate } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { KeepAliveFolder, KeepAliveView } from './admin.models';
 import { ToastService } from '../core/toast.service';
 import { visibleInterval } from '../core/visible-interval';
@@ -43,21 +44,23 @@ export class KeepAliveStatusComponent {
 
     protected readonly summary = computed(() => {
         const error = this.error();
-        if (error) return `Could not read the status: ${error}`;
+        if (error) return $localize`Could not read the status: ${error}:reason:`;
         const view = this.view();
         if (!view) return '…';
-        const every = `every ${plural(view.intervalSeconds, 'second')}`;
+        const seconds = view.intervalSeconds;
         const failing = view.folders.filter((f) => f.error).length;
-        switch (view.mode) {
-            case 'off':
-                return 'Off: the library folder is not pinged. Turn it on in Settings.';
-            case 'auto':
-                return failing
-                    ? `${plural(failing, 'folder')} not answering`
-                    : `On for folders on a network share, ${every}.`;
-            default:
-                return failing ? `${plural(failing, 'folder')} not answering` : `On, ${every}.`;
-        }
+        if (view.mode === 'off') return $localize`Off: the library folder isn't pinged. Turn it on in Settings.`;
+        if (failing)
+            return icu($localize`{failing, plural, one {# folder not answering} other {# folders not answering}}`, {
+                failing,
+            });
+        return view.mode === 'auto'
+            ? icu(
+                  $localize`On for folders on a network share, every {seconds, plural, one {# second} other \
+{# seconds}}.`,
+                  { seconds },
+              )
+            : icu($localize`On, every {seconds, plural, one {# second} other {# seconds}}.`, { seconds });
     });
 
     constructor() {
@@ -66,27 +69,30 @@ export class KeepAliveStatusComponent {
     }
 
     protected network(folder: KeepAliveFolder): string {
-        if (folder.isNetwork === null) return 'Not looked at yet';
-        if (folder.isNetwork) return 'On a network share';
+        if (folder.isNetwork === null) return $localize`Not checked yet`;
+        if (folder.isNetwork) return $localize`On a network share`;
         return this.view()?.mode === 'auto'
-            ? 'Not on a network share: not pinged (choose “Always” to ping it anyway)'
-            : 'Not on a network share';
+            ? $localize`Not on a network share, so not pinged (choose “Always” to ping it anyway)`
+            : $localize`Not on a network share`;
     }
 
     protected failure(folder: KeepAliveFolder): string {
-        const since = folder.failingSince ? `Failing since ${formatDate(folder.failingSince)}: ` : '';
-        return since + (folder.error ?? '');
+        const error = folder.error ?? '';
+        return folder.failingSince
+            ? $localize`Failing since ${formatDate(folder.failingSince)}:date:. ${error}:reason:`
+            : error;
     }
 
     protected detail(folder: KeepAliveFolder): string {
-        if (folder.waiting) return 'waiting for an answer';
+        if (folder.waiting) return $localize`Waiting for an answer`;
         if (!folder.lastPing) return '';
-        const took =
-            folder.durationMilliseconds !== null
-                ? ` · ${Math.round(folder.durationMilliseconds).toLocaleString()} ms`
-                : '';
-        const how = folder.method === 'touch' ? ' · file written' : '';
-        return `last ping ${formatDate(folder.lastPing)}${took}${how}`;
+        const parts = [$localize`Last ping ${formatDate(folder.lastPing)}:date:`];
+        if (folder.durationMilliseconds !== null) {
+            const ms = Math.round(folder.durationMilliseconds).toLocaleString();
+            parts.push($localize`:duration in milliseconds:${ms}:ms: ms`);
+        }
+        if (folder.method === 'touch') parts.push($localize`file written`);
+        return parts.join(' · ');
     }
 
     protected async ping(): Promise<void> {

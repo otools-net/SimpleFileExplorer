@@ -56,6 +56,9 @@ export class TokenCreateComponent {
     protected readonly saving = signal(false);
     /** The whole token, shown once after it was made. */
     protected readonly secret = signal<string | null>(null);
+    protected readonly heading = computed(() =>
+        this.secret() ? $localize`Your new token` : $localize`New access token`,
+    );
 
     protected readonly choices = computed(() => expiryChoices(tokensConfig(this.config.config())?.maxLifetimeDays));
     protected readonly tenants = computed(() => this.config.config()?.tenants ?? []);

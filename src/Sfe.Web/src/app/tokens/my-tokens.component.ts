@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild
 import { Api } from '../core/api.service';
 import { AccessTokenInfo } from '../core/access-token.models';
 import { ConfigService } from '../core/config.service';
-import { plural } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { ToastService } from '../core/toast.service';
 import { IconComponent } from '../shared/icon.component';
 import { TokenCreateComponent } from './token-create.component';
@@ -44,7 +44,7 @@ export class MyTokensComponent {
             this.tokens.set(await this.api.myTokens());
             this.error.set(null);
         } catch (error) {
-            this.error.set(`Could not load your tokens: ${(error as Error).message}`);
+            this.error.set($localize`Could not load your tokens: ${(error as Error).message}:reason:`);
         } finally {
             this.loaded.set(true);
         }
@@ -65,7 +65,7 @@ export class MyTokensComponent {
         if (!confirm('Revoke all your tokens? Every program using one is refused from now on.')) return;
         try {
             const { revoked } = await this.api.revokeAllTokens();
-            this.toasts.show(`${plural(revoked, 'token')} revoked.`);
+            this.toasts.show(icu($localize`{revoked, plural, one {# token} other {# tokens}} revoked.`, { revoked }));
         } catch (error) {
             this.toasts.error(`Could not revoke your tokens: ${(error as Error).message}`);
         }

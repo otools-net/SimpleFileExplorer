@@ -72,6 +72,8 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
   take a changing `title` from code (`$localize` fields).
 - ICU plurals in templates: `{n, plural, one {{{ n }} group} other {{{ n }} groups}}` (Angular has no `#`); a
   line break is safe between cases, not inside one.
+- A text that also builds an id, a key or a `track` (the administration's group titles made `admin-group-viewing`)
+  changes with the language: give the thing a stable key and look its title up (`ADMIN_GROUP_TITLES`).
 - A text split into elements (`<span translate="no">ffmpeg</span> <span i18n>(optional)</span>`) loses the space
   between them: Angular drops whitespace-only text between two elements. Keep the space inside one of them.
 - Error messages shown with a prefix (`Could not load the spaces: …`): keep the reason alone in the signal and write

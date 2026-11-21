@@ -90,7 +90,7 @@ describe('AdminPageComponent', () => {
         expect(document.title).toBe('Administration – SFE');
 
         expect([...element.querySelectorAll('.admin-overview h3')].map((h) => h.id)).toEqual(
-            ADMIN_GROUPS.map((g) => groupId(g.title)),
+            ADMIN_GROUPS.map((g) => groupId(g.id)),
         );
         const cards = [...element.querySelectorAll('.admin-card')];
         expect(cards.map((c) => c.querySelector('.admin-card-title span')!.textContent)).toEqual(
@@ -138,14 +138,14 @@ describe('AdminPageComponent', () => {
 
         expect(ADMIN_SECTIONS[0].id).toBe('account');
         expect(eyebrow()).toBe('My account');
-        expect(heading()).toBe('Preferences');
+        expect(heading()).toBe('Settings');
         expect(navItem('My account').classList).toContain('open');
         // Only the open section lists its sub-pages, the current one marked.
         expect(subItems().map((a) => a.textContent!.trim())).toEqual(ADMIN_SECTIONS[0].subpages.map((p) => p.title));
-        expect(currentSubItem().textContent!.trim()).toBe('Preferences');
+        expect(currentSubItem().textContent!.trim()).toBe('Settings');
         expect(navItem('My account').getAttribute('aria-current')).toBeNull();
         expect(chips()).toHaveLength(0);
-        expect(document.title).toBe('Preferences – My account – Administration – SFE');
+        expect(document.title).toBe('Settings – My account – Administration – SFE');
     });
 
     it('lists nothing under a section with a single page', async () => {
@@ -230,8 +230,8 @@ describe('AdminPageComponent', () => {
 
     it('follows the sections and sub-pages in its breadcrumbs, which lead back up', async () => {
         await open('/admin?section=account', { sfeFromLibrary: true });
-        expect(crumbs()).toEqual(['Administration', 'Account', 'My account', 'Preferences']);
-        expect(element.querySelector('.admin-crumbs [aria-current=page]')!.textContent).toBe('Preferences');
+        expect(crumbs()).toEqual(['Administration', 'Account', 'My account', 'Settings']);
+        expect(element.querySelector('.admin-crumbs [aria-current=page]')!.textContent).toBe('Settings');
 
         navItem('Background tasks').click();
         await settle();
@@ -537,7 +537,7 @@ describe('AdminPageComponent search', () => {
         await open('/admin?section=account');
 
         expect(api.settings).not.toHaveBeenCalled();
-        expect(heading()).toBe('Preferences');
+        expect(heading()).toBe('Settings');
     });
 
     it('searches from the list of sections on phones', async () => {
@@ -644,7 +644,7 @@ describe('KeepAliveStatusComponent', () => {
         await open('/admin?section=keepAlive');
 
         expect(eyebrow()).toBe('Keep alive');
-        expect(text()).toContain('Off: the library folder is not pinged.');
+        expect(text()).toContain("Off: the library folder isn't pinged.");
         expect(text()).toContain('Ping now tries the library folder once.');
 
         buttonNamed(element, 'Ping now')!.click();

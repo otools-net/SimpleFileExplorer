@@ -18,7 +18,7 @@ from page to page: click the section to open its first page, the group to see it
 
 | Group | Section | Pages |
 |---|---|---|
-| Account | [My account](my-account.md) | Preferences, Password, [Connections](connections.md#adding-a-connection), [Access tokens](my-account.md#access-tokens) |
+| Account | [My account](my-account.md) | Settings, Password, [Connections](connections.md#adding-a-connection), [Access tokens](my-account.md#access-tokens) |
 | Viewing | [Interface](interface.md) | Appearance, Browsing, Search |
 | | [Playback](playback.md) | Player, Streaming, Video streams |
 | Library | [Scanning](scanning.md) | What to scan, File types, Indexing |

@@ -4,13 +4,11 @@
     @if (canBackup()) {
         <section class="settings-group">
             <header class="settings-group-head">
-                <h3>Backup</h3>
-                <p class="field-hint">
-                    A zip file of the databases (accounts, spaces, and every library's index and tags) and of the
-                    configuration
-                    files. Thumbnails and trickplay are left out: they are made again. It holds password hashes and
-                    connection
-                    strings: keep it somewhere safe.
+                <h3 i18n>Backup</h3>
+                <p class="field-hint" i18n>
+                    A zip file of the databases (accounts, spaces, and every space's index and tags) and of the
+                    configuration files. Thumbnails and trickplay are left out: they are made again. It holds password
+                    hashes and connection strings: keep it somewhere safe.
                 </p>
             </header>
             <div class="settings-action inline">
@@ -19,42 +17,45 @@
                     [href]="backupUrl"
                     download
                     title="Download a backup of the databases and configuration files (zip)"
-                ><svg sfeIcon="download"></svg>Download a backup</a>
+                    i18n-title
+                ><svg sfeIcon="download"></svg><ng-container i18n>Download a backup</ng-container></a>
             </div>
         </section>
     }
 } @else {
     <section class="settings-group">
-        <header class="settings-group-head"><h3>Server</h3></header>
+        <header class="settings-group-head"><h3 i18n>Server</h3></header>
         <dl class="system-facts">
-            <div><dt>Version</dt><dd>SFE {{ config()?.version }}</dd></div>
+            <div><dt i18n>Version</dt><dd translate="no">SFE {{ config()?.version }}</dd></div>
             @if (config()?.commit; as commit) {
-                <div><dt>Commit</dt><dd><code>{{ commit }}</code></dd></div>
+                <div><dt i18n>Commit</dt><dd><code>{{ commit }}</code></dd></div>
             }
-            <div><dt>Library</dt><dd>{{ config()?.rootName }}</dd></div>
+            <div><dt i18n>Library</dt><dd>{{ config()?.rootName }}</dd></div>
             @if (info(); as info) {
-                <div><dt>Library folder</dt><dd><code class="system-root">{{ info.root }}</code></dd></div>
+                <div><dt i18n>Library folder</dt><dd><code class="system-root">{{ info.root }}</code></dd></div>
                 <div>
-                    <dt>ffmpeg</dt>
+                    <dt translate="no">ffmpeg</dt>
                     <dd class="system-ffmpeg" [attr.data-found]="info.ffmpeg.path ? 'yes' : 'no'">
                         @if (info.ffmpeg.path; as path) {
-                            <span class="system-badge found"><svg sfeIcon="check"></svg>Found</span>
+                            <span class="system-badge found"><svg sfeIcon="check"></svg><ng-container
+                                i18n>Found</ng-container></span>
                             <code>{{ path }}</code>
                             @if (info.ffmpeg.version) {
-                                <span class="muted">version {{ info.ffmpeg.version }}</span>
+                                <span class="muted" i18n>version {{ info.ffmpeg.version }}</span>
                             }
                         } @else {
-                            <span class="system-badge missing"><svg sfeIcon="close"></svg>Not found</span>
-                            <span class="field-hint">
-                                Looked for <code>{{ info.ffmpeg.configured }}</code>: video thumbnails, trickplay, video
-                                resolutions and durations, and converted videos are off. Pick its folder in
-                                System › Installation.
+                            <span class="system-badge missing"><svg sfeIcon="close"></svg><ng-container
+                                i18n>Not found</ng-container></span>
+                            <span class="field-hint" i18n>
+                                Looked for <code>{{ info.ffmpeg.configured }}</code>. Without it, there are no video
+                                thumbnails, trickplay, video resolutions and durations, or converted videos. Pick its
+                                folder in System › Installation.
                             </span>
                         }
                     </dd>
                 </div>
             } @else if (infoError()) {
-                <div><dt>Library folder</dt><dd class="muted">Could not be read: {{ infoError() }}</dd></div>
+                <div><dt i18n>Library folder</dt><dd class="muted" i18n>Could not read it: {{ infoError() }}</dd></div>
             }
         </dl>
         <div class="settings-action inline">
@@ -63,8 +64,9 @@
                 href="api/docs"
                 target="_blank"
                 rel="noopener"
-                title="Documentation of the server API, in a new tab"
-            ><svg sfeIcon="docs"></svg>API reference</a>
+                title="The documentation of the server's API, in a new tab"
+                i18n-title
+            ><svg sfeIcon="docs"></svg><ng-container i18n>API reference</ng-container></a>
         </div>
     </section>
 }

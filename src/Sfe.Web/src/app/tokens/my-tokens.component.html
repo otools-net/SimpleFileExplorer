@@ -1,9 +1,9 @@
-<p class="access-intro">
-    A token lets a program or a script call SFE's API as you, without your password: it sends the token with each
-    request. Give each program its own token, and revoke the one a program no longer needs.
+<p class="access-intro" i18n>
+    A token lets a program or a script use SFE's API as you, without your password: it sends the token with each
+    request. Give each program its own token, and revoke a program's token when it no longer needs it.
 </p>
 @if (!enabled()) {
-    <p class="access-note token-off">
+    <p class="access-note token-off" i18n>
         Access tokens are switched off on this server: no token can be made, and those below are refused until they
         are switched on again.
     </p>
@@ -14,17 +14,20 @@
             type="button"
             class="button primary"
             title="Make a token for a program or a script"
+            i18n-title
             (click)="creator().open()"
         >
-            <svg sfeIcon="plus"></svg>New token
+            <svg sfeIcon="plus"></svg><ng-container i18n>New token</ng-container>
         </button>
     }
     @if (revocable().length > 0) {
         <button
             type="button"
             class="button"
-            title="Revoke every token of yours: the programs using them are refused from now on"
+            title="Revoke all your tokens: the programs using them are refused from now on"
+            i18n-title
             (click)="revokeAll()"
+            i18n
         >Revoke all</button>
     }
 </div>
@@ -37,7 +40,7 @@
         @for (token of tokens(); track token.id) {
             <li sfeTokenRow [token]="token" (revoke)="revoke($event)"></li>
         } @empty {
-            <li class="access-empty muted">No tokens yet.</li>
+            <li class="access-empty muted" i18n>No tokens yet.</li>
         }
     </ul>
 }

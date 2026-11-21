@@ -21,8 +21,11 @@ import { TokenRowComponent } from './token-row.component';
                     type="search"
                     class="access-filter"
                     placeholder="Find a token"
+                    i18n-placeholder
                     aria-label="Find a token"
-                    title="Show only the tokens whose name or account contains this"
+                    i18n-aria-label
+                    title="Show only the tokens whose name or account contains these letters"
+                    i18n-title
                     [value]="filter()"
                     (input)="filter.set(valueOf($event))"
                 >
@@ -37,7 +40,11 @@ import { TokenRowComponent } from './token-row.component';
                 @for (token of shown(); track token.id) {
                     <li sfeTokenRow [token]="token" [showAccount]="true" (revoke)="revoke($event)"></li>
                 } @empty {
-                    <li class="access-empty muted">{{ filter() ? 'No token matches.' : 'No account has a token.' }}</li>
+                    @if (filter()) {
+                        <li class="access-empty muted" i18n>No token matches.</li>
+                    } @else {
+                        <li class="access-empty muted" i18n>No account has a token.</li>
+                    }
                 }
             </ul>
         }
@@ -80,7 +87,7 @@ export class AllTokensComponent {
             this.tokens.set(await this.api.allTokens());
             this.error.set(null);
         } catch (error) {
-            this.error.set(`Could not load the tokens: ${(error as Error).message}`);
+            this.error.set($localize`Could not load the tokens: ${(error as Error).message}:reason:`);
         } finally {
             this.loaded.set(true);
         }

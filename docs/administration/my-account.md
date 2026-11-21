@@ -3,9 +3,9 @@
 **Administration › My account**: your own preferences, your password and your access tokens. It is the only section an account without
 any right to change something sees. Clicking your name at the top of the ⋮ menu opens it directly.
 
-## Preferences
+## Settings
 
-![My account › Preferences](../images/admin-account-preferences.png)
+![My account › Settings](../images/admin-account-preferences.png)
 
 Your own settings, used instead of the space's. The server keeps them, so they follow you on every device you sign in on.
 A setting locked by the space or the server can't be changed here. Right: `account.preferences`.

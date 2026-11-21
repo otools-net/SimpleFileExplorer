@@ -1,18 +1,16 @@
     <section class="settings-group">
         <header class="settings-group-head">
-            <h3>Installation</h3>
-            <p class="field-hint">
-                The folder of the first space, who can open SFE and where ffmpeg is. Only whoever runs the server
-                may change them: enter the
-                setup code first (shown when SFE started the first time, and kept in data/setup-code.txt in SFE's
-                folder, unless the
-                server's configuration sets one).
+            <h3 i18n>Installation</h3>
+            <p class="field-hint" i18n>
+                The folder of the first space, who can open SFE and where ffmpeg is. Only the person running the server
+                may change them: enter the setup code first. SFE showed it when it started the first time and keeps it
+                in data/setup-code.txt in its folder, unless the server's configuration sets one.
             </p>
         </header>
         @if (!token()) {
             <form class="installation-unlock" novalidate (submit)="unlock($event)">
                 <div class="field">
-                    <label class="field-label" for="installation-code">Setup code</label>
+                    <label class="field-label" for="installation-code" i18n>Setup code</label>
                     <input
                         id="installation-code"
                         type="password"
@@ -28,23 +26,24 @@
                     type="submit"
                     class="button primary"
                     title="Check the setup code and show the installation settings"
+                    i18n-title
                     [disabled]="busy() || !code().trim()"
                 >
-                    <svg sfeIcon="check"></svg>Unlock
+                    <svg sfeIcon="check"></svg><ng-container i18n>Unlock</ng-container>
                 </button>
             </form>
         } @else {
             <form class="settings-form" novalidate (submit)="save($event)">
-                <p class="field-hint installation-warning">
-                    Another library folder makes the first space show other files: the next scan treats the files of
-                    the old folder
-                    as gone (tagged ones are kept as moved files for a while).
+                <p class="field-hint installation-warning" i18n>
+                    With another library folder, the first space shows other files: the next scan treats the files of
+                    the old folder as gone (tagged ones are kept as moved files for a while).
                 </p>
                 <sfe-installation-form [token]="token()!" [initial]="settings()!" />
                 @if (restartRequired()) {
                     <p
                         class="installation-restart"
                         role="status"
+                        i18n
                     >The new network setting applies once SFE starts again: restart it (or its service).</p>
                 }
                 <div class="settings-action inline">
@@ -52,7 +51,9 @@
                         type="submit"
                         class="button primary"
                         title="Save the installation settings"
+                        i18n-title
                         [disabled]="busy()"
+                        i18n
                     >Save</button>
                 </div>
             </form>

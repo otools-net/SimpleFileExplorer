@@ -6,7 +6,7 @@ A setting's value comes from up to four levels, each over the one before:
 2. **Server**: the administration page's settings, "the whole server" (server administrators): every space's
    defaults, saved in `settings.json`;
 3. **Space**: the same pages, "this space" (its administrators, section by section with their rights);
-4. **User**: [My account › Preferences](../administration/my-account.md), each user's own.
+4. **User**: [My account › Settings](../administration/my-account.md), each user's own.
 
 ![Choosing the level at the top of a settings page](../images/admin-interface-browsing.png)
 

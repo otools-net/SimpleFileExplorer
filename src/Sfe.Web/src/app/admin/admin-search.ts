@@ -4,7 +4,7 @@
  * configuration keys. Those whose title holds every word come first.
  */
 
-import { AdminSection, AdminSubpage } from './admin-sections';
+import { ADMIN_GROUP_TITLES, AdminSection, AdminSubpage } from './admin-sections';
 import { SettingField, SettingGroup, TABS } from '../settings/settings-schema';
 
 export interface AdminSearchResult {
@@ -60,7 +60,7 @@ export function searchAdmin(query: string, sections: AdminSection[]): AdminSearc
                 section,
                 subpage: section.subpages[0],
                 title: section.title,
-                where: section.group,
+                where: ADMIN_GROUP_TITLES[section.group],
                 text: section.description,
             },
             section.description,

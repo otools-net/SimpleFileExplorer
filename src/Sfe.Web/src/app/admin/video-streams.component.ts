@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { Api } from '../core/api.service';
-import { formatDuration, formatElapsed, formatSize, joinParts, plural } from '../core/format';
+import { formatDuration, formatElapsed, formatSize, joinParts } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { StreamActivity, StreamingStatus } from './admin.models';
 import { visibleInterval } from '../core/visible-interval';
 
 const REFRESH_MS = 2000;
 
 const MODES: Record<StreamingStatus['mode'], string> = {
-    off: "Turned off in this space: videos the browser can't play are not converted (Playback › Streaming).",
-    fallback: "Videos the browser can't play are converted while they play.",
-    always: 'Every video is converted while it plays.',
+    off: $localize`Turned off in this space: videos the browser can't play aren't converted (Playback › Streaming).`,
+    fallback: $localize`Videos the browser can't play are converted while they play.`,
+    always: $localize`Every video is converted while it plays.`,
 };
 
 /** A stream's line: the video, its folder below; who watches it and how far it got on the right. */
@@ -40,7 +41,7 @@ interface Row {
             }
         </div>
         <section class="trickplay-section">
-            <header><h3>Converting now</h3><span class="trickplay-count">{{ rows().length || '' }}</span></header>
+            <header><h3 i18n>Converting now</h3><span class="trickplay-count">{{ rows().length || '' }}</span></header>
             <ul class="trickplay-list">
                 @for (row of rows(); track row.id) {
                     <li class="trickplay-row stream-row" [title]="row.path">
@@ -58,7 +59,7 @@ interface Row {
                     </li>
                 }
             </ul>
-            <p class="muted" [hidden]="rows().length > 0">No video is being converted.</p>
+            <p class="muted" [hidden]="rows().length > 0" i18n>No video is being converted.</p>
         </section>
     `,
 })
@@ -79,21 +80,22 @@ export class VideoStreamsComponent {
     });
     protected readonly stateText = computed(() => {
         const error = this.error();
-        if (error) return `Could not read the streams: ${error}`;
+        if (error) return $localize`Could not read the streams: ${error}:reason:`;
         const status = this.status();
         if (!status) return '…';
         if (!status.available && status.mode !== 'off')
-            return (
-                "ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) in the server's configuration file. " +
-                'System › About tells where it looks.'
-            );
+            return $localize`ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) in the server's \
+configuration file. System › About says where it looks.`;
         return MODES[status.mode];
     });
     protected readonly limitText = computed(() => {
         const status = this.status();
         return status
-            ? `At most ${plural(status.maxStreams, 'video')} at once on the whole server; ` +
-                  `more viewers wait for one to end.`
+            ? icu(
+                  $localize`At most {count, plural, one {# video} other {# videos}} at once on the whole server; \
+more viewers wait for one to end.`,
+                  { count: status.maxStreams },
+              )
             : '';
     });
     protected readonly rows = computed(() => (this.status()?.streams ?? []).map((stream) => this.row(stream)));
@@ -122,12 +124,14 @@ export class VideoStreamsComponent {
             name: stream.path.slice(slash + 1),
             folder: slash > 0 ? stream.path.slice(0, slash) : null,
             path: stream.path,
-            who: joinParts([user ?? 'Visitor', library, address]),
+            who: joinParts([user ?? $localize`Visitor`, library, address]),
             how: joinParts([
-                stream.start > 0 ? `from ${formatDuration(stream.start)}` : 'from the start',
-                stream.transcoded ? 'converted' : 'repackaged',
+                stream.start > 0
+                    ? $localize`:a stream's start:from ${formatDuration(stream.start)}:time:`
+                    : $localize`from the start`,
+                stream.transcoded ? $localize`converted` : $localize`repackaged`,
                 formatSize(stream.bytes),
-                `for ${formatElapsed(seconds)}`,
+                $localize`:how long a stream has run:for ${formatElapsed(seconds)}:elapsed:`,
             ]),
         };
     }

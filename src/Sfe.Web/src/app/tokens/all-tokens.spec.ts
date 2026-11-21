@@ -38,7 +38,7 @@ describe('AllTokensComponent', () => {
     it('lists every token with its account, library and last use', () => {
         const [first, second] = rows();
         expect(first.textContent).toContain('admin');
-        expect(first.textContent).toContain('Every library');
+        expect(first.textContent).toContain('Every space');
         expect(first.textContent).toContain('from 192.0.2.7');
         expect(second.textContent).toContain('bob');
         expect(second.textContent).toContain('Expired');

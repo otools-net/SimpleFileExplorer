@@ -46,7 +46,7 @@ export class InstallationSectionComponent {
                 error instanceof ApiError && error.errors?.['code']
                     ? error.errors['code'].join(' ')
                     : error instanceof ApiError && error.status === 429
-                      ? 'Too many attempts: wait a minute, then try again.'
+                      ? $localize`Too many attempts: wait a minute, then try again.`
                       : (error as Error).message,
             );
         } finally {

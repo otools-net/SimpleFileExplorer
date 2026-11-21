@@ -58,7 +58,7 @@ describe('MyTokensComponent', () => {
         const [first, second, third] = rows();
         expect(first.textContent).toContain('Backup script');
         expect(first.textContent).toContain('sfe_0123abcd…');
-        expect(first.textContent).toContain('Every library');
+        expect(first.textContent).toContain('Every space');
         expect(first.textContent).toContain("All of the account's rights");
         expect(first.textContent).toContain('Last used');
         expect(second.textContent).toContain('Library · 2 rights');

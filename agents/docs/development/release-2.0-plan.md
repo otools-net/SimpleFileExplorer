@@ -106,8 +106,18 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     chosen by a condition as `@if` around `<ng-container i18n>`; the recovery code's minutes an ICU plural; "as a
     guest" → "as a visitor"; My account's intro says "settings" (its tab is still "Preferences": 2.4c). The update
     page's confirm left for 2.8. `local-only.png` not retaken (one word changed; taken by hand).
-  - [ ] **2.4c the rest of administration** (`app/admin/` with `admin-sections.ts` "Colors", `app/connections/`,
-    `app/tokens/`, `app/tasks/`, `app/logs/`; ~250 texts).
+  - [x] **2.4c administration pages and tokens** (`app/admin/`, `app/tokens/`; split from the rest on 2026-11-21:
+    tasks build their sentences from fragments, a session of its own). Done 2026-11-21: 9 files at 0 unmarked texts
+    (123 gone); section names and descriptions in `$localize` ("Colours", "space", "task"); groups keyed
+    (`AdminGroup`, `ADMIN_GROUP_TITLES`: the overview's anchors stay `admin-group-<key>`, never translated); My
+    account's "Preferences" page named **Settings** (id `preferences` kept); tokens say "space"; `plural()` out of
+    the area; titles built with `+` now `title="… {{ }}" i18n-title` or `$localize` in code; confirms and toasts
+    left for 2.8. Readability baselines raised by the added lines: `admin-page.component.ts` 500 → 521, its
+    template 474 → 501, `admin-sections.ts` 435 → 499.
+  - [ ] **2.4d tasks, logs and connections** (`app/tasks/`, `app/logs/`, `app/connections/`; ~120 template texts
+    and the wording helpers of `tasks.ts`: `formatInterval`, `formatDays`, `describeSchedule`, `formatMoment`,
+    `target`, the summary's `nextRunText` glue lower-cased names and capitalised fragments into sentences — make
+    each sentence one ICU message, e.g. `{unit, select, day {{n, plural, …}} …}`).
   Toasts and confirms of these areas stay for 2.8 (as in 2.3).
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
@@ -258,9 +268,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-21):** steps 1.1 to 2.3, 2.4a and 2.4b done (see their ticks; 2.4 was split in three).
-  Next: **2.4c** (rest of administration: `admin-sections.ts` descriptions still say "Colors", My account's tab
-  "Preferences" → "Settings"?), then 2.5–2.8. Texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md)
+- **Last session (2026-11-21):** steps 1.1 to 2.3 and 2.4a–2.4c done (see their ticks; 2.4 was split in four).
+  Next: **2.4d** (tasks, logs, connections), then 2.5–2.8. Texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md)
   says how; `app/access/` is a worked example.
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
