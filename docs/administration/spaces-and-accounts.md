@@ -80,7 +80,8 @@ everything below it, for a group (Guests included: visitors without an account) 
 - **An account's own rule only adds** to what its groups give: open one folder to one person without a new group.
 - Server administrators always see everything. A space has at most 250 rules.
 
-**New rule** picks the folder (every folder of the space, whatever rules apply to you), who it is for and the level.
+**New rule** picks the folder (every folder of the space, whatever rules apply to you; **Top of the library** for the
+whole library), who it is for and the level.
 Each rule's list changes its level, or **Inherit (remove)** drops it. **Who has access** lists every account (and the
 visitors) with whether they see the folder and may change its files, all groups and rules counted.
 

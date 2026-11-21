@@ -634,7 +634,7 @@ const scenes = {
         await b.shot(OUT + 'admin-access-space.png');
         await b.eval(`document.querySelector('sfe-folder-access').scrollIntoView({ block: 'start' }); 1`);
         await sleep(400);
-        await b.clickTitle('Who may see and change Documents');
+        await b.clickTitle('Show who may see and change Documents');
         await sleep(800);
         // the page only grows long enough once the report is open
         await b.eval(`document.querySelector('sfe-folder-access').scrollIntoView({ block: 'start' }); 1`);

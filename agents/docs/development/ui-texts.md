@@ -83,6 +83,8 @@ Use the term on the left; the words on the right are not used in texts (code nam
 | **group** | A set of accounts sharing rights in one space; built-in **Administrators**, **Users**, **Guests** | role, team |
 | **account** | A person's sign-in; **sign-in directory** = where its password is checked (local, Windows, LDAP) | user (in admin texts), login, profile |
 | **visitor** | Someone using a space without an account (through the **Guests** group's rights) | guest (the person), anonymous |
+| **guest account** | An account that signs in but can only look, whatever its groups allow (`kind: guest`); not a visitor | read-only account, viewer |
+| **top of the library** | The library's own folder, as a place ("Top of the library" in folder rules and pickers) | library root, root |
 | **administrator** | An account in a space's Administrators group (**space administrator** when the difference matters); **server administrator** has every right everywhere | admin (in texts; "Administration" for the page), superuser |
 | **sign in / sign out** | The verbs; **sign-in** as a noun or adjective ("the sign-in page") | log in, login, log out |
 | **quick links** | A user's links to folders, in the sidebar | bookmarks, favourites, shortcuts, pins |

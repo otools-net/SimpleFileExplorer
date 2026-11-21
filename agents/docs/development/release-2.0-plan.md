@@ -94,6 +94,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   2.7 viewers, player, editors, formats; 2.8 toasts (~200 calls) and server texts that reach users (right names
   in `RightCatalog`, problem `detail`; problem `type` words never change — [api-versioning](api-versioning.md)).
   Note: no "its/it's" error was found in UI strings; the real issue is terse noun-phrase hints.
+  **2.4 split** (2026-11-21: 722 unmarked template texts in 31 files, ~11k lines of TS; 2.3 alone was ~4k lines):
+  - [x] **2.4a access** (`app/access/`: spaces, space page, space editor, accounts, account editor, groups, folder
+    access; ~280 texts). Done 2026-11-21: 8 files at 0 unmarked texts (299 gone); `plural()` out of the area
+    (template ICU plurals, `icu()` in code); errors keep the reason, the template writes the sentence; editors titled
+    "Edit the space “…”"; "Library root" → "Top of the library" (glossary gained it and "guest account"); confirms
+    and toasts left for 2.8. Gotchas in [translations](translations.md) (aria-label binding, `sheetFooter`).
+  - [ ] **2.4b sign-in and setup** (`app/account/`, `app/migration/`, local-only page; ~190 texts).
+  - [ ] **2.4c the rest of administration** (`app/admin/` with `admin-sections.ts` "Colors", `app/connections/`,
+    `app/tokens/`, `app/tasks/`, `app/logs/`; ~250 texts).
+  Toasts and confirms of these areas stay for 2.8 (as in 2.3).
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
   (dividers) to `MenuEntry`; one action registry used by the item menu, folder menu and selection bar; order
@@ -243,9 +253,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-21):** steps 1.1 to 2.3 done (see their ticks). Next: **2.4** (administration and access:
-  texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md) says how; `admin-sections.ts`
-  descriptions still say "Colors"), then 2.5–2.8.
+- **Last session (2026-11-21):** steps 1.1 to 2.3 and 2.4a done (see their ticks; 2.4 was split in three). Next:
+  **2.4b** (sign-in and setup), then **2.4c** (rest of administration: `admin-sections.ts` descriptions still say
+  "Colors"), then 2.5–2.8. Texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md)
+  says how; `app/access/` is a worked example.
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
   (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and
@@ -269,7 +280,8 @@ Where the work stands, for a session that picks it up. Update it at the end of e
   - Texts marked for translation: `node agents/tools/i18n/extract.mjs` after, `--check` before each commit (~20 s
     each); `SFE_TEXTS_BASELINE=write npm test -- --include src/app/core/i18n` when an area's unmarked texts drop.
   - Code generated through the Bash tool (`node -e`, heredocs) loses `\` line continuations and `\n` escapes (they
-    become real breaks or vanish): write texts with the Write / Edit tools, and count lengths by characters
+    become real breaks or vanish; a regex `\b` became an invisible backspace in a spec): write texts with the
+    Write / Edit tools, and count lengths by characters
     (`[...line].length`; `awk length` counts bytes, and `“ ”` are 3).
   - Templates are not Prettier-formatted: never run `prettier --write` on an `.html` (it re-indents everything).
   - The first `dotnet test` after a client build (`npm test` builds too) fails on a stale `wwwroot` chunk ("No file

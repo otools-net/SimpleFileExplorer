@@ -180,6 +180,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   finds words in them too. Corrected on the way: Allow deleting copies sends copies to the trash (not deleted from
   the disk) and only for groups with the right "Delete duplicates"; the picture editor's introduction mentions saving
   over the original. The settings' texts are ready for translation (English only ships).
+- **Spaces and accounts pages reworded**: the spaces, a space's page, the space, account and group editors and folder
+  access say things in full sentences with the same words everywhere (visitors, sign-in directory, for example);
+  editors are titled "Edit the space “…”" (or account, group), and the whole library is named **Top of the library**
+  in folder rules. Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

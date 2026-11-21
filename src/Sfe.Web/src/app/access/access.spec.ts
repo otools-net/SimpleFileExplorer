@@ -306,7 +306,7 @@ describe('AccountsPageComponent', () => {
         expect(element.querySelector<HTMLInputElement>('#account-name')!.disabled).toBe(true);
         expect(element.textContent).not.toContain('Server administrator');
         expect(element.querySelector('#account-add-space')).toBeNull();
-        expect(element.textContent).toContain('Also in another space, kept as they are');
+        expect(element.textContent).toContain('Also in another space, kept as it is');
         checkbox('.access-chip', 'Administrators').click();
         await settle();
         buttonNamed(element, 'Save')!.click();
@@ -342,7 +342,7 @@ describe('SpacesPageComponent', () => {
 
     function serverSpaces(): void {
         api.tenants.mockResolvedValue([
-            space(LIBRARY.id, 'Library', { members: 2 }),
+            space(LIBRARY.id, 'Library', { members: 1, groups: 1 }),
             space(WORK.id, 'Work', { members: 2, groups: 4, guestAccess: true }),
         ]);
         api.users.mockResolvedValue([anna, tom, dave]);
@@ -373,6 +373,8 @@ describe('SpacesPageComponent', () => {
         expect(cards.map((card) => card.querySelector('strong')!.textContent)).toEqual(['Library', 'Work']);
         expect(cards[0].textContent).toContain('You are here');
         expect(cards[0].textContent).toContain('D:\\Media\\Library');
+        expect(cards[0].textContent).toMatch(/1 group/);
+        expect(cards[0].textContent).toMatch(/1 account/);
         expect(cards[1].textContent).toContain('4 groups');
         expect(cards[1].textContent).toContain('2 accounts');
         expect(cards[1].textContent).toContain('Visitors let in');
@@ -400,6 +402,12 @@ describe('SpacesPageComponent', () => {
             'Kids',
         ]);
         expect(groups.textContent).toContain('used for visitors without an account');
+        // one line each, the parts kept apart by their separators
+        const details = [...groups.querySelectorAll('.access-row-detail')].map((detail) =>
+            detail.textContent!.replace(/\s+/g, ' ').trim(),
+        );
+        expect(details[3]).toBe('1 right · 1 account');
+        expect(groups.querySelectorAll('.access-row-detail > *').length).toBe(4);
         expect([...accounts.querySelectorAll('.access-row strong')].map((name) => name.textContent)).toEqual([
             'anna',
             'tom',
@@ -458,9 +466,11 @@ describe('SpacesPageComponent', () => {
         await create(SpacesPageComponent);
 
         await openSpace('Library');
-        [...element.querySelectorAll<HTMLElement>('.access-card')][3]
-            .querySelector<HTMLInputElement>('input[type=checkbox]')!
-            .click();
+        const visitors = [...element.querySelectorAll<HTMLElement>('.access-card')][3];
+        expect(visitors.querySelector('.field-hint')!.textContent!.replace(/\s+/g, ' ')).toContain(
+            'can open this space. Visitors may do',
+        );
+        visitors.querySelector<HTMLInputElement>('input[type=checkbox]')!.click();
         await settle();
         expect(api.setGuestAccess).toHaveBeenCalledWith(true);
 
@@ -496,7 +506,7 @@ describe('SpacesPageComponent', () => {
         expect(checkbox('.access-choices.rights label', Rights.browse).checked).toBe(true);
         expect(checkbox('.access-choices.rights label', Rights.manageTags).disabled).toBe(true);
         expect(checkbox('.access-choices.rights label', Rights.manageTags).closest('label')!.textContent).toContain(
-            'can never have it',
+            'can never have this right',
         );
         expect(checkbox('.access-choices.rights label', Rights.download).closest('label')!.textContent).toContain(
             'Switched off for the whole server',

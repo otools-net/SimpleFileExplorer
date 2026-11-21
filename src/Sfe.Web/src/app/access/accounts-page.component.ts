@@ -17,7 +17,7 @@ function spacesOf(groups: GroupInfo[], known: SpaceRef[]): SpaceRef[] {
     const named = known.filter((space) => ids.has(space.id)).map((space) => ({ id: space.id, name: space.name }));
     const unnamed = [...ids]
         .filter((id) => !named.some((space) => space.id === id))
-        .map((id) => ({ id, name: `Space ${id}` }));
+        .map((id) => ({ id, name: $localize`Space ${id}:id:` }));
     return [...named, ...unnamed];
 }
 
@@ -63,6 +63,9 @@ export class AccountsPageComponent implements OnInit {
             : this.users();
     });
 
+    protected readonly newServerWideTitle = $localize`Create an account, and choose its spaces and groups`;
+    protected readonly newInSpaceTitle = $localize`Create an account in this space`;
+
     protected readonly valueOf = valueOf;
     protected readonly formatDate = formatDate;
 
@@ -91,7 +94,7 @@ export class AccountsPageComponent implements OnInit {
             );
             this.error.set(null);
         } catch (error) {
-            this.error.set(`Could not load the accounts: ${(error as Error).message}`);
+            this.error.set((error as Error).message);
         } finally {
             this.loaded.set(true);
         }
@@ -117,8 +120,8 @@ export class AccountsPageComponent implements OnInit {
 
     protected removeTitle(user: UserInfo): string {
         return this.removesOnly(user)
-            ? `Take ${user.userName} out of this space; its other spaces keep the account (asks first)`
-            : `Delete the account ${user.userName} (asks first)`;
+            ? $localize`Take ${user.userName}:name: out of this space; its other spaces keep the account (asks first)`
+            : $localize`Delete the account ${user.userName}:name: (asks first)`;
     }
 
     protected async remove(user: UserInfo): Promise<void> {

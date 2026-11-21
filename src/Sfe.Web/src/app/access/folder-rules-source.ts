@@ -31,7 +31,7 @@ export interface FolderRulesSource {
 /** The rules of a space's library (`space`: another space than the session's, for server administrators). */
 export function libraryRules(api: Api, space: number | null): FolderRulesSource {
     return {
-        rootName: 'Library root',
+        rootName: $localize`Top of the library`,
         load: () => api.folderRules(space),
         set: (change) => api.setFolderRule(change, space),
         folders: (path) => api.spaceFolders(path, space),

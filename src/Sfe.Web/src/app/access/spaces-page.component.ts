@@ -4,7 +4,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { plural } from '../core/format';
 import { TenantDetails } from './access.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
@@ -21,12 +20,12 @@ import { SpaceEditorComponent } from './space-editor.component';
     host: { class: 'access-model' },
     template: `
         <div class="help-row access-model-head">
-            <p>Each <strong>space</strong> holds:</p>
-            <sfe-help about="How spaces work">
-                <p>A space is a separate home for one library on this server. Everything about the library belongs to the space: its
-                   files, index, tags and settings, and who may see it.</p>
-                <p>An example server:</p>
-                <pre class="access-example">Space “Family”
+            <p i18n>Each <strong>space</strong> holds:</p>
+            <sfe-help about="How spaces work" i18n-about>
+                <p i18n>A space is a separate home for one library on this server. Everything about the library belongs
+                    to the space: its files, index, tags and settings, and who may see it.</p>
+                <p i18n>An example server:</p>
+                <pre class="access-example" i18n="example of two spaces, keep the drawing">Space “Family”
 ├─ Library   D:\\Media\\Family
 ├─ Groups    Administrators · Users · Guests · Kids
 ├─ Accounts  anna → Administrators
@@ -38,15 +37,21 @@ Space “Holiday photos”
 ├─ Groups    Administrators · Users · Guests
 ├─ Accounts  anna → Users
 └─ Visitors  let in, with the rights of Guests</pre>
-                <p>Anna sees both spaces and switches between them from the ⋮ menu; Tom sees only Family; anyone on the network can look at
-                   the holiday photos without an account. Server administrators stand above all spaces.</p>
+                <p i18n>Anna sees both spaces and switches between them from the ⋮ menu; Tom sees only Family; anyone on
+                    the network can look at the holiday photos without an account. Server administrators stand above
+                    every space.</p>
             </sfe-help>
         </div>
         <ol class="access-model-tiles">
-            <li><svg sfeIcon="folder"></svg><strong>A library</strong><span>One folder of the server: its files, index, tags and settings.</span></li>
-            <li><svg sfeIcon="group"></svg><strong>Groups</strong><span>Sets of rights: what their members may do there.</span></li>
-            <li><svg sfeIcon="user"></svg><strong>Accounts</strong><span>People who sign in, each in one or more of its groups.</span></li>
-            <li><svg sfeIcon="globe"></svg><strong>Visitors</strong><span>Optionally, people without an account, with the Guests group's rights.</span></li>
+            <li><svg sfeIcon="folder"></svg><strong i18n>A library</strong>
+                <span i18n>One folder of the server, with its files, index, tags and settings.</span></li>
+            <li><svg sfeIcon="group"></svg><strong i18n>Groups</strong>
+                <span i18n>Sets of rights: what their members may do in the space.</span></li>
+            <li><svg sfeIcon="user"></svg><strong i18n>Accounts</strong>
+                <span i18n>People who sign in, each in one or more of the space's groups.</span></li>
+            <li><svg sfeIcon="globe"></svg><strong i18n>Visitors</strong>
+                <span i18n>If you let them in: people without an account, with the Guests group's
+                    rights.</span></li>
         </ol>
     `,
 })
@@ -89,8 +94,6 @@ export class SpacesPageComponent implements OnInit {
         return space ? this.viewOf(space) : null;
     });
 
-    protected readonly plural = plural;
-
     ngOnInit(): Promise<void> {
         return this.load();
     }
@@ -112,7 +115,7 @@ export class SpacesPageComponent implements OnInit {
             }
             this.error.set(null);
         } catch (error) {
-            this.error.set(`Could not load the spaces: ${(error as Error).message}`);
+            this.error.set((error as Error).message);
         } finally {
             this.loaded.set(true);
         }

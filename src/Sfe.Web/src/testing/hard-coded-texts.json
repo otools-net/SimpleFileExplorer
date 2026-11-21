@@ -1,12 +1,4 @@
 {
-  "app/access/account-editor.component.html": 57,
-  "app/access/accounts-page.component.html": 26,
-  "app/access/folder-access.component.html": 42,
-  "app/access/group-editor.component.html": 37,
-  "app/access/space-detail.component.html": 58,
-  "app/access/space-editor.component.html": 50,
-  "app/access/spaces-page.component.html": 14,
-  "app/access/spaces-page.component.ts": 15,
   "app/account/account-section.component.html": 15,
   "app/account/installation-form.component.html": 36,
   "app/account/local-only-page.component.ts": 12,

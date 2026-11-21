@@ -51,10 +51,18 @@ export class GroupEditorComponent {
 
     protected readonly areas = computed(() => rightAreas(this.catalog()?.rights ?? []));
     protected readonly presets: { builtIn: BuiltInGroup; label: string }[] = [
-        { builtIn: 'administrators', label: 'Administrators' },
-        { builtIn: 'users', label: 'Users' },
-        { builtIn: 'guests', label: 'Guests' },
+        { builtIn: 'administrators', label: $localize`:built-in group:Administrators` },
+        { builtIn: 'users', label: $localize`:built-in group:Users` },
+        { builtIn: 'guests', label: $localize`:built-in group:Guests` },
     ];
+
+    protected readonly creating = computed(() => this.draft()?.id === null);
+    protected readonly heading = computed(() =>
+        this.creating() ? $localize`New group` : $localize`Edit the group “${this.draft()?.name ?? ''}:name:”`,
+    );
+    protected readonly subtitle = computed(() => $localize`In the space ${this.spaceName()}:space:`);
+    protected readonly createTitle = $localize`Create the group`;
+    protected readonly saveTitle = $localize`Save the group`;
 
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;
@@ -76,11 +84,12 @@ export class GroupEditorComponent {
 
     /** Why a right can't be given to the group (guests, switched off); null when it can. */
     protected rightNote(right: RightDefinition, draft: GroupDraft): string | null {
-        if (draft.builtIn === 'guests' && !right.guestAllowed) return 'Visitors without an account can never have it.';
+        if (draft.builtIn === 'guests' && !right.guestAllowed)
+            return $localize`Visitors without an account can never have this right.`;
         if (this.catalog()?.disabledByServer.includes(right.id))
-            return 'Switched off for the whole server: nobody gets it.';
+            return $localize`Switched off for the whole server: nobody gets it.`;
         if (this.catalog()?.disabledInTenant.includes(right.id))
-            return 'Switched off in this space: nobody gets it here.';
+            return $localize`Switched off in this space: nobody gets it here.`;
         return null;
     }
 

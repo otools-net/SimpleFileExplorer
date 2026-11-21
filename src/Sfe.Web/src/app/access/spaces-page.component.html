@@ -1,5 +1,5 @@
 @if (error(); as error) {
-    <p class="form-error">{{ error }}</p>
+    <p class="form-error" i18n>Could not load the spaces: {{ error }}</p>
 } @else if (!loaded()) {
     <div class="tag-loading"><span class="spinner"></span></div>
 } @else if (selected(); as space) {
@@ -8,10 +8,11 @@
             <button
                 type="button"
                 class="link-button space-back"
-                title="Back to the list of spaces"
+                title="Go back to the list of spaces"
+                i18n-title
                 (click)="openSpace(null)"
             >
-                <svg sfeIcon="left"></svg>All spaces
+                <svg sfeIcon="left"></svg><span i18n>All spaces</span>
             </button>
         } @else {
             <sfe-access-model />
@@ -21,10 +22,20 @@
             <h3>{{ space.name }}</h3>
             <span class="access-badges">
                 @if (space.current) {
-                    <span class="access-badge accent" title="The space you are browsing">You are here</span>
+                    <span
+                        class="access-badge accent"
+                        title="This is the space you are browsing"
+                        i18n-title
+                        i18n
+                    >You are here</span>
                 }
                 @if (space.disabled) {
-                    <span class="access-badge danger" title="Nobody can open it">Disabled</span>
+                    <span
+                        class="access-badge danger"
+                        title="Nobody can open this space"
+                        i18n-title
+                        i18n
+                    >Disabled</span>
                 }
             </span>
             <span class="spacer"></span>
@@ -32,15 +43,19 @@
                 <button
                     type="button"
                     class="button small"
-                    title="Rename the space, disable it, switch rights off in it"
+                    title="Rename the space, disable it or switch rights off in it"
+                    i18n-title
                     (click)="editor().open(details)"
+                    i18n
                 >Edit space</button>
                 @if (!details.isDefault) {
                     <button
                         type="button"
                         class="button small"
-                        [title]="'Delete the space ' + details.name + ' (asks first)'"
+                        title="Delete the space {{ details.name }} (asks first)"
+                        i18n-title
                         (click)="remove(details)"
+                        i18n
                     >Delete</button>
                 }
             }
@@ -54,9 +69,10 @@
             type="button"
             class="button primary"
             title="Create a space on a folder of the server"
+            i18n-title
             (click)="editor().open(null)"
         >
-            <svg sfeIcon="plus"></svg>New space
+            <svg sfeIcon="plus"></svg><span i18n>New space</span>
         </button>
     </div>
     <ul class="space-cards">
@@ -66,24 +82,33 @@
                     type="button"
                     class="space-card"
                     [class.disabled]="space.disabled"
-                    [title]="'Open ' + space.name + ': its groups, accounts and visitors'"
+                    title="Open {{ space.name }}: its groups, accounts and visitors"
+                    i18n-title
                     (click)="openSpace(space.id)"
                 >
                     <span class="space-card-title">
                         <svg sfeIcon="space"></svg>
                         <strong>{{ space.name }}</strong>
                         @if (space.id === config.tenant()?.id) {
-                            <span class="access-badge accent">You are here</span>
+                            <span class="access-badge accent" i18n>You are here</span>
                         }
                         @if (space.disabled) {
-                            <span class="access-badge danger">Disabled</span>
+                            <span class="access-badge danger" i18n>Disabled</span>
                         }
                     </span>
                     <span class="space-card-line"><svg sfeIcon="folder"></svg><span class="access-path">{{ space.root }}</span></span>
-                    <span class="space-card-line"><svg sfeIcon="group"></svg>{{ plural(space.groups, 'group') }}</span>
-                    <span class="space-card-line"><svg sfeIcon="user"></svg>{{ plural(space.members, 'account') }}</span>
-                    <span class="space-card-line"><svg sfeIcon="globe"></svg>{{ space.guestAccess ? 'Visitors let in' : 'No visitors' }}</span>
-                    <span class="space-card-open">Open<svg sfeIcon="right"></svg></span>
+                    <span class="space-card-line"><svg sfeIcon="group"></svg><span i18n>{space.groups, plural,
+                        one {{{ space.groups }} group} other {{{ space.groups }} groups}}</span></span>
+                    <span class="space-card-line"><svg sfeIcon="user"></svg><span i18n>{space.members, plural,
+                        one {{{ space.members }} account} other {{{ space.members }} accounts}}</span></span>
+                    <span class="space-card-line"><svg sfeIcon="globe"></svg>
+                        @if (space.guestAccess) {
+                            <span i18n>Visitors let in</span>
+                        } @else {
+                            <span i18n>No visitors</span>
+                        }
+                    </span>
+                    <span class="space-card-open"><span i18n>Open</span><svg sfeIcon="right"></svg></span>
                 </button>
             </li>
         }

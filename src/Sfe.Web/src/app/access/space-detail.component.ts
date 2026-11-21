@@ -12,7 +12,8 @@ import {
 } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { formatDate, plural } from '../core/format';
+import { formatDate } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { GroupInfo, RightsCatalog, UserInfo } from './access.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
@@ -83,7 +84,6 @@ export class SpaceDetailComponent {
     );
     protected readonly candidates = computed(() => (this.allAccounts() ? this.users() : this.members()));
 
-    protected readonly plural = plural;
     protected readonly formatDate = formatDate;
     protected readonly checkedOf = checkedOf;
 
@@ -115,7 +115,7 @@ export class SpaceDetailComponent {
             this.catalog.set(catalog);
             this.error.set(null);
         } catch (error) {
-            this.error.set(`Could not load the space: ${(error as Error).message}`);
+            this.error.set((error as Error).message);
         } finally {
             this.loaded.set(true);
         }
@@ -134,7 +134,11 @@ export class SpaceDetailComponent {
         const others = new Set(
             user.groups.filter((group) => group.tenantId !== this.space().id).map((group) => group.tenantId),
         ).size;
-        return others ? `Also in ${others === 1 ? 'another space' : `${others} other spaces`} · ` : '';
+        if (!others) return '';
+        const text = icu($localize`{others, plural, one {Also in another space} other {Also in # other spaces}}`, {
+            others,
+        });
+        return `${text} · `;
     }
 
     /** Taking the account out deletes it: a space's administrator removing an account no other space has. */
@@ -147,9 +151,11 @@ export class SpaceDetailComponent {
     }
 
     protected removeTitle(user: UserInfo): string {
+        const name = user.userName;
+        const space = this.space().name;
         return this.deletes(user)
-            ? `Delete the account ${user.userName}: it is in no other space (asks first)`
-            : `Take ${user.userName} out of ${this.space().name}; the account itself stays (asks first)`;
+            ? $localize`Delete the account ${name}:name:, which is in no other space (asks first)`
+            : $localize`Take ${name}:name: out of ${space}:space:; the account itself stays (asks first)`;
     }
 
     protected async remove(user: UserInfo): Promise<void> {

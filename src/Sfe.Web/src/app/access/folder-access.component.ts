@@ -11,13 +11,21 @@ import { IconComponent } from '../shared/icon.component';
 
 /** The levels a rule sets, as the page names them. */
 export const FOLDER_LEVELS: { level: FolderLevel; label: string; hint: string }[] = [
-    { level: 'hidden', label: 'Hidden', hint: "They don't see the folder (unless another of their groups does)" },
+    {
+        level: 'hidden',
+        label: $localize`:folder access level:Hidden`,
+        hint: $localize`They don't see the folder (unless another of their groups does)`,
+    },
     {
         level: 'read',
-        label: 'Read only',
-        hint: 'They see and use its files with their rights, but may not change the files',
+        label: $localize`:folder access level:Read only`,
+        hint: $localize`They see and use its files with their rights, but may not change the files`,
     },
-    { level: 'write', label: 'Read & write', hint: 'Their rights apply in full, those that change files too' },
+    {
+        level: 'write',
+        label: $localize`:folder access level:Read & write`,
+        hint: $localize`Their rights apply in full, those that change files too`,
+    },
 ];
 
 /** The rules of one folder, as listed. */
@@ -65,6 +73,8 @@ export class FolderAccessComponent {
     protected readonly levels = FOLDER_LEVELS;
     protected readonly rulesSource = computed(() => this.source() ?? libraryRules(this.api, this.space()));
     protected readonly rootName = computed(() => this.rulesSource().rootName);
+    protected readonly moveTitle = $localize`Move the rules of the folder that is gone to this one`;
+    protected readonly setTitle = $localize`Set the rule`;
     protected readonly valueOf = valueOf;
 
     /** The rules by folder, in path order. */
@@ -128,7 +138,7 @@ export class FolderAccessComponent {
             this.picker.set(picker);
             this.draft.update((draft) => draft && { ...draft, path: picker.path ?? '' });
         } catch (error) {
-            this.problem.set(`Could not list the folders: ${(error as Error).message}`);
+            this.problem.set($localize`Could not list the folders: ${(error as Error).message}:reason:`);
         }
     }
 
@@ -184,6 +194,14 @@ export class FolderAccessComponent {
         } catch (error) {
             this.toasts.error(`Could not tell who has access: ${(error as Error).message}`);
         }
+    }
+
+    protected levelLabel(name: string, path: string): string {
+        return $localize`Level of ${name}:name: at ${path || this.rootName()}:folder:`;
+    }
+
+    protected yesNo(value: boolean): string {
+        return value ? $localize`Yes` : $localize`No`;
     }
 
     /** A folder as the toasts name it. */

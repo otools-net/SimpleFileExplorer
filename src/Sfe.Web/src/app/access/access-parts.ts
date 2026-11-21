@@ -63,14 +63,14 @@ export function rightMark(right: RightDefinition): { kind: 'changes' | 'files'; 
     if (right.atFolder === 'write')
         return {
             kind: 'files',
-            label: 'Changes files',
-            hint: "Creates, changes or deletes files in the library's folders.",
+            label: $localize`:mark of a right:Changes files`,
+            hint: $localize`Creates, changes or deletes files in the library's folders.`,
         };
     return right.kind === 'write'
         ? {
               kind: 'changes',
-              label: 'Changes things',
-              hint: 'Changes the space: its index, tags, settings or accounts, not the files themselves.',
+              label: $localize`:mark of a right:Changes things`,
+              hint: $localize`Changes the space (its index, tags, settings or accounts), not the files themselves.`,
           }
         : null;
 }
@@ -87,7 +87,7 @@ export function changingRights(rights: RightDefinition[]): string[] {
 
 /** What a built-in group is for, in a few words. */
 export const BUILT_IN_PURPOSE: Record<string, string> = {
-    administrators: "Manage the space: everything but the server's own settings",
-    users: 'Everyday use: browse, play, download and tag',
-    guests: 'What visitors without an account may do',
+    administrators: $localize`Manage the space: everything but the server's own settings`,
+    users: $localize`Everyday use: browse, play, download and tag`,
+    guests: $localize`What visitors without an account may do`,
 };

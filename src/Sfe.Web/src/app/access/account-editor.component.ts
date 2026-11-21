@@ -7,6 +7,7 @@ import { checkedOf, valueOf } from '../shared/events';
 import { HelpComponent } from '../shared/help.component';
 import { SheetComponent } from '../shared/sheet.component';
 import { fieldErrors, SpaceRef, toggled } from './access-parts';
+import { icu } from '../core/i18n/icu';
 
 /** An account being created (`id` null) or changed. */
 interface AccountDraft {
@@ -79,6 +80,14 @@ export class AccountEditorComponent {
         return this.limited() ? [] : this.spaces().filter((space) => !shown.has(space.id));
     });
 
+    protected readonly creating = computed(() => this.draft()?.id === null);
+    protected readonly heading = computed(() =>
+        this.creating() ? $localize`New account` : $localize`Edit the account “${this.draft()?.userName ?? ''}:name:”`,
+    );
+    protected readonly createTitle = $localize`Create the account`;
+    protected readonly saveTitle = $localize`Save the account`;
+    protected readonly keepPassword = $localize`Leave empty to keep the current one`;
+
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;
 
@@ -122,8 +131,8 @@ export class AccountEditorComponent {
 
     protected purpose(group: GroupInfo): string {
         return group.builtIn === 'guests'
-            ? 'Its rights are those of visitors without an account; an account in it gets them too'
-            : `${group.rights.length} rights`;
+            ? $localize`Its rights are those of visitors without an account; an account in it gets them too`
+            : icu($localize`{count, plural, one {# right} other {# rights}}`, { count: group.rights.length });
     }
 
     protected change(changes: Partial<AccountDraft>): void {

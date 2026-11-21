@@ -1,49 +1,57 @@
 <section class="access-card" aria-labelledby="space-folders">
     <header class="access-card-head help-row">
         <svg sfeIcon="lock"></svg>
-        <h3 id="space-folders">Folder access <span class="access-count">{{ rules().length }}</span></h3>
-        <sfe-help about="Folder access">
-            <p>Without rules, every group's rights apply in every folder. A <strong>rule</strong> narrows that for one
-            folder and
-               everything below it, for a group or one account:</p>
+        <h3 id="space-folders"><span i18n>Folder access</span> <span class="access-count">{{ rules().length }}</span></h3>
+        <sfe-help about="Folder access" i18n-about>
+            <p i18n>Without rules, every group's rights apply in every folder. A <strong>rule</strong> narrows that for
+                one folder and everything below it, for a group or one account:</p>
             <ul>
-                <li><strong>Hidden</strong>: they don't see the folder at all; it answers as if it weren't there.</li>
-                <li><strong>Read only</strong>: they see its files and use them with their rights (play, download, tag),
-                but
-                    nothing that changes the files themselves (editing pictures, deleting duplicates).</li>
-                <li><strong>Read &amp; write</strong>: their rights apply in full.</li>
+                <li i18n><strong>Hidden</strong>: they don't see the folder at all; it answers as if it weren't
+                    there.</li>
+                <li i18n><strong>Read only</strong>: they see its files and use them with their rights (play, download,
+                    tag), but nothing that changes the files themselves (editing pictures, deleting duplicates).</li>
+                <li i18n><strong>Read &amp; write</strong>: their rights apply in full.</li>
             </ul>
-            <p>The nearest rule above a folder decides: hide <em>Private</em> and open <em>Private/Shared</em> again,
-            and
-               <em>Private</em> only shows the way to <em>Shared</em>.</p>
-            <p>Groups add up: an account sees a folder when <strong>any</strong> of its groups does. To hide a folder
-            from the
-               kids, hide it from every group they are in. A rule for one account only adds to what its groups give.</p>
+            <p i18n>The nearest rule above a folder decides: hide <em>Private</em> and open <em>Private/Shared</em>
+                again, and <em>Private</em> only shows the way to <em>Shared</em>.</p>
+            <p i18n>Groups add up: an account sees a folder when <strong>any</strong> of its groups does. To hide a
+                folder from the kids, hide it from every group they are in. A rule for one account only adds to what its
+                groups give.</p>
         </sfe-help>
         <span class="spacer"></span>
         <button
             type="button"
             class="button small"
             title="Set what a group or an account may do in a folder"
+            i18n-title
             (click)="startNew()"
         >
-            <svg sfeIcon="plus"></svg>New rule
+            <svg sfeIcon="plus"></svg><span i18n>New rule</span>
         </button>
     </header>
 
     @if (draft(); as draft) {
         <form class="access-form folder-rule-form" novalidate (submit)="addRule($event)">
             <div class="field">
-                <span class="field-label">{{ repointing() ? 'Folder the rules now apply to' : 'Folder' }}</span>
+                <span class="field-label">
+                    @if (repointing()) {
+                        <ng-container i18n>Folder the rules now apply to</ng-container>
+                    } @else {
+                        <ng-container i18n>Folder</ng-container>
+                    }
+                </span>
                 <div class="folder-picker">
-                    <p class="folder-picker-path"><svg sfeIcon="folder"></svg><span>{{ draft.path || rootName() }}</span></p>
+                    <p class="folder-picker-path">
+                        <svg sfeIcon="folder"></svg><span>{{ draft.path || rootName() }}</span>
+                    </p>
                     @if (picker(); as picker) {
                         <ul>
                             @if (picker.parent !== null) {
                                 <li><button
                                     type="button"
                                     class="link-button"
-                                    title="The folder above"
+                                    title="Go to the folder above"
+                                    i18n-title
                                     (click)="browse(picker.parent)"
                                 >‥</button></li>
                             }
@@ -51,31 +59,38 @@
                                 <li><button
                                     type="button"
                                     class="link-button"
-                                    [title]="'Choose ' + folder.path + ', or open it'"
+                                    title="Choose {{ folder.path }}, or open it"
+                                    i18n-title
                                     (click)="browse(folder.path)"
                                 >{{ folder.name }}</button></li>
                             } @empty {
-                                <li class="muted">No folders here.</li>
+                                <li class="muted" i18n>No folders here.</li>
                             }
                         </ul>
                     }
                 </div>
-                <span class="field-hint">Click a folder to choose it; click again inside it to go deeper.</span>
+                <span class="field-hint" i18n>Click a folder to choose it; click again inside it to go deeper.</span>
             </div>
             @if (!repointing()) {
                 <div class="access-columns">
                     <div class="field">
-                        <label class="field-label" for="folder-rule-principal">For</label>
+                        <label class="field-label" for="folder-rule-principal" i18n>For</label>
                         <select id="folder-rule-principal" (change)="changeDraft({ principal: $any(valueOf($event)) })">
-                            <optgroup label="Groups">
+                            <optgroup label="Groups" i18n-label>
                                 @for (group of groups(); track group.id) {
                                     <option
                                         [value]="'g' + group.id"
                                         [selected]="draft.principal === 'g' + group.id"
-                                    >{{ group.builtIn === 'guests' ? group.name + ' (visitors)' : group.name }}</option>
+                                    >
+                                        @if (group.builtIn === 'guests') {
+                                            <ng-container i18n>{{ group.name }} (visitors)</ng-container>
+                                        } @else {
+                                            {{ group.name }}
+                                        }
+                                    </option>
                                 }
                             </optgroup>
-                            <optgroup label="Accounts">
+                            <optgroup label="Accounts" i18n-label>
                                 @for (user of members(); track user.id) {
                                     <option
                                         [value]="'u' + user.id"
@@ -86,7 +101,7 @@
                         </select>
                     </div>
                     <div class="field">
-                        <label class="field-label" for="folder-rule-level">Level</label>
+                        <label class="field-label" for="folder-rule-level" i18n>Level</label>
                         <select id="folder-rule-level" (change)="changeDraft({ level: $any(valueOf($event)) })">
                             @for (option of levels; track option.level) {
                                 <option
@@ -107,14 +122,22 @@
                     type="button"
                     class="button small"
                     title="Close without changing anything"
+                    i18n-title
                     (click)="cancel()"
+                    i18n
                 >Cancel</button>
                 <button
                     type="submit"
                     class="button small primary"
                     [disabled]="busy()"
-                    [title]="repointing() ? 'Move the rules of the folder that is gone to this one' : 'Set the rule'"
-                >{{ repointing() ? 'Move the rules here' : 'Set the rule' }}</button>
+                    [title]="repointing() ? moveTitle : setTitle"
+                >
+                    @if (repointing()) {
+                        <ng-container i18n>Move the rules here</ng-container>
+                    } @else {
+                        <ng-container i18n>Set the rule</ng-container>
+                    }
+                </button>
             </div>
         </form>
     }
@@ -129,15 +152,23 @@
                         <span
                             class="access-badge danger"
                             title="Moved, renamed or deleted outside SFE: these rules apply to nothing now"
+                            i18n-title
+                            i18n
                         >Folder not found</span>
                     }
                 </div>
                 <ul class="folder-rule-principals">
                     @for (rule of folder.rules; track rule.id) {
                         <li>
-                            <span>{{ rule.name }}<span class="field-hint">{{ rule.groupId !== null ? 'group' : 'account' }}</span></span>
+                            <span>{{ rule.name }}<span class="field-hint">
+                                @if (rule.groupId !== null) {
+                                    <ng-container i18n>group</ng-container>
+                                } @else {
+                                    <ng-container i18n>account</ng-container>
+                                }
+                            </span></span>
                             <select
-                                [attr.aria-label]="'Level of ' + rule.name + ' at ' + (folder.path || rootName())"
+                                [attr.aria-label]="levelLabel(rule.name, folder.path)"
                                 [disabled]="busy()"
                                 (change)="changeLevel(rule, valueOf($event))"
                             >
@@ -151,6 +182,8 @@
                                 <option
                                     value=""
                                     title="Remove the rule: the folder follows the folder above again"
+                                    i18n-title
+                                    i18n
                                 >Inherit (remove)</option>
                             </select>
                         </li>
@@ -161,17 +194,24 @@
                         <button
                             type="button"
                             class="button small"
-                            [title]="'Who may see and change ' + (folder.path || rootName())"
+                            title="Show who may see and change {{ folder.path || rootName() }}"
+                            i18n-title
                             (click)="toggleReport(folder.path)"
                         >
-                            {{ report()?.path === folder.path ? 'Hide who has access' : 'Who has access' }}
+                            @if (report()?.path === folder.path) {
+                                <ng-container i18n>Hide who has access</ng-container>
+                            } @else {
+                                <ng-container i18n>Who has access</ng-container>
+                            }
                         </button>
                     } @else if (!folder.exists) {
                         <button
                             type="button"
                             class="button small"
                             title="Point these rules to the folder's new place"
+                            i18n-title
                             (click)="startRepoint(folder.path)"
+                            i18n
                         >Re-point…</button>
                     }
                 </div>
@@ -179,14 +219,25 @@
                     @if (report.path === folder.path) {
                         <div class="folder-access-report">
                             <table>
-                                <thead><tr><th scope="col">Account</th><th scope="col">Sees
-                                it</th><th scope="col">Changes its files</th></tr></thead>
+                                <thead><tr>
+                                    <th scope="col" i18n>Account</th>
+                                    <th scope="col" i18n>Sees it</th>
+                                    <th scope="col" i18n>Changes its files</th>
+                                </tr></thead>
                                 <tbody>
                                     @if (report.visitors; as visitors) {
-                                        <tr><td>{{ visitors.name }}</td><td>{{ visitors.sees ? 'Yes' : 'No' }}</td><td>{{ visitors.changesFiles ? 'Yes' : 'No' }}</td></tr>
+                                        <tr>
+                                            <td>{{ visitors.name }}</td>
+                                            <td>{{ yesNo(visitors.sees) }}</td>
+                                            <td>{{ yesNo(visitors.changesFiles) }}</td>
+                                        </tr>
                                     }
                                     @for (account of report.accounts; track account.userId) {
-                                        <tr><td>{{ account.name }}</td><td>{{ account.sees ? 'Yes' : 'No' }}</td><td>{{ account.changesFiles ? 'Yes' : 'No' }}</td></tr>
+                                        <tr>
+                                            <td>{{ account.name }}</td>
+                                            <td>{{ yesNo(account.sees) }}</td>
+                                            <td>{{ yesNo(account.changesFiles) }}</td>
+                                        </tr>
                                     }
                                 </tbody>
                             </table>
@@ -195,7 +246,7 @@
                 }
             </li>
         } @empty {
-            <li class="access-empty muted">No folder rules: every group's rights apply in every folder.</li>
+            <li class="access-empty muted" i18n>No folder rules: every group's rights apply in every folder.</li>
         }
     </ul>
 </section>

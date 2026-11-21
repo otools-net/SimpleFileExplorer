@@ -63,6 +63,18 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
 
 ## Gotchas
 
+- An attribute with an interpolation and `i18n-*` (`aria-label="Level of {{ name }}" i18n-aria-label`) is bound as
+  a **property** (`ariaLabel`), which jsdom doesn't reflect to the attribute (specs find nothing by
+  `[aria-label=…]`): bind `[attr.aria-label]` to a `$localize` text from code instead. `title` is fine (a reflected
+  property).
+- A text chosen by a condition (`cond ? 'Create' : 'Save'`) becomes `@if` around two `<ng-container i18n>`s inside
+  the element; on an element projected by a selector (`sheetFooter`), keep the element itself outside the `@if` and
+  take a changing `title` from code (`$localize` fields).
+- ICU plurals in templates: `{n, plural, one {{{ n }} group} other {{{ n }} groups}}` (Angular has no `#`); a
+  line break is safe between cases, not inside one.
+- Error messages shown with a prefix (`Could not load the spaces: …`): keep the reason alone in the signal and write
+  the sentence in the template (`<p i18n>Could not load the spaces: {{ error }}</p>`).
+
 - `$localize` at module level (the settings tabs, `EXTERNAL_PLAYERS`) runs when the module is imported: a translation
   loaded at run time must be loaded before the app's modules are (`main.ts` importing the app dynamically after
   `loadTranslations()`); a build per language has no such issue.

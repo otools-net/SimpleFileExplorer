@@ -49,6 +49,12 @@ export class SpaceEditorComponent {
     protected readonly saving = signal(false);
 
     protected readonly rights = computed(() => this.catalog().filter((right) => right.scope === 'tenant'));
+    protected readonly creating = computed(() => this.draft()?.id === null);
+    protected readonly heading = computed(() =>
+        this.creating() ? $localize`New space` : $localize`Edit the space “${this.draft()?.name ?? ''}:name:”`,
+    );
+    protected readonly createTitle = $localize`Create the space and index its folder`;
+    protected readonly saveTitle = $localize`Save the space`;
 
     protected readonly valueOf = valueOf;
     protected readonly checkedOf = checkedOf;
@@ -97,7 +103,7 @@ export class SpaceEditorComponent {
             this.picker.set(picker);
             if (picker.path) this.change({ root: picker.path });
         } catch (error) {
-            this.problem.set(`Could not list the folders: ${(error as Error).message}`);
+            this.problem.set($localize`Could not list the folders: ${(error as Error).message}:reason:`);
         }
     }
 
@@ -137,7 +143,7 @@ export class SpaceEditorComponent {
         try {
             this.catalog.set((await this.api.rights()).rights);
         } catch (error) {
-            this.problem.set(`Could not load the rights: ${(error as Error).message}`);
+            this.problem.set($localize`Could not load the rights: ${(error as Error).message}:reason:`);
         }
     }
 }

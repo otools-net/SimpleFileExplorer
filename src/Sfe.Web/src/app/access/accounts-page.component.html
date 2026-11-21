@@ -1,55 +1,57 @@
 <div class="help-row access-intro">
     <p>
         @if (serverWide()) {
-            Everyone who can sign in to this server, with the spaces each one sees and their groups there.
+            <ng-container i18n>Everyone who can sign in to this server, with the spaces each one sees and their groups
+                there.</ng-container>
         } @else {
-            The people who can sign in to {{ config.tenant()?.name }}, with their groups in it.
+            <ng-container i18n>The people who can sign in to {{ config.tenant()?.name }}, with their groups in
+                it.</ng-container>
         }
     </p>
-    <sfe-help about="Accounts">
-        <p>An <strong>account</strong> is a person (or a device) that signs in with a user name and a password. What it
-        sees
-           depends on its <strong>spaces</strong>: it is in a space when it is in at least one of the space's groups,
-           and those
-           groups decide what it may do there.</p>
-        <p>Example: <em>anna</em> — Family: Administrators · Work: Users. Anna sees both spaces, manages Family and only
-        uses Work.</p>
+    <sfe-help about="Accounts" i18n-about>
+        <p i18n>An <strong>account</strong> is a person (or a device) that signs in with a user name and a password.
+            What it sees depends on its <strong>spaces</strong>: it is in a space when it is in at least one of the
+            space's groups, and those groups decide what it may do there.</p>
+        <p i18n>For example, <em>anna</em> is in Family › Administrators and Work › Users: Anna sees both spaces,
+            manages Family and only uses Work.</p>
         @if (!serverWide()) {
-            <p>Accounts that other spaces share stay as they are there: here you only change their groups in this
-            space.</p>
+            <p i18n>Accounts that other spaces share stay as they are there: here you only change their groups in this
+                space.</p>
         }
     </sfe-help>
 </div>
 @if (config.config()?.mode === 'local') {
-    <p class="field-hint access-local-mode">
+    <p class="field-hint access-local-mode" i18n>
         SFE is in Local mode: only the server's administrators and the members of a space's Administrators group sign
-        in, on this computer.
-        Switch it to External in Administration › System › Installation to let the others in.
+        in, on this computer. Switch it to External in Administration › System › Installation to let the others in.
     </p>
 }
 <div class="access-actions">
     <button
         type="button"
         class="button primary"
-        [title]="serverWide() ? 'Create an account, and choose its spaces and groups' : 'Create an account in this space'"
+        [title]="serverWide() ? newServerWideTitle : newInSpaceTitle"
         (click)="editor().open(null, serverWide() ? null : config.tenant()?.id ?? null)"
     >
-        <svg sfeIcon="plus"></svg>New account
+        <svg sfeIcon="plus"></svg><span i18n>New account</span>
     </button>
     @if (users().length > 8) {
         <input
             type="search"
             class="access-filter"
             placeholder="Find an account"
+            i18n-placeholder
             aria-label="Find an account"
-            title="Show only the accounts whose name contains this"
+            i18n-aria-label
+            title="Show only the accounts whose name contains this text"
+            i18n-title
             [value]="filter()"
             (input)="filter.set(valueOf($event))"
         >
     }
 </div>
 @if (error(); as error) {
-    <p class="form-error">{{ error }}</p>
+    <p class="form-error" i18n>Could not load the accounts: {{ error }}</p>
 } @else if (!loaded()) {
     <div class="tag-loading"><span class="spinner"></span></div>
 } @else {
@@ -65,28 +67,40 @@
                         @if (user.isServerAdmin) {
                             <span
                                 class="access-badge accent"
-                                title="Every right in every space, and the server's own"
+                                title="Has every right in every space, and the server's own"
+                                i18n-title
+                                i18n
                             >Server administrator</span>
                         }
                         @if (user.kind === 'guest') {
                             <span
                                 class="access-badge"
                                 title="Can only look, whatever its groups allow"
+                                i18n-title
+                                i18n
                             >Guest account</span>
                         }
                         @if (user.source !== 'local') {
                             <span
                                 class="access-badge"
-                                [title]="'Its password is checked by the directory ' + user.source"
+                                title="Its password is checked by the sign-in directory {{ user.source }}"
+                                i18n-title
                             >{{ user.source }}</span>
                         }
                         @if (user.disabled) {
-                            <span class="access-badge danger" title="Can't sign in">Disabled</span>
+                            <span
+                                class="access-badge danger"
+                                title="This account can't sign in"
+                                i18n-title
+                                i18n
+                            >Disabled</span>
                         }
                         @if (user.lockedOut) {
                             <span
                                 class="access-badge danger"
-                                title="Too many wrong passwords: locked for a while"
+                                title="Locked for a while after too many wrong passwords"
+                                i18n-title
+                                i18n
                             >Locked</span>
                         }
                     </span>
@@ -100,20 +114,33 @@
                                 }
                             </li>
                         } @empty {
-                            <li class="muted">{{ user.isServerAdmin ? 'Opens every space as server administrator' : 'In no space: it can sign in but sees nothing' }}</li>
+                            @if (user.isServerAdmin) {
+                                <li class="muted" i18n>Opens every space as a server administrator</li>
+                            } @else {
+                                <li class="muted" i18n>In no space: it can sign in but sees nothing</li>
+                            }
                         }
                         @if (otherSpaces(user); as others) {
-                            <li class="muted">and {{ others === 1 ? 'another space' : others + ' other spaces' }}</li>
+                            <li class="muted" i18n>{others, plural, one {and another space}
+                                other {and {{ others }} other spaces}}</li>
                         }
                     </ul>
-                    <span class="muted">{{ user.lastSignIn ? 'Last signed in ' + formatDate(user.lastSignIn) : 'Never signed in' }}</span>
+                    <span class="muted">
+                        @if (user.lastSignIn) {
+                            <ng-container i18n>Last signed in {{ formatDate(user.lastSignIn) }}</ng-container>
+                        } @else {
+                            <ng-container i18n>Never signed in</ng-container>
+                        }
+                    </span>
                 </div>
                 <div class="access-row-actions">
                     <button
                         type="button"
                         class="button small"
-                        [title]="'Change ' + user.userName + ': password, spaces, groups'"
+                        title="Change {{ user.userName }}: password, spaces and groups"
+                        i18n-title
                         (click)="editor().open(user)"
+                        i18n
                     >Edit</button>
                     @if (user.id !== config.user()?.id) {
                         <button
@@ -121,12 +148,22 @@
                             class="button small"
                             [title]="removeTitle(user)"
                             (click)="remove(user)"
-                        >{{ removesOnly(user) ? 'Remove' : 'Delete' }}</button>
+                        >
+                            @if (removesOnly(user)) {
+                                <ng-container i18n>Remove</ng-container>
+                            } @else {
+                                <ng-container i18n>Delete</ng-container>
+                            }
+                        </button>
                     }
                 </div>
             </li>
         } @empty {
-            <li class="access-empty muted">{{ filter() ? 'No account matches.' : 'No accounts yet.' }}</li>
+            @if (filter()) {
+                <li class="access-empty muted" i18n>No account matches.</li>
+            } @else {
+                <li class="access-empty muted" i18n>No accounts yet.</li>
+            }
         }
     </ul>
 }

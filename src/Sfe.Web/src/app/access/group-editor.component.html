@@ -1,32 +1,27 @@
-<sfe-sheet
-    #sheet
-    [heading]="draft()?.id === null ? 'New group' : 'Group ' + (draft()?.name ?? '')"
-    [subtitle]="'In the space ' + spaceName()"
-    [wide]="true"
->
+<sfe-sheet #sheet [heading]="heading()" [subtitle]="subtitle()" [wide]="true">
     @if (draft(); as draft) {
         <form class="access-form" novalidate (submit)="save($event)">
             @if (draft.builtIn === 'guests') {
-                <p class="access-note">
+                <p class="access-note" i18n>
                     The rights below are what <strong>visitors without an account</strong> may do in this space, when
-                    the space lets them in
-                    (the space's "Visitors" part). Nobody is a member of this group: it stands for anyone who reaches
-                    the server.
+                    the space lets them in (the space's “Visitors” part). Nobody is a member of this group: it stands
+                    for anyone who reaches the server.
                 </p>
             }
             <div class="field">
-                <label class="field-label" for="group-name">Name</label>
+                <label class="field-label" for="group-name" i18n>Name</label>
                 <input
                     id="group-name"
                     type="text"
                     autocomplete="off"
-                    placeholder="e.g. Kids, Family, Friends"
+                    placeholder="For example Kids, Family, Friends"
+                    i18n-placeholder
                     [disabled]="draft.builtIn !== null"
                     [value]="draft.name"
                     (input)="change({ name: valueOf($event) })"
                 >
                 @if (draft.builtIn) {
-                    <span class="field-hint">Built-in groups keep their name.</span>
+                    <span class="field-hint" i18n>Built-in groups keep their name.</span>
                 }
                 @if (errors()['name']; as error) {
                     <span class="field-error">{{ error }}</span>
@@ -34,31 +29,30 @@
             </div>
 
             <div class="access-subhead help-row">
-                <h3>What its members may do</h3>
-                <sfe-help about="Rights">
-                    <p>Each box is a <strong>right</strong>: something the group's members may do in this space. Leave
-                    it unticked and they can't.</p>
-                    <p>An account in several groups gets the rights of all of them together. Example: <em>tom</em> is in
-                       <em>Users</em> (browse, play, tag) and in <em>Downloaders</em> (download files): he may do all
-                       four.</p>
-                    <p>A right greyed out can't be given here: guests may never change anything, and an administrator of
-                    the server
-                       may switch a right off for a whole space or for the whole server.</p>
-                    <p>In each part, the rights that only look come first. <strong>Changes things</strong> marks a right
-                    that changes
-                       the space (its index, tags, settings or accounts); <strong>Changes files</strong> one that
-                       creates, changes or
-                       deletes files in the library's folders: give those with care.</p>
+                <h3 i18n>What its members may do</h3>
+                <sfe-help about="Rights" i18n-about>
+                    <p i18n>Each box is a <strong>right</strong>: something the group's members may do in this space.
+                        Leave it unticked and they can't.</p>
+                    <p i18n>An account in several groups gets the rights of all of them together. For example,
+                        <em>tom</em> is in <em>Users</em> (browse, play, tag) and in <em>Downloaders</em> (download
+                        files): Tom may do all four.</p>
+                    <p i18n>A greyed-out right can't be given here: visitors may never change anything, and a server
+                        administrator may switch a right off for a whole space or for the whole server.</p>
+                    <p i18n>In each part, the rights that only look come first. <strong>Changes things</strong> marks a
+                        right that changes the space (its index, tags, settings or accounts); <strong>Changes
+                        files</strong> marks one that creates, changes or deletes files in the library's folders. Give
+                        those with care.</p>
                 </sfe-help>
             </div>
             @if (draft.id === null) {
                 <div class="access-presets">
-                    <span class="field-hint">Start from the rights of</span>
+                    <span class="field-hint" i18n>Start from the rights of</span>
                     @for (preset of presets; track preset.builtIn) {
                         <button
                             type="button"
                             class="button small"
-                            [title]="'Tick the rights a new space gives its ' + preset.label + ' group'"
+                            title="Tick the rights a new space gives its group {{ preset.label }}"
+                            i18n-title
                             (click)="usePreset(preset.builtIn)"
                         >{{ preset.label }}</button>
                     }
@@ -99,16 +93,15 @@
 
             @if (draft.builtIn !== 'guests') {
                 <div class="access-subhead help-row">
-                    <h3>Members</h3>
-                    <sfe-help about="Members">
-                        <p>The accounts in this group. Ticking an account that isn't in the space yet brings it in: an
-                        account sees a space
-                           as soon as it is in one of the space's groups.</p>
-                        <p>Accounts are created on the space's page (New account) or under Accounts.</p>
+                    <h3 i18n>Members</h3>
+                    <sfe-help about="Members" i18n-about>
+                        <p i18n>The accounts in this group. Ticking an account that isn't in the space yet brings it in:
+                            an account sees a space as soon as it is in one of the space's groups.</p>
+                        <p i18n>Accounts are created on the space's page (New account) or under Accounts.</p>
                     </sfe-help>
                 </div>
                 <fieldset class="access-choices members">
-                    <legend class="visually-hidden">Members</legend>
+                    <legend class="visually-hidden" i18n>Members</legend>
                     @for (user of candidates(); track user.id) {
                         <label class="check">
                             <input
@@ -117,28 +110,30 @@
                                 (change)="toggleMember(user.id, checkedOf($event))"
                             >
                             <span>{{ user.displayName || user.userName }}
-                                <span class="field-hint">{{ user.displayName ? user.userName : '' }}{{ user.kind === 'guest' ? (user.displayName ? ' · ' : '') + 'guest account' : '' }}</span>
+                                <span class="field-hint">
+                                    {{ user.displayName ? user.userName : '' }}
+                                    @if (user.kind === 'guest') {
+                                        {{ user.displayName ? ' · ' : '' }}<ng-container i18n>guest account</ng-container>
+                                    }
+                                </span>
                             </span>
                         </label>
                     } @empty {
-                        <p class="muted">No accounts yet: create one first.</p>
+                        <p class="muted" i18n>No accounts yet: create one first.</p>
                     }
                 </fieldset>
             }
 
             <div class="field">
                 <div class="help-row">
-                    <label
-                        class="field-label"
-                        for="group-external"
-                    >Directory group <span class="field-hint">(optional, advanced)</span></label>
-                    <sfe-help about="Directory group">
-                        <p>Only for servers that check passwords against a directory such as LDAP or Active Directory.
-                        Name a group of
-                           that directory here (e.g. <code>CN=Media,OU=Groups,DC=home</code>): its members join this
-                           group each time
-                           they sign in, and leave it when the directory drops them.</p>
-                        <p>Leave it empty to choose the members by hand, above.</p>
+                    <label class="field-label" for="group-external"><ng-container i18n>Directory group</ng-container>
+                        <span class="field-hint" i18n>(optional, advanced)</span></label>
+                    <sfe-help about="Directory group" i18n-about>
+                        <p i18n>Only for servers that check passwords against a sign-in directory such as LDAP or
+                            Active Directory. Name a group of that directory here (for example
+                            <code>CN=Media,OU=Groups,DC=home</code>): its members join this group each time they sign
+                            in, and leave it when the directory drops them.</p>
+                        <p i18n>Leave it empty to choose the members by hand, above.</p>
                     </sfe-help>
                 </div>
                 <input
@@ -161,15 +156,23 @@
         type="button"
         class="button"
         title="Close without saving (Esc)"
+        i18n-title
         (click)="sheet.close()"
+        i18n
     >Cancel</button>
     <span sheetFooter class="spacer"></span>
     <button
         sheetFooter
         type="button"
         class="button primary"
-        [title]="draft()?.id === null ? 'Create the group' : 'Save the group'"
+        [title]="creating() ? createTitle : saveTitle"
         [disabled]="saving()"
         (click)="save()"
-    >{{ draft()?.id === null ? 'Create' : 'Save' }}</button>
+    >
+        @if (creating()) {
+            <ng-container i18n>Create</ng-container>
+        } @else {
+            <ng-container i18n>Save</ng-container>
+        }
+    </button>
 </sfe-sheet>

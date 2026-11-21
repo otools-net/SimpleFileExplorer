@@ -1,53 +1,48 @@
-<sfe-sheet
-    #sheet
-    [heading]="draft()?.id === null ? 'New account' : 'Account ' + (draft()?.userName ?? '')"
-    [wide]="true"
->
+<sfe-sheet #sheet [heading]="heading()" [wide]="true">
     @if (draft(); as draft) {
         <form class="access-form" novalidate (submit)="save($event)">
             @if (limited()) {
-                <p class="access-note">
+                <p class="access-note" i18n>
                     This account is also in other spaces (or administers the server), so only its groups in this space
-                    can be changed here.
-                    Its name, password and status belong to the server's administrators.
+                    can be changed here. Its name, password and status are for the server's administrators to change.
                 </p>
             }
 
-            <h3 class="access-subhead">Signing in</h3>
+            <h3 class="access-subhead" i18n>Signing in</h3>
             <div class="access-columns">
                 <div class="field">
-                    <label class="field-label" for="account-name">User name</label>
+                    <label class="field-label" for="account-name" i18n>User name</label>
                     <input
                         id="account-name"
                         type="text"
                         autocomplete="off"
                         autocapitalize="none"
                         spellcheck="false"
-                        placeholder="e.g. anna"
+                        placeholder="For example anna"
+                        i18n-placeholder
                         [disabled]="limited() || !draft.local"
                         [value]="draft.userName"
                         (input)="change({ userName: valueOf($event) })"
                     >
-                    <span class="field-hint">Typed on the sign-in page. Upper and lower case don't matter.</span>
+                    <span class="field-hint" i18n>Typed on the sign-in page. Upper and lower case don't matter.</span>
                     @if (errors()['userName']; as error) {
                         <span class="field-error">{{ error }}</span>
                     }
                 </div>
                 <div class="field">
-                    <label
-                        class="field-label"
-                        for="account-display"
-                    >Display name <span class="field-hint">(optional)</span></label>
+                    <label class="field-label" for="account-display"><ng-container i18n>Display name</ng-container>
+                        <span class="field-hint" i18n>(optional)</span></label>
                     <input
                         id="account-display"
                         type="text"
                         autocomplete="off"
-                        placeholder="e.g. Anna Smith"
+                        placeholder="For example Anna Smith"
+                        i18n-placeholder
                         [disabled]="limited()"
                         [value]="draft.displayName"
                         (input)="change({ displayName: valueOf($event) })"
                     >
-                    <span class="field-hint">Shown in the menu instead of the user name.</span>
+                    <span class="field-hint" i18n>Shown in the menu instead of the user name.</span>
                     @if (errors()['displayName']; as error) {
                         <span class="field-error">{{ error }}</span>
                     }
@@ -55,45 +50,47 @@
             </div>
             @if (draft.local) {
                 <div class="field">
-                    <label
-                        class="field-label"
-                        for="account-password"
-                    >{{ draft.id === null ? 'Password' : 'New password' }}</label>
+                    <label class="field-label" for="account-password">
+                        @if (draft.id === null) {
+                            <ng-container i18n>Password</ng-container>
+                        } @else {
+                            <ng-container i18n>New password</ng-container>
+                        }
+                    </label>
                     <input
                         id="account-password"
                         type="password"
                         autocomplete="new-password"
                         [disabled]="limited()"
                         [value]="draft.password"
-                        [placeholder]="draft.id === null ? '' : 'Leave empty to keep the current one'"
+                        [placeholder]="draft.id === null ? '' : keepPassword"
                         (input)="change({ password: valueOf($event) })"
                     >
                     @if (draft.id !== null) {
-                        <span class="field-hint">A new password signs the account out everywhere.</span>
+                        <span class="field-hint" i18n>A new password signs the account out everywhere.</span>
                     }
                     @if (errors()['password']; as error) {
                         <span class="field-error">{{ error }}</span>
                     }
                 </div>
             } @else {
-                <p class="field-hint">Its password is checked by the directory {{ source() }}, and changed there.</p>
+                <p class="field-hint" i18n>Its password is checked by the sign-in directory {{ source() }}, and changed
+                    there.</p>
             }
 
             <div class="access-subhead help-row">
-                <h3>Kind of account</h3>
-                <sfe-help about="Kinds of account">
-                    <p>A <strong>regular account</strong> gets exactly the rights of its groups.</p>
-                    <p>A <strong>guest account</strong> signs in like any other but can only look: it never gets a right
-                    that changes
-                       something (tagging, scanning, settings, deleting duplicates...), even from a group that grants
-                       it. Example: a
-                       shared <em>living-room-tv</em> account for the family's television.</p>
-                    <p>Not to be confused with <strong>visitors without an account</strong>, who don't sign in at all: a
-                    space lets them
-                       in from its own page (Visitors), with the rights of its Guests group.</p>
+                <h3 i18n>Kind of account</h3>
+                <sfe-help about="Kinds of account" i18n-about>
+                    <p i18n>A <strong>regular account</strong> gets exactly the rights of its groups.</p>
+                    <p i18n>A <strong>guest account</strong> signs in like any other but can only look: it never gets a
+                        right that changes something (tagging, scanning, settings, deleting duplicates…), even from a
+                        group that grants it. For example, a shared <em>living-room-tv</em> account for the family's
+                        television.</p>
+                    <p i18n>Not to be confused with <strong>visitors without an account</strong>, who don't sign in at
+                        all: a space lets them in from its own page (Visitors), with the rights of its Guests group.</p>
                 </sfe-help>
             </div>
-            <div class="access-options" role="radiogroup" aria-label="Kind of account">
+            <div class="access-options" role="radiogroup" aria-label="Kind of account" i18n-aria-label>
                 <label class="access-option" [class.selected]="draft.kind === 'user'">
                     <input
                         type="radio"
@@ -102,8 +99,8 @@
                         [checked]="draft.kind === 'user'"
                         (change)="change({ kind: 'user' })"
                     >
-                    <span><strong>Regular account</strong><span class="field-hint">Does what its groups
-                    allow.</span></span>
+                    <span><strong i18n>Regular account</strong>
+                        <span class="field-hint" i18n>Does what its groups allow.</span></span>
                 </label>
                 <label class="access-option" [class.selected]="draft.kind === 'guest'">
                     <input
@@ -113,8 +110,8 @@
                         [checked]="draft.kind === 'guest'"
                         (change)="change({ kind: 'guest' })"
                     >
-                    <span><strong>Guest account</strong><span class="field-hint">Can only look, whatever its groups
-                    allow.</span></span>
+                    <span><strong i18n>Guest account</strong>
+                        <span class="field-hint" i18n>Can only look, whatever its groups allow.</span></span>
                 </label>
             </div>
             @if (errors()['kind']; as error) {
@@ -129,40 +126,39 @@
                             [checked]="draft.isServerAdmin"
                             (change)="change({ isServerAdmin: checkedOf($event) })"
                         >
-                        <span>Server administrator<span class="field-hint">Every right in every space, plus the spaces
-                        themselves, every account and the server's settings.</span></span>
+                        <span><ng-container i18n>Server administrator</ng-container>
+                            <span class="field-hint" i18n>Every right in every space, plus the spaces themselves, every
+                                account and the server's settings.</span></span>
                     </label>
-                    <sfe-help about="Server administrators">
-                        <p>Server administrators stand above the spaces: they open any space with every right, create
-                        and delete spaces,
-                           manage every account and change the settings of the whole server. Their groups don't
-                           matter.</p>
-                        <p>Keep at least one: the last one can't be removed. For someone who only looks after one space,
-                        put them in that
-                           space's <em>Administrators</em> group instead.</p>
+                    <sfe-help about="Server administrators" i18n-about>
+                        <p i18n>Server administrators stand above the spaces: they open any space with every right,
+                            create and delete spaces, manage every account and change the settings of the whole server.
+                            Their groups don't matter.</p>
+                        <p i18n>Keep at least one: the last one can't be removed. For someone who only looks after one
+                            space, put their account in that space's <em>Administrators</em> group instead.</p>
                     </sfe-help>
                 </div>
             }
 
             <div class="access-subhead help-row">
-                <h3>Spaces and groups</h3>
-                <sfe-help about="Spaces and groups">
-                    <p>An account sees a space when it is in <strong>at least one of the space's groups</strong>. The
-                    groups decide what
-                       it may do there; in several groups, it gets the rights of all of them.</p>
-                    <p>Example:</p>
+                <h3 i18n>Spaces and groups</h3>
+                <sfe-help about="Spaces and groups" i18n-about>
+                    <p i18n>An account sees a space when it is in <strong>at least one of the space's groups</strong>.
+                        The groups decide what it may do there; in several groups, it gets the rights of all of
+                        them.</p>
+                    <p i18n>For example:</p>
                     <ul>
-                        <li><em>anna</em> — Family: Administrators · Work: Users</li>
-                        <li><em>tom</em> — Family: Users, Kids</li>
+                        <li i18n><em>anna</em>: Family › Administrators · Work › Users</li>
+                        <li i18n><em>tom</em>: Family › Users, Kids</li>
                     </ul>
-                    <p>Anna manages the Family space and uses the Work space; Tom only sees Family, with the rights of
-                    Users and Kids together.
-                       Someone in several spaces switches between them from the ⋮ menu.</p>
+                    <p i18n>Anna manages the Family space and uses the Work space; Tom only sees Family, with the rights
+                        of Users and Kids together. Someone in several spaces switches between them from the ⋮
+                        menu.</p>
                 </sfe-help>
             </div>
             @if (draft.isServerAdmin) {
-                <p class="field-hint">As a server administrator this account opens every space anyway; groups only
-                matter if it stops being one.</p>
+                <p class="field-hint" i18n>As a server administrator, this account opens every space anyway; its groups
+                    only matter if it stops being one.</p>
             }
             <div class="access-spaces">
                 @for (space of shownSpaces(); track space.id) {
@@ -174,8 +170,10 @@
                                 <button
                                     type="button"
                                     class="link-button"
-                                    [title]="'Take the account out of ' + space.name"
+                                    title="Take the account out of {{ space.name }}"
+                                    i18n-title
                                     (click)="removeSpace(space.id)"
+                                    i18n
                                 >Remove from this space</button>
                             }
                         </legend>
@@ -196,21 +194,22 @@
                             }
                         </div>
                         @if (!chosen) {
-                            <span class="field-hint">In no group: the account won't see {{ space.name }}.</span>
+                            <span class="field-hint" i18n>In no group: the account won't see {{ space.name }}.</span>
                         }
                     </fieldset>
                 } @empty {
-                    <p class="muted">In no space yet: it can sign in but sees nothing.</p>
+                    <p class="muted" i18n>In no space yet: it can sign in but sees nothing.</p>
                 }
                 @if (addable().length) {
                     <div class="access-add-space">
-                        <label class="field-label" for="account-add-space">Add to a space</label>
+                        <label class="field-label" for="account-add-space" i18n>Add to a space</label>
                         <select
                             id="account-add-space"
                             title="Put the account in another space (in its Users group, to start with)"
+                            i18n-title
                             (change)="addSpace($event)"
                         >
-                            <option value="" selected>Choose a space…</option>
+                            <option value="" selected i18n>Choose a space…</option>
                             @for (space of addable(); track space.id) {
                                 <option [value]="space.id">{{ space.name }}</option>
                             }
@@ -218,8 +217,8 @@
                     </div>
                 }
                 @if (draft.otherSpaces) {
-                    <p class="field-hint">Also in
-                    {{ draft.otherSpaces === 1 ? 'another space' : draft.otherSpaces + ' other spaces' }}, kept as they are.</p>
+                    <p class="field-hint" i18n>{draft.otherSpaces, plural, one {Also in another space, kept as it is.}
+                        other {Also in {{ draft.otherSpaces }} other spaces, kept as they are.}}</p>
                 }
             </div>
             @if (errors()['groupIds']; as error) {
@@ -227,7 +226,7 @@
             }
 
             @if (draft.id !== null) {
-                <h3 class="access-subhead">Status</h3>
+                <h3 class="access-subhead" i18n>Status</h3>
                 <label class="check">
                     <input
                         type="checkbox"
@@ -235,8 +234,9 @@
                         [checked]="draft.disabled"
                         (change)="change({ disabled: checkedOf($event) })"
                     >
-                    <span>Disabled<span class="field-hint">Can't sign in; signed out everywhere, and the links it gave
-                    out stop working. Its tags stay.</span></span>
+                    <span><ng-container i18n>Disabled</ng-container>
+                        <span class="field-hint" i18n>The account can't sign in and is signed out everywhere; the links
+                            it gave out stop working. Its tags stay.</span></span>
                 </label>
                 @if (draft.lockedOut) {
                     <label class="check">
@@ -246,8 +246,9 @@
                             [checked]="draft.unlock"
                             (change)="change({ unlock: checkedOf($event) })"
                         >
-                        <span>Unlock now<span class="field-hint">Locked for a while after too many wrong
-                        passwords.</span></span>
+                        <span><ng-container i18n>Unlock now</ng-container>
+                            <span class="field-hint" i18n>The account is locked for a while after too many wrong
+                                passwords.</span></span>
                     </label>
                 }
             }
@@ -262,15 +263,23 @@
         type="button"
         class="button"
         title="Close without saving (Esc)"
+        i18n-title
         (click)="sheet.close()"
+        i18n
     >Cancel</button>
     <span sheetFooter class="spacer"></span>
     <button
         sheetFooter
         type="button"
         class="button primary"
-        [title]="draft()?.id === null ? 'Create the account' : 'Save the account'"
+        [title]="creating() ? createTitle : saveTitle"
         [disabled]="saving()"
         (click)="save()"
-    >{{ draft()?.id === null ? 'Create' : 'Save' }}</button>
+    >
+        @if (creating()) {
+            <ng-container i18n>Create</ng-container>
+        } @else {
+            <ng-container i18n>Save</ng-container>
+        }
+    </button>
 </sfe-sheet>
