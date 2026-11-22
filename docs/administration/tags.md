@@ -16,11 +16,11 @@ filter, if any), and a click on a tag edits it.
 | Field | |
 |---|---|
 | **Name** | Need not be unique |
-| **Shorthand** | Searchable like the name, and used when this tag disambiguates another one |
+| **Shorthand** | Found by searches like the name, and shown when this tag tells another one apart |
 | **Aliases** | Other names `t:` finds it by, one per line |
 | **Parent tags** | Tags it "is a": a file with this tag is found by `t:parent` too, through any number of levels (loops are refused) |
-| **Disambiguate with** | A parent shown after the name, e.g. "Freddy (FNAF)" |
-| **Color** | TagStudio's standard palette |
+| **Tell apart with** | A parent shown after the name, for example "Freddy (FNAF)" |
+| **Colour** | TagStudio's standard palette |
 | **Category** | Groups the tags inheriting from it in a file's tag list |
 | **Hidden** | Its files stay out of search results unless the search names it (or a parent) |
 

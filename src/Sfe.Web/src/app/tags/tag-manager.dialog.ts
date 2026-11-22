@@ -12,10 +12,18 @@ import { TagListComponent } from './tag-list.component';
     imports: [SheetComponent, TagListComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-        <sfe-sheet #sheet heading="Tags" [wide]="true">
+        <sfe-sheet #sheet heading="Tags" i18n-heading [wide]="true">
             <sfe-tag-list />
             <span sheetFooter class="spacer"></span>
-            <button sheetFooter type="button" class="button" title="Close (Esc)" (click)="sheet.close()">Close</button>
+            <button
+                sheetFooter
+                type="button"
+                class="button"
+                title="Close (Esc)."
+                i18n-title
+                (click)="sheet.close()"
+                i18n
+            >Close</button>
         </sfe-sheet>
     `,
 })

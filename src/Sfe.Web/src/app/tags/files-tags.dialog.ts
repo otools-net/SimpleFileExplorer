@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { plural } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { LibraryItem } from '../core/models';
 import { TagSummary } from '../core/tag.models';
 import { FileTagChange } from './tag.models';
@@ -44,8 +44,9 @@ export class FilesTagsDialog {
     /** The connection the files are in (`config.place()` when opened); null for the library. */
     private connection: number | null = null;
 
-    protected readonly subtitle = computed(() => plural(this.items().length, 'file'));
-    protected readonly filesText = this.subtitle;
+    protected readonly subtitle = computed(() =>
+        icu($localize`{count, plural, one {# file} other {# files}}`, { count: this.items().length }),
+    );
     /** Each tag set on at least one of the files, with the number of files it is on; most common first. */
     private readonly counts = computed((): TagCount[] => {
         const byId = new Map<number, TagCount>();
@@ -66,6 +67,17 @@ export class FilesTagsDialog {
     protected readonly onSome = computed(() => this.counts().filter((entry) => entry.count < this.items().length));
 
     protected readonly excluded = () => new Set(this.onAll().map((entry) => entry.tag.id));
+
+    /** The hint of a tag on some of the files: on how many, and what a click does. */
+    protected someTitle(some: number): string {
+        return icu(
+            $localize`{count, plural, \
+one {On {some} of # file. Click to add it to all of them.} \
+other {On {some} of # files. Click to add it to all of them.}}`,
+            { count: this.items().length, some: some.toLocaleString() },
+        );
+    }
+
     protected readonly add = async (option: TagOption) => {
         const tag = option.create ? await this.api.createTag({ name: option.create }) : option.tag!;
         if (option.create) this.toasts.show(`Tag “${tag.name}” created.`);

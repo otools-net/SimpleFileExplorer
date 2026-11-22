@@ -1,7 +1,21 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { plural } from '../core/format';
+import {
+    appliedOf,
+    countOf,
+    defaultChangedOf,
+    defaultHintOf,
+    defaultQuestionOf,
+    folderNameOf,
+    hintOf,
+    inheritedTitleOf,
+    questionOf,
+    SCOPE_TAG_TEXTS,
+    someTitleOf,
+    subtitleOf,
+    whereOf,
+} from './scope-tags-texts';
 import { FolderDefaults, TagScope, TagSummary, TagUsage } from '../core/tag.models';
 import { ScopeTags } from './tag.models';
 import { Rights } from '../core/rights';
@@ -76,30 +90,12 @@ export class ScopeTagsDialog {
             (this.canSetDefaults() || Boolean(this.defaults()?.own.length || this.defaults()?.inherited.length)),
     );
 
-    /** “Media”, or the root folder. */
-    protected readonly folderName = computed(() => (this.scope().path ? `“${this.scope().path}”` : 'the top folder'));
-    /** Where the files are, after "files": "in “Media” and its sub-folders", "found by “cat” in “Media”". */
-    private readonly where = computed(() => {
-        const { path, recursive, query } = this.scope();
-        if (query) return `found by “${query}”${path ? ` in “${path}”` : ''}`;
-        return `in ${this.folderName()}${recursive ? ' and its sub-folders' : ''}`;
-    });
-    protected readonly subtitle = computed(() => {
-        const { path, query } = this.scope();
-        return query ? `Search “${query}”${path ? ` in “${path}”` : ''}` : `Files ${this.where()}`;
-    });
-    protected readonly filesText = computed(() => plural(this.summary()?.files ?? 0, 'file'));
-    protected readonly countText = computed(() => {
-        const files = this.summary()?.files ?? 0;
-        if (this.scope().query) return files ? `${plural(files, 'file')} found.` : 'The search finds no file.';
-        if (this.connection())
-            return files
-                ? `${plural(files, 'indexed file')}. Files the library has not indexed yet don’t change.`
-                : 'None of these files is indexed in the library yet: open the folder again once its sync has run.';
-        return files
-            ? `${plural(files, 'indexed file')}. Files not indexed yet are indexed when a tag is added or removed.`
-            : 'No file of this folder is indexed yet: they are indexed when a tag is added or removed.';
-    });
+    protected readonly folderName = computed(() => folderNameOf(this.scope().path));
+    private readonly where = computed(() => whereOf(this.scope()));
+    protected readonly subtitle = computed(() => subtitleOf(this.scope()));
+    protected readonly countText = computed(() =>
+        countOf(this.summary()?.files ?? 0, Boolean(this.scope().query), Boolean(this.connection())),
+    );
     protected readonly onAll = computed(() => {
         const summary = this.summary();
         return summary ? summary.tags.filter((entry) => entry.fileCount >= summary.files) : [];
@@ -112,53 +108,36 @@ export class ScopeTagsDialog {
     protected readonly question = computed(() => {
         const pending = this.pending();
         if (!pending) return '';
-        if (pending.remove) {
-            const files = plural(this.usage(pending.tag)?.fileCount ?? 0, 'file');
-            return `Remove “${pending.name}” from the ${files} ${this.where()} that have it?`;
-        }
-        return this.scope().query
-            ? `Add “${pending.name}” to the ${this.filesText()} ${this.where()}?`
-            : `Add “${pending.name}” to every file ${this.where()}?`;
+        const count = pending.remove ? (this.usage(pending.tag)?.fileCount ?? 0) : (this.summary()?.files ?? 0);
+        return questionOf(pending.name, pending.remove, this.where(), count, Boolean(this.scope().query));
     });
     protected readonly hint = computed(() => {
         const pending = this.pending();
         if (!pending || pending.remove) return '';
         const having = this.usage(pending.tag)?.fileCount ?? 0;
-        return [
-            pending.create ? 'The tag is created first.' : '',
-            having ? `${plural(having, 'file already has', 'files already have')} it.` : '',
-            this.scope().query || this.connection()
-                ? ''
-                : 'This can take a while for a large folder: its files are indexed first.',
-        ]
-            .filter(Boolean)
-            .join(' ');
+        return hintOf(Boolean(pending.create), having, !this.scope().query && !this.connection());
     });
 
     protected readonly defaultQuestion = computed(() => {
         const pending = this.pendingDefault();
-        if (!pending) return '';
-        return pending.remove
-            ? `Stop giving “${pending.name}” to the files put into ${this.folderName()}?`
-            : `Give “${pending.name}” to every file put into ${this.folderName()} or its sub-folders from now on?`;
+        return pending ? defaultQuestionOf(pending.name, pending.remove, this.folderName()) : '';
     });
     protected readonly defaultHint = computed(() => {
         const pending = this.pendingDefault();
-        if (!pending) return '';
-        if (pending.remove)
-            return this.canTagFiles()
-                ? 'The files already in it and its sub-folders keep it, unless you remove it from them too.'
-                : 'The files already there keep it.';
-        return [
-            pending.create ? 'The tag is created first.' : '',
-            this.canTagFiles()
-                ? 'The files already in it and its sub-folders can get it now too (they are indexed first, ' +
-                  'which can take a while for a large folder).'
-                : 'The files already there don’t change.',
-        ]
-            .filter(Boolean)
-            .join(' ');
+        return pending ? defaultHintOf(Boolean(pending.create), pending.remove, this.canTagFiles()) : '';
     });
+    protected readonly pickerPlaceholder = computed(() =>
+        this.scope().query ? $localize`Add a tag to all the results…` : $localize`Add a tag to all these files…`,
+    );
+    protected readonly texts = SCOPE_TAG_TEXTS;
+
+    protected someTitle(entry: TagUsage): string {
+        return someTitleOf(entry.fileCount, this.summary()?.files ?? 0);
+    }
+
+    protected inheritedTitle(path: string): string {
+        return inheritedTitleOf(path);
+    }
 
     protected readonly excluded = () => new Set(this.onAll().map((entry) => entry.tag.id));
     protected readonly excludedDefaults = () =>
@@ -201,7 +180,7 @@ export class ScopeTagsDialog {
 
     /** The last part of a parent folder's path, for an inherited default tag's chip. */
     protected fromName(path: string): string {
-        return path ? path.slice(path.lastIndexOf('/') + 1) : 'top folder';
+        return path ? path.slice(path.lastIndexOf('/') + 1) : $localize`:the library's own folder, short:library`;
     }
 
     protected askRemoveDefault(tag: TagSummary): void {
@@ -239,13 +218,7 @@ export class ScopeTagsDialog {
                 }
                 this.defaults.set(result.defaults);
                 const files = result.files;
-                this.toasts.show(
-                    pending.remove
-                        ? `“${pending.name}” is no longer a default tag of ${folder}` +
-                              (files ? `: removed from ${plural(files.removed, 'file')}.` : '; the files keep it.')
-                        : `“${pending.name}” is a default tag of ${folder}` +
-                              (files ? `: added to ${plural(files.added, 'file')}.` : ': new files there get it.'),
-                );
+                this.toasts.show(defaultChangedOf(pending.name, pending.remove, folder, files));
                 if (files)
                     this.store.applyScopeTags(
                         { path, recursive: true, query: null },
@@ -301,9 +274,7 @@ export class ScopeTagsDialog {
                     return;
                 }
                 this.toasts.show(
-                    pending.remove
-                        ? `“${pending.name}” removed from ${plural(result.removed, 'file')}.`
-                        : `“${pending.name}” added to ${plural(result.added, 'file')}.`,
+                    appliedOf(pending.name, pending.remove, pending.remove ? result.removed : result.added),
                 );
                 this.store.applyScopeTags(scope, pending.remove ? { remove: id } : { add: tag });
                 this.pending.set(null);
@@ -328,8 +299,7 @@ export class ScopeTagsDialog {
             const defaults = await this.api.folderDefaultTags(this.scope().path, requests.signal);
             if (requests === this.defaultRequests) this.defaults.set(defaults);
         } catch (error) {
-            if (requests === this.defaultRequests)
-                this.defaultsError.set(`Could not read the default tags: ${(error as Error).message}`);
+            if (requests === this.defaultRequests) this.defaultsError.set((error as Error).message);
         }
     }
 
@@ -342,8 +312,7 @@ export class ScopeTagsDialog {
             const summary = await this.api.scopeTags(this.scope(), requests.signal, this.connection());
             if (requests === this.requests) this.summary.set(summary);
         } catch (error) {
-            if (requests === this.requests)
-                this.error.set(`Could not read the tags of these files: ${(error as Error).message}`);
+            if (requests === this.requests) this.error.set((error as Error).message);
         }
     }
 }

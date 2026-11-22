@@ -214,6 +214,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   and Administration › Scanning › Excluded folders say what a click does in full sentences; the explanation of a
   search is written as whole sentences a translation can reorder (its terms and logical words placed into them), and
   its notes say "it isn't a valid size" instead of "not a valid size". Their texts are ready for translation.
+- **Tag dialogs reworded**: the tags of a file, of several, of a folder or a search, the tag editor and the tag list,
+  a tag's menu and the default tags badge say what a click does in full sentences, with tag names in quotes; the
+  editor's **Disambiguate with** is now **Tell apart with** and **Color** is **Colour**; a folder's default tags at the
+  top of the library say so instead of "the top folder"; the badge lists its tags as "Family, Beach and Sunset". Their
+  texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

@@ -81,7 +81,7 @@ describe('TagManagerDialog', () => {
             '',
         ]);
         expect(counts).toEqual(['1 library file', `${(1234).toLocaleString()} library files`, '0 library files']);
-        expect(rows()[0].title).toBe('Edit Jinx Piltover');
+        expect(rows()[0].title).toBe('Edit the tag “Jinx Piltover”.');
     });
 
     it('shows the disambiguated name of a tag', async () => {
@@ -175,7 +175,7 @@ describe('TagManagerDialog', () => {
         slow.reject(new ApiError(500, 'Boom'));
         await settle();
 
-        expect(text()).not.toContain('Could not load tags');
+        expect(text()).not.toContain('Could not load the tags');
         expect(rowNames()).toEqual(['Cat']);
     });
 
@@ -184,7 +184,7 @@ describe('TagManagerDialog', () => {
         fixture.componentInstance.open();
         await settle();
 
-        expect(text()).toBe('Could not load tags: The server is not reachable');
+        expect(text()).toBe('Could not load the tags: The server is not reachable');
         expect(rows()).toHaveLength(0);
 
         api.tags.mockResolvedValue(results([tag('Back')]));

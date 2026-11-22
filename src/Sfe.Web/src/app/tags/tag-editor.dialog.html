@@ -1,8 +1,8 @@
 
-        <sfe-sheet #sheet [heading]="tag() ? 'Edit tag' : 'New tag'" [subtitle]="subtitle()" (closed)="onClosed()">
+        <sfe-sheet #sheet [heading]="heading()" [subtitle]="subtitle()" (closed)="onClosed()">
             <form id="tag-editor-form" class="tag-form" novalidate (submit)="save($event)">
                 <label class="field">
-                    <span class="field-label">Name</span>
+                    <span class="field-label" i18n>Name</span>
                     <input
                         #nameInput
                         type="text"
@@ -15,7 +15,7 @@
                     >
                 </label>
                 <label class="field">
-                    <span class="field-label">Shorthand</span>
+                    <span class="field-label" i18n>Shorthand</span>
                     <input
                         type="text"
                         name="shorthand"
@@ -24,10 +24,11 @@
                         [value]="shorthand()"
                         (input)="shorthand.set(valueOf($event))"
                     >
-                    <span class="field-hint">Searchable like the name, and used when this tag disambiguates another one.</span>
+                    <span class="field-hint" i18n>Found by searches like the name, and shown when this tag tells another one
+                    apart.</span>
                 </label>
                 <label class="field">
-                    <span class="field-label">Aliases</span>
+                    <span class="field-label" i18n>Aliases</span>
                     <textarea
                         name="aliases"
                         rows="3"
@@ -35,26 +36,28 @@
                         [value]="aliases()"
                         (input)="aliases.set(valueOf($event))"
                     ></textarea>
-                    <span class="field-hint">Other names this tag goes by, one per line.</span>
+                    <span class="field-hint" i18n>Other names this tag goes by, one per line.</span>
                 </label>
                 <div class="field">
-                    <span class="field-label">Parent tags</span>
+                    <span class="field-label" i18n>Parent tags</span>
                     <div class="tag-list" [hidden]="!parents().length">
                         @for (parent of parents(); track parent.id) {
                             <sfe-tag-chip [tag]="parent" [removable]="true" (remove)="removeParent($event)" />
                         }
                     </div>
-                    <sfe-tag-picker placeholder="Add a parent tag…" [exclude]="excludeFromParents" [pick]="addParent" />
-                    <span class="field-hint">This tag “is a” parent tag: files with it are also found by searching for its parents.</span>
+                    <sfe-tag-picker placeholder="Add a parent tag…" i18n-placeholder [exclude]="excludeFromParents"
+                                    [pick]="addParent" />
+                    <span class="field-hint" i18n>This tag “is a” parent tag: files with it are also found by searching for its
+                    parents.</span>
                 </div>
                 <label class="field">
-                    <span class="field-label">Disambiguate with</span>
+                    <span class="field-label" i18n>Tell apart with</span>
                     <select
                         name="disambiguation"
                         [disabled]="!parents().length"
                         (change)="disambiguation.set(valueOf($event))"
                     >
-                        <option value="" [selected]="!disambiguation()">None</option>
+                        <option value="" [selected]="!disambiguation()" i18n>None</option>
                         @for (parent of parents(); track parent.id) {
                             <option
                                 [value]="parent.id"
@@ -62,11 +65,11 @@
                             >{{ parent.displayName }}</option>
                         }
                     </select>
-                    <span class="field-hint">Shows a parent after the name, e.g. “Freddy (FNAF)”.</span>
+                    <span class="field-hint" i18n>Shows a parent after the name, for example “Freddy (FNAF)”.</span>
                 </label>
                 <div class="field">
-                    <span class="field-label">Color</span>
-                    <div class="swatches" role="radiogroup" aria-label="Color">
+                    <span class="field-label" i18n>Colour</span>
+                    <div class="swatches" role="radiogroup" aria-label="Colour" i18n-aria-label>
                         @for (swatch of swatches(); track swatch.slug) {
                             <label
                                 class="swatch"
@@ -96,7 +99,8 @@
                         [checked]="isCategory()"
                         (change)="isCategory.set(checkedOf($event))"
                     >
-                    <span><strong>Category</strong><span class="field-hint">Tags inheriting from this one are grouped under it.</span></span>
+                    <span><strong i18n>Category</strong><span class="field-hint" i18n>Tags inheriting from this one are grouped
+                        under it.</span></span>
                 </label>
                 <label class="check">
                     <input
@@ -105,7 +109,8 @@
                         [checked]="isHidden()"
                         (change)="isHidden.set(checkedOf($event))"
                     >
-                    <span><strong>Hidden</strong><span class="field-hint">Files with this tag are left out of search results unless the search asks for it.</span></span>
+                    <span><strong i18n>Hidden</strong><span class="field-hint" i18n>Files with this tag are left out of search
+                        results unless the search asks for it.</span></span>
                 </label>
                 @if (error()) {
                     <p class="form-error" role="alert">{{ error() }}</p>
@@ -116,8 +121,10 @@
                     sheetFooter
                     type="button"
                     class="button danger"
-                    title="Delete this tag and remove it from its files (asks first)"
+                    title="Delete this tag and remove it from its files (asks first)."
+                    i18n-title
                     (click)="delete()"
+                    i18n
                 >Delete</button>
             }
             @if (tag()) {
@@ -125,24 +132,29 @@
                     sheetFooter
                     type="button"
                     class="button"
-                    title="Search for the files with this tag"
+                    title="Search for the files with this tag."
+                    i18n-title
                     (click)="find()"
-                ><svg sfeIcon="search"></svg>Find files</button>
+                ><svg sfeIcon="search"></svg><ng-container i18n>Find files</ng-container></button>
             }
             <span sheetFooter class="spacer"></span>
             <button
                 sheetFooter
                 type="button"
                 class="button"
-                title="Close without saving"
+                title="Close without saving."
+                i18n-title
                 (click)="sheet.close()"
+                i18n
             >Cancel</button>
             <button
                 sheetFooter
                 type="submit"
                 form="tag-editor-form"
                 class="button primary"
-                title="Save the tag"
+                title="Save the tag."
+                i18n-title
                 [disabled]="saving()"
+                i18n
             >Save</button>
         </sfe-sheet>

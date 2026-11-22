@@ -117,7 +117,7 @@ describe('ScopeTagsDialog', () => {
         expect(api.changeScopeTags).toHaveBeenCalledWith({ ...folder, add: [beach.id] }, 7);
         expect(api.folderDefaultTags).not.toHaveBeenCalled();
         expect(defaultSection()).toBeNull();
-        expect(element.querySelector('.scope-count')!.textContent).toContain('not indexed yet don’t change');
+        expect(element.querySelector('.scope-count')!.textContent).toContain("hasn't indexed yet don't change");
     });
 
     it('counts again with the sub-folders when asked', async () => {

@@ -88,7 +88,7 @@ describe('DefaultTagsBadgeComponent', () => {
         await make([family, beach], [{ path: 'Photos', tag: sun }]);
 
         expect(button().textContent!.trim()).toBe('3');
-        expect(button().getAttribute('aria-label')).toBe('Default tags: Family, Beach, Sunset');
+        expect(button().getAttribute('aria-label')).toBe('Default tags: Family, Beach and Sunset');
         expect(panel()).toBeNull();
     });
 
@@ -108,7 +108,7 @@ describe('DefaultTagsBadgeComponent', () => {
         expect(chips(element)).toEqual(['Family', 'Beach', 'Sunset', 'Night']);
         expect([...panel()!.querySelectorAll('.default-tags-from')].map((p) => p.textContent!.trim())).toEqual([
             'From “Photos”',
-            'From the top folder',
+            'From the top of the library',
         ]);
         expect(panel()!.textContent).toContain('Files put into “Family” or its sub-folders get them.');
 

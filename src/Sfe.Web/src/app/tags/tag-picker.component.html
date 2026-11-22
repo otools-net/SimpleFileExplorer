@@ -29,7 +29,7 @@
                 (click)="choose(option)"
             >
                 @if (option.create) {
-                    <svg sfeIcon="plus"></svg><span>Create tag <strong>“{{ option.create }}”</strong></span>
+                    <svg sfeIcon="plus"></svg><span i18n>Create tag <strong>“{{ option.create }}”</strong></span>
                 } @else {
                     <sfe-tag-chip [tag]="option.tag!" />
                     @if (describe(option.tag!); as detail) {

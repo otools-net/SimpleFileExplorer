@@ -14,12 +14,13 @@ import {
 import { InheritedDefaultTag, TagSummary } from '../core/tag.models';
 import { IconComponent } from '../shared/icon.component';
 import { TagChipComponent } from './tag-chip.component';
+import { listed } from './tags';
 
 let nextId = 0;
 
 /** A parent folder named in the panel: its last part, or "the top folder". */
 function folderLabel(path: string): string {
-    return path ? `“${path.slice(path.lastIndexOf('/') + 1)}”` : 'the top folder';
+    return path ? `“${path.slice(path.lastIndexOf('/') + 1)}”` : $localize`the top of the library`;
 }
 
 /**
@@ -65,8 +66,9 @@ export class DefaultTagsBadgeComponent {
         const names = [...this.own(), ...this.inherited().map((entry) => entry.tag)].map(
             (tag) => tag.displayName || tag.name,
         );
-        return `Default tags: ${names.join(', ')}`;
+        return $localize`Default tags: ${listed(names)}:tags:`;
     });
+    protected readonly panelLabel = computed(() => $localize`Default tags of ${this.folder()}:folder:`);
     protected readonly inheritedGroups = computed(() => {
         const groups = new Map<string, TagSummary[]>();
         for (const entry of this.inherited()) groups.set(entry.path, [...(groups.get(entry.path) ?? []), entry.tag]);

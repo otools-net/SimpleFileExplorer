@@ -12,8 +12,8 @@ it from now on.
 ## Language and spelling
 
 - **UK English**: colour, centre, behaviour, cancelled, grey, organise, recognise, licence (the noun; "license" in
-  file names such as `LICENSE` stays). Survey 2026-11-20: strings were mostly UK already; US leftover still seen:
-  tag "Color" (`docs/administration/tags.md`, `docs/user-guide/tags.md`; the settings' "Colors" were fixed in 2.3).
+  file names such as `LICENSE` stays). Survey 2026-11-20: strings were mostly UK already; the US leftovers ("Colors"
+  of the settings, the tag editor's "Color" and its docs) were fixed in 2.3 and 2.5d.
   Identifiers in code stay as they are (`color`, `customized()`): only the text a user reads changes.
 - **Punctuation:** the ellipsis character `…` (never `...`), curly quotes `“ ”` around words quoted in a text,
   `›` between the parts of a place in the app (Administration › Connections › Settings), `→` only in previews of a

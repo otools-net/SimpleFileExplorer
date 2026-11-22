@@ -126,8 +126,6 @@
     "src/Sfe.Web/src/app/shared/highlight.component.ts": {"longLines":1},
     "src/Sfe.Web/src/app/shared/icon-sprite.component.html": {"longLines":27},
     "src/Sfe.Web/src/app/tags/default-tags-badge.component.html": {"longLines":1},
-    "src/Sfe.Web/src/app/tags/files-tags.dialog.html": {"longLines":1},
-    "src/Sfe.Web/src/app/tags/scope-tags.dialog.html": {"longLines":4},
     "src/Sfe.Web/src/app/tags/tag-editor.dialog.html": {"longLines":4},
     "src/Sfe.Web/src/app/tasks/task-history.component.html": {"longLines":1},
     "src/Sfe.Web/src/app/tasks/tasks-section.component.html": {"longLines":1},

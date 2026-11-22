@@ -84,7 +84,7 @@ describe('TagChipComponent', () => {
 
         expect(picked).toEqual([chip]);
         expect(removed).toEqual([chip]);
-        expect(remove.getAttribute('aria-label')).toBe('Remove Cat');
-        expect(remove.title).toBe('Remove Cat');
+        expect(remove.getAttribute('aria-label')).toBe('Remove “Cat”');
+        expect(remove.title).toBe('Remove “Cat”');
     });
 });

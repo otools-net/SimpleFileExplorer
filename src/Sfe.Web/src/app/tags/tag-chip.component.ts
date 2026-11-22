@@ -35,8 +35,8 @@ import { textOn } from './tags';
             <button
                 type="button"
                 class="tag-remove"
-                [attr.aria-label]="'Remove ' + text()"
-                [title]="'Remove ' + text()"
+                [attr.aria-label]="removeLabel()"
+                [title]="removeLabel()"
                 (click)="remove.emit(tag())"
             >
                 <svg sfeIcon="close"></svg>
@@ -56,6 +56,7 @@ export class TagChipComponent {
     readonly remove = output<TagSummary>();
 
     protected readonly text = computed(() => this.label() ?? (this.tag().displayName || this.tag().name));
+    protected readonly removeLabel = computed(() => $localize`Remove “${this.text()}:tag:”`);
     protected readonly color = computed(() => {
         const slug = this.tag().color;
         return slug ? (this.config.config()?.tagColors.find((color) => color.slug === slug) ?? null) : null;

@@ -1,11 +1,11 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
-import { plural } from '../core/format';
 import { TagDetails } from '../core/tag.models';
 import { Dialogs } from '../library/dialogs.service';
 import { IconComponent } from '../shared/icon.component';
 import { TagChipComponent } from './tag-chip.component';
+import { libraryFiles } from './tags';
 
 /**
  * All the tags, found by name, shorthand or alias; a click edits one, and new ones are created from here. Shown in
@@ -55,17 +55,28 @@ export class TagListComponent {
 
     protected details(tag: TagDetails): string {
         return [
-            tag.shorthand ? `Shorthand: ${tag.shorthand}` : null,
-            tag.aliases.length ? `Aliases: ${tag.aliases.join(', ')}` : null,
-            tag.parents.length ? `Parents: ${tag.parents.map((p) => p.displayName).join(', ')}` : null,
-            [tag.isCategory ? 'category' : null, tag.isHidden ? 'hidden' : null].filter(Boolean).join(', ') || null,
+            tag.shorthand ? $localize`Shorthand: ${tag.shorthand}:shorthand:` : null,
+            tag.aliases.length ? $localize`Aliases: ${tag.aliases.join(', ')}:aliases:` : null,
+            tag.parents.length
+                ? $localize`Parents: ${tag.parents.map((p) => p.displayName).join(', ')}:parents:`
+                : null,
+            [
+                tag.isCategory ? $localize`:a tag grouping others:category` : null,
+                tag.isHidden ? $localize`:a tag left out of searches:hidden` : null,
+            ]
+                .filter(Boolean)
+                .join(', ') || null,
         ]
             .filter(Boolean)
             .join(' · ');
     }
 
+    protected editTitle(tag: TagDetails): string {
+        return $localize`Edit the tag “${tag.displayName}:tag:”.`;
+    }
+
     protected files(tag: TagDetails): string {
-        return plural(tag.fileCount, 'library file');
+        return libraryFiles(tag.fileCount);
     }
 
     protected async edit(tag: TagDetails): Promise<void> {

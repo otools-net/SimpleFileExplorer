@@ -477,6 +477,9 @@
         <note category="location">src/app/library/scan/folder-exclusions.dialog.html:33,34</note>
         <note category="location">src/app/library/scan/remove-from-index.dialog.html:51,52</note>
         <note category="location">src/app/library/scan/scan-panel.component.ts:54,55</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:72,73</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:146,147</note>
+        <note category="location">src/app/tags/tag-editor.dialog.html:149,150</note>
         <note category="location">src/app/tasks/schedule-form.component.html:146,147</note>
         <note category="location">src/app/tasks/tasks-section.component.html:33,35</note>
         <note category="location">src/app/tokens/token-create.component.html:132,133</note>
@@ -506,6 +509,7 @@
         <note category="location">src/app/admin/installation-section.component.html:57,58</note>
         <note category="location">src/app/connections/connections-section.component.html:48,49</note>
         <note category="location">src/app/library/scan/folder-exclusions.dialog.html:44,45</note>
+        <note category="location">src/app/tags/tag-editor.dialog.html:159,160</note>
         <note category="location">src/app/tasks/schedule-form.component.html:138,139</note>
       </notes>
       <segment>
@@ -784,6 +788,7 @@
         <note category="location">src/app/access/space-detail.component.html:225</note>
         <note category="location">src/app/access/spaces-page.component.html:59,60</note>
         <note category="location">src/app/library/selection-bar.component.html:83,84</note>
+        <note category="location">src/app/tags/tag-editor.dialog.html:128,129</note>
         <note category="location">src/app/tasks/tasks-section.component.html:208</note>
       </notes>
       <segment>
@@ -1162,6 +1167,7 @@
     <unit id="996392855508119363">
       <notes>
         <note category="location">src/app/access/folder-access.component.ts:16</note>
+        <note category="location">src/app/tags/tag-editor.dialog.html:112</note>
         <note category="description">folder access level</note>
       </notes>
       <segment>
@@ -1278,6 +1284,7 @@
         <note category="location">src/app/account/login-page.component.html:109,110</note>
         <note category="location">src/app/connections/connect.dialog.html:39</note>
         <note category="location">src/app/library/location/location.component.ts:30</note>
+        <note category="location">src/app/tags/tag-editor.dialog.html:5,6</note>
         <note category="location">src/app/tokens/token-create.component.html:37,38</note>
       </notes>
       <segment>
@@ -4406,6 +4413,11 @@ Space “Holiday photos”
         <note category="location">src/app/library/topbar/search-box.component.ts:76</note>
         <note category="location">src/app/library/topbar/search-help.dialog.ts:61</note>
         <note category="location">src/app/settings/tabs/library-settings.ts:100</note>
+        <note category="location">src/app/tags/file-tags.dialog.html:1</note>
+        <note category="location">src/app/tags/file-tags.dialog.ts:40</note>
+        <note category="location">src/app/tags/files-tags.dialog.html:1</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:1</note>
+        <note category="location">src/app/tags/tag-manager.dialog.ts:15</note>
       </notes>
       <segment>
         <source>Tags</source>
@@ -6870,6 +6882,7 @@ Space “Holiday photos”
     <unit id="2368997771735616018">
       <notes>
         <note category="location">src/app/library/folder-menu.ts:112</note>
+        <note category="location">src/app/tags/scope-tags-texts.ts:39</note>
       </notes>
       <segment>
         <source>Search “<ph id="0" equiv="query" disp="q"/>”</source>
@@ -7301,6 +7314,7 @@ Space “Holiday photos”
     <unit id="3407763813495289837">
       <notes>
         <note category="location">src/app/library/items/item-parts.ts:88</note>
+        <note category="location">src/app/tags/tag-menu.ts:45</note>
       </notes>
       <segment>
         <source>Find the files tagged “<ph id="0" equiv="tag" disp="tag"/>”.</source>
@@ -7761,6 +7775,7 @@ Space “Holiday photos”
     <unit id="5398065907114229376">
       <notes>
         <note category="location">src/app/library/location/location.component.ts:102</note>
+        <note category="location">src/app/tags/default-tags-badge.component.ts:23</note>
       </notes>
       <segment>
         <source>the top of the library</source>
@@ -7777,6 +7792,7 @@ Space “Holiday photos”
     <unit id="179465360758381176">
       <notes>
         <note category="location">src/app/library/location/location.component.ts:148</note>
+        <note category="location">src/app/tags/files-tags.dialog.ts:48</note>
       </notes>
       <segment>
         <source>{count, plural, one {# file} other {# files}}</source>
@@ -7883,6 +7899,9 @@ Space “Holiday photos”
     <unit id="397098723873502323">
       <notes>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:68</note>
+        <note category="location">src/app/tags/file-tags.dialog.html:57,58</note>
+        <note category="location">src/app/tags/files-tags.dialog.html:70,71</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:195,196</note>
         <note category="location">src/app/tasks/tasks.ts:205</note>
         <note category="location">src/app/tokens/token-create.component.html:122,123</note>
       </notes>
@@ -9425,6 +9444,9 @@ Space “Holiday photos”
     <unit id="2853708828659627510">
       <notes>
         <note category="location">src/app/library/sidebar/sidebar.component.html:60,61</note>
+        <note category="location">src/app/tags/file-tags.dialog.html:42,43</note>
+        <note category="location">src/app/tags/files-tags.dialog.html:56,57</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:188,189</note>
       </notes>
       <segment>
         <source>Create, edit and delete tags.</source>
@@ -9433,6 +9455,9 @@ Space “Holiday photos”
     <unit id="1016881991346034960">
       <notes>
         <note category="location">src/app/library/sidebar/sidebar.component.html:64</note>
+        <note category="location">src/app/tags/file-tags.dialog.html:46,47</note>
+        <note category="location">src/app/tags/files-tags.dialog.html:60,61</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:192,193</note>
       </notes>
       <segment>
         <source>Manage tags</source>
@@ -10012,6 +10037,8 @@ Space “Holiday photos”
     <unit id="7819314041543176992">
       <notes>
         <note category="location">src/app/library/topbar/search-help.dialog.html:58,59</note>
+        <note category="location">src/app/tags/default-tags-badge.component.html:36</note>
+        <note category="location">src/app/tags/tag-manager.dialog.ts:26,27</note>
       </notes>
       <segment>
         <source>Close</source>
@@ -11345,6 +11372,8 @@ Space “Holiday photos”
     <unit id="6252070156626006029">
       <notes>
         <note category="location">src/app/settings/tabs/appearance-settings.ts:29</note>
+        <note category="location">src/app/tags/tag-editor.dialog.html:60,61</note>
+        <note category="location">src/app/tags/tag-editor.dialog.ts:57</note>
         <note category="description">no margin</note>
       </notes>
       <segment>
@@ -13777,6 +13806,1118 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>“When it is on a network share” looks at each one on its own.</source>
+      </segment>
+    </unit>
+    <unit id="3128719507065572542">
+      <notes>
+        <note category="location">src/app/tags/default-tags-badge.component.html:31,32</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:100,101</note>
+      </notes>
+      <segment>
+        <source>Default tags</source>
+      </segment>
+    </unit>
+    <unit id="2344879199977284313">
+      <notes>
+        <note category="location">src/app/tags/default-tags-badge.component.html:37,38</note>
+        <note category="location">src/app/tags/file-tags.dialog.html:53,54</note>
+        <note category="location">src/app/tags/files-tags.dialog.html:66,67</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:194</note>
+        <note category="location">src/app/tags/tag-manager.dialog.ts:22,23</note>
+      </notes>
+      <segment>
+        <source>Close (Esc).</source>
+      </segment>
+    </unit>
+    <unit id="1341978065867490493">
+      <notes>
+        <note category="location">src/app/tags/default-tags-badge.component.html:44,45</note>
+      </notes>
+      <segment>
+        <source>Files put into <ph id="0" equiv="INTERPOLATION" disp="{{ folder() }}"/> or its sub-folders get them.</source>
+      </segment>
+    </unit>
+    <unit id="7920454040515046293">
+      <notes>
+        <note category="location">src/app/tags/default-tags-badge.component.html:53,54</note>
+      </notes>
+      <segment>
+        <source>From <ph id="0" equiv="INTERPOLATION" disp="{{ group.label }}"/></source>
+      </segment>
+    </unit>
+    <unit id="4636108518135418141">
+      <notes>
+        <note category="location">src/app/tags/default-tags-badge.component.html:64,65</note>
+      </notes>
+      <segment>
+        <source>Add or remove default tags of this folder.</source>
+      </segment>
+    </unit>
+    <unit id="8881095380391169498">
+      <notes>
+        <note category="location">src/app/tags/default-tags-badge.component.html:68,69</note>
+      </notes>
+      <segment>
+        <source>Change…</source>
+      </segment>
+    </unit>
+    <unit id="52014228184443198">
+      <notes>
+        <note category="location">src/app/tags/default-tags-badge.component.ts:69</note>
+      </notes>
+      <segment>
+        <source>Default tags: <ph id="0" equiv="tags" disp="listed(names)"/></source>
+      </segment>
+    </unit>
+    <unit id="4934914227937107025">
+      <notes>
+        <note category="location">src/app/tags/default-tags-badge.component.ts:71</note>
+      </notes>
+      <segment>
+        <source>Default tags of <ph id="0" equiv="folder" disp="this.folder()"/></source>
+      </segment>
+    </unit>
+    <unit id="6965372491911137997">
+      <notes>
+        <note category="location">src/app/tags/file-tags.dialog.html:6,7</note>
+      </notes>
+      <segment>
+        <source>No tags yet. Add one below: tags inherit from their parent tags, so a few well-chosen tags go a long way.</source>
+      </segment>
+    </unit>
+    <unit id="4855287153136767711">
+      <notes>
+        <note category="location">src/app/tags/file-tags.dialog.html:30,31</note>
+      </notes>
+      <segment>
+        <source>Add a tag…</source>
+      </segment>
+    </unit>
+    <unit id="5454210086919439664">
+      <notes>
+        <note category="location">src/app/tags/file-tags.dialog.ts:39</note>
+        <note category="location">src/app/tags/files-tags.dialog.html:10,11</note>
+      </notes>
+      <segment>
+        <source>Edit this tag.</source>
+      </segment>
+    </unit>
+    <unit id="6029945347682572752">
+      <notes>
+        <note category="location">src/app/tags/files-tags.dialog.html:5,6</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:23,24</note>
+      </notes>
+      <segment>
+        <source>On all these files</source>
+      </segment>
+    </unit>
+    <unit id="4095214389073477421">
+      <notes>
+        <note category="location">src/app/tags/files-tags.dialog.html:23,24</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:34,35</note>
+      </notes>
+      <segment>
+        <source>On some of these files</source>
+      </segment>
+    </unit>
+    <unit id="5803755689917055984">
+      <notes>
+        <note category="location">src/app/tags/files-tags.dialog.html:40,41</note>
+      </notes>
+      <segment>
+        <source>None of these files has tags yet. A tag added below goes on all of them.</source>
+      </segment>
+    </unit>
+    <unit id="4979489281711131182">
+      <notes>
+        <note category="location">src/app/tags/files-tags.dialog.html:46,47</note>
+        <note category="location">src/app/tags/scope-tags.dialog.ts:130</note>
+      </notes>
+      <segment>
+        <source>Add a tag to all these files…</source>
+      </segment>
+    </unit>
+    <unit id="7694989355837278197">
+      <notes>
+        <note category="location">src/app/tags/files-tags.dialog.ts:74,76</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {On <ph id="0" equiv="some"/> of # file. Click to add it to all of them.} other {On <ph id="1" equiv="some"/> of # files. Click to add it to all of them.}}</source>
+      </segment>
+    </unit>
+    <unit id="7725589552249899892">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:8</note>
+      </notes>
+      <segment>
+        <source>Add a default tag…</source>
+      </segment>
+    </unit>
+    <unit id="9097748835219203983">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:9</note>
+      </notes>
+      <segment>
+        <source>Add the tag to these files.</source>
+      </segment>
+    </unit>
+    <unit id="6049251263452246445">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:10</note>
+      </notes>
+      <segment>
+        <source>Remove the tag from these files.</source>
+      </segment>
+    </unit>
+    <unit id="4333983442250027570">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:11</note>
+      </notes>
+      <segment>
+        <source>The files already there keep the tag.</source>
+      </segment>
+    </unit>
+    <unit id="4184565312393422650">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:12</note>
+      </notes>
+      <segment>
+        <source>Only the files put there from now on get it.</source>
+      </segment>
+    </unit>
+    <unit id="5448957115513576668">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:13</note>
+      </notes>
+      <segment>
+        <source>Also remove it from the files already there.</source>
+      </segment>
+    </unit>
+    <unit id="2589839451725716170">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:14</note>
+      </notes>
+      <segment>
+        <source>Also add it to the files already there.</source>
+      </segment>
+    </unit>
+    <unit id="6746014496516717744">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:19</note>
+        <note category="description">the library&apos;s own folder</note>
+      </notes>
+      <segment>
+        <source>the library</source>
+      </segment>
+    </unit>
+    <unit id="7971896469663358047">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:26</note>
+        <note category="description">where files are</note>
+      </notes>
+      <segment>
+        <source>found by “<ph id="0" equiv="query" disp="query"/>” in “<ph id="1" equiv="folder" disp="path"/>”</source>
+      </segment>
+    </unit>
+    <unit id="6747902708681821509">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:27</note>
+        <note category="description">where files are</note>
+      </notes>
+      <segment>
+        <source>found by “<ph id="0" equiv="query" disp="query"/>”</source>
+      </segment>
+    </unit>
+    <unit id="7583893707079695412">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:30</note>
+        <note category="description">where files are</note>
+      </notes>
+      <segment>
+        <source>in “<ph id="0" equiv="folder" disp="path"/>” and its sub-folders</source>
+      </segment>
+    </unit>
+    <unit id="892286221138618450">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:31</note>
+        <note category="description">where files are</note>
+      </notes>
+      <segment>
+        <source>in “<ph id="0" equiv="folder" disp="path"/>”</source>
+      </segment>
+    </unit>
+    <unit id="87723741596185646">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:33</note>
+        <note category="description">where files are</note>
+      </notes>
+      <segment>
+        <source>in the library</source>
+      </segment>
+    </unit>
+    <unit id="8812598536649967291">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:34</note>
+        <note category="description">where files are</note>
+      </notes>
+      <segment>
+        <source>at the top of the library</source>
+      </segment>
+    </unit>
+    <unit id="9107676617380446650">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:39</note>
+      </notes>
+      <segment>
+        <source>Search “<ph id="0" equiv="query" disp="query"/>” in “<ph id="1" equiv="folder" disp="path"/>”</source>
+      </segment>
+    </unit>
+    <unit id="686346189500304583">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:42</note>
+      </notes>
+      <segment>
+        <source>Files in “<ph id="0" equiv="folder" disp="path"/>” and its sub-folders</source>
+      </segment>
+    </unit>
+    <unit id="2778683518742233254">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:43</note>
+      </notes>
+      <segment>
+        <source>Files in “<ph id="0" equiv="folder" disp="path"/>”</source>
+      </segment>
+    </unit>
+    <unit id="588031933247968934">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:44</note>
+      </notes>
+      <segment>
+        <source>Every file of the library</source>
+      </segment>
+    </unit>
+    <unit id="4249774684788770421">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:44</note>
+      </notes>
+      <segment>
+        <source>Files at the top of the library</source>
+      </segment>
+    </unit>
+    <unit id="3411500384919551356">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:51</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# file found.} other {# files found.}}</source>
+      </segment>
+    </unit>
+    <unit id="8984806806602419449">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:52</note>
+      </notes>
+      <segment>
+        <source>The search finds no file.</source>
+      </segment>
+    </unit>
+    <unit id="6327063305266768674">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:56,57</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# indexed file. Files the library hasn&apos;t indexed yet don&apos;t change.} other {# indexed files. Files the library hasn&apos;t indexed yet don&apos;t change.}}</source>
+      </segment>
+    </unit>
+    <unit id="4396306222500956475">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:61</note>
+      </notes>
+      <segment>
+        <source>None of these files is indexed in the library yet: open the folder again once its sync has run.</source>
+      </segment>
+    </unit>
+    <unit id="6981132117850972365">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:65,66</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# indexed file. Files not indexed yet are indexed when a tag is added or removed.} other {# indexed files. Files not indexed yet are indexed when a tag is added or removed.}}</source>
+      </segment>
+    </unit>
+    <unit id="8898254732639460080">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:70</note>
+      </notes>
+      <segment>
+        <source>No file of this folder is indexed yet: they are indexed when a tag is added or removed.</source>
+      </segment>
+    </unit>
+    <unit id="5369703886590399813">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:78,79</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {Remove “<ph id="0" equiv="tag"/>” from the # file <ph id="1" equiv="where"/> that has it?} other {Remove “<ph id="2" equiv="tag"/>” from the # files <ph id="3" equiv="where"/> that have it?}}</source>
+      </segment>
+    </unit>
+    <unit id="5111346465773739027">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:85,86</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {Add “<ph id="0" equiv="tag"/>” to the # file <ph id="1" equiv="where"/>?} other {Add “<ph id="2" equiv="tag"/>” to the # files <ph id="3" equiv="where"/>?}}</source>
+      </segment>
+    </unit>
+    <unit id="3477981986575464580">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:89</note>
+      </notes>
+      <segment>
+        <source>Add “{tag}” to every file {where}?</source>
+      </segment>
+    </unit>
+    <unit id="3262863215813568912">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:95</note>
+        <note category="location">src/app/tags/scope-tags-texts.ts:120</note>
+      </notes>
+      <segment>
+        <source>The tag is created first.</source>
+      </segment>
+    </unit>
+    <unit id="1658313445730944624">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:97</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# file already has it.} other {# files already have it.}}</source>
+      </segment>
+    </unit>
+    <unit id="5848186113725152312">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:101</note>
+      </notes>
+      <segment>
+        <source>This can take a while for a large folder: its files are indexed first.</source>
+      </segment>
+    </unit>
+    <unit id="1893932702965057268">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:109</note>
+      </notes>
+      <segment>
+        <source>Stop giving “<ph id="0" equiv="tag" disp="tag"/>” to the files put into <ph id="1" equiv="folder" disp="folder"/>?</source>
+      </segment>
+    </unit>
+    <unit id="1506373678070155784">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:110</note>
+      </notes>
+      <segment>
+        <source>Give “<ph id="0" equiv="tag" disp="tag"/>” to every file put into <ph id="1" equiv="folder" disp="folder"/> or its sub-folders from now on?</source>
+      </segment>
+    </unit>
+    <unit id="77651299944195255">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:117</note>
+      </notes>
+      <segment>
+        <source>The files already in it and its sub-folders keep it, unless you remove it from them too.</source>
+      </segment>
+    </unit>
+    <unit id="3686696307835945472">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:118</note>
+      </notes>
+      <segment>
+        <source>The files already there keep it.</source>
+      </segment>
+    </unit>
+    <unit id="7950286886060082189">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:122</note>
+      </notes>
+      <segment>
+        <source>The files already in it and its sub-folders can get it now too (they are indexed first, which can take a while for a large folder).</source>
+      </segment>
+    </unit>
+    <unit id="6555815568853822437">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:124</note>
+      </notes>
+      <segment>
+        <source>The files already there don&apos;t change.</source>
+      </segment>
+    </unit>
+    <unit id="6171483752728190481">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:133,134</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {On <ph id="0" equiv="some"/> of # file. Click to add it to all of them (asks first).} other {On <ph id="1" equiv="some"/> of # files. Click to add it to all of them (asks first).}}</source>
+      </segment>
+    </unit>
+    <unit id="4980814486862987828">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:143</note>
+      </notes>
+      <segment>
+        <source>A default tag of “<ph id="0" equiv="folder" disp="path"/>”: change it there.</source>
+      </segment>
+    </unit>
+    <unit id="2960391943618571609">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:144</note>
+      </notes>
+      <segment>
+        <source>A default tag of the library: change it there.</source>
+      </segment>
+    </unit>
+    <unit id="5095006002918215908">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:150</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {“<ph id="0" equiv="tag"/>” removed from # file.} other {“<ph id="1" equiv="tag"/>” removed from # files.}}</source>
+      </segment>
+    </unit>
+    <unit id="296619481320623577">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:154</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {“<ph id="0" equiv="tag"/>” added to # file.} other {“<ph id="1" equiv="tag"/>” added to # files.}}</source>
+      </segment>
+    </unit>
+    <unit id="6753747421415785005">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:171,172</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {“<ph id="0" equiv="tag"/>” is no longer a default tag of <ph id="1" equiv="folder"/>: removed from # file.} other {“<ph id="2" equiv="tag"/>” is no longer a default tag of <ph id="3" equiv="folder"/>: removed from # files.}}</source>
+      </segment>
+    </unit>
+    <unit id="407304114958339599">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:176</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="tag" disp="tag"/>” is no longer a default tag of <ph id="1" equiv="folder" disp="folder"/>; the files keep it.</source>
+      </segment>
+    </unit>
+    <unit id="694417805275856057">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:179,180</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {“<ph id="0" equiv="tag"/>” is a default tag of <ph id="1" equiv="folder"/>: added to # file.} other {“<ph id="2" equiv="tag"/>” is a default tag of <ph id="3" equiv="folder"/>: added to # files.}}</source>
+      </segment>
+    </unit>
+    <unit id="4628347971688894429">
+      <notes>
+        <note category="location">src/app/tags/scope-tags-texts.ts:184</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="tag" disp="tag"/>” is a default tag of <ph id="1" equiv="folder" disp="folder"/>: new files there get it.</source>
+      </segment>
+    </unit>
+    <unit id="6913201450656611559">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:11,12</note>
+      </notes>
+      <segment>
+        <source>Include sub-folders</source>
+      </segment>
+    </unit>
+    <unit id="8438966865175356651">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:12,13</note>
+      </notes>
+      <segment>
+        <source>Also the files of every folder below this one.</source>
+      </segment>
+    </unit>
+    <unit id="3540809599896305387">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:17,18</note>
+      </notes>
+      <segment>
+        <source>Could not read the tags of these files: <ph id="0" equiv="INTERPOLATION" disp="{{ error() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="609862850553101438">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:26,27</note>
+      </notes>
+      <segment>
+        <source>Remove this tag from all these files (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="7874566794199782967">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:51,52</note>
+      </notes>
+      <segment>
+        <source>None of these files has tags yet.</source>
+      </segment>
+    </unit>
+    <unit id="2364615819668572503">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:58</note>
+      </notes>
+      <segment>
+        <source>Confirm the change</source>
+      </segment>
+    </unit>
+    <unit id="9181603561347741857">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:67,68</note>
+        <note category="location">src/app/tags/scope-tags.dialog.html:141,142</note>
+      </notes>
+      <segment>
+        <source>Change nothing.</source>
+      </segment>
+    </unit>
+    <unit id="3392754525167799121">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:82</note>
+      </notes>
+      <segment>
+        <source>Remove tag</source>
+      </segment>
+    </unit>
+    <unit id="6560126119609945418">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:84</note>
+      </notes>
+      <segment>
+        <source>Add tag</source>
+      </segment>
+    </unit>
+    <unit id="4814329589896276937">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:101,103</note>
+      </notes>
+      <segment>
+        <source>Every file put into <ph id="0" equiv="INTERPOLATION" disp="{{ folderName() }}"/> or its sub-folders gets them: scanned, created, uploaded, copied or moved there.</source>
+      </segment>
+    </unit>
+    <unit id="3003046764644301951">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:110,111</note>
+      </notes>
+      <segment>
+        <source>A default tag of this folder.</source>
+      </segment>
+    </unit>
+    <unit id="5919217908856344647">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:125,126</note>
+      </notes>
+      <segment>
+        <source>This folder has no default tags.</source>
+      </segment>
+    </unit>
+    <unit id="720806064253136608">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:128,129</note>
+      </notes>
+      <segment>
+        <source>Could not read the default tags: <ph id="0" equiv="INTERPOLATION" disp="{{ defaultsError() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="3070962901779551640">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:133,134</note>
+      </notes>
+      <segment>
+        <source>Confirm the default tag change</source>
+      </segment>
+    </unit>
+    <unit id="6723087554495490244">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:155</note>
+      </notes>
+      <segment>
+        <source>Keep it on the files</source>
+      </segment>
+    </unit>
+    <unit id="8006625426763859442">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:157</note>
+      </notes>
+      <segment>
+        <source>New files only</source>
+      </segment>
+    </unit>
+    <unit id="4329927565754567094">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:170</note>
+      </notes>
+      <segment>
+        <source>Remove it from the files too</source>
+      </segment>
+    </unit>
+    <unit id="2483123481730817527">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.html:172</note>
+      </notes>
+      <segment>
+        <source>Existing files too</source>
+      </segment>
+    </unit>
+    <unit id="2958306291572274616">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.ts:130</note>
+      </notes>
+      <segment>
+        <source>Add a tag to all the results…</source>
+      </segment>
+    </unit>
+    <unit id="4304016991506089089">
+      <notes>
+        <note category="location">src/app/tags/scope-tags.dialog.ts:183</note>
+        <note category="description">the library&apos;s own folder, short</note>
+      </notes>
+      <segment>
+        <source>library</source>
+      </segment>
+    </unit>
+    <unit id="3161753969622617978">
+      <notes>
+        <note category="location">src/app/tags/tag-chip.component.ts:59</note>
+      </notes>
+      <segment>
+        <source>Remove “<ph id="0" equiv="tag" disp="this.text()"/>”</source>
+      </segment>
+    </unit>
+    <unit id="3477369701870775534">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:18,19</note>
+      </notes>
+      <segment>
+        <source>Shorthand</source>
+      </segment>
+    </unit>
+    <unit id="2825131838693318123">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:27,28</note>
+      </notes>
+      <segment>
+        <source>Found by searches like the name, and shown when this tag tells another one apart.</source>
+      </segment>
+    </unit>
+    <unit id="1867051528064002498">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:31,32</note>
+      </notes>
+      <segment>
+        <source>Aliases</source>
+      </segment>
+    </unit>
+    <unit id="3851622726824541088">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:39,40</note>
+      </notes>
+      <segment>
+        <source>Other names this tag goes by, one per line.</source>
+      </segment>
+    </unit>
+    <unit id="5651167886221563645">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:42,43</note>
+      </notes>
+      <segment>
+        <source>Parent tags</source>
+      </segment>
+    </unit>
+    <unit id="653408424454955707">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:48</note>
+      </notes>
+      <segment>
+        <source>Add a parent tag…</source>
+      </segment>
+    </unit>
+    <unit id="7215555802625551634">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:50,51</note>
+      </notes>
+      <segment>
+        <source>This tag “is a” parent tag: files with it are also found by searching for its parents.</source>
+      </segment>
+    </unit>
+    <unit id="2812026985371385427">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:54,55</note>
+      </notes>
+      <segment>
+        <source>Tell apart with</source>
+      </segment>
+    </unit>
+    <unit id="6772422118931643860">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:68,69</note>
+      </notes>
+      <segment>
+        <source>Shows a parent after the name, for example “Freddy (FNAF)”.</source>
+      </segment>
+    </unit>
+    <unit id="8621747926428260404">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:71,72</note>
+        <note category="location">src/app/tags/tag-editor.dialog.html:72</note>
+      </notes>
+      <segment>
+        <source>Colour</source>
+      </segment>
+    </unit>
+    <unit id="1806667489382256324">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:102</note>
+      </notes>
+      <segment>
+        <source>Category</source>
+      </segment>
+    </unit>
+    <unit id="5683410199919990403">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:102,103</note>
+      </notes>
+      <segment>
+        <source>Tags inheriting from this one are grouped under it.</source>
+      </segment>
+    </unit>
+    <unit id="7262210325407010574">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:112,113</note>
+      </notes>
+      <segment>
+        <source>Files with this tag are left out of search results unless the search asks for it.</source>
+      </segment>
+    </unit>
+    <unit id="1569686018200446783">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:124,125</note>
+      </notes>
+      <segment>
+        <source>Delete this tag and remove it from its files (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="1106239268206167791">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:135,136</note>
+      </notes>
+      <segment>
+        <source>Search for the files with this tag.</source>
+      </segment>
+    </unit>
+    <unit id="5025603545389426914">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:138</note>
+      </notes>
+      <segment>
+        <source>Find files</source>
+      </segment>
+    </unit>
+    <unit id="2903880403072804912">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:145,146</note>
+      </notes>
+      <segment>
+        <source>Close without saving.</source>
+      </segment>
+    </unit>
+    <unit id="5664524422080403381">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.html:155,156</note>
+      </notes>
+      <segment>
+        <source>Save the tag.</source>
+      </segment>
+    </unit>
+    <unit id="5872175735754226507">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.ts:49</note>
+      </notes>
+      <segment>
+        <source>Edit tag</source>
+      </segment>
+    </unit>
+    <unit id="5457348790696040196">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.ts:49</note>
+        <note category="location">src/app/tags/tag-list.component.html:22</note>
+      </notes>
+      <segment>
+        <source>New tag</source>
+      </segment>
+    </unit>
+    <unit id="2322525206747987009">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.ts:53</note>
+      </notes>
+      <segment>
+        <source>Built-in tag</source>
+      </segment>
+    </unit>
+    <unit id="7348662535946733582">
+      <notes>
+        <note category="location">src/app/tags/tag-editor.dialog.ts:137</note>
+      </notes>
+      <segment>
+        <source>A tag needs a name.</source>
+      </segment>
+    </unit>
+    <unit id="3276725980193783077">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.html:8,9</note>
+      </notes>
+      <segment>
+        <source>Find a tag by name, shorthand or alias…</source>
+      </segment>
+    </unit>
+    <unit id="4004676797246893438">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.html:11,12</note>
+      </notes>
+      <segment>
+        <source>Find a tag</source>
+      </segment>
+    </unit>
+    <unit id="2856420992118357314">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.html:19,20</note>
+      </notes>
+      <segment>
+        <source>Create a tag (named after the search, if any).</source>
+      </segment>
+    </unit>
+    <unit id="7450269487453337056">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.html:26,27</note>
+      </notes>
+      <segment>
+        <source>Could not load the tags: <ph id="0" equiv="INTERPOLATION" disp="{{ error }}"/></source>
+      </segment>
+    </unit>
+    <unit id="7845773083693987751">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.html:32,33</note>
+      </notes>
+      <segment>
+        <source>Inheriting from these</source>
+      </segment>
+    </unit>
+    <unit id="3407608573282082330">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.html:38,39</note>
+      </notes>
+      <segment>
+        <source>No tag matches.</source>
+      </segment>
+    </unit>
+    <unit id="6868051388661922766">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.ts:58</note>
+      </notes>
+      <segment>
+        <source>Shorthand: <ph id="0" equiv="shorthand" disp="tag.shorthand"/></source>
+      </segment>
+    </unit>
+    <unit id="549291075033945258">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.ts:59</note>
+      </notes>
+      <segment>
+        <source>Aliases: <ph id="0" equiv="aliases" disp="tag.aliases.join(&apos;, &apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="6622530459233190188">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.ts:61</note>
+      </notes>
+      <segment>
+        <source>Parents: <ph id="0" equiv="parents" disp="tag.parents.map((p) =&gt; p.displayName).join(&apos;, &apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="6981830104215014781">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.ts:64</note>
+        <note category="description">a tag grouping others</note>
+      </notes>
+      <segment>
+        <source>category</source>
+      </segment>
+    </unit>
+    <unit id="7054829409324166420">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.ts:65</note>
+        <note category="description">a tag left out of searches</note>
+      </notes>
+      <segment>
+        <source>hidden</source>
+      </segment>
+    </unit>
+    <unit id="7939431621992029561">
+      <notes>
+        <note category="location">src/app/tags/tag-list.component.ts:75</note>
+      </notes>
+      <segment>
+        <source>Edit the tag “<ph id="0" equiv="tag" disp="tag.displayName"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="3413430919850250015">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:43</note>
+      </notes>
+      <segment>
+        <source>Search this tag</source>
+      </segment>
+    </unit>
+    <unit id="1794060820246843891">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:50</note>
+      </notes>
+      <segment>
+        <source>Search in new tab</source>
+      </segment>
+    </unit>
+    <unit id="6632428845229332324">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:52</note>
+      </notes>
+      <segment>
+        <source>Find the files tagged “<ph id="0" equiv="tag" disp="name"/>”, in a tab of its own.</source>
+      </segment>
+    </unit>
+    <unit id="7755112561865621727">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:60</note>
+      </notes>
+      <segment>
+        <source>Add to the search</source>
+      </segment>
+    </unit>
+    <unit id="6255256458371213049">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:62</note>
+      </notes>
+      <segment>
+        <source>Keep only the results also tagged “<ph id="0" equiv="tag" disp="name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="8479395578366932892">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:68</note>
+      </notes>
+      <segment>
+        <source>Leave out of the search</source>
+      </segment>
+    </unit>
+    <unit id="7882069575584719158">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:68</note>
+      </notes>
+      <segment>
+        <source>Search without this tag</source>
+      </segment>
+    </unit>
+    <unit id="2936240362034818560">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:71</note>
+      </notes>
+      <segment>
+        <source>Keep only the results not tagged “<ph id="0" equiv="tag" disp="name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="6558191881195056209">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:72</note>
+      </notes>
+      <segment>
+        <source>Find the files not tagged “<ph id="0" equiv="tag" disp="name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="7209004798418830899">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:78</note>
+      </notes>
+      <segment>
+        <source>Remove from this file</source>
+      </segment>
+    </unit>
+    <unit id="5001022059282518220">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:80</note>
+      </notes>
+      <segment>
+        <source>Take “<ph id="0" equiv="tag" disp="name"/>” off “<ph id="1" equiv="file" disp="file.name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="7301032968391413375">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:86</note>
+      </notes>
+      <segment>
+        <source>Edit the tag…</source>
+      </segment>
+    </unit>
+    <unit id="3382322753408542614">
+      <notes>
+        <note category="location">src/app/tags/tag-menu.ts:88</note>
+      </notes>
+      <segment>
+        <source>Change its name, colour, parents and more.</source>
+      </segment>
+    </unit>
+    <unit id="6541898104218254159">
+      <notes>
+        <note category="location">src/app/tags/tag-picker.component.html:32,33</note>
+      </notes>
+      <segment>
+        <source>Create tag <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">“<ph id="1" equiv="INTERPOLATION" disp="{{ option.create }}"/>”</pc></source>
+      </segment>
+    </unit>
+    <unit id="176904300704966859">
+      <notes>
+        <note category="location">src/app/tags/tags.ts:31</note>
+        <note category="description">the parent tags of a tag</note>
+      </notes>
+      <segment>
+        <source>in <ph id="0" equiv="parents" disp="tag.parents.map((p) =&gt; p.displayName).join(&apos;, &apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="5825354625606010278">
+      <notes>
+        <note category="location">src/app/tags/tags.ts:71,72</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {It is removed from # library file.} other {It is removed from # library files.}}</source>
+      </segment>
+    </unit>
+    <unit id="4377589341654974579">
+      <notes>
+        <note category="location">src/app/tags/tags.ts:78,79</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {It is removed from # library file and from the connections&apos; files that have it.} other {It is removed from # library files and from the connections&apos; files that have it.}}</source>
+      </segment>
+    </unit>
+    <unit id="8002572502868812706">
+      <notes>
+        <note category="location">src/app/tags/tags.ts:83</note>
+      </notes>
+      <segment>
+        <source>It is removed from the connections&apos; files that have it.</source>
+      </segment>
+    </unit>
+    <unit id="7637496016981637266">
+      <notes>
+        <note category="location">src/app/tags/tags.ts:88</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# library file} other {# library files}}</source>
       </segment>
     </unit>
     <unit id="4894487638830723539">

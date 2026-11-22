@@ -36,6 +36,8 @@ export class FileTagsDialog {
     /** The connection the file is in (`config.place()` when opened); null for the library. */
     private connection: number | null = null;
     protected readonly name = signal('');
+    protected readonly editTitle = $localize`Edit this tag.`;
+    protected readonly tagsHeading = $localize`:heading of the tags without a category:Tags`;
     /** Null while loading. */
     protected readonly current = signal<FileTags | null>(null);
 

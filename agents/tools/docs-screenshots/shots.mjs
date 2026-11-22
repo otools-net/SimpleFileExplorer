@@ -625,7 +625,7 @@ const scenes = {
     async dialogs() {
         const b = await session({ height: 900 });
         await b.open(admin('tags', 'list'));
-        await b.clickTitle('Edit Sea');
+        await b.clickTitle('Edit the tag “Sea”');
         await b.shot(OUT + 'tag-editor.png');
         await b.open(admin('access', 'spaces'));
         await b.click('button.space-card');
@@ -1035,7 +1035,7 @@ const scenes = {
         await b.waitFor('#token-secret');
         await sleep(800);
         await b.shot(OUT + 'token-secret.png');
-        await b.clickTitle('Close: the token is not shown again');
+        await b.clickTitle("Close: the token isn't shown again");
         await sleep(1200);
         await b.shot(OUT + 'admin-account-tokens.png');
         await b.open(admin('access', 'tokens'), 3000);

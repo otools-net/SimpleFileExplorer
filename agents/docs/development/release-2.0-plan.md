@@ -151,8 +151,17 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     5 files at 0 unmarked texts (36 gone); `describeScan`, the panel's titles and the remove dialog's counts as ICU
     plurals (`plural()` out of the area); the scan service's toasts and confirms left for 2.8. No screenshot
     retaken (the explained query's words are unchanged); the screenshot tools find "Hide this panel" by its start.
-  - [ ] **2.5d tags, duplicates, missing files, similar videos, trickplay** (`app/tags/`, `app/tracking/`,
-    `app/trickplay/`).
+  - [x] **2.5d tags** (`app/tags/`: dialogs of a file, of several, of a folder or search, the tag editor and manager,
+    lists, picker, chips, default tags badge; ~78 template texts, 15 `plural()` calls). Split from 2.5e on
+    2026-11-22 (the three folders held ~121 template texts and 36 `plural()` calls). Done 2026-11-22: 8 files at 0
+    unmarked texts (78 gone); the scope dialog's wording moved to `scope-tags-texts.ts` (pure functions: the "where"
+    phrase is one of six whole messages, used as a placeholder in the questions); `removedFrom` returns a sentence
+    without its leading space; `libraryFiles`, `listed` (`Intl.ListFormat`) in `tags.ts`; "Disambiguate with" →
+    **Tell apart with**, "Color" → **Colour** (glossary leftover, docs too); the library's own folder is "the
+    library" (default tags) or "the top of the library" (the badge, as the location bar); `plural()` out of the
+    area; toasts left for 2.8 except those that counted files. Tag screenshots retaken.
+  - [ ] **2.5e duplicates, missing files, similar videos, trickplay** (`app/tracking/`, `app/trickplay/`; ~43
+    template texts, 21 `plural()` calls).
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
   (dividers) to `MenuEntry`; one action registry used by the item menu, folder menu and selection bar; order
@@ -302,8 +311,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-22):** steps 1.1 to 2.4d and 2.5a–2.5c done (see their ticks; 2.4 and 2.5 were split in
-  four). Next: **2.5d** (tags, duplicates, missing files, similar videos, trickplay), then 2.6–2.8. Texts marked and rewritten to
+- **Last session (2026-11-22):** steps 1.1 to 2.4d and 2.5a–2.5d done (see their ticks; 2.4 and 2.5 were split,
+  2.5 in five). Next: **2.5e** (duplicates, missing files, similar videos, trickplay), then 2.6–2.8. Texts marked and rewritten to
   [ui-texts](ui-texts.md), [translations](translations.md) says how; `app/access/` is a worked example.
 - The docs-screenshots tool clicks elements by the start of their `title` (`clickTitle`): a hint rewritten updates
   `agents/tools/docs-screenshots/shots.mjs` too (grep it for the old words).

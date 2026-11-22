@@ -92,7 +92,7 @@ describe('FileTagsDialog', () => {
         enterPlace(TestBed.inject(ConfigService), 7);
         await open(fileTags(photo.path, [shrek]));
 
-        element.querySelector<HTMLButtonElement>('[aria-label="Remove Shrek"]')!.click();
+        element.querySelector<HTMLButtonElement>('[aria-label="Remove “Shrek”"]')!.click();
         await settle();
 
         expect(api.fileTags).toHaveBeenCalledWith(photo.path, 7);
@@ -214,7 +214,7 @@ describe('FileTagsDialog', () => {
     it('removes a tag from its × button', async () => {
         await open(fileTags(photo.path, [shrek, swamp]));
 
-        element.querySelector<HTMLButtonElement>('[aria-label="Remove Shrek"]')!.click();
+        element.querySelector<HTMLButtonElement>('[aria-label="Remove “Shrek”"]')!.click();
         await settle();
 
         expect(api.changeFileTags).toHaveBeenCalledWith({ paths: [photo.path], remove: [shrek.id] }, null);
@@ -226,7 +226,7 @@ describe('FileTagsDialog', () => {
         api.changeFileTags.mockRejectedValue(new ApiError(400, '“x” is not a file of the library.'));
         await open(fileTags(photo.path, [shrek]));
 
-        element.querySelector<HTMLButtonElement>('[aria-label="Remove Shrek"]')!.click();
+        element.querySelector<HTMLButtonElement>('[aria-label="Remove “Shrek”"]')!.click();
         await settle();
 
         expect(error).toHaveBeenCalledWith('“x” is not a file of the library.');

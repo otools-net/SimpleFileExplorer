@@ -10,11 +10,11 @@ Tags label files so you can find them again: `t:beach` in the [search box](searc
   searching: `t:"12 Vinyl"` finds the tag `12" Vinyl`.
 - **Parent tags:** a file tagged `Shrek` (parent `Character`) is found by `t:character` too, through any number of
   levels. Loops are refused.
-- **Disambiguation:** a parent can be shown after the name, e.g. "Freddy (FNAF)".
+- **Tell apart with:** a parent can be shown after the name, for example "Freddy (FNAF)".
 - **Category** tags group the tags inheriting from them in a file's tag list.
 - **Hidden** tags keep their files out of search results unless the search names the tag (or a parent).
 - New spaces start with **Favorite** and **Archived** (hidden), under **Meta Tags**. They can be edited, not deleted.
-- Colors come from TagStudio's standard palette.
+- Colours come from TagStudio's standard palette.
 
 Tags are created, edited and deleted in [Administration › Tags](../administration/tags.md) (also **Manage tags** under
 the tag sidebar, and in each tag dialog), by accounts with the right `tags.manage`. Tagging files needs `tags.assign`.

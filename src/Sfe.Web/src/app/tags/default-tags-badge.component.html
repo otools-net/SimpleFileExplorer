@@ -22,24 +22,26 @@
         class="default-tags-popover phone-sheet"
         role="dialog"
         [id]="id"
-        [attr.aria-label]="'Default tags of ' + folder()"
+        [attr.aria-label]="panelLabel()"
         [style.--pop-top.px]="position().top"
         [style.--pop-bottom.px]="position().bottom"
         [style.--pop-left.px]="position().left"
     >
         <div class="default-tags-popover-head">
-            <strong>Default tags</strong>
+            <strong i18n>Default tags</strong>
             <button
                 type="button"
                 class="icon-button small ghost default-tags-close"
                 aria-label="Close"
-                title="Close (Esc)"
+                i18n-aria-label
+                title="Close (Esc)."
+                i18n-title
                 (click)="close(true)"
             >
                 <svg sfeIcon="close"></svg>
             </button>
         </div>
-        <p class="field-hint">Files put into {{ folder() }} or its sub-folders get them.</p>
+        <p class="field-hint" i18n>Files put into {{ folder() }} or its sub-folders get them.</p>
         @if (own().length) {
             <div class="tag-list">
                 @for (tag of own(); track tag.id) {
@@ -48,7 +50,7 @@
             </div>
         }
         @for (group of inheritedGroups(); track group.path) {
-            <p class="default-tags-from">From {{ group.label }}</p>
+            <p class="default-tags-from" i18n>From {{ group.label }}</p>
             <div class="tag-list">
                 @for (tag of group.tags; track tag.id) {
                     <sfe-tag-chip [tag]="tag" />
@@ -59,8 +61,10 @@
             <button
                 type="button"
                 class="button small default-tags-edit"
-                title="Add or remove default tags of this folder"
+                title="Add or remove default tags of this folder."
+                i18n-title
                 (click)="change()"
+                i18n
             >Change…</button>
         }
     </div>

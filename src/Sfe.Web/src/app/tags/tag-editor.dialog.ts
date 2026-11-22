@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { plural } from '../core/format';
 import { TagDetails, TagSummary } from '../core/tag.models';
 import { TagInput } from './tag.models';
 import { Rights } from '../core/rights';
@@ -13,7 +12,7 @@ import { IconComponent } from '../shared/icon.component';
 import { SheetComponent } from '../shared/sheet.component';
 import { TagChipComponent } from './tag-chip.component';
 import { TagOption, TagPickerComponent } from './tag-picker.component';
-import { removedFrom, tagQuery, textOn } from './tags';
+import { libraryFiles, removedFrom, tagQuery, textOn } from './tags';
 
 /** What closing the editor did: the tag saved, the id of the tag deleted, or null (cancelled). */
 export type TagEditResult = TagDetails | { deleted: number } | null;
@@ -47,14 +46,15 @@ export class TagEditorDialog {
     protected readonly isHidden = signal(false);
     protected readonly error = signal<string | null>(null);
     protected readonly saving = signal(false);
+    protected readonly heading = computed(() => (this.tag() ? $localize`Edit tag` : $localize`New tag`));
     protected readonly subtitle = computed(() => {
         const tag = this.tag();
         return tag
-            ? [tag.isBuiltIn ? 'Built-in tag' : null, plural(tag.fileCount, 'library file')].filter(Boolean).join(' · ')
+            ? [tag.isBuiltIn ? $localize`Built-in tag` : null, libraryFiles(tag.fileCount)].filter(Boolean).join(' · ')
             : null;
     });
     protected readonly swatches = computed(() => [
-        { slug: '', name: 'None', hex: null as string | null, text: null as string | null },
+        { slug: '', name: $localize`:no colour:None`, hex: null as string | null, text: null as string | null },
         ...(this.config.config()?.tagColors ?? []).map((color) => ({
             slug: color.slug,
             name: color.name,
@@ -134,7 +134,7 @@ export class TagEditorDialog {
             isHidden: this.isHidden(),
         };
         if (!input.name) {
-            this.error.set('A tag needs a name.');
+            this.error.set($localize`A tag needs a name.`);
             this.nameInput().nativeElement.focus();
             return;
         }
@@ -154,7 +154,7 @@ export class TagEditorDialog {
     protected async delete(): Promise<void> {
         const tag = this.tag()!;
         const uses = removedFrom(tag.fileCount, this.config.can(Rights.useConnections));
-        if (!confirm(`Delete the tag “${tag.displayName}”?${uses}`)) return;
+        if (!confirm(`Delete the tag “${tag.displayName}”?${uses ? ' ' + uses : ''}`)) return;
         try {
             await this.api.deleteTag(tag.id);
             this.store.applyTagDeleted(tag.id);

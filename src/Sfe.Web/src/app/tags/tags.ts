@@ -1,4 +1,4 @@
-import { plural } from '../core/format';
+import { icu, textLocale } from '../core/i18n/icu';
 import { TagDetails, TagSummary } from '../core/tag.models';
 
 /*
@@ -26,7 +26,10 @@ export function describeTag(tag: TagDetails): string {
     const parts: string[] = [];
     if (tag.shorthand) parts.push(tag.shorthand);
     if (tag.aliases.length) parts.push(tag.aliases.join(', '));
-    if (tag.parents.length) parts.push(`in ${tag.parents.map((p) => p.displayName).join(', ')}`);
+    if (tag.parents.length)
+        parts.push(
+            $localize`:the parent tags of a tag:in ${tag.parents.map((p) => p.displayName).join(', ')}:parents:`,
+        );
     return parts.join(' · ');
 }
 
@@ -58,13 +61,34 @@ export function termValue(name: string): string {
 }
 
 /**
- * What deleting a tag takes it off, for the question asked first: `fileCount` counts the library's files only;
- * connection files lose it too (`connections`: the session uses connections).
+ * What deleting a tag takes it off, for the question asked first ('' when nothing): `fileCount` counts the library's
+ * files only; connection files lose it too (`connections`: the session uses connections).
  */
 export function removedFrom(fileCount: number, connections: boolean): string {
-    const library = fileCount ? plural(fileCount, 'library file') : '';
-    if (!connections) return library ? ` It is removed from ${library}.` : '';
-    return library
-        ? ` It is removed from ${library} and from the connections’ files that have it.`
-        : ' It is removed from the connections’ files that have it.';
+    if (!connections)
+        return fileCount
+            ? icu(
+                  $localize`{count, plural, \
+one {It is removed from # library file.} other {It is removed from # library files.}}`,
+                  { count: fileCount },
+              )
+            : '';
+    return fileCount
+        ? icu(
+              $localize`{count, plural, \
+one {It is removed from # library file and from the connections' files that have it.} \
+other {It is removed from # library files and from the connections' files that have it.}}`,
+              { count: fileCount },
+          )
+        : $localize`It is removed from the connections' files that have it.`;
+}
+
+/** The library's files having a tag: "3 library files". */
+export function libraryFiles(count: number): string {
+    return icu($localize`{count, plural, one {# library file} other {# library files}}`, { count });
+}
+
+/** "a, b and c", in the language of the texts. */
+export function listed(names: string[]): string {
+    return new Intl.ListFormat(textLocale(), { type: 'conjunction' }).format(names);
 }

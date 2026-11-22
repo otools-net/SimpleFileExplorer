@@ -162,7 +162,7 @@ describe('FilesTagsDialog', () => {
             await open(selection);
 
             section('On some of these files')!
-                .querySelector<HTMLButtonElement>('[aria-label="Remove sun · 2"]')!
+                .querySelector<HTMLButtonElement>('[aria-label="Remove “sun · 2”"]')!
                 .click();
             await settle();
 

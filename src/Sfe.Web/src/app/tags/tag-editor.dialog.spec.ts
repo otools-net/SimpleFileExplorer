@@ -238,12 +238,12 @@ describe('TagEditorDialog', () => {
             api.updateTag.mockImplementation(async (_, input) => tag(input.name));
             await open(cat());
 
-            element.querySelector<HTMLButtonElement>('[aria-label="Remove Pet"]')!.click();
+            element.querySelector<HTMLButtonElement>('[aria-label="Remove “Pet”"]')!.click();
             await settle();
             expect(parentChips()).toEqual(['Animal']);
             expect(field<HTMLSelectElement>('disambiguation').value).toBe(String(animal.id));
 
-            element.querySelector<HTMLButtonElement>('[aria-label="Remove Animal"]')!.click();
+            element.querySelector<HTMLButtonElement>('[aria-label="Remove “Animal”"]')!.click();
             await settle();
             expect(parentChips()).toEqual([]);
             expect(field<HTMLSelectElement>('disambiguation').disabled).toBe(true);
@@ -346,7 +346,7 @@ describe('TagEditorDialog', () => {
             await settle();
 
             expect(ask).toHaveBeenCalledWith(
-                'Delete the tag “Cat (Ani)”? It is removed from 3 library files and from the connections’ files ' +
+                "Delete the tag “Cat (Ani)”? It is removed from 3 library files and from the connections' files " +
                     'that have it.',
             );
             expect(api.deleteTag).toHaveBeenCalledWith(details.id);
@@ -362,7 +362,7 @@ describe('TagEditorDialog', () => {
             await settle();
 
             expect(ask).toHaveBeenCalledWith(
-                'Delete the tag “Unused”? It is removed from the connections’ files that have it.',
+                "Delete the tag “Unused”? It is removed from the connections' files that have it.",
             );
             expect(api.deleteTag).not.toHaveBeenCalled();
             expect(dialog().open).toBe(true);
