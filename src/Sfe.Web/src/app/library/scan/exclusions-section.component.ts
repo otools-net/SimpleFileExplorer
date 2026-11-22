@@ -11,11 +11,15 @@ import { IconComponent } from '../../shared/icon.component';
 const KINDS: { kind: ExclusionKind; label: string; title: string }[] = [
     {
         kind: 'scan',
-        label: 'Scans',
-        title: 'Scans of the folders above leave it out; what the index has of it stays as it is',
+        label: $localize`Scans`,
+        title: $localize`Scans of the folders above leave it out; what the index has of it stays as it is.`,
     },
-    { kind: 'trickplay', label: 'Trickplay', title: 'Its videos get no new trickplay' },
-    { kind: 'thumbnails', label: 'Thumbnails', title: 'Its photos and videos get no new thumbnails' },
+    { kind: 'trickplay', label: $localize`Trickplay`, title: $localize`Its videos get no new trickplay.` },
+    {
+        kind: 'thumbnails',
+        label: $localize`Thumbnails`,
+        title: $localize`Its photos and videos get no new thumbnails.`,
+    },
 ];
 
 /** Sub-folders listed per folder in the picker: a folder with more says so. */
@@ -52,6 +56,19 @@ export class ExclusionsSectionComponent implements OnInit {
     });
     protected readonly saving = signal(false);
     protected readonly problem = signal<string | null>(null);
+
+    protected openTitle(path: string): string {
+        return $localize`Open “${path}:folder:”.`;
+    }
+
+    /** The label of a folder's box: what it is kept out of, and which folder. */
+    protected boxLabel(kind: string, path: string): string {
+        return $localize`${kind}:kind: of “${path}:folder:”`;
+    }
+
+    protected removeTitle(path: string): string {
+        return $localize`Let scans, trickplay and thumbnails into “${path}:folder:” again.`;
+    }
 
     /** The library's folders, as listings show them (folder rules apply). */
     protected readonly source: FolderSource = async (path) => {

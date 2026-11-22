@@ -41,7 +41,7 @@ async function session(opts = {}) {
   if (status !== 200) throw new Error(`sign-in answered ${status}`);
   b.open = async (url, wait = 4000) => {
     await b.goto(BASE + url, wait);
-    await b.eval(`document.querySelector('button[title="Hide this panel"]')?.click(); 1`);
+    await b.eval(`document.querySelector('button[title^="Hide this panel"]')?.click(); 1`);
     await sleep(300);
   };
   b.save = async (file) => {

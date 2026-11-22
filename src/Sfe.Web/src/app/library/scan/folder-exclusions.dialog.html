@@ -1,5 +1,5 @@
-<sfe-sheet #sheet heading="Scans and previews" [subtitle]="name()" variant="folder-exclusions">
-    <p class="field-hint">For everyone in this space, with its sub-folders. Excluded folders show a small note
+<sfe-sheet #sheet heading="Scans and previews" i18n-heading [subtitle]="name()" variant="folder-exclusions">
+    <p class="field-hint" i18n>For everyone in this space, with its sub-folders. Excluded folders show a small note
     in the listing.</p>
     @for (entry of kinds; track entry.kind) {
         <label class="check">
@@ -12,28 +12,34 @@
             >
             <span>
                 <strong>{{ entry.label }}</strong>
-                <span class="field-hint">{{ inherited(entry.kind) ? 'Excluded through “' + state()[entry.kind] + '”: change it there.' : entry.hint }}</span>
+                <span class="field-hint">@if (inherited(entry.kind)) {<ng-container i18n
+                    >Excluded through “{{ state()[entry.kind] }}”: change it there.</ng-container
+                >} @else {{{ entry.hint }}}</span>
             </span>
         </label>
     }
     @if (error()) {
-        <p class="form-error">{{ error() }}</p>
+        <p class="form-error" i18n>Could not save: {{ error() }}</p>
     }
     <span sheetFooter class="spacer"></span>
     <button
         sheetFooter
         type="button"
         class="button"
-        title="Close without changing anything (Esc)"
+        title="Close without changing anything (Esc)."
+        i18n-title
         (click)="sheet.close()"
+        i18n
     >Cancel</button>
     <button
         sheetFooter
         type="button"
         class="button primary"
-        title="Save for the whole space"
+        title="Save for everyone using this space."
+        i18n-title
         [sfeBusy]="saving()"
         [disabled]="saving() || !changed()"
         (click)="save()"
+        i18n
     >Save</button>
 </sfe-sheet>

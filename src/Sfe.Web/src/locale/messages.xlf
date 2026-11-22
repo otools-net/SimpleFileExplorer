@@ -473,6 +473,10 @@
         <note category="location">src/app/access/group-editor.component.html:162,163</note>
         <note category="location">src/app/access/space-editor.component.html:193,194</note>
         <note category="location">src/app/connections/connect.dialog.html:108,109</note>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:52,53</note>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.html:33,34</note>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:51,52</note>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:54,55</note>
         <note category="location">src/app/tasks/schedule-form.component.html:146,147</note>
         <note category="location">src/app/tasks/tasks-section.component.html:33,35</note>
         <note category="location">src/app/tokens/token-create.component.html:132,133</note>
@@ -501,6 +505,7 @@
         <note category="location">src/app/admin/admin-page.component.html:461,462</note>
         <note category="location">src/app/admin/installation-section.component.html:57,58</note>
         <note category="location">src/app/connections/connections-section.component.html:48,49</note>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.html:44,45</note>
         <note category="location">src/app/tasks/schedule-form.component.html:138,139</note>
       </notes>
       <segment>
@@ -766,6 +771,7 @@
         <note category="location">src/app/access/accounts-page.component.html:153</note>
         <note category="location">src/app/access/space-detail.component.html:227</note>
         <note category="location">src/app/connections/connections-section.component.html:220,221</note>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:125,126</note>
       </notes>
       <segment>
         <source>Remove</source>
@@ -927,6 +933,8 @@
       <notes>
         <note category="location">src/app/access/folder-access.component.html:40</note>
         <note category="location">src/app/connections/connect.dialog.html:49</note>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:22,23</note>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:76,77</note>
         <note category="location">src/app/tasks/schedule-form.component.html:19,20</note>
       </notes>
       <segment>
@@ -963,6 +971,7 @@
       <notes>
         <note category="location">src/app/access/folder-access.component.html:72,73</note>
         <note category="location">src/app/access/space-editor.component.html:71,72</note>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:25,26</note>
       </notes>
       <segment>
         <source>Click a folder to choose it; click again inside it to go deeper.</source>
@@ -1544,6 +1553,7 @@
     <unit id="8347622337729956542">
       <notes>
         <note category="location">src/app/access/space-detail.component.html:10</note>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.ts:92</note>
       </notes>
       <segment>
         <source>The library</source>
@@ -4512,6 +4522,7 @@ Space “Holiday photos”
     <unit id="6907161397537530258">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:283</note>
+        <note category="location">src/app/library/scan/exclusions-section.component.ts:20</note>
         <note category="location">src/app/settings/tabs/preview-settings.ts:13</note>
         <note category="location">src/app/tasks/tasks.ts:15</note>
       </notes>
@@ -4530,6 +4541,7 @@ Space “Holiday photos”
     <unit id="8414932350776289558">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:291</note>
+        <note category="location">src/app/library/scan/exclusions-section.component.ts:17</note>
         <note category="location">src/app/settings/tabs/preview-settings.ts:109</note>
         <note category="location">src/app/tasks/tasks.ts:13</note>
       </notes>
@@ -8020,6 +8032,1152 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Removed “<ph id="0" equiv="name" disp="name"/>” from the quick links.</source>
+      </segment>
+    </unit>
+    <unit id="2419957882962236068">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:3,4</note>
+      </notes>
+      <segment>
+        <source> Folders kept out of scans, trickplay or thumbnails for the whole space, with their sub-folders. What the index already has of a folder kept out of scans stays as it is; trickplay and thumbnails already made are still shown. </source>
+      </segment>
+    </unit>
+    <unit id="2908608302841223058">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:10,11</note>
+      </notes>
+      <segment>
+        <source>Keep another folder out of scans, trickplay or thumbnails.</source>
+      </segment>
+    </unit>
+    <unit id="4843719481996851879">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:14</note>
+      </notes>
+      <segment>
+        <source>Add folder…</source>
+      </segment>
+    </unit>
+    <unit id="1647191184508065053">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:23</note>
+      </notes>
+      <segment>
+        <source>Pick a folder of the library below</source>
+      </segment>
+    </unit>
+    <unit id="1765700704146280203">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:28,29</note>
+      </notes>
+      <segment>
+        <source>Keep it out of</source>
+      </segment>
+    </unit>
+    <unit id="345710572127492196">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:48,49</note>
+      </notes>
+      <segment>
+        <source>Close without adding anything.</source>
+      </segment>
+    </unit>
+    <unit id="8030426887822902088">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:56,57</note>
+      </notes>
+      <segment>
+        <source>Keep the folder out of what is ticked.</source>
+      </segment>
+    </unit>
+    <unit id="3249513483374643425">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:61,62</note>
+      </notes>
+      <segment>
+        <source>Add</source>
+      </segment>
+    </unit>
+    <unit id="3971249310377578731">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:69,71</note>
+      </notes>
+      <segment>
+        <source>No folder is excluded: scans, trickplay and thumbnails cover the whole library.</source>
+      </segment>
+    </unit>
+    <unit id="3193976279273491157">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:80</note>
+      </notes>
+      <segment>
+        <source>Actions</source>
+      </segment>
+    </unit>
+    <unit id="1958488500698802559">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:97,98</note>
+      </notes>
+      <segment>
+        <source>Not on the disk any more (renamed or deleted outside SFE): it can only be removed.</source>
+      </segment>
+    </unit>
+    <unit id="3474436093010676803">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.html:100,101</note>
+      </notes>
+      <segment>
+        <source>folder not found</source>
+      </segment>
+    </unit>
+    <unit id="277927204427233975">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.ts:14</note>
+      </notes>
+      <segment>
+        <source>Scans</source>
+      </segment>
+    </unit>
+    <unit id="1397724472108005742">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.ts:15</note>
+      </notes>
+      <segment>
+        <source>Scans of the folders above leave it out; what the index has of it stays as it is.</source>
+      </segment>
+    </unit>
+    <unit id="4819059757001969780">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.ts:17</note>
+      </notes>
+      <segment>
+        <source>Its videos get no new trickplay.</source>
+      </segment>
+    </unit>
+    <unit id="946851838678900882">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.ts:21</note>
+      </notes>
+      <segment>
+        <source>Its photos and videos get no new thumbnails.</source>
+      </segment>
+    </unit>
+    <unit id="7970053994742517789">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.ts:61</note>
+      </notes>
+      <segment>
+        <source>Open “<ph id="0" equiv="folder" disp="path"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="6758645465574969720">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.ts:66</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="kind" disp="kind"/> of “<ph id="1" equiv="folder" disp="path"/>”</source>
+      </segment>
+    </unit>
+    <unit id="7355994846346427422">
+      <notes>
+        <note category="location">src/app/library/scan/exclusions-section.component.ts:70</note>
+      </notes>
+      <segment>
+        <source>Let scans, trickplay and thumbnails into “<ph id="0" equiv="folder" disp="path"/>” again.</source>
+      </segment>
+    </unit>
+    <unit id="7398792278608829731">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.html:1</note>
+      </notes>
+      <segment>
+        <source>Scans and previews</source>
+      </segment>
+    </unit>
+    <unit id="8328473934026708657">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.html:2,4</note>
+      </notes>
+      <segment>
+        <source>For everyone in this space, with its sub-folders. Excluded folders show a small note in the listing.</source>
+      </segment>
+    </unit>
+    <unit id="544166448687301812">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.html:16,17</note>
+      </notes>
+      <segment>
+        <source>Excluded through “<ph id="0" equiv="INTERPOLATION" disp="{{ state()[entry.kind] }}"/>”: change it there.</source>
+      </segment>
+    </unit>
+    <unit id="5770140928763747565">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.html:22,24</note>
+      </notes>
+      <segment>
+        <source>Could not save: <ph id="0" equiv="INTERPOLATION" disp="{{ error() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="6415315962988294302">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.html:29,30</note>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:47,48</note>
+      </notes>
+      <segment>
+        <source>Close without changing anything (Esc).</source>
+      </segment>
+    </unit>
+    <unit id="3673535655345175840">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.html:38,39</note>
+      </notes>
+      <segment>
+        <source>Save for everyone using this space.</source>
+      </segment>
+    </unit>
+    <unit id="3169682977420495476">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.ts:15</note>
+      </notes>
+      <segment>
+        <source>Skip in scans</source>
+      </segment>
+    </unit>
+    <unit id="8374780218665520081">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.ts:16,17</note>
+      </notes>
+      <segment>
+        <source>Scans of the folders above leave it out. What the index already has of it (files, tags) stays as it is, never refreshed: Remove from index forgets it.</source>
+      </segment>
+    </unit>
+    <unit id="6253640618081314736">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.ts:21</note>
+      </notes>
+      <segment>
+        <source>No trickplay</source>
+      </segment>
+    </unit>
+    <unit id="7286126455998220668">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.ts:22</note>
+      </notes>
+      <segment>
+        <source>Its videos get no new timeline pictures; those already made are still shown.</source>
+      </segment>
+    </unit>
+    <unit id="7681146396666374653">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.ts:26</note>
+      </notes>
+      <segment>
+        <source>No thumbnails</source>
+      </segment>
+    </unit>
+    <unit id="6809338879076243385">
+      <notes>
+        <note category="location">src/app/library/scan/folder-exclusions.dialog.ts:27</note>
+      </notes>
+      <segment>
+        <source>Its photos and videos get no new thumbnails; those already made are still shown.</source>
+      </segment>
+    </unit>
+    <unit id="6127428519273492472">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:1</note>
+      </notes>
+      <segment>
+        <source>Remove from the index</source>
+      </segment>
+    </unit>
+    <unit id="5631686050682135249">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:3,4</note>
+      </notes>
+      <segment>
+        <source>Could not read the index: <ph id="0" equiv="INTERPOLATION" disp="{{ error() }}"/></source>
+      </segment>
+    </unit>
+    <unit id="839403762949174900">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:6,8</note>
+      </notes>
+      <segment>
+        <source>The index holds <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ counts() }}"/></pc> of <ph id="2" equiv="INTERPOLATION_1" disp="{{ name() }}"/> and its sub-folders. Search will no longer find them; the files themselves stay on the disk, and browsing still shows them.</source>
+      </segment>
+    </unit>
+    <unit id="887785268725337661">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:9,11</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {<ph id="0" equiv="INTERPOLATION"/> file has tags.} other {<ph id="1" equiv="INTERPOLATION"/> files have tags.}}</source>
+      </segment>
+    </unit>
+    <unit id="3442804267268392381">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:9,13</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="ICU" disp="{folder.taggedFiles, plural,
+                    one {{{ folder.taggedFiles | number }} file has tags.}
+                    other {{{ folder.taggedFiles | number }} files have tags.}}" subFlows="8983144917578338929"/> They are kept with the moved files (Duplicates &amp; moved files) unless “Keep the tags of moved files” is off: scanning the folder again gives the tags back.</source>
+      </segment>
+    </unit>
+    <unit id="6755766343095937258">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:16,18</note>
+      </notes>
+      <segment>
+        <source>Nothing of <ph id="0" equiv="INTERPOLATION" disp="{{ name() }}"/> is in the index.</source>
+      </segment>
+    </unit>
+    <unit id="4799003276608153432">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:27,28</note>
+      </notes>
+      <segment>
+        <source>Skip this folder in future scans</source>
+      </segment>
+    </unit>
+    <unit id="3025118888935327946">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:29,30</note>
+      </notes>
+      <segment>
+        <source>Already skipped: it is in Administration › Scanning › What to scan › Excluded folders.</source>
+      </segment>
+    </unit>
+    <unit id="6270673827662049448">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:32,33</note>
+      </notes>
+      <segment>
+        <source>Adds it to Administration › Scanning › What to scan › Excluded folders, so that scans of the folders above it leave it out. Without it, the next scan of a parent folder indexes it again.</source>
+      </segment>
+    </unit>
+    <unit id="4535813184025517904">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:40,42</note>
+      </notes>
+      <segment>
+        <source>Counting what the index holds…</source>
+      </segment>
+    </unit>
+    <unit id="7154329797462270595">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.ts:36</note>
+        <note category="description">the folder a text is about</note>
+      </notes>
+      <segment>
+        <source>the whole library</source>
+      </segment>
+    </unit>
+    <unit id="5763440519322379324">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.ts:42,43</note>
+      </notes>
+      <segment>
+        <source>{folders, plural, one {# folder} other {# folders}} and {files, plural, one {# file} other {# files}}</source>
+      </segment>
+    </unit>
+    <unit id="5419708784018831439">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.ts:51</note>
+      </notes>
+      <segment>
+        <source>Skip in future scans</source>
+      </segment>
+    </unit>
+    <unit id="7434100993687160960">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.ts:51</note>
+      </notes>
+      <segment>
+        <source>Remove from index</source>
+      </segment>
+    </unit>
+    <unit id="6064201035607635612">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.ts:53</note>
+      </notes>
+      <segment>
+        <source>Remove <ph id="0" equiv="folder" disp="this.name()"/> from the search index.</source>
+      </segment>
+    </unit>
+    <unit id="8592887848390526759">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.ts:96,100</note>
+      </notes>
+      <segment>
+        <source>{skipped, select, yes {{count, plural, one {<ph id="0" equiv="name"/> removed from the index (# file); scans will skip it.} other {<ph id="1" equiv="name"/> removed from the index (# files); scans will skip it.}}} other {{count, plural, one {<ph id="2" equiv="name"/> removed from the index (# file).} other {<ph id="3" equiv="name"/> removed from the index (# files).}}}}</source>
+      </segment>
+    </unit>
+    <unit id="6546125646385449269">
+      <notes>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.ts:104,105</note>
+      </notes>
+      <segment>
+        <source>{skipped, select, yes {<ph id="0" equiv="name"/> wasn&apos;t indexed; scans will skip it.} other {<ph id="1" equiv="name"/> wasn&apos;t indexed.}}</source>
+      </segment>
+    </unit>
+    <unit id="1037711724874759272">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:18</note>
+      </notes>
+      <segment>
+        <source>Scanning “<ph id="0" equiv="folder" disp="path"/>”…</source>
+      </segment>
+    </unit>
+    <unit id="6774394738729086113">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:18</note>
+      </notes>
+      <segment>
+        <source>Scanning the library…</source>
+      </segment>
+    </unit>
+    <unit id="2410794660770727261">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:20</note>
+      </notes>
+      <segment>
+        <source>Scan of “<ph id="0" equiv="folder" disp="path"/>” finished</source>
+      </segment>
+    </unit>
+    <unit id="2939408845982836038">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:20</note>
+      </notes>
+      <segment>
+        <source>Scan of the library finished</source>
+      </segment>
+    </unit>
+    <unit id="612410700854050314">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:22</note>
+      </notes>
+      <segment>
+        <source>Scan of “<ph id="0" equiv="folder" disp="path"/>” cancelled</source>
+      </segment>
+    </unit>
+    <unit id="4406696069792269115">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:22</note>
+      </notes>
+      <segment>
+        <source>Scan of the library cancelled</source>
+      </segment>
+    </unit>
+    <unit id="6460902270756284128">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:23</note>
+      </notes>
+      <segment>
+        <source>Scan of “<ph id="0" equiv="folder" disp="path"/>” failed</source>
+      </segment>
+    </unit>
+    <unit id="6333349688339192997">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:23</note>
+      </notes>
+      <segment>
+        <source>Scan of the library failed</source>
+      </segment>
+    </unit>
+    <unit id="3503719351463048969">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:50,51</note>
+      </notes>
+      <segment>
+        <source>Stop the scan (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="1536087519743707362">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:60</note>
+      </notes>
+      <segment>
+        <source>Dismiss</source>
+      </segment>
+    </unit>
+    <unit id="8952545285128108435">
+      <notes>
+        <note category="location">src/app/library/scan/scan-panel.component.ts:61,62</note>
+      </notes>
+      <segment>
+        <source>Hide this panel.</source>
+      </segment>
+    </unit>
+    <unit id="5653006015369544089">
+      <notes>
+        <note category="location">src/app/library/scan/scan.service.ts:17</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# folder scanned} other {# folders scanned}}</source>
+      </segment>
+    </unit>
+    <unit id="1091375927401095444">
+      <notes>
+        <note category="location">src/app/library/scan/scan.service.ts:19</note>
+      </notes>
+      <segment>
+        <source>{count, plural, other {# waiting}}</source>
+      </segment>
+    </unit>
+    <unit id="4807764836581268399">
+      <notes>
+        <note category="location">src/app/library/scan/scan.service.ts:21</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# file indexed} other {# files indexed}}</source>
+      </segment>
+    </unit>
+    <unit id="5199545166284231638">
+      <notes>
+        <note category="location">src/app/library/scan/scan.service.ts:22</note>
+      </notes>
+      <segment>
+        <source>{count, plural, other {# removed}}</source>
+      </segment>
+    </unit>
+    <unit id="3178834498612842827">
+      <notes>
+        <note category="location">src/app/library/scan/scan.service.ts:25</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# moved file relinked} other {# moved files relinked}}</source>
+      </segment>
+    </unit>
+    <unit id="624654669505087755">
+      <notes>
+        <note category="location">src/app/library/scan/scan.service.ts:31</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# tagged file missing} other {# tagged files missing}}</source>
+      </segment>
+    </unit>
+    <unit id="4191951106437337601">
+      <notes>
+        <note category="location">src/app/library/scan/scan.service.ts:35</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# error} other {# errors}}</source>
+      </segment>
+    </unit>
+    <unit id="4361673667626395096">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.component.ts:47,48</note>
+      </notes>
+      <segment>
+        <source>Hide the explanation</source>
+      </segment>
+    </unit>
+    <unit id="757912946283384399">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.component.ts:49,50</note>
+      </notes>
+      <segment>
+        <source>Hide the explanation of the search.</source>
+      </segment>
+    </unit>
+    <unit id="1933040672432059566">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.component.ts:78</note>
+      </notes>
+      <segment>
+        <source>This search in words</source>
+      </segment>
+    </unit>
+    <unit id="2432841436020259134">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:16</note>
+      </notes>
+      <segment>
+        <source>smaller than <ph id="0" equiv="size" disp="slot(&apos;size&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="1857934143562550794">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:17</note>
+      </notes>
+      <segment>
+        <source>of at most <ph id="0" equiv="size" disp="slot(&apos;size&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="6878666028499711187">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:18</note>
+      </notes>
+      <segment>
+        <source>larger than <ph id="0" equiv="size" disp="slot(&apos;size&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="5899567176754244156">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:19</note>
+      </notes>
+      <segment>
+        <source>of at least <ph id="0" equiv="size" disp="slot(&apos;size&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="7912669789983186980">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:20</note>
+      </notes>
+      <segment>
+        <source>of exactly <ph id="0" equiv="size" disp="slot(&apos;size&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="5366732538581004342">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:21</note>
+      </notes>
+      <segment>
+        <source>of about <ph id="0" equiv="size" disp="slot(&apos;size&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="8877071074490063090">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:25</note>
+      </notes>
+      <segment>
+        <source>less than <ph id="0" equiv="pixels" disp="slot(&apos;pixels&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="2571167915230427423">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:26</note>
+      </notes>
+      <segment>
+        <source>at most <ph id="0" equiv="pixels" disp="slot(&apos;pixels&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="4707354410312047127">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:27</note>
+      </notes>
+      <segment>
+        <source>more than <ph id="0" equiv="pixels" disp="slot(&apos;pixels&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="2624914168123578569">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:28</note>
+      </notes>
+      <segment>
+        <source>at least <ph id="0" equiv="pixels" disp="slot(&apos;pixels&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="8458648309030197079">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:29</note>
+        <note category="location">src/app/library/search-explain/search-explain.ts:30</note>
+      </notes>
+      <segment>
+        <source>exactly <ph id="0" equiv="pixels" disp="slot(&apos;pixels&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="6173365358552627637">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:34</note>
+      </notes>
+      <segment>
+        <source>shorter than <ph id="0" equiv="duration" disp="slot(&apos;duration&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="4042016791898035877">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:35</note>
+      </notes>
+      <segment>
+        <source>lasting at most <ph id="0" equiv="duration" disp="slot(&apos;duration&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="1108042920255337956">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:36</note>
+      </notes>
+      <segment>
+        <source>longer than <ph id="0" equiv="duration" disp="slot(&apos;duration&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="230875703351940593">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:37</note>
+      </notes>
+      <segment>
+        <source>lasting at least <ph id="0" equiv="duration" disp="slot(&apos;duration&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="3746721645975573601">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:38</note>
+      </notes>
+      <segment>
+        <source>lasting exactly <ph id="0" equiv="duration" disp="slot(&apos;duration&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="8004093216955770158">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:39</note>
+      </notes>
+      <segment>
+        <source>lasting about <ph id="0" equiv="duration" disp="slot(&apos;duration&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="7110467822171785818">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:55</note>
+      </notes>
+      <segment>
+        <source>Nothing to search for yet.</source>
+      </segment>
+    </unit>
+    <unit id="2309192008295743286">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:60</note>
+      </notes>
+      <segment>
+        <source>Finds files in <ph id="0" equiv="folder" disp="slot(&apos;folder&apos;)"/> and its sub-folders <ph id="1" equiv="what" disp="slot(&apos;what&apos;)"/>.</source>
+      </segment>
+    </unit>
+    <unit id="8316092396522125279">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:64</note>
+      </notes>
+      <segment>
+        <source>Finds files in the whole library <ph id="0" equiv="what" disp="slot(&apos;what&apos;)"/>.</source>
+      </segment>
+    </unit>
+    <unit id="131552582202225576">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:68</note>
+      </notes>
+      <segment>
+        <source>Finds files in <ph id="0" equiv="folder" disp="slot(&apos;folder&apos;)"/> and its sub-folders:</source>
+      </segment>
+    </unit>
+    <unit id="674656029573737883">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:69</note>
+      </notes>
+      <segment>
+        <source>Finds files in the whole library:</source>
+      </segment>
+    </unit>
+    <unit id="7252792128574567611">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:81</note>
+      </notes>
+      <segment>
+        <source>A tag also matches by its shorthand or aliases, and includes the tags inheriting from it.</source>
+      </segment>
+    </unit>
+    <unit id="3288533158383317787">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:85,86</note>
+      </notes>
+      <segment>
+        <source>The type of a file comes from its extension, by the lists of Administration › Scanning › File types.</source>
+      </segment>
+    </unit>
+    <unit id="1487922158223572676">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:90,91</note>
+      </notes>
+      <segment>
+        <source>High and low resolution compare the shorter side with the thresholds of the HR/LR marks, one for photos and one for videos (Administration › Interface › Browsing).</source>
+      </segment>
+    </unit>
+    <unit id="1158267614885774181">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:94</note>
+      </notes>
+      <segment>
+        <source>A resolution only finds photos and videos whose resolution a scan has read.</source>
+      </segment>
+    </unit>
+    <unit id="3772032651767001957">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:98,99</note>
+      </notes>
+      <segment>
+        <source>An excluded resolution also finds the files whose resolution isn&apos;t known (not photos or videos, or not read yet): add <ph id="0" equiv="term" disp="slot(&apos;term&apos;)"/> to leave them out.</source>
+      </segment>
+    </unit>
+    <unit id="2355884712567233171">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:104</note>
+      </notes>
+      <segment>
+        <source>A duration only finds videos and audio files whose duration a scan has read.</source>
+      </segment>
+    </unit>
+    <unit id="6889659940586975316">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:108,109</note>
+      </notes>
+      <segment>
+        <source>An excluded duration also finds the files whose duration isn&apos;t known (not videos nor audio, or not read yet): add <ph id="0" equiv="term" disp="slot(&apos;term&apos;)"/> to leave them out.</source>
+      </segment>
+    </unit>
+    <unit id="7145809297950254920">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:135</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="without" disp="slot(&apos;without&apos;)"/> the extension <ph id="1" equiv="values" disp="slot(&apos;values&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="8976557344357539304">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:139</note>
+      </notes>
+      <segment>
+        <source>with the extension <ph id="0" equiv="values" disp="slot(&apos;values&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="4762224764311773306">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:143</note>
+      </notes>
+      <segment>
+        <source>that are <ph id="0" equiv="kinds" disp="slot(&apos;kinds&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="1818453531798007897">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:159</note>
+      </notes>
+      <segment>
+        <source>in <ph id="0" equiv="level" disp="slot(&apos;level&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="3825325322026369869">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:162</note>
+      </notes>
+      <segment>
+        <source>high resolution</source>
+      </segment>
+    </unit>
+    <unit id="5550198678116949052">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:162</note>
+      </notes>
+      <segment>
+        <source>low resolution</source>
+      </segment>
+    </unit>
+    <unit id="6107287878233996407">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:174</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="not" disp="slot(&apos;not&apos;)"/> tagged <ph id="1" equiv="tag" disp="slot(&apos;tag&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="7819712720026455729">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:178</note>
+      </notes>
+      <segment>
+        <source>tagged <ph id="0" equiv="tag" disp="slot(&apos;tag&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="4738188672258377068">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:182</note>
+      </notes>
+      <segment>
+        <source>with at least one tag</source>
+      </segment>
+    </unit>
+    <unit id="6179911603152557672">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:183</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="without" disp="slot(&apos;without&apos;)"/> any tag</source>
+      </segment>
+    </unit>
+    <unit id="6335544627963236485">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:189</note>
+      </notes>
+      <segment>
+        <source>full path</source>
+      </segment>
+    </unit>
+    <unit id="3325180562659478330">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:189</note>
+      </notes>
+      <segment>
+        <source>name</source>
+      </segment>
+    </unit>
+    <unit id="2079073084207247070">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:200</note>
+      </notes>
+      <segment>
+        <source>with <ph id="0" equiv="included" disp="slot(&apos;included&apos;)"/> in their <ph id="1" equiv="where" disp="slot(&apos;where&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="7124526317697496017">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:206</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="without" disp="slot(&apos;without&apos;)"/> <ph id="1" equiv="excluded" disp="slot(&apos;excluded&apos;)"/> in their <ph id="2" equiv="where" disp="slot(&apos;where&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="6811154158984545919">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:214,215</note>
+      </notes>
+      <segment>
+        <source>with <ph id="0" equiv="included" disp="slot(&apos;included&apos;)"/> but <ph id="1" equiv="without" disp="slot(&apos;without&apos;)"/> <ph id="2" equiv="excluded" disp="slot(&apos;excluded&apos;)"/> in their <ph id="3" equiv="where" disp="slot(&apos;where&apos;)"/></source>
+      </segment>
+    </unit>
+    <unit id="6058271701796072529">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:223</note>
+        <note category="location">src/app/library/search-explain/search-explain.ts:264,265</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="typed" disp="clause.token"/>: from <ph id="1" equiv="min" disp="formatSize(clause.min)"/> to <ph id="2" equiv="max" disp="formatSize(clause.max)"/></source>
+      </segment>
+    </unit>
+    <unit id="1826132971505157230">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:234</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {<ph id="0" equiv="typed"/> pixel} other {<ph id="1" equiv="typed"/> pixels}}</source>
+      </segment>
+    </unit>
+    <unit id="7232563922682199297">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:241</note>
+        <note category="description">a width in a search</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="amount" disp="slot(&apos;amount&apos;)"/> wide</source>
+      </segment>
+    </unit>
+    <unit id="4502882939380489098">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-explain.ts:242</note>
+        <note category="description">a height in a search</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="amount" disp="slot(&apos;amount&apos;)"/> high</source>
+      </segment>
+    </unit>
+    <unit id="4040245668362095075">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-notes.ts:11</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="typed" disp="slot(&apos;typed&apos;)"/> has no tag name: it is searched as text.</source>
+      </segment>
+    </unit>
+    <unit id="4286355399297862362">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-notes.ts:16,17</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="typed" disp="slot(&apos;typed&apos;)"/> is ignored: it isn&apos;t a valid size (try <ph id="1" equiv="a" disp="slot(&apos;a&apos;)"/> or <ph id="2" equiv="b" disp="slot(&apos;b&apos;)"/>).</source>
+      </segment>
+    </unit>
+    <unit id="8263990525886135723">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-notes.ts:22,23</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="typed" disp="slot(&apos;typed&apos;)"/> is ignored: it isn&apos;t a type of file (try <ph id="1" equiv="a" disp="slot(&apos;a&apos;)"/>, <ph id="2" equiv="b" disp="slot(&apos;b&apos;)"/>, <ph id="3" equiv="c" disp="slot(&apos;c&apos;)"/> or <ph id="4" equiv="d" disp="slot(&apos;d&apos;)"/>).</source>
+      </segment>
+    </unit>
+    <unit id="7497377160950863223">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-notes.ts:34,35</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="typed" disp="slot(&apos;typed&apos;)"/> is ignored: it isn&apos;t a valid duration (try <ph id="1" equiv="a" disp="slot(&apos;a&apos;)"/> or <ph id="2" equiv="b" disp="slot(&apos;b&apos;)"/>).</source>
+      </segment>
+    </unit>
+    <unit id="2695978266977843972">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-notes.ts:40,41</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="typed" disp="slot(&apos;typed&apos;)"/> is ignored: it isn&apos;t a valid resolution (try <ph id="1" equiv="a" disp="slot(&apos;a&apos;)"/> or <ph id="2" equiv="b" disp="slot(&apos;b&apos;)"/>).</source>
+      </segment>
+    </unit>
+    <unit id="1963388000709584640">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-notes.ts:45</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="typed" disp="slot(&apos;typed&apos;)"/> is ignored: the extension is missing.</source>
+      </segment>
+    </unit>
+    <unit id="2977937569003773752">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-notes.ts:55,56</note>
+      </notes>
+      <segment>
+        <source>Names are searched without their extension, so <ph id="0" equiv="typed" disp="slot(&apos;typed&apos;)"/> may find nothing: try <ph id="1" equiv="better" disp="slot(&apos;better&apos;)"/>.</source>
+      </segment>
+    </unit>
+    <unit id="2698494143547785235">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:16</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# second} other {# seconds}}</source>
+      </segment>
+    </unit>
+    <unit id="7880273395855474994">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:17</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# minute} other {# minutes}}</source>
+      </segment>
+    </unit>
+    <unit id="4434367879176668365">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:18</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# hour} other {# hours}}</source>
+      </segment>
+    </unit>
+    <unit id="5192629931973994331">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:23</note>
+        <note category="description">type of files in a search</note>
+      </notes>
+      <segment>
+        <source>photos</source>
+      </segment>
+    </unit>
+    <unit id="5178138591256693636">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:24</note>
+        <note category="description">type of files in a search</note>
+      </notes>
+      <segment>
+        <source>videos</source>
+      </segment>
+    </unit>
+    <unit id="8342243232526135199">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:25</note>
+        <note category="description">type of files in a search</note>
+      </notes>
+      <segment>
+        <source>audio files</source>
+      </segment>
+    </unit>
+    <unit id="7859399272019815639">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:26</note>
+        <note category="description">type of files in a search</note>
+      </notes>
+      <segment>
+        <source>other files</source>
+      </segment>
+    </unit>
+    <unit id="7459538745078160030">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:80</note>
+      </notes>
+      <segment>
+        <source>A <ph id="0" equiv="star" disp="slot(&apos;star&apos;)"/> only means “search the whole path” at the very start of the search; here it is searched as a character.</source>
+      </segment>
+    </unit>
+    <unit id="1415383156570007513">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:86</note>
+      </notes>
+      <segment>
+        <source>A double quote isn&apos;t closed: everything after it is one term.</source>
+      </segment>
+    </unit>
+    <unit id="5632149608138477839">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-query.ts:198</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# byte} other {# bytes}}</source>
+      </segment>
+    </unit>
+    <unit id="3458060040319327810">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-segments.ts:30</note>
+      </notes>
+      <segment>
+        <source>Typed as <ph id="0" equiv="typed" disp="typed"/></source>
+      </segment>
+    </unit>
+    <unit id="3929281485914893910">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-segments.ts:41</note>
+        <note category="description">logical word of a search, shown in capitals</note>
+      </notes>
+      <segment>
+        <source>and</source>
+      </segment>
+    </unit>
+    <unit id="6627551976444260400">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-segments.ts:42</note>
+        <note category="description">logical word of a search, shown in capitals</note>
+      </notes>
+      <segment>
+        <source>or</source>
+      </segment>
+    </unit>
+    <unit id="716577454823567864">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-segments.ts:43</note>
+        <note category="description">logical word of a search, first of several alternatives, shown in capitals</note>
+      </notes>
+      <segment>
+        <source>either</source>
+      </segment>
+    </unit>
+    <unit id="1598170280549949741">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-segments.ts:44</note>
+        <note category="description">logical word of a search, shown in capitals</note>
+      </notes>
+      <segment>
+        <source>both</source>
+      </segment>
+    </unit>
+    <unit id="8679924729501771276">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-segments.ts:45</note>
+        <note category="description">logical word of a search, shown in capitals</note>
+      </notes>
+      <segment>
+        <source>not</source>
+      </segment>
+    </unit>
+    <unit id="7068232626321798981">
+      <notes>
+        <note category="location">src/app/library/search-explain/search-segments.ts:46</note>
+        <note category="description">logical word of a search, shown in capitals</note>
+      </notes>
+      <segment>
+        <source>without</source>
       </segment>
     </unit>
     <unit id="8627133593113147800">

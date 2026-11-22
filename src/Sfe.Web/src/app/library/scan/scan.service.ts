@@ -1,7 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
-import { joinParts, plural } from '../../core/format';
+import { joinParts } from '../../core/format';
+import { icu } from '../../core/i18n/icu';
 import { ScanStatus } from '../library.models';
 import { readPreference, writePreference } from '../../core/preferences';
 import { ToastService } from '../../core/toast.service';
@@ -11,16 +12,27 @@ const DISMISSED_KEY = 'sfe.scan.dismissed';
 
 /** Counts of a scan, and the folder it is in. */
 export function describeScan(status: ScanStatus): string {
+    const count = (message: string, value: number) => icu(message, { count: value });
     const counts = joinParts([
-        `${plural(status.directoriesScanned, 'folder')} scanned`,
+        count($localize`{count, plural, one {# folder scanned} other {# folders scanned}}`, status.directoriesScanned),
         status.state === 'running' && status.directoriesQueued
-            ? `${status.directoriesQueued.toLocaleString()} waiting`
+            ? count($localize`{count, plural, other {# waiting}}`, status.directoriesQueued)
             : null,
-        `${plural(status.filesIndexed, 'file')} indexed`,
-        status.removed ? `${status.removed.toLocaleString()} removed` : null,
-        status.relinked ? `${plural(status.relinked, 'moved file')} relinked` : null,
-        status.missing ? `${plural(status.missing, 'tagged file')} missing` : null,
-        status.errors ? plural(status.errors, 'error') : null,
+        count($localize`{count, plural, one {# file indexed} other {# files indexed}}`, status.filesIndexed),
+        status.removed ? count($localize`{count, plural, other {# removed}}`, status.removed) : null,
+        status.relinked
+            ? count(
+                  $localize`{count, plural, one {# moved file relinked} other {# moved files relinked}}`,
+                  status.relinked,
+              )
+            : null,
+        status.missing
+            ? count(
+                  $localize`{count, plural, one {# tagged file missing} other {# tagged files missing}}`,
+                  status.missing,
+              )
+            : null,
+        status.errors ? count($localize`{count, plural, one {# error} other {# errors}}`, status.errors) : null,
     ]);
     return status.currentDirectory ? `${counts} — ${status.currentDirectory}` : counts;
 }

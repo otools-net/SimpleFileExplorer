@@ -72,7 +72,7 @@ describe('search explanation (mirrors SearchQuery.Parse)', () => {
         const parsed = parseQuery('cat type:folder -type:');
         expect(parsed.groups[0].clauses.map((clause) => clause.kind)).toEqual(['text']);
         const notes = parsed.notes.map(words);
-        expect(notes.some((note) => note.startsWith('[type:folder] is ignored: not a type of file'))).toBe(true);
+        expect(notes.some((note) => note.startsWith("[type:folder] is ignored: it isn't a type of file"))).toBe(true);
         expect(notes.some((note) => note.startsWith('[-type:] is ignored'))).toBe(true);
         // "type:" is no tag term.
         expect(notes.some((note) => note.includes('has no tag name'))).toBe(false);
@@ -100,7 +100,7 @@ describe('search explanation (mirrors SearchQuery.Parse)', () => {
         const parsed = parseQuery('movie w:big r:1920 -h:7x');
         const notes = parsed.notes.map(words);
         expect(parsed.groups[0].clauses.map((clause) => clause.kind)).toEqual(['text']);
-        expect(notes.some((note) => note.startsWith('[w:big] is ignored: not a valid resolution'))).toBe(true);
+        expect(notes.some((note) => note.startsWith("[w:big] is ignored: it isn't a valid resolution"))).toBe(true);
         expect(notes.some((note) => note.startsWith('[r:1920] is ignored'))).toBe(true);
         expect(notes.some((note) => note.startsWith('[-h:7x] is ignored'))).toBe(true);
     });
@@ -125,7 +125,7 @@ describe('search explanation (mirrors SearchQuery.Parse)', () => {
         const notes = result.notes.map(words);
         expect(
             notes.some((note) =>
-                note.startsWith('An excluded resolution also finds the files whose resolution is not known'),
+                note.startsWith("An excluded resolution also finds the files whose resolution isn't known"),
             ),
         ).toBe(true);
         expect(notes.some((note) => note.startsWith('A resolution only finds'))).toBe(false);
@@ -200,10 +200,10 @@ describe('search explanation (mirrors SearchQuery.Parse)', () => {
         const notes = result.notes.map(words);
         expect(
             notes.some((note) =>
-                note.startsWith('An excluded duration also finds the files whose duration is not known'),
+                note.startsWith("An excluded duration also finds the files whose duration isn't known"),
             ),
         ).toBe(true);
-        expect(notes.some((note) => note.startsWith('[d:long] is ignored: not a valid duration'))).toBe(true);
+        expect(notes.some((note) => note.startsWith("[d:long] is ignored: it isn't a valid duration"))).toBe(true);
         expect(notes.some((note) => note.startsWith('[d:10min] is ignored'))).toBe(true);
     });
 
@@ -219,7 +219,7 @@ describe('search explanation (mirrors SearchQuery.Parse)', () => {
         expect(
             parseQuery('r:mr')
                 .notes.map(words)
-                .some((note) => note.startsWith('[r:mr] is ignored: not a valid resolution')),
+                .some((note) => note.startsWith("[r:mr] is ignored: it isn't a valid resolution")),
         ).toBe(true);
     });
 

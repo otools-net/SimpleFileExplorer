@@ -1,6 +1,7 @@
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../../core/api.service';
-import { joinParts, plural } from '../../core/format';
+import { icu } from '../../core/i18n/icu';
 import { IndexedFolder, RemovedFromIndex } from '../library.models';
 import { ToastService } from '../../core/toast.service';
 import { BusyDirective, whileBusy } from '../../shared/busy.directive';
@@ -15,7 +16,7 @@ import { ListingStore } from '../listing.store';
  */
 @Component({
     selector: 'sfe-remove-from-index',
-    imports: [BusyDirective, SheetComponent],
+    imports: [BusyDirective, DecimalPipe, SheetComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './remove-from-index.dialog.html',
 })
@@ -25,24 +26,31 @@ export class RemoveFromIndexDialog {
     private readonly store = inject(ListingStore);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
 
-    protected readonly plural = plural;
     protected readonly path = signal('');
     protected readonly folder = signal<IndexedFolder | null>(null);
     protected readonly error = signal<string | null>(null);
     protected readonly exclude = signal(true);
     protected readonly removing = signal(false);
 
-    protected readonly name = computed(() => (this.path() ? `“${this.path()}”` : 'the whole library'));
+    protected readonly name = computed(() =>
+        this.path() ? `“${this.path()}”` : $localize`:the folder a text is about:the whole library`,
+    );
     protected readonly counts = computed(() => {
         const folder = this.folder();
-        return folder ? joinParts([plural(folder.directories, 'folder'), plural(folder.files, 'file')], ' and ') : '';
+        if (!folder) return '';
+        return icu(
+            $localize`{folders, plural, one {# folder} other {# folders}} and \
+{files, plural, one {# file} other {# files}}`,
+            { folders: folder.directories, files: folder.files },
+        );
     });
     private readonly indexed = computed(() => Boolean(this.folder()?.files || this.folder()?.directories));
     private readonly excluding = computed(() => this.exclude() && !this.folder()?.excluded && this.path() !== '');
     protected readonly canRemove = computed(() => this.indexed() || this.excluding());
     protected readonly actionLabel = computed(() =>
-        !this.indexed() && this.excluding() ? 'Skip in future scans' : 'Remove from index',
+        !this.indexed() && this.excluding() ? $localize`Skip in future scans` : $localize`Remove from index`,
     );
+    protected readonly removeTitle = computed(() => $localize`Remove ${this.name()}:folder: from the search index.`);
 
     constructor() {
         registerDialog((dialogs) => dialogs.removeFromIndex, this);
@@ -58,7 +66,7 @@ export class RemoveFromIndexDialog {
         try {
             this.folder.set(await this.api.indexedFolder(path));
         } catch (error) {
-            this.error.set(`Could not read the index: ${(error as Error).message}`);
+            this.error.set((error as Error).message);
         }
     }
 
@@ -81,18 +89,22 @@ export class RemoveFromIndexDialog {
     }
 
     private message(result: RemovedFromIndex): string {
-        const name = result.path ? `“${result.path}”` : 'The library';
-        return (
-            joinParts(
-                [
-                    result.files || result.directories
-                        ? `${name} removed from the index (${plural(result.files, 'file')})`
-                        : `${name} was not indexed`,
-                    result.excluded ? 'scans will skip it' : null,
-                ],
-                '; ',
-            ) + '.'
-        );
+        const name = result.path ? `“${result.path}”` : $localize`:start of a sentence:The library`;
+        const values = { name, count: result.files, skipped: result.excluded ? 'yes' : 'no' };
+        return result.files || result.directories
+            ? icu(
+                  $localize`{skipped, select, \
+yes {{count, plural, one {{name} removed from the index (# file); scans will skip it.} \
+other {{name} removed from the index (# files); scans will skip it.}}} \
+other {{count, plural, one {{name} removed from the index (# file).} \
+other {{name} removed from the index (# files).}}}}`,
+                  values,
+              )
+            : icu(
+                  $localize`{skipped, select, yes {{name} wasn't indexed; scans will skip it.} \
+other {{name} wasn't indexed.}}`,
+                  values,
+              );
     }
 
     protected checkedOf(event: Event): boolean {

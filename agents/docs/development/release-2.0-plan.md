@@ -143,8 +143,14 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     left for 2.8. No screenshot retaken (menus show labels, unchanged); the docs-screenshots tool follows the new
     check box labels (`Select “…”`). Readability baselines raised by the added lines: `item-menu.ts` 527 → 530,
     `context-menu.ts` 778 → 785.
-  - [ ] **2.5c scan and the wording of searches** (`library/scan/`, `library/search-explain/`: sentences built from
-    the query's parts, a session of its own).
+  - [x] **2.5c scan and the wording of searches** (`library/scan/`, `library/search-explain/`: sentences built from
+    the query's parts, a session of its own). Done 2026-11-22: a refactoring first split `search-explain.ts` (520
+    lines) into `search-query.ts` (parsing), `search-segments.ts` (pieces) and `search-explain.ts` (wording); the
+    explanation's sentences are whole messages whose `slot()` placeholders take the styled pieces (`phrase()`,
+    [translations](translations.md)); logical words in `OPS`; the notes on ignored terms in `search-notes.ts`;
+    5 files at 0 unmarked texts (36 gone); `describeScan`, the panel's titles and the remove dialog's counts as ICU
+    plurals (`plural()` out of the area); the scan service's toasts and confirms left for 2.8. No screenshot
+    retaken (the explained query's words are unchanged); the screenshot tools find "Hide this panel" by its start.
   - [ ] **2.5d tags, duplicates, missing files, similar videos, trickplay** (`app/tags/`, `app/tracking/`,
     `app/trickplay/`).
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
@@ -296,8 +302,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-22):** steps 1.1 to 2.4d, 2.5a and 2.5b done (see their ticks; 2.4 and 2.5 were split in
-  four). Next: **2.5c** (scan and the wording of searches), then 2.5d, 2.6–2.8. Texts marked and rewritten to
+- **Last session (2026-11-22):** steps 1.1 to 2.4d and 2.5a–2.5c done (see their ticks; 2.4 and 2.5 were split in
+  four). Next: **2.5d** (tags, duplicates, missing files, similar videos, trickplay), then 2.6–2.8. Texts marked and rewritten to
   [ui-texts](ui-texts.md), [translations](translations.md) says how; `app/access/` is a worked example.
 - The docs-screenshots tool clicks elements by the start of their `title` (`clickTitle`): a hint rewritten updates
   `agents/tools/docs-screenshots/shots.mjs` too (grep it for the old words).

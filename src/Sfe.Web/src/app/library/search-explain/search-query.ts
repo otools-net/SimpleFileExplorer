@@ -1,4 +1,6 @@
-import { Segment, term, text } from './search-segments';
+import { icu } from '../../core/i18n/icu';
+import { extensionNote, ignoredNote } from './search-notes';
+import { phrase, Segment, slot, term } from './search-segments';
 
 /*
  * The search query parsed. The parser mirrors SearchQuery.Parse (Sfe.Core/Search/SearchQuery.cs) quirk for
@@ -10,14 +12,19 @@ const SIZE_UNITS: Record<string, number> = { b: 1, kb: 1024, mb: 1024 ** 2, gb: 
 const PIXELS_PATTERN = /^(<=|>=|<|>|=)?(\d{1,9})$/;
 const RESOLUTION_PATTERN = /^(<=|>=|<|>|=)?(\d{1,9})x(\d{1,9})$/i;
 const DURATION_PATTERN = /^(<=|>=|<|>|=)?(?:(\d{1,9}(?:\.\d+)?)(s|m|h)?|(\d{1,6}(?::\d{1,2}){1,2}))$/i;
-const DURATION_UNITS: Record<string, [seconds: number, singular: string]> = {
-    s: [1, 'second'],
-    m: [60, 'minute'],
-    h: [3600, 'hour'],
+const DURATION_UNITS: Record<string, [seconds: number, label: () => string]> = {
+    s: [1, () => $localize`{count, plural, one {# second} other {# seconds}}`],
+    m: [60, () => $localize`{count, plural, one {# minute} other {# minutes}}`],
+    h: [3600, () => $localize`{count, plural, one {# hour} other {# hours}}`],
 };
 const LEVELS: Record<string, boolean> = { hr: true, lr: false };
 /** The values of `type:` (SearchQuery.TryParseKind) and how a sentence names them. */
-const KINDS: Record<string, string> = { image: 'photos', video: 'videos', audio: 'audio files', other: 'other files' };
+const KINDS: Record<string, () => string> = {
+    image: () => $localize`:type of files in a search:photos`,
+    video: () => $localize`:type of files in a search:videos`,
+    audio: () => $localize`:type of files in a search:audio files`,
+    other: () => $localize`:type of files in a search:other files`,
+};
 const DIMENSION_PREFIXES = ['w:', 'h:', 'r:'];
 const TAG_PREFIXES = ['t:', 'tag:'];
 const UNTAGGED = 'special:untagged';
@@ -68,16 +75,15 @@ export function parseQuery(input: string): ParsedQuery {
     const fullPath = query.startsWith('*');
     if (fullPath) query = query.replaceAll('*', '');
     else if (query.includes('*'))
-        notes.push([
-            text('A '),
-            term('*', 'text'),
-            text(
-                ' only means “search the whole path” at the very start of the search; ' +
-                    'here it is searched as a character.',
+        notes.push(
+            phrase(
+                $localize`A ${slot('star')}:star: only means “search the whole path” at the very start of the search; \
+here it is searched as a character.`,
+                { star: term('*', 'text') },
             ),
-        ]);
+        );
     if ((query.match(/"/g) || []).length % 2)
-        notes.push([text('A double quote is not closed: everything after it is one term.')]);
+        notes.push(phrase($localize`A double quote isn't closed: everything after it is one term.`));
 
     const groups = splitOutsideQuotes(query, ',')
         .map((group) => parseGroup(group, fullPath, notes))
@@ -105,12 +111,19 @@ const hasPrefix = (token: string, prefix: string) => token.slice(0, prefix.lengt
 function parseGroup(group: string, fullPath: boolean, notes: Segment[][]): Group {
     const clauses: Clause[] = [];
     let words: Extract<Clause, { kind: 'text' }> | null = null;
-    const extensions: Record<'in' | 'out', Extract<Clause, { kind: 'extension' }> | null> = { in: null, out: null };
-    const types: Record<'in' | 'out', Extract<Clause, { kind: 'type' }> | null> = { in: null, out: null };
+    // The included extensions or types (OR-ed) are one clause, the excluded ones another.
+    type Listed = Extract<Clause, { kind: 'extension' | 'type' }>;
+    const lists: Record<string, Listed | null> = {};
 
     const addWord = (word: string, excluded: boolean, token: string) => {
         if (!words) clauses.push((words = { kind: 'text', include: [], exclude: [] }));
         (excluded ? words.exclude : words.include).push({ value: word, token });
+    };
+    const addListed = (kind: Listed['kind'], value: string, token: string, negated: boolean) => {
+        const key = `${kind}:${negated}`;
+        let list = lists[key];
+        if (!list) clauses.push((list = lists[key] = { kind, values: [], negated } as Listed));
+        list.values.push({ value, token });
     };
 
     for (const token of splitOutsideQuotes(group, ' ')) {
@@ -121,98 +134,46 @@ function parseGroup(group: string, fullPath: boolean, notes: Segment[][]): Group
             clauses.push(tag);
             continue;
         }
-        if (TAG_PREFIXES.some((prefix) => hasPrefix(body, prefix)))
-            notes.push([term(token, 'text'), text(' has no tag name: it is searched as text.')]);
+        if (TAG_PREFIXES.some((prefix) => hasPrefix(body, prefix))) notes.push(ignoredNote('tag', token, negated));
 
         // A "-" before a size, resolution or extension excludes what the term finds (SearchGroup.ExcludedFilters).
         if (hasPrefix(body, 's:')) {
             const size = parseSize(body.slice(2), token, negated);
             if (size) clauses.push(size);
-            else
-                notes.push([
-                    term(token, 'size', negated),
-                    text(' is ignored: not a valid size (try '),
-                    term('s:>1gb', 'size'),
-                    text(' or '),
-                    term('s:<=10mb', 'size'),
-                    text(').'),
-                ]);
+            else notes.push(ignoredNote('size', token, negated));
         } else if (hasPrefix(body, 'type:')) {
             const value = body.slice(5).toLowerCase();
-            if (!(value in KINDS)) {
-                notes.push([
-                    term(token, 'extension', negated),
-                    text(' is ignored: not a type of file (try '),
-                    term('type:image', 'extension'),
-                    text(', '),
-                    term('type:video', 'extension'),
-                    text(', '),
-                    term('type:audio', 'extension'),
-                    text(' or '),
-                    term('type:other', 'extension'),
-                    text(').'),
-                ]);
-                continue;
-            }
-            const key = negated ? 'out' : 'in';
-            if (!types[key]) clauses.push((types[key] = { kind: 'type', values: [], negated }));
-            types[key].values.push({ value: KINDS[value], token });
+            if (value in KINDS) addListed('type', KINDS[value](), token, negated);
+            else notes.push(ignoredNote('type', token, negated));
         } else if (hasPrefix(body, 'd:')) {
             const duration = parseDuration(body.slice(2), token, negated);
             if (duration) clauses.push(duration);
-            else
-                notes.push([
-                    term(token, 'size', negated),
-                    text(' is ignored: not a valid duration (try '),
-                    term('d:>10m', 'size'),
-                    text(' or '),
-                    term('d:<=1:30:00', 'size'),
-                    text(').'),
-                ]);
+            else notes.push(ignoredNote('duration', token, negated));
         } else if (hasPrefix(body, 'r:') && body.slice(2).toLowerCase() in LEVELS) {
             clauses.push({ kind: 'level', high: LEVELS[body.slice(2).toLowerCase()], token, negated });
         } else if (DIMENSION_PREFIXES.some((prefix) => hasPrefix(body, prefix))) {
             const dimension = parseDimension(body, token, negated);
             if (dimension) clauses.push(dimension);
-            else
-                notes.push([
-                    term(token, 'size', negated),
-                    text(' is ignored: not a valid resolution (try '),
-                    term('w:>=1920', 'size'),
-                    text(' or '),
-                    term('r:1920x1080', 'size'),
-                    text(').'),
-                ]);
+            else notes.push(ignoredNote('resolution', token, negated));
         } else if (hasPrefix(body, 'e:')) {
             const extension = body.slice(2).replace(/^\.+/, '');
-            if (!extension) {
-                notes.push([term(token, 'extension', negated), text(' is ignored: the extension is missing.')]);
-                continue;
-            }
-            const key = negated ? 'out' : 'in';
-            if (!extensions[key]) clauses.push((extensions[key] = { kind: 'extension', values: [], negated }));
-            extensions[key].values.push({ value: `.${extension}`, token });
-        } else if (negated) {
-            const word = unquote(body);
-            if (word) addWord(word, true, token);
-        } else if (unquote(token)) {
-            const word = unquote(token);
-            addWord(word, false, token);
-            const extension = !fullPath && LOOKS_LIKE_EXTENSION.exec(word)?.[0];
-            if (extension)
-                notes.push([
-                    text('Names are searched without their extension, so '),
-                    term(word, 'text'),
-                    text(' may find nothing: try '),
-                    term(
-                        [word.slice(0, -extension.length), `e:${extension.slice(1)}`].filter(Boolean).join(' '),
-                        'text',
-                    ),
-                    text('.'),
-                ]);
+            if (extension) addListed('extension', `.${extension}`, token, negated);
+            else notes.push(ignoredNote('extension', token, negated));
+        } else {
+            const plain = plainWord(token, body, negated, fullPath);
+            if (plain) addWord(plain.word, negated, token);
+            if (plain?.note) notes.push(plain.note);
         }
     }
     return { clauses };
+}
+
+/** A plain word of the search ("-" excludes it), and a note when it looks like a name with its extension. */
+function plainWord(token: string, body: string, negated: boolean, fullPath: boolean) {
+    const word = unquote(negated ? body : token);
+    if (!word) return null;
+    const extension = !negated && !fullPath && LOOKS_LIKE_EXTENSION.exec(word)?.[0];
+    return { word, note: extension ? extensionNote(word, extension) : null };
 }
 
 /** Like SearchQuery.TryParseTag: `special:untagged` is "no tag" and its negation "any tag". */
@@ -232,7 +193,10 @@ function parseSize(value: string, token: string, negated: boolean): Clause | nul
     const bytes = Math.round(number * SIZE_UNITS[unit]);
     // "s:700mb" is anything that rounds to 700 MB, as on the server (half a unit, integer division).
     const tolerance = op ? 0 : Math.floor(SIZE_UNITS[unit] / 2);
-    const label = unit === 'b' ? `${match[2]} ${number === 1 ? 'byte' : 'bytes'}` : `${match[2]} ${unit.toUpperCase()}`;
+    const label =
+        unit === 'b'
+            ? icu($localize`{count, plural, one {# byte} other {# bytes}}`, { count: number })
+            : `${match[2]} ${unit.toUpperCase()}`;
     return { kind: 'size', op, label, min: bytes - tolerance, max: bytes + tolerance, token, negated };
 }
 
@@ -277,10 +241,10 @@ function parseDuration(value: string, token: string, negated: boolean): Clause |
         unit = 1;
         label = match[4];
     } else {
-        const [size, name] = DURATION_UNITS[(match[3] || 'm').toLowerCase()];
+        const [size, message] = DURATION_UNITS[(match[3] || 'm').toLowerCase()];
         unit = size;
         seconds = Number(match[2]) * size;
-        label = `${match[2]} ${name}${Number(match[2]) === 1 ? '' : 's'}`;
+        label = icu(message(), { count: Number(match[2]) });
     }
     // 'd:10m' is anything that rounds to ten minutes; '=' the same whole second, as on the server.
     const tolerance = !op ? unit / 2 : op === '=' ? 0.5 : 0;

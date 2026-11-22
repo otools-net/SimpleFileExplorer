@@ -98,6 +98,10 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
   `join(', ') + ' and '`.
 - An ICU `select` matches fixed keys only: to choose between "this folder" and a name, pass a flag
   (`here: 'yes' | 'no'`) and the name as another argument (`pasteTitle` in `file-clipboard.ts`).
+- A sentence holding styled pieces (the search explanation's coloured terms and capitalised logical words): write
+  it as one message with `${slot('name')}:name:` placeholders and split it with `phrase(message, { name: pieces })`
+  (`search-explain/search-segments.ts`); the placeholders' values are marker strings, so a translation moves them
+  with the words.
 - A hint made of several facts (a file's name, "Not indexed yet: …", "Still being written …") puts each whole
   sentence on its own line (`join('\n')`), never a phrase glued in parentheses to the name.
 

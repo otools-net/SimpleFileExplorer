@@ -32,7 +32,7 @@ export class SearchBoxState {
     selector: 'sfe-search-explain',
     imports: [IconComponent, NgTemplateOutlet],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'search-explain', role: 'note', 'aria-label': 'This search in words' },
+    host: { class: 'search-explain', role: 'note', '[attr.aria-label]': 'label' },
     template: `
         <ng-template #segments let-list>@for (segment of list; track $index) {@switch (segment.kind) {
             @case ('text') {<ng-container>{{ segment.text }}</ng-container>}
@@ -45,7 +45,9 @@ export class SearchBoxState {
             type="button"
             class="icon-button ghost small search-explain-close"
             aria-label="Hide the explanation"
-            title="Hide the explanation"
+            i18n-aria-label
+            title="Hide the explanation of the search."
+            i18n-title
             (click)="search.setExplainOpen(false)"
         >
             <svg sfeIcon="close"></svg>
@@ -73,6 +75,7 @@ export class SearchBoxState {
 export class SearchExplainComponent {
     protected readonly search = inject(SearchBoxState);
     private readonly store = inject(ListingStore);
+    protected readonly label = $localize`This search in words`;
 
     protected readonly explanation = computed(() => explain(this.search.text(), this.store.route().path));
 }

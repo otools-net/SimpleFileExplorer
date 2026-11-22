@@ -14,7 +14,7 @@ async function session({ user = 'admin', password = 'admin-password-1', ...opts 
     if (user) await b.eval(`fetch('api/v1/session/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ userName: '${user}', password: '${password}', remember: true }) }).then(r => r.status)`);
     b.open = async (url, wait = 3500) => {
         await b.goto(BASE + url, wait);
-        await b.eval(`document.querySelector('button[title="Hide this panel"]')?.click(); 1`);
+        await b.eval(`document.querySelector('button[title^="Hide this panel"]')?.click(); 1`);
         await sleep(300);
     };
     b.clickText = async (selector, text) => {

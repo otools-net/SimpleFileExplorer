@@ -210,6 +210,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   above set it ("Set on the folder “Media”."); a file's hint gives "Not indexed yet" or "being written" on a line of
   its own; **Go to library root** is now **Go to the top of the library**, and a connection to sign in to again
   says **This connection needs signing in again**. Their texts are ready for translation.
+- **Scans and the search's explanation reworded**: the scan panel, **Scans and previews**, **Remove from the index**
+  and Administration › Scanning › Excluded folders say what a click does in full sentences; the explanation of a
+  search is written as whole sentences a translation can reorder (its terms and logical words placed into them), and
+  its notes say "it isn't a valid size" instead of "not a valid size". Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

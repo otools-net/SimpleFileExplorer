@@ -12,20 +12,19 @@ import { ListingStore } from '../listing.store';
 const KINDS: { kind: ExclusionKind; label: string; hint: string }[] = [
     {
         kind: 'scan',
-        label: 'Skip in scans',
-        hint:
-            'Scans of the folders above leave it out. What the index already has of it (files, tags) ' +
-            'stays as it is, never refreshed: Remove from index forgets it.',
+        label: $localize`Skip in scans`,
+        hint: $localize`Scans of the folders above leave it out. What the index already has of it (files, tags) \
+stays as it is, never refreshed: Remove from index forgets it.`,
     },
     {
         kind: 'trickplay',
-        label: 'No trickplay',
-        hint: 'Its videos get no new timeline pictures; those already made are still shown.',
+        label: $localize`No trickplay`,
+        hint: $localize`Its videos get no new timeline pictures; those already made are still shown.`,
     },
     {
         kind: 'thumbnails',
-        label: 'No thumbnails',
-        hint: 'Its photos and videos get no new thumbnails; those already made are still shown.',
+        label: $localize`No thumbnails`,
+        hint: $localize`Its photos and videos get no new thumbnails; those already made are still shown.`,
     },
 ];
 
@@ -104,7 +103,7 @@ export class FolderExclusionsDialog {
             this.toasts.show(this.message(state));
             void this.store.refresh();
         } catch (error) {
-            this.error.set(`Could not save: ${(error as Error).message}`);
+            this.error.set((error as Error).message);
         }
     }
 

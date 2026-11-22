@@ -13,11 +13,14 @@ import { visibleInterval } from '../../core/visible-interval';
 import { IconComponent } from '../../shared/icon.component';
 import { describeScan, ScanService } from './scan.service';
 
-const TITLES: Record<string, (where: string) => string> = {
-    running: (where) => `Scanning ${where}…`,
-    completed: (where) => `Scan of ${where} finished`,
-    cancelled: (where) => `Scan of ${where} cancelled`,
-    failed: (where) => `Scan of ${where} failed`,
+/** The panel's title by the scan's state: of a folder (`path`), or of the whole library (null). */
+const TITLES: Record<string, (path: string | null) => string> = {
+    running: (path) => (path ? $localize`Scanning “${path}:folder:”…` : $localize`Scanning the library…`),
+    completed: (path) =>
+        path ? $localize`Scan of “${path}:folder:” finished` : $localize`Scan of the library finished`,
+    cancelled: (path) =>
+        path ? $localize`Scan of “${path}:folder:” cancelled` : $localize`Scan of the library cancelled`,
+    failed: (path) => (path ? $localize`Scan of “${path}:folder:” failed` : $localize`Scan of the library failed`),
 };
 
 /** Progress of the scan under the top bar, then its result until dismissed. */
@@ -41,13 +44,22 @@ const TITLES: Record<string, (where: string) => string> = {
                 <span>{{ status.state === 'failed' && status.message ? status.message : describe(status) }}</span>
             </div>
             @if (scan.running()) {
-                <button type="button" class="button small" title="Stop the scan" (click)="scan.cancel()">Cancel</button>
+                <button
+                    type="button"
+                    class="button small"
+                    title="Stop the scan (asks first)."
+                    i18n-title
+                    (click)="scan.cancel()"
+                    i18n
+                >Cancel</button>
             } @else {
                 <button
                     type="button"
                     class="icon-button ghost small"
                     aria-label="Dismiss"
-                    title="Hide this panel"
+                    i18n-aria-label
+                    title="Hide this panel."
+                    i18n-title
                     (click)="scan.dismiss()"
                 ><svg sfeIcon="close"></svg></button>
             }
@@ -62,7 +74,7 @@ export class ScanPanelComponent {
 
     protected readonly title = computed(() => {
         const status = this.scan.status();
-        return status ? (TITLES[status.state]?.(status.path ? `“${status.path}”` : 'the library') ?? '') : '';
+        return status ? (TITLES[status.state]?.(status.path || null) ?? '') : '';
     });
     protected readonly elapsed = computed(() => {
         const status = this.scan.status();

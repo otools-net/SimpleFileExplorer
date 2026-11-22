@@ -1,5 +1,5 @@
 <div class="exclusions-head">
-    <p class="settings-intro">
+    <p class="settings-intro" i18n>
         Folders kept out of scans, trickplay or thumbnails for the whole space, with their sub-folders. What the index
         already has of a folder kept out of scans stays as it is; trickplay and thumbnails already made are still shown.
     </p>
@@ -7,10 +7,11 @@
         <button
             type="button"
             class="button small"
-            title="Keep another folder out of scans, trickplay or thumbnails"
+            title="Keep another folder out of scans, trickplay or thumbnails."
+            i18n-title
             (click)="startAdding()"
         >
-            <svg sfeIcon="plus"></svg>Add folder…
+            <svg sfeIcon="plus"></svg><ng-container i18n>Add folder…</ng-container>
         </button>
     }
 </div>
@@ -18,13 +19,13 @@
 @if (adding()) {
     <form class="access-form exclusions-form" novalidate (submit)="add($event)">
         <div class="field">
-            <span class="field-label">Folder</span>
-            <sfe-folder-picker [source]="source" placeholder="Pick a folder of the library below"
+            <span class="field-label" i18n>Folder</span>
+            <sfe-folder-picker [source]="source" placeholder="Pick a folder of the library below" i18n-placeholder
                                (picked)="picked.set($event)" (failed)="problem.set($event)" />
-            <span class="field-hint">Click a folder to choose it; click again inside it to go deeper.</span>
+            <span class="field-hint" i18n>Click a folder to choose it; click again inside it to go deeper.</span>
         </div>
         <fieldset class="exclusions-kinds">
-            <legend class="field-label">Keep it out of</legend>
+            <legend class="field-label" i18n>Keep it out of</legend>
             @for (entry of kinds; track entry.kind) {
                 <label class="check" [title]="entry.title">
                     <input
@@ -44,15 +45,19 @@
             <button
                 type="button"
                 class="button"
-                title="Close without adding anything"
+                title="Close without adding anything."
+                i18n-title
                 (click)="adding.set(false)"
+                i18n
             >Cancel</button>
             <button
                 type="submit"
                 class="button primary"
-                title="Keep the folder out of what is ticked"
+                title="Keep the folder out of what is ticked."
+                i18n-title
                 [sfeBusy]="saving()"
                 [disabled]="saving() || !picked() || !anyDraft()"
+                i18n
             >Add</button>
         </div>
     </form>
@@ -61,18 +66,18 @@
 @if (loading()) {
     <p class="tag-loading"><span class="spinner"></span></p>
 } @else if (!folders().length) {
-    <p class="muted exclusions-empty">No folder is excluded: scans, trickplay and thumbnails cover the whole
+    <p class="muted exclusions-empty" i18n>No folder is excluded: scans, trickplay and thumbnails cover the whole
     library.</p>
 } @else {
     <div class="exclusions-table">
         <table>
             <thead>
                 <tr>
-                    <th scope="col">Folder</th>
+                    <th scope="col" i18n>Folder</th>
                     @for (entry of kinds; track entry.kind) {
                         <th scope="col" [title]="entry.title">{{ entry.label }}</th>
                     }
-                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    <th scope="col"><span class="visually-hidden" i18n>Actions</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -83,13 +88,15 @@
                                 <a
                                     routerLink="/"
                                     [queryParams]="{ path: folder.path }"
-                                    [title]="'Open ' + folder.path"
+                                    [title]="openTitle(folder.path)"
                                 >{{ folder.path }}</a>
                             } @else {
                                 <span>{{ folder.path }}</span>
                                 <span
                                     class="exclusion-chip"
-                                    title="Not on the disk any more (renamed or deleted outside SFE): it can only be removed"
+                                    title="Not on the disk any more (renamed or deleted outside SFE): it can only be removed."
+                                    i18n-title
+                                    i18n
                                 >folder not found</span>
                             }
                         </td>
@@ -98,7 +105,7 @@
                                 <input
                                     type="checkbox"
                                     [attr.data-kind]="entry.kind"
-                                    [attr.aria-label]="entry.label + ': ' + folder.path"
+                                    [attr.aria-label]="boxLabel(entry.label, folder.path)"
                                     [title]="entry.title"
                                     [checked]="folder[entry.kind]"
                                     [disabled]="busy() === folder.path || (!folder.exists && !folder[entry.kind])"
@@ -110,10 +117,11 @@
                             <button
                                 type="button"
                                 class="button small"
-                                [title]="'Let scans, trickplay and thumbnails into ' + folder.path + ' again'"
+                                [title]="removeTitle(folder.path)"
                                 [sfeBusy]="busy() === folder.path"
                                 [disabled]="busy() !== null"
                                 (click)="remove(folder)"
+                                i18n
                             >Remove</button>
                         </td>
                     </tr>
