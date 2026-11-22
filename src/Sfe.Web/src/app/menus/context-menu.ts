@@ -298,20 +298,26 @@ export class ContextMenu {
             key: `link:${href}`,
             name: link.textContent?.trim() || link.getAttribute('aria-label') || href,
             entries: () => [
-                { id: 'open', label: 'Open', icon: 'right', title: 'Follow this link', run: () => link.click() },
+                {
+                    id: 'open',
+                    label: $localize`Open`,
+                    icon: 'right',
+                    title: $localize`Follow this link.`,
+                    run: () => link.click(),
+                },
                 {
                     id: 'newTab',
-                    label: 'Open in new tab',
+                    label: $localize`Open in new tab`,
                     icon: 'external',
-                    title: 'Follow this link in a tab of its own',
+                    title: $localize`Follow this link in a tab of its own.`,
                     href,
                     newTab: true,
                 },
                 {
                     id: 'copyLink',
-                    label: 'Copy link address',
+                    label: $localize`Copy link address`,
                     icon: 'copy',
-                    title: 'Copy where this link goes',
+                    title: $localize`Copy where this link goes.`,
                     run: () => void this.copyLink(href),
                 },
             ],
@@ -327,31 +333,31 @@ export class ContextMenu {
             entries: () => [
                 {
                     id: 'back',
-                    label: 'Back',
+                    label: $localize`Back`,
                     icon: 'left',
-                    title: 'The page before this one',
+                    title: $localize`Go back to the page before this one.`,
                     run: () => history.back(),
                 },
                 {
                     id: 'reload',
-                    label: 'Reload',
+                    label: $localize`Reload`,
                     icon: 'refresh',
-                    title: 'Load this page again',
+                    title: $localize`Load this page again.`,
                     run: () => location.reload(),
                 },
                 {
                     id: 'newTab',
-                    label: 'Open in new tab',
+                    label: $localize`Open in new tab`,
                     icon: 'external',
-                    title: 'This page in a tab of its own',
+                    title: $localize`Open this page in a tab of its own.`,
                     href: location.href,
                     newTab: true,
                 },
                 {
                     id: 'copyLink',
-                    label: 'Copy page link',
+                    label: $localize`Copy page link`,
                     icon: 'copy',
-                    title: 'Copy the address of this page',
+                    title: $localize`Copy the address of this page.`,
                     run: () => void this.copyLink(location.href),
                 },
             ],
@@ -604,6 +610,7 @@ export class ContextMenuComponent {
     });
     /** Where the menu shows: at the pointer, moved back inside the window once its size is known. */
     protected readonly position = signal({ x: 0, y: 0 });
+    protected readonly label = computed(() => $localize`Actions for “${this.menu.open()?.target.name ?? ''}:name:”`);
     /**
      * Android's Back (and Esc) closes the open menu instead of leaving the page, where the browser has close watchers.
      */

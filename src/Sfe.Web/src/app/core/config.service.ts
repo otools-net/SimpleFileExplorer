@@ -11,7 +11,7 @@ import { setArchives, setFlashMovies, setTextExtensions } from '../formats/forma
 /** The links of the files, built from the configuration (data server, external player). */
 /** The mark on the preview of an image or video saying whether it is high resolution. */
 export interface ResolutionMark {
-    label: 'HR' | 'LR';
+    label: string;
     high: boolean;
     /** The hint: the resolution and the threshold. */
     title: string;
@@ -281,13 +281,20 @@ export class ConfigService {
             item.kind === 'image' ? thresholds?.image : item.kind === 'video' ? thresholds?.video : undefined;
         if (!threshold || !item.width || !item.height) return null;
         const high = Math.min(item.width, item.height) >= threshold;
-        return {
-            label: high ? 'HR' : 'LR',
-            high,
-            title:
-                `${high ? 'High' : 'Low'} resolution: ${formatResolution(item.width, item.height)} ` +
-                `(${high ? 'at least' : 'under'} ${threshold} pixels on the shorter side)`,
-        };
+        const size = formatResolution(item.width, item.height);
+        return high
+            ? {
+                  label: $localize`:mark of a high-resolution picture or video:HR`,
+                  high,
+                  title: $localize`High resolution: ${size}:size: \
+(at least ${threshold}:threshold: pixels on the shorter side).`,
+              }
+            : {
+                  label: $localize`:mark of a low-resolution picture or video:LR`,
+                  high,
+                  title: $localize`Low resolution: ${size}:size: \
+(under ${threshold}:threshold: pixels on the shorter side).`,
+              };
     }
 
     /**

@@ -7,7 +7,7 @@
         #box
         class="item-menu phone-sheet"
         role="menu"
-        [attr.aria-label]="'Actions for ' + open.target.name"
+        [attr.aria-label]="label()"
         [attr.data-menu]="open.target.kind"
         [style.left.px]="position().x"
         [style.top.px]="position().y"
@@ -20,11 +20,12 @@
                 role="menuitem"
                 class="item-menu-entry"
                 data-entry="back"
-                title="Back to the other actions (Left arrow)"
+                title="Go back to the other actions (Left arrow)."
+                i18n-title
                 (click)="back()"
             >
                 <svg sfeIcon="left"></svg>
-                <span>Back</span>
+                <span i18n>Back</span>
             </button>
         }
         @for (entry of entries(); track entry.id) {

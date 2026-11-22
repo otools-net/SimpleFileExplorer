@@ -75,16 +75,33 @@ export class ListingComponent {
     protected readonly coverageNote = computed(() => {
         const page = this.store.listing();
         const coverage = page && 'coverage' in page ? page.coverage : null;
-        if (coverage === 'none') return 'This connection is not indexed in this library yet: its index is being made.';
+        if (coverage === 'none')
+            return $localize`This connection isn't in the index of this space yet: its index is being made.`;
         if (coverage === 'partial')
-            return 'The index of this connection is being brought up to date: some files may be missing.';
+            return $localize`The index of this connection is being brought up to date: some files may be missing.`;
         return null;
     });
     protected readonly noResultsText = computed(() =>
         this.store.route().c
-            ? 'Nothing in the index of this connection matches this search.'
-            : 'Nothing in the index matches this search. If files were added recently, run Scan on this folder.',
+            ? $localize`Nothing in the index of this connection matches this search.`
+            : $localize`Nothing in the index matches this search. If files were added recently, scan this folder.`,
     );
+    protected readonly notFoundText = $localize`It may have been moved or deleted.`;
+    protected readonly errorHeading = computed(() =>
+        this.store.error()?.status === 404
+            ? $localize`Folder not found`
+            : this.store.searching()
+              ? $localize`Search isn't available`
+              : $localize`Could not load this folder`,
+    );
+    /** The server's reason, then what to do about it: who can fix it depends on the rights. */
+    protected readonly libraryMissingText = computed(() => {
+        const reason = this.store.error()?.message ?? '';
+        const advice = this.canInstall()
+            ? $localize`Plug its drive in, or pick another folder.`
+            : $localize`Ask an administrator to plug its drive in or pick another folder.`;
+        return `${reason} ${advice}`.trim();
+    });
 
     private readonly observer = new IntersectionObserver(
         (entries) => {

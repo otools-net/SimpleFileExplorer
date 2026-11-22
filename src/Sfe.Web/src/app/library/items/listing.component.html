@@ -20,15 +20,18 @@
                         data-connection-problem
                     >
                         @if (problem.page) {
-                            <a class="button" routerLink="/admin" [queryParams]="problem.page">Open connections</a>
+                            <a class="button" routerLink="/admin" [queryParams]="problem.page" i18n>Open connections</a>
                         }
-                        <a class="button" routerLink="/" [queryParams]="store.libraryParams('')">Go to library root</a>
+                        <a class="button" routerLink="/" [queryParams]="store.libraryParams('')" i18n
+                            >Go to the top of the library</a
+                        >
                     </sfe-empty-state>
                 } @else if (error?.type === 'library-root-missing') {
                     <sfe-empty-state
                         icon="folder"
                         heading="The library folder is missing"
-                        [text]="error!.message + (canInstall() ? ' Plug its drive in, or pick another folder.' : ' Ask an administrator to plug its drive in or pick another folder.')"
+                        i18n-heading
+                        [text]="libraryMissingText()"
                     >
                         @if (canInstall()) {
                             <a
@@ -36,17 +39,21 @@
                                 routerLink="/admin"
                                 [queryParams]="{ section: 'system', page: 'installation' }"
                                 [state]="{ sfeFromLibrary: true }"
-                                title="Pick the library folder in Administration › System › Installation"
+                                title="Pick the library folder in Administration › System › Installation."
+                                i18n-title
+                                i18n
                             >Pick another folder</a>
                         }
                     </sfe-empty-state>
                 } @else {
                     <sfe-empty-state
                         [icon]="error?.status === 404 ? 'folder' : 'close'"
-                        [heading]="error?.status === 404 ? 'Folder not found' : store.searching() ? 'Search is unavailable' : 'Could not load this folder'"
-                        [text]="error?.status === 404 ? 'It may have been moved or deleted.' : error?.message ?? null"
+                        [heading]="errorHeading()"
+                        [text]="error?.status === 404 ? notFoundText : error?.message ?? null"
                     >
-                        <a class="button" routerLink="/" [queryParams]="store.browseParams('')">Go to library root</a>
+                        <a class="button" routerLink="/" [queryParams]="store.browseParams('')" i18n
+                            >Go to the top of the library</a
+                        >
                     </sfe-empty-state>
                 }
             }
@@ -56,13 +63,13 @@
                 }
                 @if (!store.items().length) {
                     @if (store.searching()) {
-                        <sfe-empty-state icon="search" heading="No results" [text]="noResultsText()" />
+                        <sfe-empty-state icon="search" heading="No results" i18n-heading [text]="noResultsText()" />
                     } @else {
-                        <sfe-empty-state icon="folder" heading="This folder is empty" />
+                        <sfe-empty-state icon="folder" heading="This folder is empty" i18n-heading />
                     }
                 }
                 @if (store.folders().length) {
-                    <h2 class="section-title">Folders</h2>
+                    <h2 class="section-title" i18n>Folders</h2>
                     <div class="folders" [class]="folderLayout()">
                         @for (folder of store.folders(); track folder.path) {
                             <sfe-folder-item [item]="folder" [cards]="folderCards()" />
@@ -72,7 +79,7 @@
                 @if (store.files().length) {
                     <!-- Only label the files section when both kinds are listed. -->
                     @if (store.folders().length) {
-                        <h2 class="section-title">Files</h2>
+                        <h2 class="section-title" i18n>Files</h2>
                     }
                     <div class="files" [class]="store.view()" [style.--ratio-guess]="previews.ratioGuess()">
                         @if (store.view() === 'list') {

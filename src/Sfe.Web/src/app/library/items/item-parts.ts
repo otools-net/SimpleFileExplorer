@@ -17,7 +17,7 @@ import { ItemActions } from './item-actions.service';
 /* The small parts shared by the tiles and rows of the listing. */
 
 /** Added to the hint of a file or folder the index doesn't have yet (shown faded). */
-export const NOT_INDEXED = '(not indexed yet: search, tags and duplicates find it after a scan)';
+export const NOT_INDEXED = $localize`Not indexed yet: search, tags and duplicates find it after a scan.`;
 
 /**
  * The mark of a file or folder still being written (`isPartial`), with a bar showing how far it is while the change
@@ -32,7 +32,7 @@ export const NOT_INDEXED = '(not indexed yet: search, tags and duplicates find i
             <span class="partial-mark" [title]="title()">{{ label }}</span>
             @if (percent() !== null) {
                 <progress class="write-progress" max="100" [value]="percent()" [title]="title()"
-                          [attr.aria-label]="'Written: ' + percent() + ' %'"></progress>
+                          [attr.aria-label]="progressLabel()"></progress>
             }
         }
     `,
@@ -51,13 +51,14 @@ export class PartialMarkComponent {
     protected readonly title = computed(() => {
         const progress = this.progress();
         if (!progress) return BEING_WRITTEN_TITLE;
-        const done = formatSize(progress.bytesDone);
+        const [done, total] = [formatSize(progress.bytesDone), formatSize(progress.bytesTotal)];
         const written =
             progress.bytesTotal > 0
-                ? `${this.percent()} % written (${done} of ${formatSize(progress.bytesTotal)}).`
-                : `${done} written.`;
+                ? $localize`${this.percent()}:percent: % written (${done}:done: of ${total}:total:).`
+                : $localize`${done}:done: written.`;
         return `${written} ${BEING_WRITTEN_TITLE}`;
     });
+    protected readonly progressLabel = computed(() => $localize`${this.percent()}:percent: % written`);
 }
 
 /** Chips of the tags set on a file; clicking one searches for it. */
@@ -70,7 +71,7 @@ export class PartialMarkComponent {
         @for (tag of item().tags ?? []; track tag.id) {
             <sfe-tag-chip
                 [tag]="tag"
-                [title]="'Find files tagged ' + tag.displayName"
+                [title]="findTitle(tag.displayName)"
                 [clickable]="true"
                 (pick)="actions.searchTag($event)"
                 [sfeContextMenu]="tagMenu.target(tag, item())"
@@ -82,6 +83,10 @@ export class ItemTagsComponent {
     readonly item = input.required<LibraryItem>();
     protected readonly actions = inject(ItemActions);
     protected readonly tagMenu = inject(TagMenu);
+
+    protected findTitle(tag: string): string {
+        return $localize`Find the files tagged “${tag}:tag:”.`;
+    }
 }
 
 /**
@@ -91,9 +96,9 @@ export class ItemTagsComponent {
 @Component({
     selector: 'label[sfeSelectBox]',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'select-box', title: 'Select (shift-click selects a range)' },
+    host: { class: 'select-box', '[title]': 'hint' },
     template: `
-        <input #box type="checkbox" [attr.aria-label]="'Select ' + item().name" [checked]="selected()"
+        <input #box type="checkbox" [attr.aria-label]="label()" [checked]="selected()"
                (click)="store.select(item(), box.checked, $event.shiftKey)">
     `,
 })
@@ -101,6 +106,8 @@ export class SelectBoxComponent {
     readonly item = input.required<LibraryItem>();
     protected readonly store = inject(ListingStore);
     protected readonly selected = computed(() => this.store.selection().has(this.item().path));
+    protected readonly hint = $localize`Select it (Shift-click selects a range).`;
+    protected readonly label = computed(() => $localize`Select “${this.item().name}:name:”`);
 }
 
 /** The button opening the tags of a file (hidden without the right to see tags). */
@@ -111,8 +118,8 @@ export class SelectBoxComponent {
     host: {
         type: 'button',
         class: 'icon-button small tag-button',
-        title: 'Tags',
-        '[attr.aria-label]': '"Tags of " + sfeTagButton().name',
+        '[title]': 'hint',
+        '[attr.aria-label]': 'label()',
         '(click)': 'actions.openTags(sfeTagButton())',
         '[hidden]': '!store.can("tags.view", sfeTagButton())',
     },
@@ -120,6 +127,8 @@ export class SelectBoxComponent {
 })
 export class TagButtonComponent {
     readonly sfeTagButton = input.required<LibraryItem>();
+    protected readonly hint = $localize`See or change the tags of this file.`;
+    protected readonly label = computed(() => $localize`Tags of “${this.sfeTagButton().name}:name:”`);
     protected readonly actions = inject(ItemActions);
     protected readonly store = inject(ListingStore);
 }
@@ -136,7 +145,7 @@ export class TagButtonComponent {
                 class="item-folder"
                 routerLink="/"
                 [queryParams]="store.browseParams(item().directory!)"
-                [title]="'Open ' + name()"
+                [title]="title()"
                 [sfeContextMenu]="folder.linkTarget(item().directory!)"
             >
                 <sfe-highlight [text]="name()" [pattern]="pattern()" />
@@ -151,4 +160,5 @@ export class ItemFolderComponent {
     protected readonly folder = inject(FolderMenu);
     private readonly config = inject(ConfigService);
     protected readonly name = computed(() => this.item().directory || this.config.config()?.rootName || '');
+    protected readonly title = computed(() => $localize`Open the folder “${this.name()}:name:”.`);
 }

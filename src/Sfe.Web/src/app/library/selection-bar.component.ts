@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject } from '@angular/core';
-import { joinParts, plural } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { FileDownloads } from '../files/downloads';
+import { extractEachTitle } from '../files/extract.dialog';
 import { FileActions } from '../files/file-actions';
 import { FileTransfers } from '../files/file-transfers';
 import { ItemMenu } from '../files/item-menu';
@@ -23,7 +24,7 @@ import { ListingStore } from './listing.store';
     selector: 'sfe-selection-bar',
     imports: [IconComponent, OverflowRowDirective, OverflowItemDirective, OverflowMoreComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'selection-dock', role: 'region', 'aria-label': 'Selected items', '[hidden]': '!count()' },
+    host: { class: 'selection-dock', role: 'region', '[attr.aria-label]': 'label', '[hidden]': '!count()' },
     templateUrl: './selection-bar.component.html',
 })
 export class SelectionBarComponent {
@@ -42,27 +43,51 @@ export class SelectionBarComponent {
     private readonly folders = computed(() => this.selected().length - this.files());
     protected readonly loaded = computed(() => this.store.items().length);
     protected readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    protected readonly label = $localize`Selected items`;
     /** The count when the bar is narrow: "15 selected". */
-    protected readonly shortCountText = computed(() => `${this.count()} selected`);
+    protected readonly shortCountText = computed(() =>
+        icu($localize`{count, plural, other {# selected}}`, { count: this.count() }),
+    );
     protected readonly countText = computed(() => {
-        const parts = joinParts(
-            [
-                this.folders() ? plural(this.folders(), 'folder') : null,
-                this.files() ? plural(this.files(), 'file') : null,
-            ],
-            ' and ',
-        );
-        return `${parts || plural(this.count(), 'item')} selected`;
+        const [folders, files] = [this.folders(), this.files()];
+        if (folders && files)
+            return icu(
+                $localize`{folders, plural, one {# folder} other {# folders}} and \
+{files, plural, one {# file} other {# files}} selected`,
+                { folders, files },
+            );
+        if (folders)
+            return icu($localize`{folders, plural, one {# folder selected} other {# folders selected}}`, { folders });
+        if (files) return icu($localize`{files, plural, one {# file selected} other {# files selected}}`, { files });
+        return icu($localize`{count, plural, one {# item selected} other {# items selected}}`, { count: this.count() });
     });
     protected readonly allTitle = computed(() =>
         this.store.hasMore()
-            ? `Select the ${plural(this.loaded(), 'item')} loaded so far (Ctrl+A). Scroll down to load more.`
-            : 'Select every file and folder listed (Ctrl+A)',
+            ? icu(
+                  $localize`{count, plural, \
+one {Select the # item loaded so far (Ctrl+A). Scroll down to load more.} \
+other {Select the # items loaded so far (Ctrl+A). Scroll down to load more.}}`,
+                  { count: this.loaded() },
+              )
+            : $localize`Select every file and folder listed (Ctrl+A).`,
     );
     protected readonly tagsTitle = computed(() =>
         this.folders()
-            ? 'Add or remove tags on the selected files (the folders selected are left out)'
-            : 'Add or remove tags on the selected files',
+            ? $localize`Add or remove tags on the selected files (the selected folders are left out).`
+            : $localize`Add or remove tags on the selected files.`,
+    );
+    /** The hints of the buttons, the same in the "⋯" menu. */
+    protected readonly hints = {
+        quickLinks: $localize`Add the selected items to your quick links (or drag them onto the sidebar).`,
+        renameTogether: $localize`Rename the selected items together: find and replace, or numbered names (F2).`,
+        move: $localize`Move the selected items to another folder (Ctrl+X, then Ctrl+V there, \
+or drag them onto a folder).`,
+        copy: $localize`Copy the selected items into another folder (Ctrl+C, then Ctrl+V there, \
+or drag them onto a folder with Ctrl).`,
+        compress: $localize`Put the selected items in a zip file in this folder.`,
+    };
+    protected readonly renameTitle = computed(
+        () => $localize`Give “${this.renamable()?.name ?? ''}:name:” another name (F2).`,
     );
     /** The only item selected, when it may be renamed. */
     protected readonly renamable = computed(() => {
@@ -88,14 +113,12 @@ export class SelectionBarComponent {
         const selected = this.selected();
         if (selected.length === 1 && this.transfers.canExtract(selected[0]) && this.dialogs.extract())
             return {
-                label: 'Extract…',
-                title: `Extract ${selected[0].name} into a folder picked next, with its password if it has one`,
+                label: $localize`Extract…`,
+                title: $localize`Extract “${selected[0].name}:name:” into a folder picked next, \
+with its password if it has one.`,
             };
         if (this.transfers.canExtractEach(selected))
-            return {
-                label: 'Extract',
-                title: `Extract the ${selected.length} archives here, each into a new folder named after it`,
-            };
+            return { label: $localize`Extract`, title: extractEachTitle(selected.length) };
         return null;
     });
 
@@ -103,46 +126,46 @@ export class SelectionBarComponent {
     protected readonly deletable = computed(() => this.selected().some((item) => this.fileActions.canDelete(item)));
     protected readonly deleteTitle = computed(() =>
         this.fileActions.alwaysPermanent
-            ? 'Delete the selected items for good (Delete)'
-            : 'Move the selected items to the trash (Delete; Shift+Delete: for good)',
+            ? $localize`Delete the selected items for good (Delete).`
+            : $localize`Move the selected items to the trash (Delete; Shift+Delete deletes them for good).`,
     );
 
     /** Some of the selection may be downloaded (only those are). */
     protected readonly downloadable = computed(() => this.selected().some((item) => this.downloads.canDownload(item)));
     protected readonly downloadTitle = computed(() =>
         this.downloads.isZip(this.selected())
-            ? 'Save the selected items to this device, in one zip file (folders with everything in them)'
-            : 'Save the selected file to this device',
+            ? $localize`Save the selected items to this device, in one zip file (folders with everything in them).`
+            : $localize`Save the selected file to this device.`,
     );
 
     /** What the buttons that may leave the bar are in its "⋯" menu: the same actions, titles and keys. */
     protected readonly more = {
         quickLinks: (): MenuEntry => ({
             id: 'quickLinks',
-            label: 'Add to quick links',
+            label: $localize`Add to quick links`,
             icon: 'pin',
-            title: 'Add the selected items to the quick links (or drag them onto the sidebar)',
+            title: this.hints.quickLinks,
             run: () => this.pinSelection(),
         }),
         rename: (): MenuEntry => ({
             id: 'rename',
-            label: 'Rename…',
+            label: $localize`Rename…`,
             icon: 'edit',
             shortcut: 'F2',
-            title: `Give ${this.renamable()?.name} another name (F2)`,
+            title: this.renameTitle(),
             run: () => this.renameOne(),
         }),
         renameTogether: (): MenuEntry => ({
             id: 'rename',
-            label: 'Rename…',
+            label: $localize`Rename…`,
             icon: 'edit',
             shortcut: 'F2',
-            title: 'Rename the selected items together: find and replace, or numbered names (F2)',
+            title: this.hints.renameTogether,
             run: () => this.menu.renameSelection(),
         }),
         delete: (): MenuEntry => ({
             id: 'delete',
-            label: this.fileActions.alwaysPermanent ? 'Delete permanently…' : 'Delete…',
+            label: this.fileActions.alwaysPermanent ? $localize`Delete permanently…` : $localize`Delete…`,
             icon: 'trash',
             shortcut: 'Del',
             title: this.deleteTitle(),
@@ -150,39 +173,37 @@ export class SelectionBarComponent {
         }),
         move: (): MenuEntry => ({
             id: 'move',
-            label: 'Move to…',
+            label: $localize`Move to…`,
             icon: 'move',
-            title: 'Move the selected items to another folder (Ctrl+X, then Ctrl+V there; or drag them onto a folder)',
+            title: this.hints.move,
             run: () => this.transfers.pick('move', this.store.selectedItems()),
         }),
         copy: (): MenuEntry => ({
             id: 'copy',
-            label: 'Copy to…',
+            label: $localize`Copy to…`,
             icon: 'copy',
-            title:
-                'Copy the selected items into another folder (Ctrl+C, then Ctrl+V there; ' +
-                'or drag them onto a folder with Ctrl)',
+            title: this.hints.copy,
             run: () => this.transfers.pick('copy', this.store.selectedItems()),
         }),
         download: (): MenuEntry => ({
             id: 'download',
-            label: 'Download',
+            label: $localize`Download`,
             icon: 'download',
             title: this.downloadTitle(),
             run: () => this.downloadSelection(),
         }),
         extract: (): MenuEntry => ({
             id: 'extract',
-            label: this.extractable()?.label ?? 'Extract',
+            label: this.extractable()?.label ?? $localize`Extract`,
             icon: 'extract',
             title: this.extractable()?.title ?? '',
             run: () => this.extractSelection(),
         }),
         compress: (): MenuEntry => ({
             id: 'compress',
-            label: 'Compress…',
+            label: $localize`Compress…`,
             icon: 'compress',
-            title: 'Put the selected items in a zip in this folder',
+            title: this.hints.compress,
             run: () => this.compressSelection(),
         }),
     };

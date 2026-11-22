@@ -24,17 +24,18 @@ export function connectionProblemOf(
         case 'connection-needs-reconnecting': {
             const page = reconnectPage(level, config);
             return {
-                heading: 'This connection must be signed in to again',
+                heading: $localize`This connection needs signing in again`,
                 text: page
-                    ? 'The storage no longer accepts its sign-in. Sign in again on the connections page.'
-                    : 'The storage no longer accepts its sign-in. Ask whoever manages the connection to sign in again.',
+                    ? $localize`The storage no longer accepts its sign-in. Sign in again on the connections page.`
+                    : $localize`The storage no longer accepts its sign-in. \
+Ask whoever manages the connection to sign in again.`,
                 page,
             };
         }
         case 'connection-unusable':
-            return { heading: 'This connection is not available', text: error.message, page: null };
+            return { heading: $localize`This connection isn't available`, text: error.message, page: null };
         case 'connection-not-supported':
-            return { heading: 'This connection cannot do that', text: error.message, page: null };
+            return { heading: $localize`This connection can't do that`, text: error.message, page: null };
         default:
             return null;
     }

@@ -131,9 +131,18 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     index…" kept (settings and docs name it). `default-tags-badge`'s "the top folder" left for 2.5d. Screenshots
     `main-menu.png`, `search-help.png` retaken; the docs-screenshots tool follows the new hints. `icu()` brought
     `intl-messageformat` into `main`: the initial error budget raised from 1 MB to 1.1 MB.
-  - [ ] **2.5b listing and menus** (`library/items/`, `library/everywhere/`, selection bar, `library/folder-menu.ts`,
+  - [x] **2.5b listing and menus** (`library/items/`, `library/everywhere/`, selection bar, `library/folder-menu.ts`,
     `files/item-menu.ts`, `menus/`, `library/*.ts`: connection problems and pages). 2.9 reorders the menus; the
-    labels marked here move with them.
+    labels marked here move with them. Done 2026-11-22: 5 templates at 0 unmarked texts (34 gone) and the menus'
+    labels and hints in code; hints full sentences with names quoted; `pasteTitle` names the target folder (the
+    Ctrl+V key left to the menu's `<kbd>`); `extractEachTitle` shared (`extract.dialog.ts`); selection bar hints kept
+    once in code (`hints`, bound in the template and the "⋯" menu); a file's or folder's hint one fact per line;
+    exclusion hints by `Intl.ListFormat` ("Set on the folder “Media”."); HR/LR marks (`config.service.ts`) and the
+    partial marks (`partial-files.ts`) marked with the listing; "Go to library root" → **Go to the top of the
+    library**, connection heading **This connection needs signing in again**; `plural()` out of the area. Toasts
+    left for 2.8. No screenshot retaken (menus show labels, unchanged); the docs-screenshots tool follows the new
+    check box labels (`Select “…”`). Readability baselines raised by the added lines: `item-menu.ts` 527 → 530,
+    `context-menu.ts` 778 → 785.
   - [ ] **2.5c scan and the wording of searches** (`library/scan/`, `library/search-explain/`: sentences built from
     the query's parts, a session of its own).
   - [ ] **2.5d tags, duplicates, missing files, similar videos, trickplay** (`app/tags/`, `app/tracking/`,
@@ -287,8 +296,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-22):** steps 1.1 to 2.4d and 2.5a done (see their ticks; 2.4 and 2.5 were split in
-  four). Next: **2.5b** (listing and menus), then 2.5c, 2.5d, 2.6–2.8. Texts marked and rewritten to
+- **Last session (2026-11-22):** steps 1.1 to 2.4d, 2.5a and 2.5b done (see their ticks; 2.4 and 2.5 were split in
+  four). Next: **2.5c** (scan and the wording of searches), then 2.5d, 2.6–2.8. Texts marked and rewritten to
   [ui-texts](ui-texts.md), [translations](translations.md) says how; `app/access/` is a worked example.
 - The docs-screenshots tool clicks elements by the start of their `title` (`clickTitle`): a hint rewritten updates
   `agents/tools/docs-screenshots/shots.mjs` too (grep it for the old words).

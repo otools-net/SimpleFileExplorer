@@ -91,6 +91,16 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
 - A sentence built from a name lower-cased into another sentence (`'Stop ' + name.toLowerCase()`) can't be
   translated: quote the name as written (`Stop the task “${name}:task:”`), or give each case its own message.
 
+- An input given as a plain attribute (`sfeOverflowRow="Selected items"`, `heading="No results"` on
+  `sfe-empty-state`) takes `i18n-<input>` like any attribute (`i18n-sfeOverflowRow`, `i18n-heading`).
+- Words listed in a sentence ("scans, trickplay and thumbnails", folder names) are joined by
+  `new Intl.ListFormat(textLocale(), { type: 'conjunction' })` (`exclusions.ts`, `tasks.ts`), never
+  `join(', ') + ' and '`.
+- An ICU `select` matches fixed keys only: to choose between "this folder" and a name, pass a flag
+  (`here: 'yes' | 'no'`) and the name as another argument (`pasteTitle` in `file-clipboard.ts`).
+- A hint made of several facts (a file's name, "Not indexed yet: …", "Still being written …") puts each whole
+  sentence on its own line (`join('\n')`), never a phrase glued in parentheses to the name.
+
 - `$localize` at module level (the settings tabs, `EXTERNAL_PLAYERS`) runs when the module is imported: a translation
   loaded at run time must be loaded before the app's modules are (`main.ts` importing the app dynamically after
   `loadTranslations()`); a build per language has no such issue.

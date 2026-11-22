@@ -55,8 +55,9 @@
         <button
             type="button"
             class="icon-button small folder-tags-button"
-            [attr.aria-label]="'Tags of the files in ' + item().name"
-            title="Add or remove tags on all the files of this folder, or of its sub-folders too (asks first), and its default tags"
+            [attr.aria-label]="tagsLabel()"
+            title="Add or remove tags on the files of this folder or of its sub-folders too (asks first), or set the tags new files get."
+            i18n-title
             (click)="openTags()"
         >
             <svg sfeIcon="tag"></svg>

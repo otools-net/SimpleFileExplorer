@@ -111,13 +111,13 @@ describe('SelectionBarComponent', () => {
         const element: HTMLElement = fixture.nativeElement;
         expect(element.hidden).toBe(false);
         expect(element.querySelector('.selection-count')!.textContent).toBe('1 file selected');
-        expect(button(element, 'Select all').title).toBe('Select every file and folder listed (Ctrl+A)');
+        expect(button(element, 'Select all').title).toBe('Select every file and folder listed (Ctrl+A).');
 
         button(element, 'Select all').click();
         await settle();
         expect(element.querySelector('.selection-count')!.textContent).toBe('1 folder and 2 files selected');
         expect(button(element, 'Select all').disabled).toBe(true);
-        expect(button(element, 'Tags').title).toContain('folders selected are left out');
+        expect(button(element, 'Tags').title).toContain('selected folders are left out');
     });
 
     it('says "Select all" only takes the items loaded so far', async () => {
@@ -590,20 +590,20 @@ describe('FileTileComponent', () => {
         const mark = (await tileMark(thresholds, 'photo.jpg', { width: 1500, height: 2000 }))!;
         expect(mark.textContent).toBe('HR');
         expect(mark.classList.contains('high')).toBe(true);
-        expect(mark.title).toBe('High resolution: 1500×2000 (at least 1500 pixels on the shorter side)');
+        expect(mark.title).toBe('High resolution: 1500×2000 (at least 1500 pixels on the shorter side).');
     });
 
     it('marks a photo under its threshold as low resolution', async () => {
         const mark = (await tileMark(thresholds, 'photo.jpg', { width: 1000, height: 1000 }))!;
         expect(mark.textContent).toBe('LR');
         expect(mark.classList.contains('high')).toBe(false);
-        expect(mark.title).toBe('Low resolution: 1000×1000 (under 1500 pixels on the shorter side)');
+        expect(mark.title).toBe('Low resolution: 1000×1000 (under 1500 pixels on the shorter side).');
     });
 
     it('marks a video of the same resolution by the threshold of videos', async () => {
         const mark = (await tileMark(thresholds, 'clip.mp4', { width: 1000, height: 1000 }))!;
         expect(mark.textContent).toBe('HR');
-        expect(mark.title).toBe('High resolution: 1000×1000 (at least 720 pixels on the shorter side)');
+        expect(mark.title).toBe('High resolution: 1000×1000 (at least 720 pixels on the shorter side).');
     });
 
     it('marks a video under its threshold as low resolution', async () => {
@@ -758,8 +758,8 @@ describe('Items not indexed yet', () => {
         const searched = await make(FileTileComponent, item('c.jpg'));
 
         expect([tile, row, folder].map((e) => e.classList.contains('unindexed'))).toEqual([true, true, true]);
-        expect(tile.querySelector('.item-link')!.getAttribute('title')).toContain('not indexed yet');
-        expect(folder.querySelector('.folder')!.getAttribute('title')).toContain('not indexed yet');
+        expect(tile.querySelector('.item-link')!.getAttribute('title')).toContain('Not indexed yet');
+        expect(folder.querySelector('.folder')!.getAttribute('title')).toContain('Not indexed yet');
         expect([indexed, searched].map((e) => e.classList.contains('unindexed'))).toEqual([false, false]);
         expect(indexed.querySelector('.item-link')!.getAttribute('title')).toBe('b.jpg');
     });

@@ -1,4 +1,4 @@
-<div class="selection-bar" sfeOverflowRow="Selected items" [overflowIn]="host">
+<div class="selection-bar" sfeOverflowRow="Selected items" i18n-sfeOverflowRow [overflowIn]="host">
 <span class="visually-hidden" aria-live="polite">{{ countText() }}</span>
 <button
     type="button"
@@ -6,7 +6,9 @@
     [sfeOverflowItem]="null"
     overflowStay
     aria-label="Clear the selection"
-    title="Clear the selection (Esc)"
+    i18n-aria-label
+    title="Clear the selection (Esc)."
+    i18n-title
     (click)="store.clearSelection()"
 >
     <svg sfeIcon="close"></svg>
@@ -32,17 +34,18 @@
     [disabled]="count() >= loaded()"
     [title]="allTitle()"
     (click)="store.selectAll()"
+    i18n
 >Select all</button>
 @if (quickLinks.addable()) {
     <button
         type="button"
         class="button small selection-pin"
         [sfeOverflowItem]="more.quickLinks"
-        title="Add the selected items to the quick links (or drag them onto the sidebar)"
+        [title]="hints.quickLinks"
         (click)="pinSelection()"
     >
         <svg sfeIcon="pin"></svg>
-        <span>Quick links</span>
+        <span i18n>Quick links</span>
     </button>
 }
 @if (renamable(); as item) {
@@ -50,22 +53,22 @@
         type="button"
         class="button small selection-rename"
         [sfeOverflowItem]="more.rename"
-        [title]="'Give ' + item.name + ' another name (F2)'"
+        [title]="renameTitle()"
         (click)="rename(item)"
     >
         <svg sfeIcon="edit"></svg>
-        <span>Rename</span>
+        <span i18n>Rename</span>
     </button>
 } @else if (renamableTogether()) {
     <button
         type="button"
         class="button small selection-rename"
         [sfeOverflowItem]="more.renameTogether"
-        title="Rename the selected items together: find and replace, or numbered names (F2)"
+        [title]="hints.renameTogether"
         (click)="menu.renameSelection()"
     >
         <svg sfeIcon="edit"></svg>
-        <span>Rename</span>
+        <span i18n>Rename</span>
     </button>
 }
 @if (deletable()) {
@@ -77,7 +80,7 @@
         (click)="deleteSelection()"
     >
         <svg sfeIcon="trash"></svg>
-        <span>Delete</span>
+        <span i18n>Delete</span>
     </button>
 }
 @if (movable()) {
@@ -85,11 +88,11 @@
         type="button"
         class="button small selection-move"
         [sfeOverflowItem]="more.move"
-        title="Move the selected items to another folder (Ctrl+X, then Ctrl+V there; or drag them onto a folder)"
+        [title]="hints.move"
         (click)="transfers.pick('move', store.selectedItems())"
     >
         <svg sfeIcon="move"></svg>
-        <span>Move</span>
+        <span i18n>Move</span>
     </button>
 }
 @if (copyable()) {
@@ -97,11 +100,11 @@
         type="button"
         class="button small selection-copy"
         [sfeOverflowItem]="more.copy"
-        title="Copy the selected items into another folder (Ctrl+C, then Ctrl+V there; or drag them onto a folder with Ctrl)"
+        [title]="hints.copy"
         (click)="transfers.pick('copy', store.selectedItems())"
     >
         <svg sfeIcon="copy"></svg>
-        <span>Copy</span>
+        <span i18n>Copy</span>
     </button>
 }
 @if (extractable(); as extract) {
@@ -121,11 +124,11 @@
         type="button"
         class="button small selection-compress"
         [sfeOverflowItem]="more.compress"
-        title="Put the selected items in a zip in this folder"
+        [title]="hints.compress"
         (click)="compressSelection()"
     >
         <svg sfeIcon="compress"></svg>
-        <span>Compress</span>
+        <span i18n>Compress</span>
     </button>
 }
 @if (downloadable()) {
@@ -137,7 +140,7 @@
         (click)="downloadSelection()"
     >
         <svg sfeIcon="download"></svg>
-        <span>Download</span>
+        <span i18n>Download</span>
     </button>
 }
 @if (store.can('tags.assign') && files()) {
@@ -150,7 +153,7 @@
         (click)="tagSelection()"
     >
         <svg sfeIcon="tag"></svg>
-        <span>Tags</span>
+        <span i18n>Tags</span>
     </button>
 }
 <button class="icon-button small selection-more" sfeOverflowMore></button>

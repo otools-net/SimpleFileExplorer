@@ -6,10 +6,9 @@
 export const PARTIAL_SUFFIX = '.sfe-partial';
 
 /** The mark of a partial item, and its hint. */
-export const BEING_WRITTEN = 'being written';
-export const BEING_WRITTEN_TITLE =
-    'Still being written by a copy, a compression or an extraction: it can be opened once done. ' +
-    'Left by one that stopped (no progress shown), it can be deleted.';
+export const BEING_WRITTEN = $localize`:mark of a file still being copied or extracted:being written`;
+export const BEING_WRITTEN_TITLE = $localize`Still being written by a copy, a compression or an extraction: \
+you can open it once it's done. Left by one that stopped (no progress shown), it can be deleted.`;
 
 /** What a partial item's menu keeps: nothing that opens it, changes it or copies it. */
 const PARTIAL_ENTRIES: ReadonlySet<string> = new Set(['delete', 'copyPath', 'properties']);

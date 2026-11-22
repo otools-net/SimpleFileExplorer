@@ -62,7 +62,7 @@ describe('ListingComponent', () => {
         const element = await show(new ApiError(404, 'Not Found'));
 
         expect(element.textContent).toContain('Folder not found');
-        expect(element.textContent).toContain('Go to library root');
+        expect(element.textContent).toContain('Go to the top of the library');
     });
 });
 
@@ -108,10 +108,10 @@ describe('ListingComponent on a connection that cannot be used', () => {
         const element = await show(reconnect, 'account', fakeConfig({ connections: CONNECTIONS }));
 
         expect(element.querySelector('[data-connection-problem]')!.textContent).toContain(
-            'This connection must be signed in to again',
+            'This connection needs signing in again',
         );
         expect(link(element, 'Open connections')!.getAttribute('href')).toBe('/admin?section=account&page=connections');
-        expect(link(element, 'Go to library root')!.getAttribute('href')).not.toContain('c=7');
+        expect(link(element, 'Go to the top of the library')!.getAttribute('href')).not.toContain('c=7');
     });
 
     it('sends who manages a library-level one to the shared connections page', async () => {
@@ -134,7 +134,7 @@ describe('ListingComponent on a connection that cannot be used', () => {
         const off = new ApiError(409, 'The connection is switched off.', null, 'connection-unusable');
         const element = await show(off, 'library', fakeConfig({ connections: CONNECTIONS }));
 
-        expect(element.textContent).toContain('This connection is not available');
+        expect(element.textContent).toContain("This connection isn't available");
         expect(element.textContent).toContain('The connection is switched off.');
     });
 });

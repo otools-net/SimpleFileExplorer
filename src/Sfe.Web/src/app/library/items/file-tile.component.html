@@ -7,7 +7,7 @@
         (click)="actions.openFile($event, item())"
     >
         <div #preview class="preview">
-            <div class="placeholder"><svg [sfeIcon]="icon()"></svg><span class="ext">{{ item().extension || 'file' }}</span></div>
+            <div class="placeholder"><svg [sfeIcon]="icon()"></svg><span class="ext">{{ item().extension || noExtension }}</span></div>
             @if (hasPreview()) {
                 <img [sfePreview]="sources()" (shape)="learnShape($event)" (failed)="previewFailed.set(true)">
             }
@@ -26,7 +26,7 @@
             @if (isVideo() || durationBadge()) {
                 <span class="preview-marks start">
                     @if (durationBadge()) {
-                        <span class="badge duration" [title]="'Duration: ' + duration()">{{ duration() }}</span>
+                        <span class="badge duration" [title]="durationTitle()">{{ duration() }}</span>
                     }
                     @if (isVideo()) {
                         <sfe-trickplay-mark [path]="item().path" />

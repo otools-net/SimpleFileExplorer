@@ -52,14 +52,14 @@ test.describe('@reported a connection to sign in to again', () => {
         await page.goto('./?c=3');
         const problem = page.locator('[data-connection-problem]');
         await expect(problem).toBeVisible();
-        await expect(problem).toContainText('This connection must be signed in to again');
+        await expect(problem).toContainText('This connection needs signing in again');
         await expect(problem.getByRole('link', { name: 'Open connections' })).toHaveAttribute(
             'href',
             /section=account&page=connections/,
         );
         await expectFitsScreen(page);
 
-        await problem.getByRole('link', { name: 'Go to library root' }).tap();
+        await problem.getByRole('link', { name: 'Go to the top of the library' }).tap();
         await expect(page).not.toHaveURL(/c=3/);
         await expect(page.locator('sfe-listing [data-path]').first()).toBeVisible();
     });

@@ -16,7 +16,7 @@ import { CopyPathService } from '../../core/copy-path.service';
 import { formatDate, formatSize, joinParts, kindIcon } from '../../core/format';
 import { LibraryItem } from '../../core/models';
 import { FileTransfers } from '../../files/file-transfers';
-import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial, shownName } from '../../files/partial-files';
+import { BEING_WRITTEN_TITLE, isPartial, shownName } from '../../files/partial-files';
 import { ItemMenu, ItemMenuButtonComponent } from '../../files/item-menu';
 import { useContextMenu } from '../../menus/context-menu';
 import { HighlightComponent } from '../../shared/highlight.component';
@@ -84,15 +84,13 @@ abstract class FileItemBase {
     protected readonly resolutionMark = computed(() => this.config.resolutionMark(this.item()));
     protected readonly unindexed = computed(() => this.item().indexed === false);
     /** The links' hint: the name, and whether the index has the file yet. */
-    protected readonly linkTitle = computed(
-        () =>
-            this.name() +
-            (this.partial()
-                ? ` (${BEING_WRITTEN}): ${BEING_WRITTEN_TITLE}`
-                : this.unindexed()
-                  ? ` ${NOT_INDEXED}`
-                  : ''),
+    protected readonly linkTitle = computed(() =>
+        [this.name(), this.partial() ? BEING_WRITTEN_TITLE : this.unindexed() ? NOT_INDEXED : null]
+            .filter(Boolean)
+            .join('\n'),
     );
+    /** What a file without an extension shows on its placeholder. */
+    protected readonly noExtension = $localize`:placeholder of a file without an extension:file`;
 
     /** The box of the preview, where the hover previews play. */
     protected abstract previewContainer(): HTMLElement | undefined;
@@ -173,6 +171,7 @@ export class FileTileComponent extends FileItemBase {
         return ratio ? ratio.toFixed(4) : null;
     });
     protected readonly duration = computed(() => this.config.duration(this.item()));
+    protected readonly durationTitle = computed(() => $localize`It lasts ${this.duration()}:duration:.`);
     /**
      * The duration goes on the preview: over a video's thumbnail, and over an audio file's placeholder (or cover) since
      * audio rarely has a picture. A video whose preview can't be shown keeps it in its details.
@@ -238,6 +237,10 @@ export class FileRowComponent extends FileItemBase {
     protected readonly resolution = computed(() => this.config.resolution(this.item()));
     protected readonly duration = computed(() => this.config.duration(this.item()));
     protected readonly date = computed(() => formatDate(this.item().modified));
+    protected readonly typeTitle = computed(() => {
+        const extension = this.item().extension;
+        return extension ? $localize`A “.${extension}:extension:” file.` : $localize`This file has no extension.`;
+    });
     /** The narrow list's line under the name: size, resolution, duration (after the type, styled apart). */
     protected readonly meta = computed(() => joinParts([this.size(), this.resolution(), this.duration()]));
 

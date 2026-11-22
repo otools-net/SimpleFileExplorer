@@ -467,7 +467,7 @@ const scenes = {
         await sleep(600);
         await b.open('?path=Photos%2F2024%20Beach%20trip');
         for (const name of ['Dunes', 'Harbour', 'Night swim'])
-            await b.realClick(`input[aria-label="Select ${name}.jpg"], input[title="Select ${name}.jpg"]`);
+            await b.realClick(`input[aria-label="Select “${name}.jpg”"]`);
         await sleep(600);
         await b.shot(OUT + 'selection-bar.png');
         await b.clickText('.selection-bar button, [class*=selection] button', 'Tags');
@@ -723,7 +723,7 @@ const scenes = {
         const b = await session();
         await b.open('?path=Photos%2F2024%20Beach%20trip');
         for (const name of ['Dunes', 'Harbour', 'Night swim'])
-            await b.realClick(`input[aria-label="Select ${name}.jpg"], input[title="Select ${name}.jpg"]`);
+            await b.realClick(`input[aria-label="Select “${name}.jpg”"]`);
         await sleep(400);
         await b.clickTitle('Rename the selected items together');
         await sleep(800);
@@ -819,7 +819,7 @@ const scenes = {
         await b.mouse('mouseReleased', x, y, { button: 'right' });
         await sleep(600);
         await b.shot(OUT + 'item-menu.png');
-        await b.clickTitle('Give 2024 Beach trip another name');
+        await b.clickTitle('Give “2024 Beach trip” another name');
         await sleep(600);
         await b.shot(OUT + 'rename-dialog.png');
         await b.key('Escape', 'Escape', 27);
@@ -840,7 +840,7 @@ const scenes = {
         await sleep(400);
         // A folder and a file selected: the bar counts both and offers what applies.
         await b.realClick('.folder-item[data-path="Photos/2025 Mountains"] .select-box input');
-        await b.realClick('input[aria-label="Select Sunrise.jpg"]');
+        await b.realClick('input[aria-label="Select “Sunrise.jpg”"]');
         await sleep(600);
         await b.shot(OUT + 'selection-folders.png');
         // Move: the folder picker, from the selection bar.

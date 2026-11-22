@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { plural } from '../../core/format';
 import { CopyPathService } from '../../core/copy-path.service';
+import { icu } from '../../core/i18n/icu';
 import { LibraryItem } from '../../core/models';
 import { Rights } from '../../core/rights';
 import { FileTransfers } from '../../files/file-transfers';
@@ -15,7 +15,7 @@ import { ItemActions } from './item-actions.service';
 import { DefaultTagsBadgeComponent } from '../../tags/default-tags-badge.component';
 import { exclusionChip, exclusionTitle } from './exclusions';
 import { NOT_INDEXED, PartialMarkComponent, SelectBoxComponent } from './item-parts';
-import { BEING_WRITTEN, BEING_WRITTEN_TITLE, isPartial, shownName } from '../../files/partial-files';
+import { BEING_WRITTEN_TITLE, isPartial, shownName } from '../../files/partial-files';
 
 /**
  * A listed folder: a card with its first pictures (`cards`), or a line with its name. Buttons can't sit inside
@@ -71,8 +71,9 @@ export class FolderItemComponent {
     /** The card's count lets clicks through to the link: its hint is the link's. */
     protected readonly linkTitle = computed(() =>
         [
-            this.name() + (this.unindexed() ? ` ${NOT_INDEXED}` : ''),
-            this.partial() ? `(${BEING_WRITTEN}) ${BEING_WRITTEN_TITLE}` : null,
+            this.name(),
+            this.unindexed() ? NOT_INDEXED : null,
+            this.partial() ? BEING_WRITTEN_TITLE : null,
             this.cards() && this.indexedItems() !== null ? this.countTitle() : null,
             this.exclusionTitle(),
         ]
@@ -81,11 +82,15 @@ export class FolderItemComponent {
     );
     /** Indexed files and sub-folders directly inside; null when unknown (not indexed, older server). */
     protected readonly indexedItems = computed(() => this.item().indexedItems ?? null);
-    protected readonly countTitle = computed(
-        () =>
-            `${plural(this.indexedItems() ?? 0, 'indexed item')} directly in this folder (files and sub-folders, ` +
-            `as of the last scan)`,
+    protected readonly countTitle = computed(() =>
+        icu(
+            $localize`{count, plural, \
+one {# indexed item directly in this folder (files and sub-folders, as of the last scan).} \
+other {# indexed items directly in this folder (files and sub-folders, as of the last scan).}}`,
+            { count: this.indexedItems() ?? 0 },
+        ),
     );
+    protected readonly tagsLabel = computed(() => $localize`Tags of the files in “${this.item().name}:name:”`);
     private readonly dialogs = inject(Dialogs);
 
     constructor() {

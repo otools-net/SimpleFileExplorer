@@ -75,7 +75,7 @@ describe('Exclusion wording', () => {
             'Kept out of scans (what the index has of it stays as it was) and thumbnails by an administrator.',
         );
         expect(exclusionTitle({ ...none, trickplay: 'Media' }, 'Media/Old')).toBe(
-            'Kept out of trickplay by an administrator, through “Media”.',
+            'Kept out of trickplay by an administrator. Set on the folder “Media”.',
         );
     });
 });
@@ -113,7 +113,7 @@ describe('Excluded folders in the listing', () => {
         )!;
 
         expect(chip.textContent!.trim()).toBe('not scanned');
-        expect(chip.title).toContain('through “Media”');
+        expect(chip.title).toContain('Set on the folder “Media”');
         chip.click();
         expect(open).toHaveBeenCalledWith('Media/Old', { ...none, scan: 'Media' });
     });

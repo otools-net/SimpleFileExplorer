@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { ConfigService } from '../core/config.service';
+import { icu } from '../core/i18n/icu';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
@@ -122,4 +123,14 @@ export function stemOf(name: string): string {
         if (lower.endsWith(suffix) && name.length > suffix.length) return name.slice(0, -suffix.length);
     const dot = name.lastIndexOf('.');
     return dot > 0 ? name.slice(0, dot) : name;
+}
+
+/** The hint of extracting several archives selected, each beside it (the item menu, the selection bar). */
+export function extractEachTitle(count: number): string {
+    return icu(
+        $localize`{count, plural, \
+one {Extract the archive here, in the background, into a new folder named after it.} \
+other {Extract the # archives here, in the background, each into a new folder named after it.}}`,
+        { count },
+    );
 }

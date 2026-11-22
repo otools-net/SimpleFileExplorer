@@ -209,8 +209,8 @@ export class OverflowItemDirective implements OnInit, OnDestroy {
     host: {
         type: 'button',
         class: 'overflow-more',
-        title: 'More actions',
-        'aria-label': 'More actions',
+        '[title]': 'hint',
+        '[attr.aria-label]': 'label',
         'aria-haspopup': 'menu',
         '[class.shown]': 'row.hasMenu()',
         // Kept in the row while nothing left, unseen, so its width is known before it is needed.
@@ -222,6 +222,8 @@ export class OverflowItemDirective implements OnInit, OnDestroy {
 })
 export class OverflowMoreComponent implements OnInit, OnDestroy {
     protected readonly row = inject(OverflowRowDirective);
+    protected readonly label = $localize`More actions`;
+    protected readonly hint = $localize`Show the actions that don't fit here.`;
     private readonly contextMenu = inject(ContextMenu);
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 

@@ -1,3 +1,4 @@
+import { icu, textLocale } from '../../core/i18n/icu';
 import { FolderExclusions } from '../../core/models';
 
 /*
@@ -11,32 +12,41 @@ import { FolderExclusions } from '../../core/models';
 export function exclusionChip(excluded: FolderExclusions | null | undefined): string | null {
     if (!excluded) return null;
     const { scan, trickplay, thumbnails } = excluded;
-    if (scan && trickplay && thumbnails) return 'skipped';
+    if (scan && trickplay && thumbnails) return $localize`:chip of a folder kept out of scans and previews:skipped`;
     const parts = [
-        scan ? 'not scanned' : null,
-        trickplay && thumbnails ? 'no previews' : thumbnails ? 'no thumbnails' : trickplay ? 'no trickplay' : null,
+        scan ? $localize`:chip of a folder kept out of scans:not scanned` : null,
+        trickplay && thumbnails
+            ? $localize`:chip of a folder without trickplay or thumbnails:no previews`
+            : thumbnails
+              ? $localize`:chip of a folder without thumbnails:no thumbnails`
+              : trickplay
+                ? $localize`:chip of a folder without trickplay:no trickplay`
+                : null,
     ].filter((part) => part !== null);
     return parts.length ? parts.join(' · ') : null;
 }
 
 /**
- * The sentence of a folder's hint: what it is kept out of and, when that comes from a folder above it, which one.
+ * The sentences of a folder's hint: what it is kept out of and, when that comes from folders above it, which ones.
  * `path` is the folder's own path.
  */
 export function exclusionTitle(excluded: FolderExclusions | null | undefined, path: string): string | null {
     if (!excluded || !exclusionChip(excluded)) return null;
     const kept = [
-        excluded.scan ? 'scans (what the index has of it stays as it was)' : null,
-        excluded.trickplay ? 'trickplay' : null,
-        excluded.thumbnails ? 'thumbnails' : null,
+        excluded.scan ? $localize`scans (what the index has of it stays as it was)` : null,
+        excluded.trickplay ? $localize`trickplay` : null,
+        excluded.thumbnails ? $localize`thumbnails` : null,
     ].filter((part) => part !== null);
-    const list = kept.length > 1 ? `${kept.slice(0, -1).join(', ')} and ${kept[kept.length - 1]}` : kept[0];
+    const list = new Intl.ListFormat(textLocale(), { type: 'conjunction' });
+    const sentence = $localize`Kept out of ${list.format(kept)}:list: by an administrator.`;
     const parents = [
         ...new Set([excluded.scan, excluded.trickplay, excluded.thumbnails].filter((from) => from && from !== path)),
     ];
-    return (
-        `Kept out of ${list} by an administrator` +
-        (parents.length ? `, through ${parents.map((from) => `“${from}”`).join(' and ')}` : '') +
-        '.'
+    if (!parents.length) return sentence;
+    const folders = list.format(parents.map((from) => `“${from}”`));
+    const where = icu(
+        $localize`{count, plural, one {Set on the folder {folders}.} other {Set on the folders {folders}.}}`,
+        { count: parents.length, folders },
     );
+    return `${sentence} ${where}`;
 }

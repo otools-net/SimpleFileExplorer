@@ -131,9 +131,9 @@ function emptyGroup(location: EverywhereLocation): EverywhereGroup {
 /** What a failed request says, in words for the group. */
 function messageOf(error: unknown): string {
     if (error instanceof ApiError) {
-        if (error.status === 429) return 'Busy for now: try again in a moment.';
-        if (error.status === 0) return 'The server could not be reached.';
-        return error.message || `The search failed (${error.status}).`;
+        if (error.status === 429) return $localize`Busy for now: try again in a moment.`;
+        if (error.status === 0) return $localize`The server could not be reached.`;
+        return error.message || $localize`Could not search here (error ${error.status}:status:).`;
     }
     return String(error);
 }

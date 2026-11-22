@@ -1,6 +1,7 @@
 import {
     ChangeDetectionStrategy,
     Component,
+    computed,
     effect,
     ElementRef,
     inject,
@@ -23,7 +24,7 @@ import { ItemActions } from '../library/items/item-actions.service';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
 import { FileDownloads } from './downloads';
 import { FileActions } from './file-actions';
-import { stemOf } from './extract.dialog';
+import { extractEachTitle, stemOf } from './extract.dialog';
 import { partialEntries } from './partial-files';
 import { FileTransfers, pasteTitle } from './file-transfers';
 
@@ -224,57 +225,57 @@ export class ItemMenu {
         if (this.canOpenAsText(item))
             entries.push({
                 id: 'openAsText',
-                label: 'Open as text',
+                label: $localize`Open as text`,
                 icon: 'file',
-                title: 'Show its content as text, in the viewer',
+                title: $localize`Show its content as text, in the viewer.`,
                 run: () => this.dialogs.viewer()?.open(item, { asText: true }),
             });
         if (this.canOpenAsArchive(item))
             entries.push({
                 id: 'openAsArchive',
-                label: 'Open as archive',
+                label: $localize`Open as archive`,
                 icon: 'extract',
-                title: 'Show the files it is made of, in the viewer',
+                title: $localize`Show the files and folders inside it, in the viewer.`,
                 run: () => this.dialogs.viewer()?.open(item, { asArchive: true }),
             });
         if (this.canEditText(item))
             entries.push({
                 id: 'editText',
-                label: 'Edit',
+                label: $localize`Edit`,
                 icon: 'edit',
-                title: 'Open it in the viewer, ready to be changed',
+                title: $localize`Open it in the viewer, ready to be changed.`,
                 run: () => this.dialogs.viewer()?.open(item, { edit: true }),
             });
         if (this.canEditPicture(item))
             entries.push({
                 id: 'editPicture',
-                label: 'Crop…',
+                label: $localize`Crop…`,
                 icon: 'crop',
-                title: 'Crop the picture, then save it over the original or as a new file',
+                title: $localize`Crop the picture, then save it over the original or as a new file.`,
                 run: () => void this.dialogs.imageEditor()?.open(item),
             });
         if (this.canRename(item)) {
             const several = targets().filter((target) => this.canRename(target)).length > 1 && !this.store.searching();
             entries.push({
                 id: 'rename',
-                label: 'Rename…',
+                label: $localize`Rename…`,
                 icon: 'edit',
                 shortcut: 'F2',
                 title: several
-                    ? 'Rename the selected items together: find and replace, or numbered names (F2)'
-                    : `Give ${item.name} another name (F2)`,
+                    ? $localize`Rename the selected items together: find and replace, or numbered names (F2).`
+                    : $localize`Give “${item.name}:name:” another name (F2).`,
                 run: () => (several ? this.renameSelection() : this.dialogs.name()?.rename(item)),
             });
         }
         if (this.files.canDelete(item))
             entries.push({
                 id: 'delete',
-                label: this.files.alwaysPermanent ? 'Delete permanently…' : 'Delete…',
+                label: this.files.alwaysPermanent ? $localize`Delete permanently…` : $localize`Delete…`,
                 icon: 'trash',
                 shortcut: 'Del',
                 title: this.files.alwaysPermanent
-                    ? `Delete ${item.name} for good (Delete)`
-                    : `Move ${item.name} to the trash (Delete; Shift+Delete: for good)`,
+                    ? $localize`Delete “${item.name}:name:” for good (Delete).`
+                    : $localize`Move “${item.name}:name:” to the trash (Delete; Shift+Delete deletes it for good).`,
                 run: () => this.files.delete(targets()),
             });
         const canMove = this.transfers.canMove(item);
@@ -282,52 +283,53 @@ export class ItemMenu {
         if (canMove)
             entries.push({
                 id: 'cut',
-                label: 'Cut',
+                label: $localize`Cut`,
                 icon: 'cut',
                 shortcut: 'Ctrl+X',
-                title: 'Keep it to move into a folder with Paste (Ctrl+X)',
+                title: $localize`Keep it, to move it into another folder with Paste (Ctrl+X).`,
                 run: () => this.transfers.keep('move', targets()),
             });
         if (canCopy)
             entries.push({
                 id: 'copy',
-                label: 'Copy',
+                label: $localize`Copy`,
                 icon: 'copy',
                 shortcut: 'Ctrl+C',
-                title: 'Keep it to copy into a folder with Paste (Ctrl+C)',
+                title: $localize`Keep it, to copy it into another folder with Paste (Ctrl+C).`,
                 run: () => this.transfers.keep('copy', targets()),
             });
         const clipboard = this.transfers.clipboard();
         if (clipboard && item.kind === 'directory' && this.transfers.canInto(clipboard.kind, item))
             entries.push({
                 id: 'paste',
-                label: `Paste into ${item.name}`,
+                label: $localize`Paste into “${item.name}:name:”`,
                 icon: 'paste',
-                title: pasteTitle(clipboard),
+                title: pasteTitle(clipboard, item.name),
                 run: () => this.transfers.paste(item.path),
             });
         if (canMove)
             entries.push({
                 id: 'moveTo',
-                label: 'Move to…',
+                label: $localize`Move to…`,
                 icon: 'move',
-                title: 'Move it to another folder, picked next',
+                title: $localize`Move it to another folder, picked next.`,
                 run: () => this.transfers.pick('move', targets()),
             });
         if (canCopy)
             entries.push({
                 id: 'copyTo',
-                label: 'Copy to…',
+                label: $localize`Copy to…`,
                 icon: 'copy',
-                title: 'Copy it into another folder, picked next',
+                title: $localize`Copy it into another folder, picked next.`,
                 run: () => this.transfers.pick('copy', targets()),
             });
         if (targets().length === 1 && this.transfers.canExtractBeside(item))
             entries.push({
                 id: 'extractBeside',
-                label: `Extract to “${stemOf(item.name)}”`,
+                label: $localize`Extract to “${stemOf(item.name)}:folder:”`,
                 icon: 'extract',
-                title: `Extract it here, into a new folder named after it (or after its one folder); in the background`,
+                title: $localize`Extract it here, in the background, into a new folder named after it \
+(or after the one folder it holds).`,
                 run: () =>
                     void this.transfers.extract({
                         archive: item.path,
@@ -338,27 +340,25 @@ export class ItemMenu {
         if (targets().length > 1 && this.transfers.canExtractEach(targets()))
             entries.push({
                 id: 'extractEach',
-                label: `Extract each here`,
+                label: $localize`Extract each here`,
                 icon: 'extract',
-                title:
-                    `Extract the ${targets().length} archives here, each into a new folder named after it; ` +
-                    `in the background`,
+                title: extractEachTitle(targets().length),
                 run: () => void this.transfers.extractEach(targets()),
             });
         if (targets().length === 1 && this.transfers.canExtract(item) && this.dialogs.extract())
             entries.push({
                 id: 'extract',
-                label: 'Extract…',
+                label: $localize`Extract…`,
                 icon: 'extract',
-                title: 'Extract it into a folder picked next, with its password if it has one',
+                title: $localize`Extract it into a folder picked next, with its password if it has one.`,
                 run: () => this.dialogs.extract()?.open({ path: item.path, name: item.name }),
             });
         if (this.transfers.canCompress(item) && this.dialogs.compress())
             entries.push({
                 id: 'compress',
-                label: 'Compress…',
+                label: $localize`Compress…`,
                 icon: 'compress',
-                title: 'Put it in a zip in this folder: how hard to compress, a password if wanted',
+                title: $localize`Put it in a zip file in this folder, with a password if you want one.`,
                 run: () =>
                     this.dialogs.compress()?.open(targets().filter((target) => this.transfers.canCompress(target))),
             });
@@ -367,25 +367,25 @@ export class ItemMenu {
             const zip = this.downloads.isZip(selected);
             entries.push({
                 id: 'download',
-                label: zip ? 'Download as zip' : 'Download',
+                label: zip ? $localize`Download as zip` : $localize`Download`,
                 icon: 'download',
                 title: zip
                     ? selected.length > 1
-                        ? 'Save the selected items to this device, in one zip file'
-                        : 'Save this folder, with everything in it, to this device as a zip file'
-                    : 'Save this file to this device',
+                        ? $localize`Save the selected items to this device, in one zip file.`
+                        : $localize`Save this folder and everything in it to this device, as a zip file.`
+                    : $localize`Save this file to this device.`,
                 run: () => void this.downloads.download(selected),
             });
         }
         if (item.kind === 'directory' ? this.store.can(Rights.assignTags, item) : this.store.can(Rights.viewTags, item))
             entries.push({
                 id: 'tags',
-                label: item.kind === 'directory' ? 'Tag its files…' : 'Tags…',
+                label: item.kind === 'directory' ? $localize`Tag its files…` : $localize`Tags…`,
                 icon: 'tag',
                 title:
                     item.kind === 'directory'
-                        ? 'Add or remove tags on all the files of this folder (asks first)'
-                        : 'The tags of this file',
+                        ? $localize`Add or remove tags on all the files of this folder (asks first).`
+                        : $localize`See or change the tags of this file.`,
                 run: () =>
                     item.kind === 'directory'
                         ? this.dialogs.scopeTags()?.open({ path: item.path, recursive: false, query: null })
@@ -395,40 +395,41 @@ export class ItemMenu {
             const pinned = this.quickLinks.paths().has(item.path);
             entries.push({
                 id: 'quickLink',
-                label: pinned ? 'Remove from quick links' : 'Add to quick links',
+                label: pinned ? $localize`Remove from quick links` : $localize`Add to quick links`,
                 icon: 'pin',
                 title: pinned
-                    ? `Take ${item.name} out of your quick links`
-                    : `Show ${item.name} in your quick links, in the sidebar`,
+                    ? $localize`Take “${item.name}:name:” out of your quick links.`
+                    : $localize`Show “${item.name}:name:” in your quick links, in the sidebar.`,
                 run: () => void this.quickLinks.toggle(item.path),
             });
         }
         if (this.copyPaths.enabled())
             entries.push({
                 id: 'copyPath',
-                label: 'Copy full path',
+                label: $localize`Copy full path`,
                 icon: 'copy',
-                title: 'Copy where it is on the server',
+                title: $localize`Copy where it is on the server.`,
                 run: () => void this.copyPaths.copy(item.path),
             });
         if (this.canExclude(item))
             entries.push({
                 id: 'exclusions',
-                label: 'Scans and previews…',
+                label: $localize`Scans and previews…`,
                 icon: 'scan',
-                title: 'Keep this folder out of scans, trickplay or thumbnails, for the whole space',
+                title: $localize`Keep this folder out of scans, trickplay or thumbnails, \
+for everyone using this space.`,
                 run: () => this.dialogs.folderExclusions()?.open(item.path, item.excluded),
             });
         if (this.canSeeProperties())
             entries.push({
                 id: 'properties',
-                label: 'Properties',
+                label: $localize`Properties`,
                 icon: 'info',
                 shortcut: 'Alt+Enter',
                 title:
                     item.kind === 'directory'
-                        ? 'Its dates, and what it holds (Alt+Enter)'
-                        : 'Its size, dates and what the index knows of it; its checksum (Alt+Enter)',
+                        ? $localize`Show its dates and what it holds (Alt+Enter).`
+                        : $localize`Show its size, its dates, what the index knows of it and its checksum (Alt+Enter).`,
                 run: () => void this.dialogs.properties()?.open(item),
             });
         return partialEntries(item, entries);
@@ -446,16 +447,16 @@ export class ItemMenu {
             entries.push(
                 {
                     id: 'open',
-                    label: 'Open',
+                    label: $localize`Open`,
                     icon: 'folder',
-                    title: `List ${item.name}`,
+                    title: $localize`Open the folder “${item.name}:name:”.`,
                     run: () => void this.router.navigate(['/'], { queryParams: params }),
                 },
                 {
                     id: 'newTab',
-                    label: 'Open in new tab',
+                    label: $localize`Open in new tab`,
                     icon: 'external',
-                    title: `List ${item.name} in a tab of its own`,
+                    title: $localize`Open the folder “${item.name}:name:” in a tab of its own.`,
                     href: this.store.pageUrl(params),
                     newTab: true,
                     run: () => undefined,
@@ -465,16 +466,16 @@ export class ItemMenu {
             if (isViewable(item) && this.dialogs.viewer())
                 entries.push({
                     id: 'open',
-                    label: 'Open',
+                    label: $localize`Open`,
                     icon: 'file',
-                    title: `Show ${item.name} in the viewer`,
+                    title: $localize`Show “${item.name}:name:” in the viewer.`,
                     run: () => this.actions.view(item),
                 });
             entries.push({
                 id: 'newTab',
-                label: 'Open in new tab',
+                label: $localize`Open in new tab`,
                 icon: 'external',
-                title: `Open ${item.name} in a tab of its own`,
+                title: $localize`Open “${item.name}:name:” in a tab of its own.`,
                 href: this.actions.fileUrl(item),
                 newTab: true,
                 run: () => this.store.reportView(item),
@@ -483,9 +484,9 @@ export class ItemMenu {
         if (this.store.searching() && item.directory !== undefined && item.directory !== null)
             entries.push({
                 id: 'openFolder',
-                label: 'Open containing folder',
+                label: $localize`Open containing folder`,
                 icon: 'folder-up',
-                title: `List the folder ${item.name} is in, and show it there`,
+                title: $localize`Open the folder “${item.name}:name:” is in, and show it there.`,
                 run: () => this.store.reveal(item.path),
             });
         return entries;
@@ -505,9 +506,9 @@ export class ItemMenu {
     host: {
         type: 'button',
         class: 'icon-button small item-menu-button',
-        title: 'More actions (right click)',
+        '[title]': 'hint',
         'aria-haspopup': 'menu',
-        '[attr.aria-label]': '"More actions for " + sfeItemMenu().name',
+        '[attr.aria-label]': 'label()',
         '[hidden]': '!menu.hasActions(sfeItemMenu())',
         '(click)': 'toggle($event)',
     },
@@ -515,6 +516,8 @@ export class ItemMenu {
 })
 export class ItemMenuButtonComponent {
     readonly sfeItemMenu = input.required<LibraryItem>();
+    protected readonly hint = $localize`Show more actions (or right-click the item).`;
+    protected readonly label = computed(() => $localize`More actions for “${this.sfeItemMenu().name}:name:”`);
     protected readonly menu = inject(ItemMenu);
     private readonly contextMenu = inject(ContextMenu);
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;

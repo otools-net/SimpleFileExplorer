@@ -261,7 +261,7 @@ describe('ItemMenu, moves and copies', () => {
 
         TestBed.inject(FileTransfers).keep('move', [photo]);
         const paste = menu.entries(folder).find((e) => e.id === 'paste')!;
-        expect(paste.label).toBe('Paste into Holidays');
+        expect(paste.label).toBe('Paste into “Holidays”');
         const transfer = vi.spyOn(TestBed.inject(FileTransfers), 'transfer').mockResolvedValue();
         paste.run();
         expect(transfer).toHaveBeenCalledWith('move', [photo.path], folder.path, { from: null, to: null });

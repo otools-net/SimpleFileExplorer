@@ -8,7 +8,7 @@
             <svg [sfeIcon]="group.location.c === null ? 'space' : 'globe'"></svg>
             <h2 class="everywhere-name" [title]="group.location.name">{{ group.location.name }}</h2>
             <span class="everywhere-count" [title]="countTitle(group)">{{ countText(group) }}</span>
-            <a class="everywhere-here" routerLink="/" [queryParams]="hereParams(group)" [title]="hereTitle(group)"
+            <a class="everywhere-here" routerLink="/" [queryParams]="hereParams(group)" [title]="hereTitle(group)" i18n
                 >Search here</a
             >
         </header>
@@ -17,7 +17,7 @@
         }
         @switch (group.status) {
             @case ('loading') {
-                <p class="everywhere-state"><span class="spinner"></span> Searching…</p>
+                <p class="everywhere-state" i18n><span class="spinner"></span> Searching…</p>
             }
             @case ('error') {
                 <p class="everywhere-state everywhere-error">
@@ -25,15 +25,17 @@
                     <button
                         type="button"
                         class="button"
-                        title="Search this location again"
+                        title="Search here again."
+                        i18n-title
                         (click)="search.retry(group.location)"
+                        i18n
                         >Retry</button
                     >
                 </p>
             }
             @default {
                 @if (!group.items.length) {
-                    <p class="everywhere-state">No results here.</p>
+                    <p class="everywhere-state" i18n>No results here.</p>
                 }
                 <ul class="everywhere-items">
                     @for (item of group.items; track item.path) {
@@ -41,7 +43,7 @@
                             <button
                                 type="button"
                                 class="everywhere-item"
-                                [title]="'Show “' + item.path + '” in its folder'"
+                                [title]="showTitle(item)"
                                 [sfeContextMenu]="itemTarget(group, item)"
                                 (click)="open(group, item)"
                             >
@@ -60,10 +62,12 @@
                         <button
                             type="button"
                             class="button"
-                            title="Load more results of this location"
+                            title="Load more results from here."
+                            i18n-title
                             [attr.aria-busy]="group.loadingMore"
                             [disabled]="group.loadingMore"
                             (click)="search.more(group.location)"
+                            i18n
                             >Show more</button
                         >
                     </p>

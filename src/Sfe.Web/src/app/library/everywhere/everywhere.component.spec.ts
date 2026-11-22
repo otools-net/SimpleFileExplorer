@@ -94,7 +94,7 @@ describe('EverywhereComponent', () => {
         expect(api.search).toHaveBeenLastCalledWith(expect.objectContaining({ after: 'n1' }), expect.anything());
         expect(names(groups()[0])).toEqual(['a beach.jpg', 'b beach.jpg']);
         expect(buttonNamed(groups()[0], 'Show more')).toBeUndefined();
-        expect(groups()[1].querySelector('.everywhere-note')!.textContent).toContain('Not indexed here yet');
+        expect(groups()[1].querySelector('.everywhere-note')!.textContent).toContain('Not in the index yet');
         expect(groups()[1].textContent).toContain('No results here.');
     });
 

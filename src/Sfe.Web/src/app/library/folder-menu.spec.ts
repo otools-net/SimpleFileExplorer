@@ -133,7 +133,7 @@ describe('FolderMenu', () => {
 
         TestBed.inject(FileTransfers).keep('move', [photo]);
         const paste = vi.spyOn(TestBed.inject(FileTransfers), 'paste').mockReturnValue(true);
-        expect(link('paste').label).toBe('Paste into Trips');
+        expect(link('paste').label).toBe('Paste into “Trips”');
         link('paste').run!();
         expect(paste).toHaveBeenCalledWith('Media/Trips');
         expect(menu.linkTarget('').name).toBe(TestBed.inject(ConfigService).config()!.rootName);

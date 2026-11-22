@@ -109,7 +109,7 @@ export class FolderMenu {
     /** The menu's title (phones): the folder, or the search. */
     private name(): string {
         const { path, q } = this.store.route();
-        return q ? `Search “${q}”` : this.folderItem().name;
+        return q ? $localize`Search “${q}:query:”` : this.folderItem().name;
     }
 
     /** A folder, as an item (Properties): the folder listed by default. */
@@ -144,7 +144,7 @@ export class FolderMenu {
             .map((entry) => ({
                 ...entry,
                 id: entry.id === 'open' ? 'openTarget' : 'targetNewTab',
-                label: entry.id === 'open' ? 'Open the folder' : 'Open the folder in new tab',
+                label: entry.id === 'open' ? $localize`Open the folder` : $localize`Open the folder in new tab`,
             }));
     }
 
@@ -154,16 +154,16 @@ export class FolderMenu {
         const entries: MenuEntry[] = [
             {
                 id: 'open',
-                label: 'Open',
+                label: $localize`Open`,
                 icon: 'folder',
-                title: `List ${name}`,
+                title: $localize`Open the folder “${name}:name:”.`,
                 run: () => void this.router.navigate(['/'], { queryParams: params }),
             },
             {
                 id: 'newTab',
-                label: 'Open in new tab',
+                label: $localize`Open in new tab`,
                 icon: 'external',
-                title: `List ${name} in a tab of its own`,
+                title: $localize`Open the folder “${name}:name:” in a tab of its own.`,
                 href: this.store.pageUrl(params),
                 newTab: true,
             },
@@ -172,37 +172,37 @@ export class FolderMenu {
         if (clipboard && this.transfers.allows(clipboard.kind))
             entries.push({
                 id: 'paste',
-                label: `Paste into ${name}`,
+                label: $localize`Paste into “${name}:name:”`,
                 icon: 'paste',
-                title: pasteTitle(clipboard),
+                title: pasteTitle(clipboard, name),
                 run: () => this.transfers.paste(path),
             });
         if (this.quickLinks.addable()) {
             const pinned = this.quickLinks.paths().has(path);
             entries.push({
                 id: 'quickLink',
-                label: pinned ? 'Remove from quick links' : 'Add to quick links',
+                label: pinned ? $localize`Remove from quick links` : $localize`Add to quick links`,
                 icon: 'pin',
                 title: pinned
-                    ? `Take ${name} out of your quick links`
-                    : `Show ${name} in your quick links, in the sidebar`,
+                    ? $localize`Take “${name}:name:” out of your quick links.`
+                    : $localize`Show “${name}:name:” in your quick links, in the sidebar.`,
                 run: () => void this.quickLinks.toggle(path),
             });
         }
         if (this.copyPaths.enabled())
             entries.push({
                 id: 'copyPath',
-                label: 'Copy full path',
+                label: $localize`Copy full path`,
                 icon: 'copy',
-                title: 'Copy where this folder is on the server',
+                title: $localize`Copy where this folder is on the server.`,
                 run: () => void this.copyPaths.copy(path),
             });
         if (this.config.can(Rights.browse) && this.dialogs.properties())
             entries.push({
                 id: 'properties',
-                label: 'Properties',
+                label: $localize`Properties`,
                 icon: 'info',
-                title: 'Its dates, and what it holds',
+                title: $localize`Show its dates and what it holds.`,
                 run: () => void this.dialogs.properties()?.open(this.folderItem(path)),
             });
         return entries;
@@ -217,18 +217,18 @@ export class FolderMenu {
             if (this.store.items().length)
                 entries.push({
                     id: 'selectAll',
-                    label: 'Select all',
+                    label: $localize`Select all`,
                     icon: 'check',
                     shortcut: 'Ctrl+A',
-                    title: 'Select every result loaded (Ctrl+A)',
+                    title: $localize`Select every result loaded so far (Ctrl+A).`,
                     run: () => this.store.selectAll(),
                 });
             if (this.canTag())
                 entries.push({
                     id: 'tags',
-                    label: 'Tag the results…',
+                    label: $localize`Tag the results…`,
                     icon: 'tag',
-                    title: 'Add or remove tags on all the results of this search (asks first)',
+                    title: $localize`Add or remove tags on all the results of this search (asks first).`,
                     run: () => this.openScopeTags(),
                 });
             const searchIn = this.scopeMenu.entry();
@@ -236,24 +236,24 @@ export class FolderMenu {
             entries.push(
                 {
                     id: 'refresh',
-                    label: 'Search again',
+                    label: $localize`Search again`,
                     icon: 'refresh',
-                    title: 'Run this search again',
+                    title: $localize`Run this search again.`,
                     run: () => void this.store.load(),
                 },
                 {
                     id: 'newTab',
-                    label: 'Open in new tab',
+                    label: $localize`Open in new tab`,
                     icon: 'external',
-                    title: 'This search in a tab of its own',
+                    title: $localize`Open this search in a tab of its own.`,
                     href,
                     newTab: true,
                 },
                 {
                     id: 'copyLink',
-                    label: 'Copy link',
+                    label: $localize`Copy link`,
                     icon: 'copy',
-                    title: 'Copy the address of this search',
+                    title: $localize`Copy the address of this search.`,
                     run: () => void this.copyLink(href),
                 },
             );
@@ -262,34 +262,34 @@ export class FolderMenu {
         if (this.canCreateFolder())
             entries.push({
                 id: 'newFolder',
-                label: 'New folder…',
+                label: $localize`New folder…`,
                 icon: 'folder-plus',
                 shortcut: 'Shift+N',
-                title: 'New folder in this folder (Shift+N)',
+                title: $localize`Make a new folder in this folder (Shift+N).`,
                 run: () => this.newFolder(),
             });
         if (this.canCreateFile())
             entries.push({
                 id: 'newFile',
-                label: 'New file…',
+                label: $localize`New file…`,
                 icon: 'file-plus',
-                title: 'New empty file in this folder',
+                title: $localize`Make a new empty file in this folder.`,
                 run: () => this.newFile(),
             });
         if (this.uploads.canUploadInto())
             entries.push(
                 {
                     id: 'upload',
-                    label: 'Upload files…',
+                    label: $localize`Upload files…`,
                     icon: 'upload',
-                    title: 'Upload files into this folder (or drop them on the page)',
+                    title: $localize`Upload files into this folder (or drop them on the page).`,
                     run: () => this.pickUploads(false),
                 },
                 {
                     id: 'uploadFolder',
-                    label: 'Upload a folder…',
+                    label: $localize`Upload a folder…`,
                     icon: 'folder-up',
-                    title: 'Upload a folder, with everything in it, into this folder',
+                    title: $localize`Upload a folder and everything in it into this folder.`,
                     run: () => this.pickUploads(true),
                 },
             );
@@ -297,78 +297,80 @@ export class FolderMenu {
         if (clipboard && this.transfers.canInto(clipboard.kind))
             entries.push({
                 id: 'paste',
-                label: 'Paste',
+                label: $localize`Paste`,
                 icon: 'paste',
                 shortcut: 'Ctrl+V',
-                title: `${pasteTitle(clipboard)} (Ctrl+V)`,
+                title: pasteTitle(clipboard),
                 run: () => this.transfers.paste(path),
             });
         if (this.store.items().length)
             entries.push({
                 id: 'selectAll',
-                label: 'Select all',
+                label: $localize`Select all`,
                 icon: 'check',
                 shortcut: 'Ctrl+A',
-                title: 'Select every item loaded (Ctrl+A)',
+                title: $localize`Select every item loaded so far (Ctrl+A).`,
                 run: () => this.store.selectAll(),
             });
         entries.push({
             id: 'refresh',
-            label: 'Refresh',
+            label: $localize`Refresh`,
             icon: 'refresh',
-            title: 'List this folder again, as it is now',
+            title: $localize`List this folder again, as it is now.`,
             run: () => void this.store.refresh(),
         });
         if (this.canTag())
             entries.push({
                 id: 'tags',
-                label: 'Tags of this folder…',
+                label: $localize`Tags of this folder…`,
                 icon: 'tag',
-                title: 'Add or remove tags on all the files of this folder, or set the tags new files get (asks first)',
+                title: $localize`Add or remove tags on all the files of this folder, or set the tags new files get \
+(asks first).`,
                 run: () => this.openScopeTags(),
             });
         if (this.canExclude())
             entries.push({
                 id: 'exclusions',
-                label: 'Scans and previews…',
+                label: $localize`Scans and previews…`,
                 icon: 'scan',
-                title: 'Keep this folder out of scans, trickplay or thumbnails, for the whole space',
+                title: $localize`Keep this folder out of scans, trickplay or thumbnails, \
+for everyone using this space.`,
                 run: () => this.openExclusions(),
             });
         if (this.quickLinks.addable()) {
             const pinned = this.quickLinks.paths().has(path);
             entries.push({
                 id: 'quickLink',
-                label: pinned ? 'Remove from quick links' : 'Add to quick links',
+                label: pinned ? $localize`Remove from quick links` : $localize`Add to quick links`,
                 icon: 'pin',
                 title: pinned
-                    ? 'Take this folder out of your quick links'
-                    : 'Show this folder in your quick links, in the sidebar',
+                    ? $localize`Take this folder out of your quick links.`
+                    : $localize`Show this folder in your quick links, in the sidebar.`,
                 run: () => void this.quickLinks.toggle(path),
             });
         }
         if (this.copyPaths.enabled())
             entries.push({
                 id: 'copyPath',
-                label: 'Copy full path',
+                label: $localize`Copy full path`,
                 icon: 'copy',
-                title: 'Copy where this folder is on the server',
+                title: $localize`Copy where this folder is on the server.`,
                 run: () => void this.copyPaths.copy(path),
             });
         entries.push({
             id: 'newTab',
-            label: 'Open in new tab',
+            label: $localize`Open in new tab`,
             icon: 'external',
-            title: 'This folder in a tab of its own',
+            title: $localize`Open this folder in a tab of its own.`,
             href,
             newTab: true,
         });
         if (this.config.can(Rights.browse) && this.dialogs.properties())
             entries.push({
                 id: 'properties',
-                label: 'Properties',
+                label: $localize`Properties`,
                 icon: 'info',
-                title: 'Its dates, and what it holds',
+                title: $localize`Show its dates and what it holds.`,
                 run: () => void this.dialogs.properties()?.open(this.folderItem()),
             });
         return entries;

@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject, untrack
 import { RouterLink } from '@angular/router';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
-import { formatSize, joinParts, plural } from '../../core/format';
+import { formatSize, joinParts } from '../../core/format';
+import { icu } from '../../core/i18n/icu';
 import { LibraryItem } from '../../core/models';
 import { UsableConnections } from '../../core/usable-connections';
 import { ContextMenuDirective, MenuTarget } from '../../menus/context-menu';
@@ -49,18 +50,26 @@ export class EverywhereComponent {
 
     protected countText(group: EverywhereGroup): string {
         if (group.status !== 'ready' || group.total === null) return '';
-        const files = group.total === 1 && !group.capped ? 'file' : 'files';
-        return `${group.total.toLocaleString()}${group.capped ? '+' : ''} ${files}`;
+        return group.capped
+            ? icu($localize`{total, plural, other {#+ files}}`, { total: group.total })
+            : icu($localize`{total, plural, one {# file} other {# files}}`, { total: group.total });
     }
 
     protected countTitle(group: EverywhereGroup): string {
-        return group.total === null ? '' : `${plural(group.total, 'file')}${group.capped ? ' or more' : ''} found`;
+        if (group.total === null) return '';
+        return group.capped
+            ? icu($localize`{total, plural, one {At least # file found.} other {At least # files found.}}`, {
+                  total: group.total,
+              })
+            : icu($localize`{total, plural, one {# file found.} other {# files found.}}`, { total: group.total });
     }
 
     /** Why a connection's results may be incomplete; null when its index is whole. */
     protected coverageText(group: EverywhereGroup): string | null {
-        if (group.coverage === 'none') return 'Not indexed here yet: its index is being made, search again later.';
-        if (group.coverage === 'partial') return 'Its index is being brought up to date: some files may be missing.';
+        if (group.coverage === 'none')
+            return $localize`Not in the index yet: its index is being made, search again later.`;
+        if (group.coverage === 'partial')
+            return $localize`Its index is being brought up to date: some files may be missing.`;
         return null;
     }
 
@@ -71,11 +80,15 @@ export class EverywhereComponent {
     }
 
     protected hereTitle(group: EverywhereGroup): string {
-        return `Search only in ${group.location.name}, with every sort and the viewer`;
+        return $localize`Search only in “${group.location.name}:place:”, with every sort and the viewer.`;
     }
 
     protected iconOf(item: LibraryItem): string {
         return KIND_ICONS[item.kind] ?? 'file';
+    }
+
+    protected showTitle(item: LibraryItem): string {
+        return $localize`Show “${item.path}:path:” in its folder.`;
     }
 
     protected detailsOf(item: LibraryItem): string {
@@ -96,16 +109,16 @@ export class EverywhereComponent {
             entries: () => [
                 {
                     id: 'show',
-                    label: 'Show in its folder',
+                    label: $localize`Show in its folder`,
                     icon: 'folder',
-                    title: `Open “${folder || group.location.name}” and show this file`,
+                    title: $localize`Open “${folder || group.location.name}:folder:” and show this file there.`,
                     run: () => this.open(group, item),
                 },
                 {
                     id: 'newTab',
-                    label: 'Open folder in new tab',
+                    label: $localize`Open folder in new tab`,
                     icon: 'external',
-                    title: 'Its folder in a tab of its own',
+                    title: $localize`Open its folder in a tab of its own.`,
                     newTab: true,
                     href: this.store.pageUrl(this.store.browseParams(folder, group.location.c)),
                 },

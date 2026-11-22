@@ -203,6 +203,13 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   click does in full sentences (the trash's hint counts its items, the folder buttons say "This is folder 2 of 5");
   the ⋮ menu's **Toggle fullscreen** is now **Full screen**, and someone browsing without an account shows as
   **Visitor**. Their texts are ready for translation.
+- **Listing and menus reworded**: the menus of items, folders, links and pages, the selection bar, the listing's
+  tiles, rows and folders, its empty and error states and the Everywhere search say what a click does in full
+  sentences, with names in quotes ("Give “Sunrise.jpg” another name (F2)."); **Paste into** names the folder and its
+  hint says where things go ("Copy the 3 items kept into “Trips”."); a folder kept out of scans says which folders
+  above set it ("Set on the folder “Media”."); a file's hint gives "Not indexed yet" or "being written" on a line of
+  its own; **Go to library root** is now **Go to the top of the library**, and a connection to sign in to again
+  says **This connection needs signing in again**. Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

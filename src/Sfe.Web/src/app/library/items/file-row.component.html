@@ -39,7 +39,7 @@
     </div>
     <span
         class="type"
-        [title]="item().extension ? '.' + item().extension + ' file' : 'No extension'"
+        [title]="typeTitle()"
     >{{ item().extension || '—' }}</span>
     <span class="size">{{ size() }}@if (resolution()) {<span class="resolution">{{ resolution() }}</span>}@if (duration()) {<span
         class="duration"

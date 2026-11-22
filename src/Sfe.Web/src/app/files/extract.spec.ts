@@ -275,7 +275,7 @@ describe('Extracting archives', () => {
         store.select(other, true);
         fixture.detectChanges();
         expect(buttonNamed(element, 'Extract')!.title).toBe(
-            'Extract the 2 archives here, each into a new folder named after it',
+            'Extract the 2 archives here, in the background, each into a new folder named after it.',
         );
         buttonNamed(element, 'Extract')!.click();
         await settle();
