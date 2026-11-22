@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { formatSize, plural } from '../core/format';
 import { LibraryItem } from '../core/models';
 import { baseName } from '../core/paths';
 import { Rights } from '../core/rights';
@@ -12,16 +11,17 @@ import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { FileTransfers } from './file-transfers';
 import { folderBrowser, FolderBrowserComponent } from './folder-browser.component';
+import { nameOrCount, sizeToRead } from './file-dialog-texts';
 
 /** Folders whose size is asked from the index at most; the others are said not counted. */
 const MEASURED_FOLDERS = 50;
 
 /** The levels offered (the server takes 0 to 9). */
-export const COMPRESSION_LEVELS: readonly { level: number; label: string; hint: string }[] = [
-    { level: 0, label: 'Store', hint: 'no compression: the fastest, the largest' },
-    { level: 1, label: 'Fastest', hint: 'quick, a little larger' },
-    { level: 6, label: 'Normal', hint: 'the usual balance' },
-    { level: 9, label: 'Maximum', hint: 'the smallest, several times slower' },
+export const COMPRESSION_LEVELS: readonly { level: number; text: string }[] = [
+    { level: 0, text: $localize`Store: no compression, the fastest and the largest` },
+    { level: 1, text: $localize`Fastest: quick, a little larger` },
+    { level: 6, text: $localize`Normal: the usual balance` },
+    { level: 9, text: $localize`Maximum: the smallest, several times slower` },
 ];
 
 /**
@@ -62,22 +62,22 @@ export class CompressDialog {
     protected readonly plainHttp =
         location.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 
-    protected readonly targetName = computed(
-        () => baseName(this.target()) || this.config.config()?.rootName || 'the library',
-    );
+    protected readonly targetName = computed(() => baseName(this.target()) || this.config.libraryName());
     protected readonly what = computed(() => {
-        const items = this.items();
-        return items.length === 1 ? `Put “${items[0].name}”` : `Put ${plural(items.length, 'item')}`;
+        const what = nameOrCount(this.items().map((item) => item.name));
+        return $localize`Put ${what}:items: into a zip in “${this.targetName()}:folder:”.`;
     });
     protected readonly ascii = computed(() => [...this.password()].every((c) => c >= ' ' && c <= '~'));
     /** Why it can't start yet; null when it can. */
     protected readonly problem = computed(() => {
         const name = this.name().trim();
-        if (!name) return 'Give the zip a name.';
-        if (/[\\/:*?"<>|]/.test(name)) return 'A name can\'t hold \\ / : * ? " < > |.';
-        if (this.password() && this.password() !== this.confirmation()) return 'The two passwords differ.';
-        if (!this.browser.listing()) return this.browser.loading() ? 'Reading the folder…' : 'Pick a folder.';
-        if (!this.browser.allows(Rights.compressFiles)) return 'You may not make a zip in this folder: pick another.';
+        if (!name) return $localize`Give the zip a name.`;
+        if (/[\\/:*?"<>|]/.test(name)) return $localize`A name can't hold \\ / : * ? " < > |.`;
+        if (this.password() && this.password() !== this.confirmation()) return $localize`The two passwords differ.`;
+        if (!this.browser.listing())
+            return this.browser.loading() ? $localize`Reading the folder…` : $localize`Pick a folder.`;
+        if (!this.browser.allows(Rights.compressFiles))
+            return $localize`You may not make a zip in this folder. Pick another.`;
         return null;
     });
 
@@ -93,7 +93,7 @@ export class CompressDialog {
         this.browser.reset(target);
         void this.browser.browse(target);
         this.picking.set(false);
-        this.name.set(defaultName(items, target, this.config.config()?.rootName ?? 'Library'));
+        this.name.set(defaultName(items, target, this.config.libraryName()));
         void this.measure(items);
         this.level.set(6);
         this.skipCompressed.set(true);
@@ -128,10 +128,7 @@ export class CompressDialog {
             }
         }
         unknown += Math.max(0, folders.length - MEASURED_FOLDERS);
-        const read = `${formatSize(bytes)} in ${plural(files, 'file')} to read`;
-        this.size.set(
-            unknown ? `${read}, and ${plural(unknown, 'folder')} not in the index (not counted).` : `${read}.`,
-        );
+        this.size.set(sizeToRead(bytes, files, unknown));
     }
 
     protected checked(event: Event): boolean {

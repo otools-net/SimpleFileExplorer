@@ -1,23 +1,23 @@
-<sfe-sheet #sheet heading="Rename" [subtitle]="subtitle()" variant="batch-rename-dialog" [wide]="true">
-    <div class="batch-rename-modes" role="radiogroup" aria-label="How">
+<sfe-sheet #sheet heading="Rename" i18n-heading [subtitle]="subtitle()" variant="batch-rename-dialog" [wide]="true">
+    <div class="batch-rename-modes" role="radiogroup" aria-label="How to rename" i18n-aria-label>
         <label><input
             type="radio"
             name="batch-mode"
             value="replace"
             [checked]="mode() === 'replace'"
             (change)="mode.set('replace')"
-        > Find and replace</label>
+        ><ng-container i18n> Find and replace</ng-container></label>
         <label><input
             type="radio"
             name="batch-mode"
             value="number"
             [checked]="mode() === 'number'"
             (change)="mode.set('number')"
-        > Numbered</label>
+        ><ng-container i18n> Numbered</ng-container></label>
     </div>
     @if (mode() === 'replace') {
         <div class="batch-rename-fields">
-            <label class="field"><span class="field-label">Find</span>
+            <label class="field"><span class="field-label" i18n>Find</span>
                 <input
                     type="text"
                     name="find"
@@ -26,7 +26,7 @@
                     [value]="find()"
                     (input)="find.set(value($event))"
                 ></label>
-            <label class="field"><span class="field-label">Replace with</span>
+            <label class="field"><span class="field-label" i18n>Replace with</span>
                 <input
                     type="text"
                     name="replace"
@@ -39,11 +39,11 @@
                 type="checkbox"
                 [checked]="matchCase()"
                 (change)="matchCase.set(checked($event))"
-            > Match case</label>
+            ><ng-container i18n> Match case</ng-container></label>
         </div>
     } @else {
         <div class="batch-rename-fields">
-            <label class="field"><span class="field-label">Name</span>
+            <label class="field"><span class="field-label" i18n>Name</span>
                 <input
                     type="text"
                     name="pattern"
@@ -52,13 +52,14 @@
                     [value]="pattern()"
                     (input)="pattern.set(value($event))"
                 >
-                <span class="field-hint"># is the number (## for 01, 02…); extensions stay.</span></label>
-            <label class="field"><span class="field-label">From</span>
+                <span class="field-hint" i18n># stands for the number (## for 01, 02…). Extensions stay as they
+                are.</span></label>
+            <label class="field"><span class="field-label" i18n>From</span>
                 <input type="number" name="start" min="0" [value]="start()" (input)="start.set(number($event))"></label>
         </div>
     }
     <table class="batch-rename-preview">
-        <thead><tr><th scope="col">Now</th><th scope="col">Becomes</th></tr></thead>
+        <thead><tr><th scope="col" i18n>Now</th><th scope="col" i18n>Becomes</th></tr></thead>
         <tbody>
             @for (line of plans(); track line.item.path) {
                 <tr [class.unchanged]="line.name === line.item.name" [class.problem]="line.problem">
@@ -77,8 +78,10 @@
         sheetFooter
         type="button"
         class="button"
-        title="Close without renaming (Esc)"
+        title="Close without renaming anything (Esc)"
+        i18n-title
         (click)="sheet.close()"
+        i18n
     >Cancel</button>
     <button
         sheetFooter
@@ -87,6 +90,5 @@
         [sfeBusy]="saving()"
         [disabled]="saving() || !changes().length"
         (click)="apply()"
-    >
-        Rename {{ changes().length || '' }}</button>
+    >{{ applyLabel() }}</button>
 </sfe-sheet>

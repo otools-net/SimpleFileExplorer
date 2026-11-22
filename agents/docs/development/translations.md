@@ -105,6 +105,9 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
 - A sentence with a control inside it ("… and keep [select]?"): a translation can't move the control. Split it into
   a whole question and a label ending in a colon before the control ("Move this file to the trash?" + "Copy kept:",
   `duplicate-group.component.html`), each its own message, the space kept inside the text (`Copy kept: `).
+- Counts of two kinds in one phrase ("2 folders and 3 files", only the kinds there are): one ICU `select` on which
+  kinds there are, each case its own plurals (`counted()` in `files/file-dialog-texts.ts`); `#` stands for the
+  innermost `plural` around it, so never rely on it for an outer count.
 - A hint made of several facts (a file's name, "Not indexed yet: …", "Still being written …") puts each whole
   sentence on its own line (`join('\n')`), never a phrase glued in parentheses to the name.
 

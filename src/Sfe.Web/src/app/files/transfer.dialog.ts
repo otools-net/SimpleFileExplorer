@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { ConfigService } from '../core/config.service';
-import { joinParts, plural } from '../core/format';
 import { LibraryItem } from '../core/models';
 import { AccessGain, FileJobKind, FileJobRequest } from './file.models';
 import { baseName, parentPath } from '../core/paths';
@@ -14,6 +13,17 @@ import { FileTransfers } from './file-transfers';
 import { PlaceTransfers } from './place-transfers';
 import { UsableConnections } from '../core/usable-connections';
 import { folderBrowser, FolderBrowserComponent } from './folder-browser.component';
+import {
+    counted,
+    gainedFolders,
+    gainText,
+    itemCount,
+    nameOrCount,
+    quoted,
+    transferPrompt,
+    transferQuestion,
+    transferTitle,
+} from './file-dialog-texts';
 
 /**
  * Move to… and Copy to…: picks the folder by clicking through the library or a connection the session writes to, then
@@ -57,52 +67,47 @@ export class TransferDialog {
     /** Between two places: the files' tags go with them (the library keeps the tags of connection files too). */
     protected readonly tagsTravel = computed(() => this.from() !== this.browser.connection());
 
+    protected readonly heading = computed(() =>
+        this.kind() === 'move' ? $localize`:dialog title:Move` : $localize`:dialog title:Copy`,
+    );
     protected readonly what = computed(() => {
         const items = this.items();
-        const folders = items.filter((item) => item.kind === 'directory').length;
-        const files = items.length - folders;
-        const counted = joinParts(
-            [folders ? plural(folders, 'folder') : null, files ? plural(files, 'file') : null],
-            ' and ',
-        );
-        const what = items.length === 1 ? `“${items[0].name}”` : counted || plural(this.paths().length, 'item');
-        return `${this.kind() === 'move' ? 'Move' : 'Copy'} ${what}`;
+        const what =
+            items.length === 1 ? quoted(items[0].name) : items.length ? counted(items) : itemCount(this.paths().length);
+        return transferPrompt(this.kind(), what);
     });
-    protected readonly question = computed(() => {
-        const count = this.paths().length;
-        const what = count === 1 ? `“${baseName(this.paths()[0])}”` : plural(count, 'item');
-        return `${this.kind() === 'move' ? 'Move' : 'Copy'} ${what} into “${this.targetName()}”?`;
-    });
-    protected readonly gainedFolders = computed(() => {
-        const folders = new Set(this.gains().map((gain) => gain.folder));
-        return folders.size === 1 ? `“${baseName([...folders][0])}”` : plural(folders.size, 'folder');
-    });
+    protected readonly question = computed(() =>
+        transferQuestion(this.kind(), nameOrCount(this.paths().map(baseName)), this.targetName()),
+    );
+    protected readonly gainedFolders = computed(() =>
+        gainedFolders([...new Set(this.gains().map((gain) => gain.folder))]),
+    );
     /** Why the folder chosen can't be used; null when it can. */
     protected readonly refusal = computed(() => {
         const listing = this.browser.listing();
-        if (!listing) return 'Pick a folder.';
+        if (!listing) return $localize`Pick a folder.`;
         if (!this.browser.allows(this.kind() === 'move' ? Rights.moveFiles : Rights.copyFiles))
-            return `You may not ${this.kind()} files into this folder: open another.`;
+            return this.kind() === 'move'
+                ? $localize`You may not move files into this folder. Open another.`
+                : $localize`You may not copy files into this folder. Open another.`;
         if (
             this.kind() === 'move' &&
             this.samePlace() &&
             this.paths().every((path) => parentPath(path) === listing.path)
         )
-            return 'They are in this folder already: open another.';
+            return $localize`They are in this folder already. Open another.`;
         return null;
     });
     protected readonly confirmLabel = computed(() =>
         this.step() === 'pick'
             ? this.kind() === 'move'
-                ? 'Move here'
-                : 'Copy here'
+                ? $localize`Move here`
+                : $localize`Copy here`
             : this.kind() === 'move'
-              ? 'Move'
-              : 'Copy',
+              ? $localize`:button:Move`
+              : $localize`:button:Copy`,
     );
-    protected readonly confirmTitle = computed(
-        () => `${this.kind() === 'move' ? 'Move' : 'Copy'} into “${this.targetName()}”: it goes on in the background`,
-    );
+    protected readonly confirmTitle = computed(() => transferTitle(this.kind(), this.targetName()));
     private readonly targetName = computed(() => baseName(this.target()) || this.browser.placeName());
 
     constructor() {
@@ -156,13 +161,11 @@ export class TransferDialog {
         this.kind() === 'move' &&
         this.samePlace() &&
         this.paths().some((moved) => path === moved || path.startsWith(`${moved}/`))
-            ? 'It is moved itself'
+            ? $localize`This folder is one of those moved.`
             : null;
 
     protected gainText(gain: AccessGain): string {
-        const now = gain.before === 'hidden' ? "who don't see it now" : 'who may only look now';
-        const then = gain.after === 'write' ? 'could change' : 'would see';
-        return `${gain.isGroup ? `The group ${gain.who}` : gain.who} (${now}) ${then} “${baseName(gain.folder)}”.`;
+        return gainText(gain);
     }
 
     protected checked(event: Event): boolean {

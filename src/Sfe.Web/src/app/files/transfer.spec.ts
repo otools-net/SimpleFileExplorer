@@ -143,7 +143,7 @@ describe('TransferDialog', () => {
         await settle();
 
         expect(element.textContent).toContain('Move “Holidays” into “Root”?');
-        expect(element.textContent).toContain("The group Visitors (who don't see it now) would see “Holidays”.");
+        expect(element.textContent).toContain("The group “Visitors” would see “Holidays”, which they don't see now.");
         expect(api.startFileJob).not.toHaveBeenCalled();
         (element.querySelector('.transfer-gains + label input') as HTMLInputElement).click();
         buttonNamed(element, 'Move')!.click();

@@ -1,48 +1,52 @@
-    <sfe-sheet #sheet [heading]="permanent() ? 'Delete permanently' : 'Delete'" variant="delete-dialog">
-        @if (unavailable().length) {
-            <p>{{ unavailableText() }}</p>
-        } @else {
-            <p>{{ question() }}</p>
-            @if (placeNote()) {
-                <p [class.form-error]="!place()?.ownTrash">{{ placeNote() }}</p>
-            } @else if (permanent()) {
-                <p class="form-error">This can't be undone: they don't go to the trash.</p>
-            }
+<sfe-sheet #sheet [heading]="heading()" variant="delete-dialog">
+    @if (unavailable().length) {
+        <p>{{ unavailableText() }}</p>
+    } @else {
+        <p>{{ question() }}</p>
+        @if (placeNote()) {
+            <p [class.form-error]="!place()?.ownTrash">{{ placeNote() }}</p>
+        } @else if (permanent()) {
+            <p class="form-error" i18n>This can't be undone: they don't go to the trash.</p>
         }
-        <ul class="delete-names">
-            @for (name of names(); track $index) {
-                <li>{{ name }}</li>
-            }
-        </ul>
-        <span sheetFooter class="spacer"></span>
-        <button
-            sheetFooter
-            type="button"
-            class="button"
-            title="Close without deleting anything (Esc)"
-            (click)="sheet.close()"
-        >Cancel</button>
-        @if (unavailable().length) {
-            @if (canForce()) {
-                <button
-                    sheetFooter
-                    type="button"
-                    class="button danger"
-                    title="Delete them for good, without the trash"
-                    [sfeBusy]="deleting()"
-                    [disabled]="deleting()"
-                    (click)="force()"
-                >Delete permanently</button>
-            }
-        } @else {
+    }
+    <ul class="delete-names">
+        @for (name of names(); track $index) {
+            <li>{{ name }}</li>
+        }
+    </ul>
+    <span sheetFooter class="spacer"></span>
+    <button
+        sheetFooter
+        type="button"
+        class="button"
+        title="Close without deleting anything (Esc)"
+        i18n-title
+        (click)="sheet.close()"
+        i18n
+    >Cancel</button>
+    @if (unavailable().length) {
+        @if (canForce()) {
             <button
                 sheetFooter
                 type="button"
                 class="button danger"
-                [title]="permanent() ? 'Delete them for good' : 'Move them to the trash'"
+                title="Delete them for good, without going through the trash."
+                i18n-title
                 [sfeBusy]="deleting()"
                 [disabled]="deleting()"
-                (click)="confirm()"
-            >{{ permanent() ? 'Delete permanently' : 'Delete' }}</button>
+                (click)="force()"
+                i18n
+            >Delete permanently</button>
         }
-    </sfe-sheet>
+    } @else {
+        <button
+            sheetFooter
+            type="button"
+            class="button danger"
+            [title]="confirmTitle()"
+            [sfeBusy]="deleting()"
+            [disabled]="deleting()"
+            (click)="confirm()"
+        >{{ heading() }}</button>
+    }
+</sfe-sheet>

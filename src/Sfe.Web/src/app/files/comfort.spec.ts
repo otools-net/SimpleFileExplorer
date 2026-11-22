@@ -99,14 +99,16 @@ describe('planRenames', () => {
             null,
         ]);
         expect(planRenames([a, b], rule({ find: 'IMG_00', replace: 'x' }), ['x1.jpg'])[0].problem).toBe(
-            'Already taken in this folder',
+            'This name is taken in this folder.',
         );
-        expect(planRenames([a, b], rule({ find: 'IMG_001', replace: '' }), [])[0].problem).toBe('No name left');
+        expect(planRenames([a, b], rule({ find: 'IMG_001', replace: '' }), [])[0].problem).toBe(
+            'No name would be left.',
+        );
         expect(planRenames([a, b], rule({ find: 'IMG_00', replace: 'a/' }), [])[0].problem).toContain('/');
         const alike = planRenames([item('Media/x.jpg'), item('Media/X.jpg')], rule({ find: 'x', replace: 'y' }), []);
         expect(alike.map((p) => p.problem)).toEqual([
-            'Two items would have this name',
-            'Two items would have this name',
+            'Two items would get this name.',
+            'Two items would get this name.',
         ]);
         expect(planRenames([a, b], rule({ mode: 'number', pattern: 'IMG_00#', start: 2 }), [])[0].problem).toContain(
             'two steps',

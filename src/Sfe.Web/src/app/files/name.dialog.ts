@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
-import { ConfigService } from '../core/config.service';
 import { FileOperationResult, isFileConflict, LibraryItem } from '../core/models';
 import { PlaceFiles } from '../core/place-files';
 import { Rights } from '../core/rights';
@@ -15,7 +14,11 @@ import { QuickLinksService } from '../library/quick-links/quick-links.service';
 type Mode =
     { kind: 'folder'; parent: string } | { kind: 'file'; parent: string } | { kind: 'rename'; item: LibraryItem };
 
-const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
+const HEADINGS = {
+    folder: $localize`:dialog title:New folder`,
+    file: $localize`:dialog title:New file`,
+    rename: $localize`:dialog title:Rename`,
+};
 
 /**
  * Asks for a name: of a new folder (New folder, Ctrl+Shift+N) or empty file (New file) in the folder listed, or the new
@@ -31,12 +34,12 @@ const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
         <sfe-sheet #sheet [heading]="heading()" [subtitle]="subtitle()" variant="name-dialog">
             <form id="name-dialog-form" novalidate (submit)="submit($event)">
                 <label class="field">
-                    <span class="field-label">Name</span>
+                    <span class="field-label" i18n>Name</span>
                     <input #input type="text" name="name" maxlength="255" autocomplete="off" spellcheck="false"
                            [value]="name()" (input)="changed($event)">
                     @if (hidden()) {
-                        <span class="field-hint">A name starting with a dot is a hidden item: listings show it only
-                        where hidden items are shown.</span>
+                        <span class="field-hint" i18n>A name starting with a dot makes a hidden item. Listings show
+                        it only where hidden items are shown.</span>
                     }
                 </label>
                 @if (error()) {
@@ -49,7 +52,9 @@ const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
                 type="button"
                 class="button"
                 title="Close without changing anything (Esc)"
+                i18n-title
                 (click)="sheet.close()"
+                i18n
             >Cancel</button>
             <button sheetFooter type="submit" form="name-dialog-form" class="button primary" [title]="actionTitle()"
                     [sfeBusy]="saving()" [disabled]="saving() || !canSave()">{{ actionLabel() }}</button>
@@ -59,7 +64,6 @@ const HEADINGS = { folder: 'New folder', file: 'New file', rename: 'Rename' };
 export class NameDialog {
     private readonly api = inject(Api);
     private readonly files = inject(PlaceFiles);
-    private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
     private readonly quickLinks = inject(QuickLinksService);
     private readonly toasts = inject(ToastService);
@@ -76,18 +80,19 @@ export class NameDialog {
     protected readonly subtitle = computed(() => {
         const mode = this.mode();
         if (!mode) return null;
-        return mode.kind === 'rename'
-            ? mode.item.name
-            : `In ${mode.parent ? `“${mode.parent}”` : (this.config.config()?.rootName ?? 'the library')}`;
+        if (mode.kind === 'rename') return mode.item.name;
+        return mode.parent ? $localize`In “${mode.parent}:folder:”` : $localize`At the top of the library`;
     });
-    protected readonly actionLabel = computed(() => (this.mode()?.kind === 'rename' ? 'Rename' : 'Create'));
+    protected readonly actionLabel = computed(() =>
+        this.mode()?.kind === 'rename' ? $localize`:button:Rename` : $localize`:button:Create`,
+    );
     protected readonly actionTitle = computed(() => {
         const kind = this.mode()?.kind;
         return kind === 'rename'
-            ? 'Give it this name (Enter)'
+            ? $localize`Give the item this name (Enter).`
             : kind === 'file'
-              ? 'Create the empty file (Enter)'
-              : 'Create the folder (Enter)';
+              ? $localize`Create the empty file (Enter).`
+              : $localize`Create the folder (Enter).`;
     });
     protected readonly hidden = computed(() => this.name().trim().startsWith('.'));
     protected readonly canSave = computed(() => {
@@ -102,12 +107,12 @@ export class NameDialog {
 
     /** Asks for the name of a new folder in `parent` (the folder listed by default). */
     newFolder(parent = this.store.route().path): void {
-        this.show({ kind: 'folder', parent }, 'New folder');
+        this.show({ kind: 'folder', parent }, $localize`:name given to a new folder:New folder`);
     }
 
     /** Asks for the name of a new empty file in `parent` (the folder listed by default). */
     newFile(parent = this.store.route().path): void {
-        this.show({ kind: 'file', parent }, 'New file.txt');
+        this.show({ kind: 'file', parent }, $localize`:name given to a new file, its extension kept:New file.txt`);
     }
 
     /** Asks for the new name of `item`. */
@@ -153,13 +158,13 @@ export class NameDialog {
         } catch (error) {
             this.error.set(
                 error instanceof ApiError && error.status === 404
-                    ? 'It is not there any more: it may have been moved or deleted.'
+                    ? $localize`It isn't there any more: it may have been moved or deleted.`
                     : (error as Error).message,
             );
             return;
         }
         if (isFileConflict(result)) {
-            this.error.set(result.detail ?? 'It could not be done.');
+            this.error.set(result.detail ?? $localize`It could not be done.`);
             return;
         }
         this.sheet().close();

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { formatSize, joinParts, plural } from '../core/format';
 import { DeletedItem, isFileConflict, LibraryItem } from '../core/models';
 import { PlaceFiles } from '../core/place-files';
 import { ToastService } from '../core/toast.service';
@@ -11,6 +10,7 @@ import { registerDialog } from '../library/dialogs.service';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
 import { FileActions } from './file-actions';
+import { deletedToast, deleteQuestion, moreNames, notDeleted, putBack, trashUnavailable } from './file-dialog-texts';
 
 /** Names listed in the confirmation, the rest counted. */
 const NAMES_SHOWN = 5;
@@ -46,38 +46,27 @@ export class DeleteDialog {
     protected readonly names = computed(() => {
         const items = this.shown();
         const names = items.slice(0, NAMES_SHOWN).map((item) => item.name);
-        return items.length > NAMES_SHOWN ? [...names, `and ${plural(items.length - NAMES_SHOWN, 'more')}`] : names;
+        return items.length > NAMES_SHOWN ? [...names, moreNames(items.length - NAMES_SHOWN)] : names;
     });
+    protected readonly heading = computed(() =>
+        this.permanent() ? $localize`Delete permanently` : $localize`:button and dialog title:Delete`,
+    );
+    protected readonly confirmTitle = computed(() =>
+        this.permanent() ? $localize`Delete them for good.` : $localize`Move them to the trash.`,
+    );
     protected readonly question = computed(() => {
-        const items = this.items();
-        const folders = items.filter((item) => item.kind === 'directory').length;
-        const files = items.length - folders;
-        const what = joinParts(
-            [folders ? plural(folders, 'folder') : null, files ? plural(files, 'file') : null],
-            ' and ',
-        );
-        const bytes = items.reduce((sum, item) => sum + (item.size ?? 0), 0);
-        const size = files
-            ? ` (${formatSize(bytes)}${folders ? ', and what the folders hold' : ''})`
-            : folders
-              ? ' and what they hold'
-              : '';
         const place = this.place();
-        if (place) return `Delete ${what}${size} from ${place.name || 'the connection'}?`;
-        return this.permanent() ? `Delete ${what}${size} for good?` : `Move ${what}${size} to the trash?`;
+        return deleteQuestion(this.items(), place ? place.name || '' : null, this.permanent());
     });
     /** On a connection: what becomes of them there (no trash of the app, no permanent choice). */
     protected readonly placeNote = computed(() => {
         const place = this.place();
         if (!place) return null;
-        return place.ownTrash ? 'The provider keeps deleted files for a while.' : "This can't be undone.";
+        return place.ownTrash
+            ? $localize`The connection keeps deleted files in its own trash for a while.`
+            : $localize`This can't be undone.`;
     });
-    protected readonly unavailableText = computed(
-        () =>
-            `${plural(this.unavailable().length, 'item')} can't go to the trash: on another drive than the trash, ` +
-            `holding links.` +
-            (this.canForce() ? ' Delete them permanently instead?' : ''),
-    );
+    protected readonly unavailableText = computed(() => trashUnavailable(this.unavailable().length, this.canForce()));
     protected readonly canForce = computed(() =>
         this.unavailable().every((item) => this.actions.canDeletePermanently(item)),
     );
@@ -121,11 +110,10 @@ export class DeleteDialog {
         const trashed = done.map((result) => result.trashId).filter((id): id is number => typeof id === 'number');
         if (done.length)
             this.toasts.show(
-                this.place()
-                    ? `${plural(done.length, 'item')} deleted.`
-                    : permanent || !trashed.length
-                      ? `${plural(done.length, 'item')} deleted for good.`
-                      : `${plural(done.length, 'item')} moved to the trash.`,
+                deletedToast(
+                    done.length,
+                    this.place() ? 'connection' : permanent || !trashed.length ? 'permanent' : 'trash',
+                ),
                 {
                     timeout: trashed.length ? 10000 : 4500,
                     action: trashed.length
@@ -142,8 +130,7 @@ export class DeleteDialog {
             this.toasts.error(
                 failed.length === 1
                     ? (failed[0].message ?? `“${baseOf(failed[0].path)}” could not be deleted.`)
-                    : `${plural(failed.length, 'item')} could not be ` +
-                          `deleted: ${failed[0].message ?? baseOf(failed[0].path)}`,
+                    : notDeleted(failed.length, failed[0].message ?? baseOf(failed[0].path)),
                 8000,
             );
         if (unavailable.length) {
@@ -168,7 +155,7 @@ export class DeleteDialog {
         }
         if (restored) {
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + restored });
-            this.toasts.show(`${plural(restored, 'item')} put back.`);
+            this.toasts.show(putBack(restored));
         }
     }
 }

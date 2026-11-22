@@ -226,6 +226,14 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   names the videos it works on in quotes ("Working on “a.mp4” and “b.mp4”."); a listed video's clock and spinner say
   "Its previews along the timeline are waiting to be made." / "… are being made…". Their texts are ready for
   translation.
+- **File dialogs reworded**: New folder, New file, Rename, Delete, Move to… and Copy to… (and their folder picker),
+  rename several, Compress… and Extract… say what a click does in full sentences, with names in quotes; a move that
+  gives more people access says it as "The group “Visitors” would see “Plans”, which they don't see now."; a delete
+  of one folder says "and what it holds"; a delete on a connection with its own trash says "The connection keeps
+  deleted files in its own trash for a while."; a new item at the top of the library says so instead of the
+  library's name; the zip's size line says "1 folder isn't in the index and isn't counted."; rename several explains
+  each name it can't give in a sentence ("This name is taken in this folder."). Their texts are ready for
+  translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

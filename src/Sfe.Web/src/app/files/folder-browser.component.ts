@@ -44,7 +44,8 @@ export class FolderBrowser {
     readonly placeName = computed(() => this.nameOf(this.connection()));
     readonly crumbs = computed<FolderCrumb[]>(() => {
         const connection = this.connection();
-        const top: FolderCrumb[] = this.places() ? [{ path: '', name: 'Places', connection: null, top: true }] : [];
+        const places = $localize`:the library and the connections:Places`;
+        const top: FolderCrumb[] = this.places() ? [{ path: '', name: places, connection: null, top: true }] : [];
         if (this.top()) return top;
         const root = { path: '', name: this.placeName(), connection };
         const parts = this.target() ? this.target().split('/') : [];
@@ -159,6 +160,12 @@ export class FolderBrowserComponent {
     }
 
     protected placeTitle(connection: UsableConnection): string {
-        return connection.state === 'needsReconnecting' ? 'It must be signed in to again' : `Open ${connection.name}`;
+        return connection.state === 'needsReconnecting'
+            ? $localize`This connection needs signing in again.`
+            : $localize`Open “${connection.name}:connection:”.`;
+    }
+
+    protected openTitle(name: string): string {
+        return $localize`Open “${name}:folder:”.`;
     }
 }

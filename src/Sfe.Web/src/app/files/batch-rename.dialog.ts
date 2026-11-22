@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { PlaceFiles } from '../core/place-files';
-import { plural } from '../core/format';
 import { isFileConflict, LibraryItem } from '../core/models';
 import { ToastService } from '../core/toast.service';
 import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { BusyDirective } from '../shared/busy.directive';
 import { SheetComponent } from '../shared/sheet.component';
+import { leftOut, namesNotBack, renamedToast, selectedCount } from './file-dialog-texts';
 
 export type BatchRenameMode = 'replace' | 'number';
 
@@ -70,12 +70,13 @@ export function planRenames(items: LibraryItem[], rule: BatchRenameRule, taken: 
         let problem: string | null = null;
         // Only the extension left (".jpg") is no name either.
         if (!name.trim() || name.trim() === '.' || name.trim() === '..' || (split(item)[1] && name === split(item)[1]))
-            problem = 'No name left';
-        else if (FORBIDDEN.test(name)) problem = "A name can't hold / or \\";
-        else if (name !== item.name && (counts.get(key(name)) ?? 0) > 1) problem = 'Two items would have this name';
-        else if (name !== item.name && others.has(key(name))) problem = 'Already taken in this folder';
+            problem = $localize`No name would be left.`;
+        else if (FORBIDDEN.test(name)) problem = $localize`A name can't hold / or \\.`;
+        else if (name !== item.name && (counts.get(key(name)) ?? 0) > 1)
+            problem = $localize`Two items would get this name.`;
+        else if (name !== item.name && others.has(key(name))) problem = $localize`This name is taken in this folder.`;
         else if (name !== item.name && key(name) !== key(item.name) && current.has(key(name)))
-            problem = 'The name of another item renamed: rename in two steps';
+            problem = $localize`Another item renamed has this name now. Rename in two steps.`;
         return { item, name, problem };
     });
 }
@@ -107,7 +108,7 @@ export class BatchRenameDialog {
     protected readonly saving = signal(false);
     protected readonly failures = signal<string[]>([]);
 
-    protected readonly subtitle = computed(() => `${plural(this.items().length, 'item')} selected`);
+    protected readonly subtitle = computed(() => selectedCount(this.items().length));
     protected readonly plans = computed(() => {
         const items = this.items();
         const renamed = new Set(items.map((item) => item.path));
@@ -132,9 +133,10 @@ export class BatchRenameDialog {
     protected readonly changes = computed(() =>
         this.plans().filter((line) => !line.problem && line.name !== line.item.name),
     );
-    protected readonly summary = computed(() => {
-        const problems = this.plans().filter((line) => line.problem).length;
-        return problems ? `${plural(problems, 'item')} left out` : '';
+    protected readonly summary = computed(() => leftOut(this.plans().filter((line) => line.problem).length));
+    protected readonly applyLabel = computed(() => {
+        const count = this.changes().length;
+        return count ? $localize`Rename ${count}:count:` : $localize`:button:Rename`;
     });
 
     constructor() {
@@ -177,18 +179,19 @@ export class BatchRenameDialog {
             try {
                 const result = await this.files.rename(line.item.path, line.name);
                 if (isFileConflict(result)) {
-                    failures.push(`“${line.item.name}”: ${result.detail ?? 'not renamed.'}`);
+                    const reason = result.detail ?? $localize`It was not renamed.`;
+                    failures.push($localize`“${line.item.name}:name:”: ${reason}:reason:`);
                     continue;
                 }
                 this.store.applyRenamed(line.item.path, result);
                 done.push({ from: line.item, to: result });
             } catch (error) {
-                failures.push(`“${line.item.name}”: ${(error as Error).message}`);
+                failures.push($localize`“${line.item.name}:name:”: ${(error as Error).message}:reason:`);
             }
         }
         this.saving.set(false);
         if (done.length)
-            this.toasts.show(`${plural(done.length, 'item')} renamed.`, {
+            this.toasts.show(renamedToast(done.length), {
                 timeout: 10000,
                 action: { label: 'Undo', title: 'Give them back their names', run: () => void this.undo(done) },
             });
@@ -213,6 +216,6 @@ export class BatchRenameDialog {
                 failed++;
             }
         }
-        if (failed) this.toasts.error(`${plural(failed, 'item')} could not get their names back.`);
+        if (failed) this.toasts.error(namesNotBack(failed));
     }
 }

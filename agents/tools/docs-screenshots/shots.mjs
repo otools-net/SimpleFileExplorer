@@ -846,7 +846,7 @@ const scenes = {
         // Move: the folder picker, from the selection bar.
         await b.clickTitle('Move the selected items to another folder');
         await sleep(1000);
-        await b.clickTitle('Open Family');
+        await b.clickTitle('Open “Family”');
         await sleep(1000);
         await b.shot(OUT + 'move-dialog.png');
         await b.key('Escape', 'Escape', 27);

@@ -249,7 +249,7 @@ describe('CompressDialog', () => {
         await settle();
         fixture.detectChanges();
         expect(element.querySelector('[data-compress-size]')!.textContent).toBe(
-            '100 B in 1 file to read, and 1 folder not in the index (not counted).',
+            "100 B in 1 file to read. 1 folder isn't in the index and isn't counted.",
         );
     });
 

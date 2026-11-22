@@ -57,18 +57,19 @@ export class ExtractDialog {
     protected readonly stem = computed(() => stemOf(this.choice()?.name ?? ''));
     protected readonly what = computed(() => {
         const choice = this.choice();
-        return choice?.what ? `Extract ${choice.what} of “${choice.name}”` : `Extract “${choice?.name ?? ''}”`;
+        const name = choice?.name ?? '';
+        return choice?.what
+            ? $localize`Extract ${choice.what}:entries: of “${name}:archive:” into:`
+            : $localize`Extract “${name}:archive:” into:`;
     });
     /** Why the folder chosen can't be used; null when it can. */
     protected readonly refusal = computed(() => {
-        if (!this.browser.listing()) return 'Pick a folder.';
+        if (!this.browser.listing()) return $localize`Pick a folder.`;
         return this.browser.allows(Rights.extractFiles)
             ? null
-            : 'You may not extract archives into this folder: open another.';
+            : $localize`You may not extract archives into this folder. Open another.`;
     });
-    protected readonly targetName = computed(
-        () => baseName(this.target()) || this.config.config()?.rootName || 'the library',
-    );
+    protected readonly targetName = computed(() => baseName(this.target()) || this.config.libraryName());
 
     constructor() {
         registerDialog((dialogs) => dialogs.extract, this);

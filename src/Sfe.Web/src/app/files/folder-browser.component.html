@@ -1,4 +1,4 @@
-<nav class="transfer-crumbs" aria-label="The folder chosen">
+<nav class="transfer-crumbs" aria-label="The folder chosen" i18n-aria-label>
     @for (crumb of browser().crumbs(); track $index; let last = $last) {
         @if (last) {
             <strong><svg [sfeIcon]="crumb.top ? 'globe' : 'folder'"></svg>{{ crumb.name }}</strong>
@@ -6,7 +6,8 @@
             <button
                 type="button"
                 class="link-button"
-                [title]="'Go back to ' + crumb.name"
+                title="Go back to “{{ crumb.name }}”."
+                i18n-title
                 (click)="browser().go(crumb)"
             >{{ crumb.name }}</button>
             <span aria-hidden="true">/</span>
@@ -42,7 +43,7 @@
                     type="button"
                     class="transfer-folder"
                     [disabled]="closed !== null"
-                    [title]="closed ?? 'Open ' + folder.name"
+                    [title]="closed ?? openTitle(folder.name)"
                     (click)="browser().browse(folder.path)"
                 >
                     <svg sfeIcon="folder"></svg><span>{{ folder.name }}</span>
@@ -51,12 +52,14 @@
         } @empty {
             @if (browser().problem(); as problem) {
                 <li class="form-error" data-place-problem>{{ problem }}</li>
+            } @else if (browser().loading()) {
+                <li class="muted" i18n>Loading…</li>
             } @else {
-                <li class="muted">{{ browser().loading() ? 'Loading…' : 'No folders in here.' }}</li>
+                <li class="muted" i18n>No folders in here.</li>
             }
         }
         @if (browser().truncated()) {
-            <li class="muted">Only the first {{ shown }} folders are listed.</li>
+            <li class="muted" i18n>Only the first {{ shown }} folders are listed. Open one to go further.</li>
         }
     }
 </ul>

@@ -300,7 +300,7 @@ describe('a move within a connection that lets more people in', () => {
         fixture.detectChanges();
 
         expect(element.querySelector('dialog')!.open).toBe(true);
-        expect(element.textContent).toContain("The group Visitors (who don't see it now) would see “Plans”.");
+        expect(element.textContent).toContain("The group “Visitors” would see “Plans”, which they don't see now.");
         expect(api.connectionFiles).toHaveBeenCalledTimes(1);
         (element.querySelector('.transfer-gains + label input') as HTMLInputElement).click();
         buttonNamed(element, 'Move')!.click();

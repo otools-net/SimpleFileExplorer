@@ -1,5 +1,5 @@
-<sfe-sheet #sheet heading="Extract" variant="transfer-dialog">
-    <p>{{ what() }} into:</p>
+<sfe-sheet #sheet heading="Extract" i18n-heading variant="transfer-dialog">
+    <p>{{ what() }}</p>
     <sfe-folder-browser [browser]="browser" />
     @if (refusal(); as refusal) {
         <p class="field-hint">{{ refusal }}</p>
@@ -11,13 +11,14 @@
             [checked]="newFolder()"
             (change)="newFolder.set(checked($event))"
         >
-        <span>Into a new folder “{{ stem() }}”<span class="field-hint">Or named after its one folder, when it
-        holds only that. Unchecked: what it holds goes in with what is there, asking about names
-        taken.</span></span>
+        <span><ng-container i18n>Into a new folder “{{ stem() }}”</ng-container><span class="field-hint" i18n>If the
+        archive holds only one folder, the new folder takes that folder's name. Unchecked, what it holds goes in
+        with what is there, asking about names taken.</span></span>
     </label>
     @if (!choice()?.unlock) {
         <label class="field">
-            <span>Password <span class="field-hint">only if it is protected by one</span></span>
+            <span><ng-container i18n>Password </ng-container><span class="field-hint" i18n>only if the archive is
+            protected by one</span></span>
             <input
                 [type]="showPassword() ? 'text' : 'password'"
                 data-extract-password
@@ -28,7 +29,7 @@
         </label>
         <label class="check">
             <input type="checkbox" [checked]="showPassword()" (change)="showPassword.set(checked($event))">
-            <span>Show the password</span>
+            <span i18n>Show the password</span>
         </label>
     }
     <span sheetFooter class="spacer"></span>
@@ -37,7 +38,9 @@
         type="button"
         class="button"
         title="Close without extracting anything (Esc)"
+        i18n-title
         (click)="sheet.close()"
+        i18n
     >Cancel</button>
     <button
         sheetFooter
@@ -45,8 +48,10 @@
         class="button primary"
         data-extract
         [sfeBusy]="busy()"
-        [title]="'Extract into “' + targetName() + '”: it goes on in the background'"
+        title="Extract into “{{ targetName() }}”. It goes on in the background."
+        i18n-title
         [disabled]="busy() || refusal() !== null"
         (click)="confirm()"
+        i18n
     >Extract here</button>
 </sfe-sheet>

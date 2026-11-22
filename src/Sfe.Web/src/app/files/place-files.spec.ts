@@ -198,8 +198,8 @@ describe('the delete dialog on a connection', () => {
         const text = element.textContent!;
         api.connectionFiles.mockResolvedValue({ items: [{ path: photo.path, status: 'done' }], permanent: false });
 
-        expect(text).toContain('Delete 1 file (2 KB) from My Dropbox?');
-        expect(text).toContain('The provider keeps deleted files for a while.');
+        expect(text).toContain('Delete 1 file (2 KB) from “My Dropbox”?');
+        expect(text).toContain('The connection keeps deleted files in its own trash for a while.');
         expect(text).not.toContain('permanently');
         buttonNamed(element, 'Delete')!.click();
         await settle();
