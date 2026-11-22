@@ -1,13 +1,15 @@
-    <p class="settings-intro">
-        Being sent, paused, or cut off: their sender goes on by picking the same file again. Those that receive
-        nothing for
-        {{ keepHours() }} hours are removed by themselves.
+    @let hours = keepHours();
+    <p class="settings-intro" i18n>
+        Uploads being sent, paused or cut off. Whoever sends one goes on by picking the same file again. {hours, plural,
+        one {An upload that receives nothing for an hour is removed.}
+        other {An upload that receives nothing for {{ hours }} hours is removed.}
+        }
     </p>
     <ul class="tracking-missing-list">
         @if (loading()) {
             <li class="tag-loading"><span class="spinner"></span></li>
         } @else if (!items().length) {
-            <li class="muted uploads-empty">No upload under way.</li>
+            <li class="muted uploads-empty" i18n>No uploads under way.</li>
         }
         @for (item of items(); track item.id) {
             <li class="tracking-missing" [attr.data-id]="item.id" [sfeContextMenu]="uploadMenu(item)">
@@ -16,11 +18,11 @@
                     <span class="tracking-file">
                         <strong class="tracking-name" [title]="item.name">{{ baseName(item.name) }}</strong>
                         <span class="tracking-was">{{ describe(item) }}</span>
-                        <span class="tracking-was">Into
+                        <span class="tracking-was" i18n>Into
                             <a
                                 routerLink="/"
                                 [queryParams]="{ path: item.target || null }"
-                                [title]="'Open ' + (item.target || 'the library')"
+                                [title]="folderHint(item.target)"
                             >{{ item.target || rootName() }}</a>
                         </span>
                     </span>
@@ -28,10 +30,11 @@
                         <button
                             type="button"
                             class="button small"
-                            title="Stop it and remove what it received (asks first)"
+                            [title]="cancelHint"
                             [sfeBusy]="busy() === item.id"
                             [disabled]="busy() !== null"
                             (click)="cancel(item)"
+                            i18n
                         >Cancel</button>
                     </span>
                 </div>

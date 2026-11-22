@@ -20,7 +20,8 @@ import { SidebarService } from '../library/sidebar/sidebar.service';
 import { CompressDialog, defaultName } from './compress.dialog';
 import { FileTransfers } from './file-transfers';
 import { ItemMenu } from './item-menu';
-import { OperationsPanelComponent, timeLeft } from './operations-panel.component';
+import { OperationsPanelComponent } from './operations-panel.component';
+import { timeLeft } from './operations-texts';
 
 let api: ApiMock;
 let store: ListingStore;

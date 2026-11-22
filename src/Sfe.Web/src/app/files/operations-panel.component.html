@@ -8,17 +8,19 @@
                 <button
                     type="button"
                     class="button small primary"
-                    [title]="'Put them in the folder listed (Ctrl+V)'"
+                    [title]="pasteTitle(clipboard)"
                     (click)="paste()"
                 >
-                    <svg sfeIcon="paste"></svg><span>Paste here</span>
+                    <svg sfeIcon="paste"></svg><span i18n>Paste here</span>
                 </button>
             }
             <button
                 type="button"
                 class="icon-button ghost small"
                 aria-label="Forget them"
-                title="Forget them"
+                i18n-aria-label
+                title="Forget the items cut or copied."
+                i18n-title
                 (click)="transfers.clipboard.set(null)"
             >
                 <svg sfeIcon="close"></svg>
@@ -42,16 +44,18 @@
                     type="button"
                     class="button small"
                     data-retry
-                    title="Copy or move again the items that failed"
+                    title="Try the items that failed again."
+                    i18n-title
                     (click)="retry(job)"
+                    i18n
                 >Retry</button>
             }
             @if (isDone(job)) {
                 <button
                     type="button"
                     class="icon-button ghost small"
-                    aria-label="Close"
-                    title="Close"
+                    [attr.aria-label]="closeLabel"
+                    [title]="closeHint"
                     (click)="transfers.dismiss(job)"
                 >
                     <svg sfeIcon="close"></svg>
@@ -60,8 +64,9 @@
                 <button
                     type="button"
                     class="button small"
-                    title="Stop: what is done stays, nothing half copied does"
+                    [title]="cancelHint"
                     (click)="transfers.cancel(job)"
+                    i18n
                 >Cancel</button>
             }
         </header>
@@ -70,37 +75,48 @@
             <p class="operation-status">{{ status(job) }}</p>
         }
         @if (job.conflict; as conflict) {
-            <div class="operation-conflict" role="group" aria-label="Name clash">
-                <p>“{{ conflict.existing.name }}” is already there.</p>
+            <div class="operation-conflict" role="group" aria-label="Name clash" i18n-aria-label>
+                <p i18n>“{{ conflict.existing.name }}” is already there.</p>
                 <dl>
-                    <dt>There</dt><dd>{{ side(conflict.existing) }}</dd>
-                    <dt>{{ job.kind === 'move' ? 'Moved' : job.kind === 'copy' ? 'Copied' : job.kind === 'extract' ? 'Extracted' : 'The new zip' }}</dt><dd>{{ side(conflict.source) }}</dd>
+                    <dt i18n="the item already there, in a name clash">There</dt><dd>{{ side(conflict.existing) }}</dd>
+                    <dt i18n="the item coming, in a name clash">{job.kind, select,
+                        move {Moved}
+                        copy {Copied}
+                        extract {Extracted}
+                        other {The new zip}
+                    }</dt><dd>{{ side(conflict.source) }}</dd>
                 </dl>
                 <div class="operation-choices">
                     @if (conflict.canReplace) {
                         <button
                             type="button"
                             class="button small danger"
-                            title="The one there goes to the trash"
+                            title="Replace it. The one there goes to the trash."
+                            i18n-title
                             (click)="answer(job, 'replace')"
+                            i18n
                         >Replace</button>
                     }
                     <button
                         type="button"
                         class="button small"
-                        title="Leave this one out"
+                        title="Leave this one out."
+                        i18n-title
                         (click)="answer(job, 'skip')"
+                        i18n
                     >Skip</button>
                     <button
                         type="button"
                         class="button small primary"
-                        title="Keep both: this one gets a number added to its name"
+                        title="Keep both. This one gets a number added to its name."
+                        i18n-title
                         (click)="answer(job, 'keepBoth')"
+                        i18n
                     >Keep both</button>
                 </div>
                 <label class="check">
                     <input type="checkbox" [checked]="forAll()" (change)="forAll.set(checked($event))">
-                    <span>The same for the next ones</span>
+                    <span i18n>Do the same for the next ones</span>
                 </label>
             </div>
         }
@@ -118,8 +134,10 @@
                     type="button"
                     class="button small"
                     data-retry-password
-                    title="Extract it again, with its password"
+                    title="Extract it again, with its password."
+                    i18n-title
                     (click)="transfers.retryExtraction(job)"
+                    i18n
                 >Enter the password…</button>
             }
         }

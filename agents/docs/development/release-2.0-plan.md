@@ -189,8 +189,17 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     "Put it back" (the docs-screenshots tool clicks it); `plural()` out of these files (also the empty-trash
     toast); copy toasts, restore toasts and confirms left for 2.8. Screenshots `properties-*.png`,
     `admin-files-trash.png` retaken.
-  - [ ] **2.6c operations and uploads** (operations panel, uploads panel and section, `file-transfers.ts`,
-    `place-transfers.ts`, `uploads.ts`; ~52 template texts and many texts in code).
+  - [x] **2.6c operations and uploads** (operations panel, uploads panel and section, `file-transfers.ts`,
+    `place-transfers.ts`, `uploads.ts`; ~52 template texts and many texts in code). Done 2026-11-22: 3 templates at
+    0 unmarked texts (52 gone); the sentences in `operations-texts.ts` (titles by kind and state as ICU `select`s,
+    the destination a phrase "to “…”" / "from … to …", status lines, `timeLeft` moved there, clash sides, clipboard,
+    the toasts ending a move or copy, `couldNotStart` by kind: `pastOf` gone) and `upload-texts.ts` (titles, status,
+    each file's state — "done", "skipped", "cancelled" no longer the raw code word —, toasts, the administration's
+    line), pure functions with specs; the panel's host `aria-label` bound ("Operations and uploads"); Paste here's
+    hint is `pasteTitle`; template ICU plurals over a call through `@let`; the operations' and uploads' toasts all
+    marked (the uploads section's confirm and toasts left for 2.8); `plural()` out of `app/files/`. Screenshots
+    `operations-panel.png`, `upload-panel.png`, `admin-files-uploads.png` retaken (scenes `files`, `uploads`).
+    A 121-character line left by 2.6b in `properties-texts.ts` broken (same message).
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
   (dividers) to `MenuEntry`; one action registry used by the item menu, folder menu and selection bar; order
@@ -340,8 +349,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-22):** steps 1.1 to 2.4d, 2.5a–2.5e, 2.6a and 2.6b done (see their ticks; 2.4, 2.5 and 2.6
-  were split). Next: **2.6c** (operations and uploads), then 2.7–2.8.
+- **Last session (2026-11-22):** steps 1.1 to 2.4d, 2.5a–2.5e and 2.6a–2.6c done (see their ticks; 2.4, 2.5 and 2.6
+  were split). Next: **2.7** (viewers, player, editors, formats: split it first), then 2.8.
+- The docs-screenshots scene for `operations-panel.png` is `files` (it calls `operations()` at its end), not
+  `operations`; it rewrites the other `files` images with no visible change: keep only those of the step.
   Texts marked and rewritten to
   [ui-texts](ui-texts.md), [translations](translations.md) says how; `app/access/` is a worked example.
 - The docs-screenshots tool clicks elements by the start of their `title` (`clickTitle`): a hint rewritten updates

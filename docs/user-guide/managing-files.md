@@ -163,7 +163,7 @@ seconds: the items go back into the folders they came from.
 
 When the folder already holds an item with the same name, the panel asks, showing the size and date of both:
 **Replace** (the one there goes to the trash: you need the right to delete there), **Skip** (leave this one out) or
-**Keep both** (a number is added to the new one's name). Tick **The same for the next ones** to answer once for the
+**Keep both** (a number is added to the new one's name). Tick **Do the same for the next ones** to answer once for the
 rest. A copy into the folder it is in always keeps both.
 
 ![A copy asking about a name already taken](../images/operations-panel.png)

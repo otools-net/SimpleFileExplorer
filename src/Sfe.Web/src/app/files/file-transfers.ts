@@ -1,7 +1,6 @@
 import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { plural } from '../core/format';
 import { LibraryItem } from '../core/models';
 import {
     CompressRequest,
@@ -21,6 +20,16 @@ import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
 import { FileClipboard } from './file-clipboard';
 import { jobPlaces, PlaceTransfers, TransferPlaces } from './place-transfers';
+import { itemCount, quoted } from './file-dialog-texts';
+import {
+    couldNotStart,
+    keptToast,
+    notDoneToast,
+    openHint,
+    stoppedToast,
+    transferredToast,
+    whereOf,
+} from './operations-texts';
 
 /** How often (ms) running jobs are asked for. */
 const POLL = 700;
@@ -157,7 +166,7 @@ export class FileTransfers {
             name: baseName(request.archive),
             folders: request.folders,
             files: request.files,
-            what: chosen ? plural(chosen, 'item') : undefined,
+            what: chosen ? itemCount(chosen) : undefined,
             target: request.target,
             newFolder: request.newFolder,
         });
@@ -201,10 +210,7 @@ export class FileTransfers {
         const allowed = items.filter((item) => (kind === 'move' ? this.canMove(item) : this.canCopy(item)));
         if (!allowed.length) return false;
         this.clipboard.set({ kind, items: allowed, connection: this.places.here() });
-        this.toasts.show(
-            `${plural(allowed.length, 'item')} ${kind === 'move' ? 'cut' : 'copied'}: ` +
-                `paste them into a folder with Ctrl+V or its menu.`,
-        );
+        this.toasts.show(keptToast(kind, allowed.length));
         return true;
     }
 
@@ -241,7 +247,7 @@ export class FileTransfers {
         try {
             return (await this.api.checkMove(paths, target)).gains;
         } catch (error) {
-            this.toasts.error(`Could not move: ${(error as Error).message}`);
+            this.toasts.error(couldNotStart('move', (error as Error).message));
             return null;
         }
     }
@@ -256,7 +262,7 @@ export class FileTransfers {
         try {
             job = await started();
         } catch (error) {
-            this.toasts.error(`Could not ${kind}: ${(error as Error).message}`);
+            this.toasts.error(couldNotStart(kind, (error as Error).message));
             return null;
         }
         this.following.add(job.id);
@@ -328,18 +334,23 @@ export class FileTransfers {
     private compressed(job: FileJobView, where: string): void {
         const result = job.results[0];
         if (job.state === 'cancelled') {
-            this.toasts.show(`Stopped: no zip was made in “${where}”.`);
+            this.toasts.show($localize`Stopped. No zip was made in ${where}:where:.`);
             return;
         }
         if (!result || result.status !== 'done' || !result.newPath) {
-            this.toasts.error(result?.message ?? 'The zip could not be made.', 8000);
+            this.toasts.error(result?.message ?? $localize`The zip could not be made.`, 8000);
             return;
         }
         const zip = result.newPath;
-        this.toasts.show(`“${baseName(zip)}” made in “${where}”. ${result.message ?? ''}`.trim(), {
+        const made = $localize`${quoted(baseName(zip))}:zip: made in ${where}:where:.`;
+        this.toasts.show(`${made} ${result.message ?? ''}`.trim(), {
             timeout: 8000,
             actions: [
-                { label: 'Show', title: `Show ${baseName(zip)} in its folder`, run: () => this.store.reveal(zip) },
+                {
+                    label: $localize`Show`,
+                    title: $localize`Show ${quoted(baseName(zip))}:zip: in its folder.`,
+                    run: () => this.store.reveal(zip),
+                },
             ],
         });
     }
@@ -348,17 +359,17 @@ export class FileTransfers {
     private extracted(job: FileJobView, where: string): void {
         const result = job.results[0];
         if (job.state === 'cancelled') {
-            this.toasts.show(`Stopped: nothing was extracted to “${where}”.`);
+            this.toasts.show($localize`Stopped. Nothing was extracted to ${where}:where:.`);
             return;
         }
         if (this.canRetryExtraction(job)) {
-            this.toasts.show(result.message ?? 'It is protected by a password.', {
+            this.toasts.show(result.message ?? $localize`It's protected by a password.`, {
                 error: true,
                 timeout: 12000,
                 actions: [
                     {
-                        label: 'Enter the password',
-                        title: 'Extract it again, with its password',
+                        label: $localize`Enter the password…`,
+                        title: $localize`Extract it again, with its password.`,
                         run: () => this.retryExtraction(job),
                     },
                 ],
@@ -366,24 +377,26 @@ export class FileTransfers {
             return;
         }
         if (!result || result.status !== 'done') {
-            this.toasts.error(result?.message ?? `“${baseName(job.target)}” could not be extracted.`, 8000);
+            this.toasts.error(
+                result?.message ?? $localize`${quoted(baseName(job.target))}:archive: could not be extracted.`,
+                8000,
+            );
             return;
         }
         const opened = result.newPath && result.newPath !== job.target ? result.newPath : job.target;
+        const into = baseName(opened) ? quoted(baseName(opened)) : where;
         const actions =
             opened !== this.store.route().path
                 ? [
                       {
-                          label: 'Open',
-                          title: `Open ${baseName(opened) || where}`,
+                          label: $localize`Open`,
+                          title: openHint(into),
                           run: () => this.store.navigate({ path: opened }),
                       },
                   ]
                 : [];
-        this.toasts.show(
-            `“${baseName(result.path)}” extracted to “${baseName(opened) || where}”. ${result.message ?? ''}`.trim(),
-            { timeout: 8000, actions },
-        );
+        const extracted = $localize`${quoted(baseName(result.path))}:archive: extracted to ${into}:where:.`;
+        this.toasts.show(`${extracted} ${result.message ?? ''}`.trim(), { timeout: 8000, actions });
     }
 
     /** A job followed has ended: the listing shows its result, a toast says it. */
@@ -404,8 +417,7 @@ export class FileTransfers {
         if (done.length && (route.q || (job.target === listed && places.to === here)))
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + done.length });
 
-        const verb = pastOf(job.kind);
-        const where = baseName(job.target) || this.places.nameOf(places.to);
+        const where = whereOf(job.target, this.places.nameOf(places.to));
         if (job.kind === 'extract') {
             this.extracted(job, where);
             return;
@@ -414,39 +426,26 @@ export class FileTransfers {
             this.compressed(job, where);
             return;
         }
-        if (job.state === 'cancelled')
-            this.toasts.show(`Stopped: ${plural(done.length, 'item')} ${verb} to “${where}” before.`);
+        if (job.state === 'cancelled') this.toasts.show(stoppedToast(job.kind, done.length, where));
         else if (done.length) {
             const actions = [];
             if (job.kind === 'move')
                 actions.push({
-                    label: 'Undo',
-                    title: 'Move them back where they were',
+                    label: $localize`Undo`,
+                    title: $localize`Move them back where they were.`,
                     run: () => this.undoMove(done, places),
                 });
             if (job.target !== listed || places.to !== here)
                 actions.push({
-                    label: 'Open',
-                    title: `Open ${where}`,
+                    label: $localize`Open`,
+                    title: openHint(where),
                     run: () => this.store.navigate({ path: job.target, c: places.to }),
                 });
-            this.toasts.show(`${plural(done.length, 'item')} ${verb} to “${where}”.`, { timeout: 8000, actions });
+            this.toasts.show(transferredToast(job.kind, done.length, where), { timeout: 8000, actions });
         }
         const failed = job.results.filter((result) => result.status !== 'done' && result.status !== 'skipped');
-        if (failed.length)
-            this.toasts.error(
-                failed.length === 1
-                    ? (failed[0].message ?? `“${baseName(failed[0].path)}” could not be ${verb}.`)
-                    : `${plural(failed.length, 'item')} could not ` +
-                          `be ${verb}: ${failed[0].message ?? baseName(failed[0].path)}`,
-                8000,
-            );
+        if (failed.length) this.toasts.error(notDoneToast(job.kind, failed), 8000);
     }
-}
-
-/** What a job did, in the past: moved, copied, extracted. */
-export function pastOf(kind: FileJobKind): string {
-    return kind === 'move' ? 'moved' : kind === 'copy' ? 'copied' : kind === 'extract' ? 'extracted' : 'compressed';
 }
 
 /**

@@ -240,6 +240,13 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   library."; a count on the disk says "… when the count was stopped." and "1 link or unreadable folder was left
   out."; a trash entry says "Deleted (date) by Sam." (or "Saved over …"), and the link to its folder names it in
   quotes. Their texts are ready for translation.
+- **Operations and uploads reworded**: the operations panel, the uploads in it and Administration › File management
+  › Uploads say what a click does in full sentences; items cut or copied read "“beach.jpg” cut. Open a folder to
+  paste it into.", and Paste here names the folder; a stopped move says "Stopped. 2 items were moved to “Holidays”
+  before."; names already taken on a connection say "… is already in “Saved”, so it was not copied."; a file left
+  out for its size says so in a sentence; a finished file in an upload says "done", "skipped" or "cancelled"; the
+  name clash's check box is **Do the same for the next ones**; an unfinished upload reads "Sent by Sam, last
+  received …", and the list says "No uploads under way.". Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

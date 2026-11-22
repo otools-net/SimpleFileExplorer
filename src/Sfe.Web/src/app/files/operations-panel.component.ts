@@ -8,7 +8,6 @@ import {
     OnInit,
     signal,
 } from '@angular/core';
-import { formatDate, formatSize, joinParts, plural } from '../core/format';
 import { ClashSide, LibraryItem } from '../core/models';
 import { FileJobView } from './file.models';
 import { baseName } from '../core/paths';
@@ -20,13 +19,24 @@ import { ConfigService } from '../core/config.service';
 import { Rights } from '../core/rights';
 import { ListingStore } from '../library/listing.store';
 import { DRAG_ITEMS } from '../library/quick-links/quick-links.service';
-import { FileTransfers, finished, pastOf } from './file-transfers';
+import { FileTransfers, finished, pasteTitle } from './file-transfers';
 import { UploadsPanelComponent } from './uploads-panel.component';
 import { droppedFiles, UploadQueue } from './uploads';
 import { uploadConnection } from './upload-places';
 import { dragItemsData, parseDragItems } from './drag-items';
-import { canRetryTransfer, PlaceTransfers } from './place-transfers';
+import { canRetryTransfer, jobPlaces, PlaceTransfers } from './place-transfers';
 import { Api } from '../core/api.service';
+import {
+    clashSide,
+    clipboardText,
+    compressTitle,
+    destination,
+    extractTitle,
+    jobStatus,
+    timeLeft,
+    transferTitle,
+    whereOf,
+} from './operations-texts';
 
 /** Drop targets: listed folders and the folders of the location bar (`data-drop` holding their path). */
 const DROP_TARGET = '[data-drop]';
@@ -44,7 +54,7 @@ const DROP_TARGET = '[data-drop]';
     host: {
         class: 'operations-panel',
         role: 'region',
-        'aria-label': 'Moves, copies, archives and uploads',
+        '[attr.aria-label]': 'label',
         '[hidden]': '!transfers.jobs().length && !transfers.clipboard() && !uploads.batches().length',
         '(document:dragstart)': 'onDragStart($event)',
         '(document:dragover)': 'onDragOver($event)',
@@ -63,8 +73,13 @@ export class OperationsPanelComponent implements OnInit {
     private readonly places = inject(PlaceTransfers);
     private readonly api = inject(Api);
 
+    protected readonly label = $localize`Operations and uploads`;
     protected readonly forAll = signal(false);
     protected readonly baseName = baseName;
+    protected readonly pasteTitle = pasteTitle;
+    protected readonly closeLabel = $localize`Close`;
+    protected readonly closeHint = $localize`Take it off the list.`;
+    protected readonly cancelHint = $localize`Stop it. What is already done stays.`;
     protected readonly canRetry = canRetryTransfer;
     /** When each job's bytes were first seen moving, and how many then: its speed since. */
     private readonly moving = new Map<number, { at: number; bytes: number }>();
@@ -105,13 +120,7 @@ export class OperationsPanelComponent implements OnInit {
 
     protected clipboardText(): string {
         const clipboard = this.transfers.clipboard();
-        if (!clipboard) return '';
-        const what =
-            clipboard.items.length === 1 ? `“${clipboard.items[0].name}”` : plural(clipboard.items.length, 'item');
-        return (
-            `${what} ${clipboard.kind === 'move' ? 'cut' : 'copied'}: ` +
-            `open a folder to paste ${clipboard.items.length === 1 ? 'it' : 'them'} into`
-        );
+        return clipboard ? clipboardText(clipboard) : '';
     }
 
     protected paste(): void {
@@ -129,18 +138,18 @@ export class OperationsPanelComponent implements OnInit {
                     ? [
                           {
                               id: 'close',
-                              label: 'Close',
+                              label: this.closeLabel,
                               icon: 'close',
-                              title: 'Take it off the list',
+                              title: this.closeHint,
                               run: () => this.transfers.dismiss(job),
                           },
                       ]
                     : [
                           {
                               id: 'cancel',
-                              label: 'Cancel',
+                              label: $localize`Cancel`,
                               icon: 'close',
-                              title: 'Stop: what is done stays, nothing half copied does',
+                              title: this.cancelHint,
                               run: () => void this.transfers.cancel(job),
                           },
                       ];
@@ -154,30 +163,10 @@ export class OperationsPanelComponent implements OnInit {
     }
 
     protected title(job: FileJobView): string {
-        const where = `“${baseName(job.target) || 'the library'}”`;
-        const count = plural(job.total, 'item');
-        if (job.kind === 'compress') {
-            const zip = job.results[0]?.newPath;
-            if (job.state === 'cancelled') return `Stopped: no zip made in ${where}`;
-            if (job.state === 'completed') return zip ? `“${baseName(zip)}” made in ${where}` : 'No zip made';
-            return `Compressing into ${where}`;
-        }
-        if (job.kind === 'extract') {
-            const archive = `“${baseName(job.results[0]?.path ?? job.current ?? '')}”`;
-            if (job.state === 'cancelled') return `Stopped: nothing extracted to ${where}`;
-            if (job.state === 'completed')
-                return job.results[0]?.status === 'done'
-                    ? `${archive} extracted to ${where}`
-                    : `${archive} not extracted`;
-            return `Extracting ${job.current ? `“${baseName(job.current)}”` : ''} to ${where}`;
-        }
-        const to = this.places.journey(job) ?? `to ${where}`;
-        if (job.state === 'cancelled') return `Stopped: ${job.done} of ${count} ${pastOf(job.kind)} ${to}`;
-        if (job.state === 'completed') {
-            const done = job.results.filter((result) => result.status === 'done').length;
-            return `${plural(done, 'item')} ${pastOf(job.kind)} ${to}`;
-        }
-        return `${job.kind === 'move' ? 'Moving' : 'Copying'} ${count} ${to}`;
+        const where = whereOf(job.target, this.places.nameOf(jobPlaces(job).to));
+        if (job.kind === 'compress') return compressTitle(job, where);
+        if (job.kind === 'extract') return extractTitle(job, where);
+        return transferTitle(job, destination(where, this.places.journey(job)));
     }
 
     protected progressMax(job: FileJobView): number {
@@ -189,25 +178,7 @@ export class OperationsPanelComponent implements OnInit {
     }
 
     protected status(job: FileJobView): string {
-        if (job.state === 'waiting') return 'Waiting for your answer…';
-        if (job.kind === 'extract')
-            return job.bytesTotal
-                ? joinParts([`${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} read`, this.left(job)])
-                : 'Reading the archive…';
-        if (job.kind === 'compress')
-            return job.bytesDone
-                ? joinParts([
-                      `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)} compressed`,
-                      this.left(job),
-                  ])
-                : 'Waiting for its turn…';
-        return joinParts([
-            `${job.done} of ${job.total}`,
-            job.kind === 'copy' && job.bytesTotal
-                ? `${formatSize(job.bytesDone)} of ${formatSize(job.bytesTotal)}`
-                : null,
-            job.current ? baseName(job.current) : null,
-        ]);
+        return jobStatus(job, job.kind === 'extract' || job.kind === 'compress' ? this.left(job) : null);
     }
 
     /** The time left of a job measured in bytes, from when its bytes started moving (a queue's wait left out). */
@@ -219,13 +190,7 @@ export class OperationsPanelComponent implements OnInit {
     }
 
     protected side(side: ClashSide): string {
-        return joinParts(
-            [
-                side.isFolder ? 'folder' : formatSize(side.size),
-                side.modified ? `modified ${formatDate(side.modified)}` : null,
-            ],
-            ', ',
-        );
+        return clashSide(side);
     }
 
     /** What was not done, skipped included; an extraction's result whatever it is (what it left out). */
@@ -368,25 +333,4 @@ export class OperationsPanelComponent implements OnInit {
         target?.classList.add('drop-over');
         this.over = target;
     }
-}
-
-/**
- * "about 4 min left", from the speed since `start` (when and how many bytes were done then); null for the first 10
- * seconds, or while nothing moves.
- */
-export function timeLeft(
-    start: { at: number; bytes: number },
-    now: number,
-    done: number,
-    total: number,
-): string | null {
-    const seconds = (now - start.at) / 1000;
-    const speed = (done - start.bytes) / seconds;
-    if (seconds < 10 || speed <= 0 || done >= total) return null;
-    const left = (total - done) / speed;
-    if (left < 60) return 'less than a minute left';
-    const minutes = Math.round(left / 60);
-    return minutes < 60
-        ? `about ${minutes} min left`
-        : `about ${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, '0')} min left`;
 }

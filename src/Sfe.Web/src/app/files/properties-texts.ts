@@ -83,8 +83,8 @@ export function itemKind(item: LibraryItem): string {
             { kind },
         );
     return icu(
-        $localize`:a file's kind after its extension:{kind, select, image {{extension} image} video {{extension} video} \
-audio {{extension} audio} document {{extension} document} other {{extension} file}}`,
+        $localize`:a file's kind after its extension:{kind, select, image {{extension} image} \
+video {{extension} video} audio {{extension} audio} document {{extension} document} other {{extension} file}}`,
         { kind, extension },
     );
 }

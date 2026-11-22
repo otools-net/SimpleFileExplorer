@@ -1,7 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { ConfigService } from '../core/config.service';
 import { PlaceTransferItem } from '../core/connection.models';
-import { plural } from '../core/format';
 import { baseName, parentPath } from '../core/paths';
 import { AccessQuestion, PlaceConflict, PlaceFiles } from '../core/place-files';
 import { ToastService } from '../core/toast.service';
@@ -10,6 +9,7 @@ import { Dialogs } from '../library/dialogs.service';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
 import { FileJobKind, FileJobView, TransferRequest } from './file.models';
+import { couldNotStart, notDoneToast, takenToast, transferredToast, whereOf } from './operations-texts';
 
 /** The places of a move or copy: a connection's id, null for the library. */
 export interface TransferPlaces {
@@ -71,12 +71,12 @@ export class PlaceTransfers {
         return connection === null ? this.config.libraryName() : this.connections.name(connection);
     }
 
-    /** "from Dropbox › Trips to Library › Photos" for a job between two places; null for one in the library. */
-    journey(job: FileJobView): string | null {
+    /** The folders of a job between two places ("Dropbox › Trips", "Library › Photos"); null for one in the library. */
+    journey(job: FileJobView): { from: string; to: string } | null {
         const { from, to } = jobPlaces(job);
         if (from === null && to === null) return null;
         const source = job.results[0]?.path ?? job.current;
-        return `from ${this.folderIn(from, source ? parentPath(source) : '')} to ${this.folderIn(to, job.target)}`;
+        return { from: this.folderIn(from, source ? parentPath(source) : ''), to: this.folderIn(to, job.target) };
     }
 
     /** From the place listed into it. */
@@ -122,27 +122,19 @@ export class PlaceTransfers {
             items = (await this.files.transfer(kind, paths, target, conflict, { connection, keepAccess })).items;
         } catch (error) {
             if (error instanceof AccessQuestion) this.ask(move, error);
-            else this.toasts.error(`Could not ${kind}: ${(error as Error).message}`);
+            else this.toasts.error(couldNotStart(kind, (error as Error).message));
             return;
         }
-        const verb = kind === 'move' ? 'moved' : 'copied';
-        const where = baseName(target) || this.config.place()?.name || 'the connection';
+        const where = whereOf(target, this.nameOf(connection));
         const done = items.filter((item) => item.status === 'done');
         const taken = items.filter((item) => item.status === 'exists').map((item) => item.path);
         const failed = items.filter((item) => item.status !== 'done' && item.status !== 'exists');
         if (done.length) {
-            this.toasts.show(`${plural(done.length, 'item')} ${verb} to “${where}”.`, { timeout: 8000 });
+            this.toasts.show(transferredToast(kind, done.length, where), { timeout: 8000 });
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + done.length });
         }
         if (taken.length) this.askTaken({ kind, paths: taken, target, connection }, where);
-        if (failed.length)
-            this.toasts.error(
-                failed.length === 1
-                    ? (failed[0].message ?? `“${baseName(failed[0].path)}” could not be ${verb}.`)
-                    : `${plural(failed.length, 'item')} could not be ${verb}: ` +
-                          (failed[0].message ?? baseName(failed[0].path)),
-                8000,
-            );
+        if (failed.length) this.toasts.error(notDoneToast(kind, failed), 8000);
     }
 
     /** Who would gain access, asked as the library's moves ask it; `answer` goes on. */
@@ -159,18 +151,17 @@ export class PlaceTransfers {
         where: string,
     ) {
         const { kind, paths, target, connection } = taken;
-        const what = paths.length === 1 ? `“${baseName(paths[0])}”` : plural(paths.length, 'name');
-        this.toasts.show(`${what} already in “${where}”: not ${kind === 'move' ? 'moved' : 'copied'}.`, {
+        this.toasts.show(takenToast(kind, paths, where), {
             timeout: 15000,
             actions: [
                 {
-                    label: 'Keep both',
-                    title: 'Give them a new name there',
+                    label: $localize`Keep both`,
+                    title: $localize`Keep both. A number is added to the new name.`,
                     run: () => void this.run({ kind, paths, target, conflict: 'keepBoth', connection }),
                 },
                 {
-                    label: 'Replace',
-                    title: 'Put them in place of those there',
+                    label: $localize`Replace`,
+                    title: $localize`Put them in place of those there.`,
                     run: () => void this.run({ kind, paths, target, conflict: 'replace', connection }),
                 },
             ],

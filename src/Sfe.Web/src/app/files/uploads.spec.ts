@@ -264,7 +264,7 @@ describe('UploadsSectionComponent', () => {
 
         expect(api.uploads).toHaveBeenCalledWith(true);
         expect(element.textContent).toContain('clip.mp4');
-        expect(element.textContent).toContain('(50%) · by alice');
+        expect(element.textContent).toContain('5 B of 10 B (50%) · Sent by alice, last received');
         element
             .querySelector('[data-id] .tracking-name')!
             .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
@@ -278,7 +278,7 @@ describe('UploadsSectionComponent', () => {
         await settle();
         fixture.detectChanges();
         expect(api.cancelUpload).toHaveBeenCalledWith('a'.repeat(32));
-        expect(element.textContent).toContain('No upload under way.');
+        expect(element.textContent).toContain('No uploads under way.');
     });
 });
 

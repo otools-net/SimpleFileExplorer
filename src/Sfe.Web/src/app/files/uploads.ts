@@ -1,7 +1,6 @@
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { plural } from '../core/format';
 import { isFileConflict, LibraryItem } from '../core/models';
 import { ConflictChoice, UploadInfo } from './file.models';
 import { baseName } from '../core/paths';
@@ -10,6 +9,8 @@ import { ToastService } from '../core/toast.service';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
 import { showsTarget, uploadConnection } from './upload-places';
+import { quoted } from './file-dialog-texts';
+import { notSaved, tooLargeToast, uploadedToast } from './upload-texts';
 
 /** Bytes per chunk: well under the server's 16 MB and the usual proxy limits once raised from their defaults. */
 export const CHUNK_BYTES = 8 * 1024 * 1024;
@@ -146,9 +147,8 @@ export class UploadQueue {
         const max = (this.config.config()?.files?.maxUploadMegabytes ?? 0) * 1024 * 1024;
         const tooLarge = max ? files.filter((picked) => picked.file.size > max) : [];
         if (tooLarge.length) {
-            const which =
-                tooLarge.length === 1 ? `“${baseName(tooLarge[0].name)}” is` : `${plural(tooLarge.length, 'file')} are`;
-            this.toasts.error(`${which} larger than the ${max / 1024 / 1024} MB a file may have here: left out.`, 8000);
+            const names = tooLarge.map((picked) => picked.name);
+            this.toasts.error(tooLargeToast(names, max / 1024 / 1024), 8000);
             files = files.filter((picked) => !tooLarge.includes(picked));
         }
         for (const picked of files) {
@@ -333,7 +333,7 @@ export class UploadQueue {
                 item.exists = true;
                 item.state = 'asking';
             } else {
-                this.fail(item, result.detail ?? 'It could not be saved.');
+                this.fail(item, result.detail ?? notSaved());
             }
         } else {
             item.state = 'done';
@@ -356,10 +356,7 @@ export class UploadQueue {
         if (done.some((item) => item.name.includes('/')) && shown)
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + 1 });
         if (done.length)
-            this.toasts.show(
-                `${plural(done.length, 'file')} uploaded to ` +
-                    `“${baseName(batch.target) || this.config.config()?.rootName || 'the library'}”.`,
-            );
+            this.toasts.show(uploadedToast(done.length, quoted(baseName(batch.target) || this.config.libraryName())));
     }
 
     private fail(item: UploadItem, message: string): void {

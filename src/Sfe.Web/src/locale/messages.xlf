@@ -478,7 +478,13 @@
         <note category="location">src/app/files/delete.dialog.html:26,27</note>
         <note category="location">src/app/files/extract.dialog.html:44,45</note>
         <note category="location">src/app/files/name.dialog.ts:58,59</note>
+        <note category="location">src/app/files/operations-panel.component.html:70,71</note>
+        <note category="location">src/app/files/operations-panel.component.ts:150</note>
         <note category="location">src/app/files/transfer.dialog.html:43,44</note>
+        <note category="location">src/app/files/uploads-panel.component.html:36,37</note>
+        <note category="location">src/app/files/uploads-panel.component.ts:74</note>
+        <note category="location">src/app/files/uploads-section.component.html:38,39</note>
+        <note category="location">src/app/files/uploads-section.component.ts:69</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:52,53</note>
         <note category="location">src/app/library/scan/folder-exclusions.dialog.html:33,34</note>
         <note category="location">src/app/library/scan/remove-from-index.dialog.html:51,52</note>
@@ -2294,6 +2300,8 @@
     <unit id="7593555694782789615">
       <notes>
         <note category="location">src/app/access/spaces-page.component.html:111</note>
+        <note category="location">src/app/files/file-transfers.ts:392</note>
+        <note category="location">src/app/files/file-transfers.ts:440</note>
         <note category="location">src/app/files/item-menu.ts:450</note>
         <note category="location">src/app/files/item-menu.ts:469</note>
         <note category="location">src/app/library/folder-menu.ts:157</note>
@@ -6920,6 +6928,112 @@ Space “Holiday photos”
         <source>{count, plural, one {Could not give # item its name back.} other {Could not give # items their names back.}}</source>
       </segment>
     </unit>
+    <unit id="6555802535094387331">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:337</note>
+      </notes>
+      <segment>
+        <source>Stopped. No zip was made in <ph id="0" equiv="where" disp="where"/>.</source>
+      </segment>
+    </unit>
+    <unit id="3495210922966668378">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:341</note>
+      </notes>
+      <segment>
+        <source>The zip could not be made.</source>
+      </segment>
+    </unit>
+    <unit id="4555538890082979599">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:345</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="zip" disp="quoted(baseName(zip))"/> made in <ph id="1" equiv="where" disp="where"/>.</source>
+      </segment>
+    </unit>
+    <unit id="8461842260159597706">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:350</note>
+      </notes>
+      <segment>
+        <source>Show</source>
+      </segment>
+    </unit>
+    <unit id="7893072212619491994">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:351</note>
+      </notes>
+      <segment>
+        <source>Show <ph id="0" equiv="zip" disp="quoted(baseName(zip))"/> in its folder.</source>
+      </segment>
+    </unit>
+    <unit id="6209735021162197397">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:362</note>
+      </notes>
+      <segment>
+        <source>Stopped. Nothing was extracted to <ph id="0" equiv="where" disp="where"/>.</source>
+      </segment>
+    </unit>
+    <unit id="8579864010386481606">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:366</note>
+      </notes>
+      <segment>
+        <source>It&apos;s protected by a password.</source>
+      </segment>
+    </unit>
+    <unit id="8876125281336377441">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:371</note>
+        <note category="location">src/app/files/operations-panel.component.html:141,142</note>
+      </notes>
+      <segment>
+        <source>Enter the password…</source>
+      </segment>
+    </unit>
+    <unit id="6404255192971813326">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:372</note>
+        <note category="location">src/app/files/operations-panel.component.html:137,138</note>
+      </notes>
+      <segment>
+        <source>Extract it again, with its password.</source>
+      </segment>
+    </unit>
+    <unit id="8695798324679265168">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:381</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="archive" disp="quoted(baseName(job.target))"/> could not be extracted.</source>
+      </segment>
+    </unit>
+    <unit id="1292303190674769981">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:398</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="archive" disp="quoted(baseName(result.path))"/> extracted to <ph id="1" equiv="where" disp="into"/>.</source>
+      </segment>
+    </unit>
+    <unit id="5775346636203685655">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:434</note>
+      </notes>
+      <segment>
+        <source>Undo</source>
+      </segment>
+    </unit>
+    <unit id="1877082256408805881">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:435</note>
+      </notes>
+      <segment>
+        <source>Move them back where they were.</source>
+      </segment>
+    </unit>
     <unit id="5423210188043289653">
       <notes>
         <note category="location">src/app/files/folder-browser.component.html:1</note>
@@ -6989,6 +7103,7 @@ Space “Holiday photos”
     <unit id="7970053994742517789">
       <notes>
         <note category="location">src/app/files/folder-browser.component.ts:169</note>
+        <note category="location">src/app/files/upload-texts.ts:118</note>
         <note category="location">src/app/library/scan/exclusions-section.component.ts:61</note>
       </notes>
       <segment>
@@ -7617,6 +7732,469 @@ Space “Holiday photos”
         <source>It could not be done.</source>
       </segment>
     </unit>
+    <unit id="1582798184956598054">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:14,15</note>
+      </notes>
+      <segment>
+        <source>Paste here</source>
+      </segment>
+    </unit>
+    <unit id="7338769424774486973">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:20,21</note>
+      </notes>
+      <segment>
+        <source>Forget them</source>
+      </segment>
+    </unit>
+    <unit id="6770160195695986750">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:22,23</note>
+      </notes>
+      <segment>
+        <source>Forget the items cut or copied.</source>
+      </segment>
+    </unit>
+    <unit id="3929869455049618936">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:47,48</note>
+      </notes>
+      <segment>
+        <source>Try the items that failed again.</source>
+      </segment>
+    </unit>
+    <unit id="7934833136974560675">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:51,52</note>
+        <note category="location">src/app/files/uploads-panel.component.html:112,113</note>
+        <note category="location">src/app/library/everywhere/everywhere.component.html:32,33</note>
+      </notes>
+      <segment>
+        <source>Retry</source>
+      </segment>
+    </unit>
+    <unit id="8719205253478449607">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:78</note>
+      </notes>
+      <segment>
+        <source>Name clash</source>
+      </segment>
+    </unit>
+    <unit id="4304899065638509307">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:79,80</note>
+        <note category="location">src/app/files/uploads-panel.component.html:56,57</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="INTERPOLATION" disp="{{ conflict.existing.name }}"/>” is already there.</source>
+      </segment>
+    </unit>
+    <unit id="3213499565355667578">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:81,82</note>
+        <note category="description">the item already there, in a name clash</note>
+      </notes>
+      <segment>
+        <source>There</source>
+      </segment>
+    </unit>
+    <unit id="764823192103837277">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:82,85</note>
+        <note category="description">the item coming, in a name clash</note>
+      </notes>
+      <segment>
+        <source>{VAR_SELECT, select, move {Moved} copy {Copied} extract {Extracted} other {The new zip}}</source>
+      </segment>
+    </unit>
+    <unit id="9050539073781334291">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:94,95</note>
+      </notes>
+      <segment>
+        <source>Replace it. The one there goes to the trash.</source>
+      </segment>
+    </unit>
+    <unit id="6254459922754143568">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:98,99</note>
+        <note category="location">src/app/files/place-transfers.ts:163</note>
+        <note category="location">src/app/files/uploads-panel.component.html:66,67</note>
+      </notes>
+      <segment>
+        <source>Replace</source>
+      </segment>
+    </unit>
+    <unit id="4732153382582811726">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:103,104</note>
+      </notes>
+      <segment>
+        <source>Leave this one out.</source>
+      </segment>
+    </unit>
+    <unit id="4563965495368336177">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:107,108</note>
+        <note category="location">src/app/files/uploads-panel.component.html:75,76</note>
+      </notes>
+      <segment>
+        <source>Skip</source>
+      </segment>
+    </unit>
+    <unit id="29220177801620079">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:111,112</note>
+        <note category="location">src/app/files/uploads-panel.component.html:79,80</note>
+      </notes>
+      <segment>
+        <source>Keep both. This one gets a number added to its name.</source>
+      </segment>
+    </unit>
+    <unit id="1790494039990261456">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:115,116</note>
+        <note category="location">src/app/files/place-transfers.ts:158</note>
+        <note category="location">src/app/files/uploads-panel.component.html:83,84</note>
+      </notes>
+      <segment>
+        <source>Keep both</source>
+      </segment>
+    </unit>
+    <unit id="7676069328777556313">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:119,120</note>
+      </notes>
+      <segment>
+        <source>Do the same for the next ones</source>
+      </segment>
+    </unit>
+    <unit id="1165376667870183590">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.ts:76</note>
+      </notes>
+      <segment>
+        <source>Operations and uploads</source>
+      </segment>
+    </unit>
+    <unit id="7819314041543176992">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.ts:80</note>
+        <note category="location">src/app/files/properties.dialog.html:175,176</note>
+        <note category="location">src/app/files/uploads-panel.component.html:42</note>
+        <note category="location">src/app/files/uploads-panel.component.ts:82</note>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:58,59</note>
+        <note category="location">src/app/tags/default-tags-badge.component.html:36</note>
+        <note category="location">src/app/tags/tag-manager.dialog.ts:26,27</note>
+      </notes>
+      <segment>
+        <source>Close</source>
+      </segment>
+    </unit>
+    <unit id="6107224573771712663">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.ts:81</note>
+        <note category="location">src/app/files/uploads-panel.component.ts:41</note>
+      </notes>
+      <segment>
+        <source>Take it off the list.</source>
+      </segment>
+    </unit>
+    <unit id="2237700233731495153">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.ts:82</note>
+      </notes>
+      <segment>
+        <source>Stop it. What is already done stays.</source>
+      </segment>
+    </unit>
+    <unit id="546513079151343967">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:23</note>
+        <note category="description">where an operation goes, between two places</note>
+      </notes>
+      <segment>
+        <source>from <ph id="0" equiv="from" disp="journey.from"/> to <ph id="1" equiv="to" disp="journey.to"/></source>
+      </segment>
+    </unit>
+    <unit id="8410427569082480522">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:24</note>
+        <note category="description">where an operation goes</note>
+      </notes>
+      <segment>
+        <source>to <ph id="0" equiv="where" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="6056691020015377486">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:32,33</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {Stopped: <ph id="0" equiv="done"/> of {total, plural, one {# item} other {# items}} moved <ph id="1" equiv="to"/>} other {Stopped: <ph id="2" equiv="done"/> of {total, plural, one {# item} other {# items}} copied <ph id="3" equiv="to"/>}}</source>
+      </segment>
+    </unit>
+    <unit id="4339093950864883105">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:40,41</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {{done, plural, one {# item} other {# items}} moved <ph id="0" equiv="to"/>} other {{done, plural, one {# item} other {# items}} copied <ph id="1" equiv="to"/>}}</source>
+      </segment>
+    </unit>
+    <unit id="5831426262876143918">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:47,48</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {Moving {total, plural, one {# item} other {# items}} <ph id="0" equiv="to"/>} other {Copying {total, plural, one {# item} other {# items}} <ph id="1" equiv="to"/>}}</source>
+      </segment>
+    </unit>
+    <unit id="3097348410681314869">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:57</note>
+      </notes>
+      <segment>
+        <source>Stopped: no zip made in <ph id="0" equiv="where" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="3295294716684706819">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:59</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="zip" disp="quoted(baseName(zip))"/> made in <ph id="1" equiv="where" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="1852482042608540654">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:59</note>
+      </notes>
+      <segment>
+        <source>No zip made</source>
+      </segment>
+    </unit>
+    <unit id="6095647665666334069">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:60</note>
+      </notes>
+      <segment>
+        <source>Compressing into <ph id="0" equiv="where" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="3110866605799554957">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:66</note>
+      </notes>
+      <segment>
+        <source>Stopped: nothing extracted to <ph id="0" equiv="where" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="1202410046198557427">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:69</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="archive" disp="archive"/> extracted to <ph id="1" equiv="where" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="172288189540713435">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:70</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="archive" disp="archive"/> not extracted</source>
+      </segment>
+    </unit>
+    <unit id="5287910108311791347">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:72</note>
+      </notes>
+      <segment>
+        <source>Extracting <ph id="0" equiv="archive" disp="quoted(baseName(job.current))"/> to <ph id="1" equiv="where" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="8416397403719411491">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:73</note>
+      </notes>
+      <segment>
+        <source>Extracting to <ph id="0" equiv="where" disp="where"/></source>
+      </segment>
+    </unit>
+    <unit id="8907176939647512668">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:78</note>
+        <note category="location">src/app/files/operations-texts.ts:83</note>
+        <note category="description">bytes done of a total</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="done" disp="formatSize(done)"/> of <ph id="1" equiv="total" disp="formatSize(total)"/></source>
+      </segment>
+    </unit>
+    <unit id="7911187364352337941">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:88</note>
+      </notes>
+      <segment>
+        <source>Waiting for your answer…</source>
+      </segment>
+    </unit>
+    <unit id="3022526085114048838">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:91</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="size" disp="sizeOf(job.bytesDone, job.bytesTotal)"/> read</source>
+      </segment>
+    </unit>
+    <unit id="8347518606785348949">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:92</note>
+      </notes>
+      <segment>
+        <source>Reading the archive…</source>
+      </segment>
+    </unit>
+    <unit id="1376102008893384711">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:95</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="size" disp="sizeOf(job.bytesDone, job.bytesTotal)"/> compressed</source>
+      </segment>
+    </unit>
+    <unit id="3102081917349089514">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:96</note>
+      </notes>
+      <segment>
+        <source>Waiting for its turn…</source>
+      </segment>
+    </unit>
+    <unit id="2966760566358789081">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:118</note>
+      </notes>
+      <segment>
+        <source>less than a minute left</source>
+      </segment>
+    </unit>
+    <unit id="8600083423083499931">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:120</note>
+      </notes>
+      <segment>
+        <source>about <ph id="0" equiv="minutes" disp="minutes"/> min left</source>
+      </segment>
+    </unit>
+    <unit id="3276025115409452378">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:123</note>
+      </notes>
+      <segment>
+        <source>about <ph id="0" equiv="hours" disp="hours"/> h <ph id="1" equiv="minutes" disp="rest"/> min left</source>
+      </segment>
+    </unit>
+    <unit id="1433656264377559703">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:128</note>
+        <note category="description">one side of a name clash</note>
+      </notes>
+      <segment>
+        <source>folder</source>
+      </segment>
+    </unit>
+    <unit id="5100802376492716501">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:129</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="what" disp="what"/>, modified <ph id="1" equiv="date" disp="formatDate(side.modified)"/></source>
+      </segment>
+    </unit>
+    <unit id="1355499937214899011">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:135,136</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {{count, plural, =1 {“<ph id="0" equiv="name"/>” cut. Open a folder to paste it into.} other {# items cut. Open a folder to paste them into.}}} other {{count, plural, =1 {“<ph id="1" equiv="name"/>” copied. Open a folder to paste it into.} other {# items copied. Open a folder to paste them into.}}}}</source>
+      </segment>
+    </unit>
+    <unit id="7104905769635486062">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:147,148</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {{count, plural, one {# item cut. Paste it into a folder with Ctrl+V or the folder&apos;s menu.} other {# items cut. Paste them into a folder with Ctrl+V or the folder&apos;s menu.}}} other {{count, plural, one {# item copied. Paste it into a folder with Ctrl+V or the folder&apos;s menu.} other {# items copied. Paste them into a folder with Ctrl+V or the folder&apos;s menu.}}}}</source>
+      </segment>
+    </unit>
+    <unit id="1091884859555773794">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:159,160</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {{count, plural, one {# item moved to <ph id="0" equiv="where"/>.} other {# items moved to <ph id="1" equiv="where"/>.}}} other {{count, plural, one {# item copied to <ph id="2" equiv="where"/>.} other {# items copied to <ph id="3" equiv="where"/>.}}}}</source>
+      </segment>
+    </unit>
+    <unit id="6478217305276049921">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:169,171</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {{count, plural, =0 {Stopped. Nothing was moved to <ph id="0" equiv="where"/>.} one {Stopped. # item was moved to <ph id="1" equiv="where"/> before.} other {Stopped. # items were moved to <ph id="2" equiv="where"/> before.}}} other {{count, plural, =0 {Stopped. Nothing was copied to <ph id="3" equiv="where"/>.} one {Stopped. # item was copied to <ph id="4" equiv="where"/> before.} other {Stopped. # items were copied to <ph id="5" equiv="where"/> before.}}}}</source>
+      </segment>
+    </unit>
+    <unit id="7354608198222559013">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:183</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="name" disp="quoted(baseName(failed[0].path))"/> could not be moved.</source>
+      </segment>
+    </unit>
+    <unit id="5306180580903841541">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:184</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="name" disp="quoted(baseName(failed[0].path))"/> could not be copied.</source>
+      </segment>
+    </unit>
+    <unit id="4903838438932455169">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:187,188</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {{count, plural, other {# items could not be moved.}}} other {{count, plural, other {# items could not be copied.}}}}</source>
+      </segment>
+    </unit>
+    <unit id="5380612366512665776">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:198,199</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {Could not move: <ph id="0" equiv="reason"/>} copy {Could not copy: <ph id="1" equiv="reason"/>} extract {Could not extract: <ph id="2" equiv="reason"/>} compress {Could not compress: <ph id="3" equiv="reason"/>} other {Could not try again: <ph id="4" equiv="reason"/>}}</source>
+      </segment>
+    </unit>
+    <unit id="593290555544763619">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:209,210</note>
+      </notes>
+      <segment>
+        <source>{kind, select, move {{count, plural, =1 {“<ph id="0" equiv="name"/>” is already in <ph id="1" equiv="where"/>, so it was not moved.} other {# names are already in <ph id="2" equiv="where"/>, so those items were not moved.}}} other {{count, plural, =1 {“<ph id="3" equiv="name"/>” is already in <ph id="4" equiv="where"/>, so it was not copied.} other {# names are already in <ph id="5" equiv="where"/>, so those items were not copied.}}}}</source>
+      </segment>
+    </unit>
+    <unit id="5433054255847768889">
+      <notes>
+        <note category="location">src/app/files/operations-texts.ts:220</note>
+      </notes>
+      <segment>
+        <source>Open <ph id="0" equiv="where" disp="where"/>.</source>
+      </segment>
+    </unit>
     <unit id="5909616277857609581">
       <notes>
         <note category="location">src/app/files/partial-files.ts:9</note>
@@ -7632,6 +8210,22 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Still being written by a copy, a compression or an extraction: you can open it once it&apos;s done. Left by one that stopped (no progress shown), it can be deleted.</source>
+      </segment>
+    </unit>
+    <unit id="5975677271508745096">
+      <notes>
+        <note category="location">src/app/files/place-transfers.ts:159</note>
+      </notes>
+      <segment>
+        <source>Keep both. A number is added to the new name.</source>
+      </segment>
+    </unit>
+    <unit id="4600773950505430629">
+      <notes>
+        <note category="location">src/app/files/place-transfers.ts:164</note>
+      </notes>
+      <segment>
+        <source>Put them in place of those there.</source>
       </segment>
     </unit>
     <unit id="8031364872951441102">
@@ -8015,17 +8609,6 @@ Space “Holiday photos”
         <source>Copy the checksum to the clipboard.</source>
       </segment>
     </unit>
-    <unit id="7819314041543176992">
-      <notes>
-        <note category="location">src/app/files/properties.dialog.html:175,176</note>
-        <note category="location">src/app/library/topbar/search-help.dialog.html:58,59</note>
-        <note category="location">src/app/tags/default-tags-badge.component.html:36</note>
-        <note category="location">src/app/tags/tag-manager.dialog.ts:26,27</note>
-      </notes>
-      <segment>
-        <source>Close</source>
-      </segment>
-    </unit>
     <unit id="1647897767858444316">
       <notes>
         <note category="location">src/app/files/properties.dialog.ts:90</note>
@@ -8362,6 +8945,7 @@ Space “Holiday photos”
     <unit id="897253069049863665">
       <notes>
         <note category="location">src/app/files/trash-texts.ts:58</note>
+        <note category="location">src/app/files/upload-texts.ts:118</note>
       </notes>
       <segment>
         <source>Open the top of the library.</source>
@@ -8389,6 +8973,341 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>{count, plural, one {# item deleted for good.} other {# items deleted for good.}}</source>
+      </segment>
+    </unit>
+    <unit id="1355561718756975760">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:16</note>
+        <note category="description">a percentage</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="percent" disp="value"/>%</source>
+      </segment>
+    </unit>
+    <unit id="3996701746880230427">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:27</note>
+      </notes>
+      <segment>
+        <source>Uploading {files, plural, one {# file} other {# files}} to {where}</source>
+      </segment>
+    </unit>
+    <unit id="2749034451506352933">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:29,30</note>
+      </notes>
+      <segment>
+        <source>{failed, plural, =0 {{done, plural, one {# file} other {# files}} uploaded to <ph id="0" equiv="where"/>} other {{done, plural, one {# file} other {# files}} uploaded to <ph id="1" equiv="where"/>, {failed, number} failed}}</source>
+      </segment>
+    </unit>
+    <unit id="193808561445567040">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:47</note>
+        <note category="description">an upload batch</note>
+      </notes>
+      <segment>
+        <source>paused</source>
+      </segment>
+    </unit>
+    <unit id="8699857867680656342">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:49</note>
+        <note category="description">a speed</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="size" disp="formatSize(speed)"/>/s</source>
+      </segment>
+    </unit>
+    <unit id="3646780414508818998">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:61</note>
+        <note category="description">an upload</note>
+      </notes>
+      <segment>
+        <source>waiting</source>
+      </segment>
+    </unit>
+    <unit id="3710787012488475738">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:63</note>
+        <note category="description">an upload</note>
+      </notes>
+      <segment>
+        <source>name taken</source>
+      </segment>
+    </unit>
+    <unit id="4365191329301272431">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:65</note>
+        <note category="description">an upload</note>
+      </notes>
+      <segment>
+        <source>paused at <ph id="0" equiv="percent" disp="done"/></source>
+      </segment>
+    </unit>
+    <unit id="7697948390727030484">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:67</note>
+        <note category="description">an upload</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="percent" disp="done"/>, interrupted</source>
+      </segment>
+    </unit>
+    <unit id="4083337005045748464">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:69</note>
+        <note category="description">an upload</note>
+      </notes>
+      <segment>
+        <source>failed</source>
+      </segment>
+    </unit>
+    <unit id="6608890834230007808">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:71</note>
+        <note category="description">an upload</note>
+      </notes>
+      <segment>
+        <source>done</source>
+      </segment>
+    </unit>
+    <unit id="2136984849049323349">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:73</note>
+        <note category="location">src/app/library/items/exclusions.ts:15</note>
+        <note category="description">an upload</note>
+      </notes>
+      <segment>
+        <source>skipped</source>
+      </segment>
+    </unit>
+    <unit id="3790237263254602448">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:75</note>
+        <note category="description">an upload</note>
+      </notes>
+      <segment>
+        <source>cancelled</source>
+      </segment>
+    </unit>
+    <unit id="8670296050489223716">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:81</note>
+      </notes>
+      <segment>
+        <source>Cancel <ph id="0" equiv="name" disp="quoted(name)"/></source>
+      </segment>
+    </unit>
+    <unit id="3226422633783436866">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:87,88</note>
+      </notes>
+      <segment>
+        <source>{count, plural, =1 {“<ph id="0" equiv="name"/>” is larger than the {max, number} MB a file may have here, so it was left out.} other {# files are larger than the {max, number} MB a file may have here, so they were left out.}}</source>
+      </segment>
+    </unit>
+    <unit id="6729067408079812313">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:96</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# file uploaded to <ph id="0" equiv="where"/>.} other {# files uploaded to <ph id="1" equiv="where"/>.}}</source>
+      </segment>
+    </unit>
+    <unit id="3828101087170667173">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:104</note>
+      </notes>
+      <segment>
+        <source>It could not be saved.</source>
+      </segment>
+    </unit>
+    <unit id="5271459745313099740">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:111</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="size" disp="sizeOf(item.received, item.size)"/> (<ph id="1" equiv="percent" disp="done"/>)</source>
+      </segment>
+    </unit>
+    <unit id="3531151322964428677">
+      <notes>
+        <note category="location">src/app/files/upload-texts.ts:112</note>
+      </notes>
+      <segment>
+        <source>Sent by <ph id="0" equiv="account" disp="item.ownerName"/>, last received <ph id="1" equiv="date" disp="formatDate(item.lastActivity)"/>.</source>
+      </segment>
+    </unit>
+    <unit id="7182974689040833178">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:20,21</note>
+        <note category="location">src/app/files/uploads-panel.component.html:121,122</note>
+        <note category="location">src/app/files/uploads-panel.component.ts:59</note>
+      </notes>
+      <segment>
+        <source>Resume</source>
+      </segment>
+    </unit>
+    <unit id="9042260521669277115">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:28,29</note>
+        <note category="location">src/app/files/uploads-panel.component.html:130,131</note>
+        <note category="location">src/app/files/uploads-panel.component.ts:67</note>
+      </notes>
+      <segment>
+        <source>Pause</source>
+      </segment>
+    </unit>
+    <unit id="1424360307008243280">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:55</note>
+      </notes>
+      <segment>
+        <source>Name taken</source>
+      </segment>
+    </unit>
+    <unit id="9080770693476382194">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:62,63</note>
+      </notes>
+      <segment>
+        <source>Replace it. The file there goes to the trash.</source>
+      </segment>
+    </unit>
+    <unit id="2048081757114331446">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:71,72</note>
+      </notes>
+      <segment>
+        <source>Don&apos;t upload this one.</source>
+      </segment>
+    </unit>
+    <unit id="6014620554276385028">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:89,91</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {Do the same for the other name taken} other {Do the same for the <ph id="0" equiv="INTERPOLATION"/> other names taken}}</source>
+      </segment>
+    </unit>
+    <unit id="911753963426676021">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:108,109</note>
+      </notes>
+      <segment>
+        <source>Try again from where it stopped.</source>
+      </segment>
+    </unit>
+    <unit id="3207435658072046900">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:117,118</note>
+      </notes>
+      <segment>
+        <source>Go on sending it.</source>
+      </segment>
+    </unit>
+    <unit id="2431559909262350041">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:126,127</note>
+      </notes>
+      <segment>
+        <source>Stop sending it for now.</source>
+      </segment>
+    </unit>
+    <unit id="4107573143144235865">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:137,138</note>
+      </notes>
+      <segment>
+        <source>Cancel this file.</source>
+      </segment>
+    </unit>
+    <unit id="438819796648029002">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:149,151</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {and 1 more file} other {and <ph id="0" equiv="INTERPOLATION"/> more files}}</source>
+      </segment>
+    </unit>
+    <unit id="7162396900369984547">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.html:157,158</note>
+      </notes>
+      <segment>
+        <source>Interrupted. Pick or drop the same files into this folder again to go on where they stopped.</source>
+      </segment>
+    </unit>
+    <unit id="8239324330072884663">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.ts:38</note>
+      </notes>
+      <segment>
+        <source>Go on sending them.</source>
+      </segment>
+    </unit>
+    <unit id="9130407829986792734">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.ts:39</note>
+      </notes>
+      <segment>
+        <source>Stop sending them for now. They go on where they stopped.</source>
+      </segment>
+    </unit>
+    <unit id="9137498941322227265">
+      <notes>
+        <note category="location">src/app/files/uploads-panel.component.ts:40</note>
+      </notes>
+      <segment>
+        <source>Stop. What was not finished is removed from the server.</source>
+      </segment>
+    </unit>
+    <unit id="7401678183187296130">
+      <notes>
+        <note category="location">src/app/files/uploads-section.component.html:3,8</note>
+      </notes>
+      <segment>
+        <source> Uploads being sent, paused or cut off. Whoever sends one goes on by picking the same file again. <ph id="0" equiv="ICU" disp="{hours, plural,
+        one {An upload that receives nothing for an hour is removed.}
+        other {An upload that receives nothing for {{ hours }} hours is removed.}
+        }" subFlows="7422982246000236897"/> </source>
+      </segment>
+    </unit>
+    <unit id="3444532733556970428">
+      <notes>
+        <note category="location">src/app/files/uploads-section.component.html:3,6</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {An upload that receives nothing for an hour is removed.} other {An upload that receives nothing for <ph id="0" equiv="INTERPOLATION"/> hours is removed.}}</source>
+      </segment>
+    </unit>
+    <unit id="8052871150166694403">
+      <notes>
+        <note category="location">src/app/files/uploads-section.component.html:12,13</note>
+      </notes>
+      <segment>
+        <source>No uploads under way.</source>
+      </segment>
+    </unit>
+    <unit id="6852024558800748852">
+      <notes>
+        <note category="location">src/app/files/uploads-section.component.html:22,27</note>
+      </notes>
+      <segment>
+        <source>Into <pc id="0" equivStart="START_LINK" equivEnd="CLOSE_LINK" type="link" dispStart="&lt;a
+                                routerLink=&quot;/&quot;
+                                [queryParams]=&quot;{ path: item.target || null }&quot;
+                                [title]=&quot;folderHint(item.target)&quot;
+                            &gt;" dispEnd="&lt;/a&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ item.target || rootName() }}"/></pc></source>
+      </segment>
+    </unit>
+    <unit id="4237689957218151910">
+      <notes>
+        <note category="location">src/app/files/uploads-section.component.ts:37</note>
+      </notes>
+      <segment>
+        <source>Stop it and remove what it received (asks first).</source>
       </segment>
     </unit>
     <unit id="3849702961755925807">
@@ -8477,14 +9396,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Search here again.</source>
-      </segment>
-    </unit>
-    <unit id="7934833136974560675">
-      <notes>
-        <note category="location">src/app/library/everywhere/everywhere.component.html:32,33</note>
-      </notes>
-      <segment>
-        <source>Retry</source>
       </segment>
     </unit>
     <unit id="7303325396932418312">
@@ -8864,15 +9775,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Open this folder in a tab of its own.</source>
-      </segment>
-    </unit>
-    <unit id="2136984849049323349">
-      <notes>
-        <note category="location">src/app/library/items/exclusions.ts:15</note>
-        <note category="description">chip of a folder kept out of scans and previews</note>
-      </notes>
-      <segment>
-        <source>skipped</source>
       </segment>
     </unit>
     <unit id="3063921784299844543">

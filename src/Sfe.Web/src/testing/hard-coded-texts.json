@@ -1,8 +1,5 @@
 {
   "app/editor/image-editor.dialog.html": 20,
-  "app/files/operations-panel.component.html": 21,
-  "app/files/uploads-panel.component.html": 26,
-  "app/files/uploads-section.component.html": 5,
   "app/formats/archive/archive-view.component.html": 49,
   "app/formats/csv/csv-view.component.html": 22,
   "app/formats/epub/epub-view.component.html": 14,

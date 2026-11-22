@@ -250,7 +250,7 @@ describe('moves and copies on a connection', () => {
         expect(api.checkMove).not.toHaveBeenCalled();
         expect(api.startFileJob).not.toHaveBeenCalled();
         const asked = toasts.toasts().find((toast) => toast.message.includes('already in'))!;
-        expect(asked.message).toBe('“beach.jpg” already in “Saved”: not copied.');
+        expect(asked.message).toBe('“beach.jpg” is already in “Saved”, so it was not copied.');
         toasts.act(
             asked,
             asked.actions.find((action) => action.label === 'Keep both'),

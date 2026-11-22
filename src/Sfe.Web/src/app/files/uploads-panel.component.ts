@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { formatSize, joinParts, plural } from '../core/format';
 import { baseName } from '../core/paths';
 import { checkedOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
@@ -7,6 +6,8 @@ import { FolderMenu } from '../library/folder-menu';
 import { ContextMenuDirective, MenuEntry, MenuTarget } from '../menus/context-menu';
 import { ConfigService } from '../core/config.service';
 import { UploadBatch, UploadItem, UploadQueue } from './uploads';
+import { quoted } from './file-dialog-texts';
+import { cancelFileLabel, uploadState, uploadStatus, uploadTitle } from './upload-texts';
 
 /** Files listed at most per batch (the busiest first); the others are counted. */
 const FILES_SHOWN = 6;
@@ -30,8 +31,15 @@ export class UploadsPanelComponent {
 
     protected readonly forAll = signal(false);
     protected readonly baseName = baseName;
-    protected readonly plural = plural;
     protected readonly Math = Math;
+    protected readonly cancelFileLabel = cancelFileLabel;
+    protected readonly stateText = uploadState;
+    protected readonly hints = {
+        resume: $localize`Go on sending them.`,
+        pause: $localize`Stop sending them for now. They go on where they stopped.`,
+        cancel: $localize`Stop. What was not finished is removed from the server.`,
+        close: $localize`Take it off the list.`,
+    };
 
     /**
      * An upload's menu (a right click): its buttons (Pause / Resume, Cancel, or Close once done), then the folder it
@@ -48,32 +56,32 @@ export class UploadsPanelComponent {
                     if (this.paused(batch))
                         entries.push({
                             id: 'resume',
-                            label: 'Resume',
+                            label: $localize`Resume`,
                             icon: 'play',
-                            title: 'Go on sending them',
+                            title: this.hints.resume,
                             run: () => this.queue.resumeAll(batch),
                         });
                     else if (this.sending(batch))
                         entries.push({
                             id: 'pause',
-                            label: 'Pause',
+                            label: $localize`Pause`,
                             icon: 'pause',
-                            title: 'Stop sending for now: they go on where they stopped',
+                            title: this.hints.pause,
                             run: () => this.queue.pauseAll(batch),
                         });
                     entries.push({
                         id: 'cancel',
-                        label: 'Cancel',
+                        label: $localize`Cancel`,
                         icon: 'close',
-                        title: 'Stop: what was not finished is removed from the server',
+                        title: this.hints.cancel,
                         run: () => void this.queue.cancelAll(batch),
                     });
                 } else
                     entries.push({
                         id: 'close',
-                        label: 'Close',
+                        label: $localize`Close`,
                         icon: 'close',
-                        title: 'Take it off the list',
+                        title: this.hints.close,
                         run: () => this.queue.dismiss(batch),
                     });
                 return [...entries, ...this.folders.targetEntries(batch.target)];
@@ -110,42 +118,22 @@ export class UploadsPanelComponent {
     }
 
     protected title(batch: UploadBatch): string {
-        const where = `“${baseName(batch.target) || this.config.config()?.rootName || 'the library'}”`;
+        const where = quoted(baseName(batch.target) || this.config.libraryName());
         const done = batch.items.filter((item) => item.state === 'done').length;
-        if (this.active(batch)) return `Uploading ${plural(this.counted(batch).length, 'file')} to ${where}`;
         const failed = batch.items.filter((item) => item.state === 'failed').length;
-        return joinParts([`${plural(done, 'file')} uploaded to ${where}`, failed ? `${failed} failed` : null], ', ');
+        return uploadTitle(this.active(batch), this.counted(batch).length, done, failed, where);
     }
 
     protected status(batch: UploadBatch): string {
         const counted = this.counted(batch);
         const done = counted.filter((item) => item.state === 'done').length;
         const seconds = (Date.now() - batch.started) / 1000;
-        const speed = seconds > 1 && batch.sentHere ? `${formatSize(batch.sentHere / seconds)}/s` : null;
-        return joinParts([
-            `${done} of ${counted.length}`,
-            `${formatSize(this.sent(batch))} of ${formatSize(this.total(batch))}`,
-            this.paused(batch) ? 'paused' : speed,
-        ]);
-    }
-
-    protected stateText(item: UploadItem): string {
-        switch (item.state) {
-            case 'uploading':
-                return item.size ? `${Math.floor((item.sent * 100) / item.size)}%` : '…';
-            case 'queued':
-                return 'waiting';
-            case 'asking':
-                return 'name taken';
-            case 'paused':
-                return `paused at ${item.size ? Math.floor((item.sent * 100) / item.size) : 0}%`;
-            case 'interrupted':
-                return `${item.size ? Math.floor((item.sent * 100) / item.size) : 0}%, interrupted`;
-            case 'failed':
-                return item.message ?? 'failed';
-            default:
-                return item.state;
-        }
+        return uploadStatus(
+            { done, total: counted.length },
+            { sent: this.sent(batch), total: this.total(batch) },
+            this.paused(batch),
+            seconds > 1 && batch.sentHere ? batch.sentHere / seconds : null,
+        );
     }
 
     /** The files worth a line: those under way, waiting, failed or interrupted (not those done). */

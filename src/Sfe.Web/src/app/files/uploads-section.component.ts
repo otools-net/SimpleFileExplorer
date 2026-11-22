@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { RouterLink } from '@angular/router';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { formatDate, formatSize } from '../core/format';
 import { UploadInfo } from './file.models';
 import { baseName } from '../core/paths';
 import { ToastService } from '../core/toast.service';
@@ -10,6 +9,7 @@ import { BusyDirective } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
 import { FolderMenu } from '../library/folder-menu';
 import { ContextMenuDirective, MenuEntry, MenuTarget } from '../menus/context-menu';
+import { describeUpload, uploadFolderHint } from './upload-texts';
 
 /**
  * Administration › File management › Uploads: everyone's unfinished uploads in the space (right `settings.files`),
@@ -32,6 +32,9 @@ export class UploadsSectionComponent implements OnInit {
     protected readonly loading = signal(true);
     protected readonly busy = signal<string | null>(null);
     protected readonly baseName = baseName;
+    protected readonly describe = describeUpload;
+    protected readonly folderHint = uploadFolderHint;
+    protected readonly cancelHint = $localize`Stop it and remove what it received (asks first).`;
 
     async ngOnInit(): Promise<void> {
         try {
@@ -44,19 +47,11 @@ export class UploadsSectionComponent implements OnInit {
     }
 
     protected rootName(): string {
-        return this.config.config()?.rootName ?? 'the library';
+        return this.config.libraryName();
     }
 
     protected keepHours(): number {
         return this.config.config()?.files?.keepUnfinishedUploadsHours ?? 48;
-    }
-
-    protected describe(item: UploadInfo): string {
-        const percent = item.size ? Math.floor((item.received * 100) / item.size) : 100;
-        return (
-            `${formatSize(item.received)} of ${formatSize(item.size)} (${percent}%) ` +
-            `· by ${item.ownerName} · last received ${formatDate(item.lastActivity)}`
-        );
     }
 
     /** An upload's menu (a right click): Cancel, then the folder it goes into. */
@@ -71,9 +66,9 @@ export class UploadsSectionComponent implements OnInit {
                         ? [
                               {
                                   id: 'cancel',
-                                  label: 'Cancel',
+                                  label: $localize`Cancel`,
                                   icon: 'close',
-                                  title: 'Stop it and remove what it received (asks first)',
+                                  title: this.cancelHint,
                                   run: () => void this.cancel(item),
                               },
                           ]

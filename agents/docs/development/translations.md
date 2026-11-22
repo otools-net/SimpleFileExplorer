@@ -73,7 +73,8 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
   the element; on an element projected by a selector (`sheetFooter`), keep the element itself outside the `@if` and
   take a changing `title` from code (`$localize` fields).
 - ICU plurals in templates: `{n, plural, one {{{ n }} group} other {{{ n }} groups}}` (Angular has no `#`); a
-  line break is safe between cases, not inside one.
+  line break is safe between cases, not inside one. A count from a call (`hidden(batch)`) goes in a `@let` first
+  (`@let more = hidden(batch);`), used by the `@if` and the ICU alike (`uploads-panel.component.html`).
 - A text that also builds an id, a key or a `track` (the administration's group titles made `admin-group-viewing`)
   changes with the language: give the thing a stable key and look its title up (`ADMIN_GROUP_TITLES`).
 - A component's `host` metadata takes only static strings (`'aria-label': 'Quick links'` can't be a

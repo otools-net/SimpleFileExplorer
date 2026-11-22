@@ -14,29 +14,33 @@
                     <button
                         type="button"
                         class="button small"
-                        title="Go on sending them"
+                        [title]="hints.resume"
                         (click)="queue.resumeAll(batch)"
+                        i18n
                     >Resume</button>
                 } @else if (sending(batch)) {
                     <button
                         type="button"
                         class="button small"
-                        title="Stop sending for now: they go on where they stopped"
+                        [title]="hints.pause"
                         (click)="queue.pauseAll(batch)"
+                        i18n
                     >Pause</button>
                 }
                 <button
                     type="button"
                     class="button small"
-                    title="Stop: what was not finished is removed from the server"
+                    [title]="hints.cancel"
                     (click)="queue.cancelAll(batch)"
+                    i18n
                 >Cancel</button>
             } @else {
                 <button
                     type="button"
                     class="icon-button ghost small"
                     aria-label="Close"
-                    title="Close"
+                    i18n-aria-label
+                    [title]="hints.close"
                     (click)="queue.dismiss(batch)"
                 >
                     <svg sfeIcon="close"></svg>
@@ -48,34 +52,44 @@
             <p class="operation-status">{{ status(batch) }}</p>
         }
         @if (queue.question(batch); as asked) {
-            <div class="operation-conflict" role="group" aria-label="Name taken">
-                <p>“{{ baseName(asked.name) }}” is already there.</p>
+            <div class="operation-conflict" role="group" aria-label="Name taken" i18n-aria-label>
+                <p i18n>“{{ baseName(asked.name) }}” is already there.</p>
                 <div class="operation-choices">
                     @if (batch.canReplace) {
                         <button
                             type="button"
                             class="button small danger"
-                            title="The file there goes to the trash"
+                            title="Replace it. The file there goes to the trash."
+                            i18n-title
                             (click)="answer(batch, asked, 'replace')"
+                            i18n
                         >Replace</button>
                     }
                     <button
                         type="button"
                         class="button small"
-                        title="Don't upload this one"
+                        title="Don't upload this one."
+                        i18n-title
                         (click)="answer(batch, asked, 'skip')"
+                        i18n
                     >Skip</button>
                     <button
                         type="button"
                         class="button small primary"
-                        title="Keep both: this one gets a number added to its name"
+                        title="Keep both. This one gets a number added to its name."
+                        i18n-title
                         (click)="answer(batch, asked, 'keepBoth')"
+                        i18n
                     >Keep both</button>
                 </div>
-                @if (asking(batch) > 1) {
+                @let others = asking(batch) - 1;
+                @if (others > 0) {
                     <label class="check">
                         <input type="checkbox" [checked]="forAll()" (change)="forAll.set(checked($event))">
-                        <span>The same for the {{ asking(batch) - 1 }} other names taken</span>
+                        <span i18n>{others, plural,
+                            one {Do the same for the other name taken}
+                            other {Do the same for the {{ others }} other names taken}
+                        }</span>
                     </label>
                 }
             </div>
@@ -91,30 +105,37 @@
                                 <button
                                     type="button"
                                     class="button small"
-                                    title="Try again from where it stopped"
+                                    title="Try again from where it stopped."
+                                    i18n-title
                                     (click)="queue.resumeItem(item)"
+                                    i18n
                                 >Retry</button>
                             } @else if (item.state === 'paused') {
                                 <button
                                     type="button"
                                     class="button small"
-                                    title="Go on sending it"
+                                    title="Go on sending it."
+                                    i18n-title
                                     (click)="queue.resumeItem(item)"
+                                    i18n
                                 >Resume</button>
                             } @else if (item.state === 'uploading' || item.state === 'queued') {
                                 <button
                                     type="button"
                                     class="button small"
-                                    title="Stop sending it for now"
+                                    title="Stop sending it for now."
+                                    i18n-title
                                     (click)="queue.pause(item)"
+                                    i18n
                                 >Pause</button>
                             }
                             @if (!['done', 'skipped', 'cancelled'].includes(item.state)) {
                                 <button
                                     type="button"
                                     class="icon-button ghost small"
-                                    [attr.aria-label]="'Cancel ' + item.name"
-                                    title="Cancel this file"
+                                    [attr.aria-label]="cancelFileLabel(item.name)"
+                                    title="Cancel this file."
+                                    i18n-title
                                     (click)="queue.cancel(item)"
                                 >
                                     <svg sfeIcon="close"></svg>
@@ -123,14 +144,18 @@
                         </li>
                     }
                 </ul>
-                @if (hidden(batch) > 0) {
-                    <p class="operation-status">and {{ plural(hidden(batch), 'more file') }}</p>
+                @let more = hidden(batch);
+                @if (more > 0) {
+                    <p class="operation-status" i18n>{more, plural,
+                        one {and 1 more file}
+                        other {and {{ more }} more files}
+                    }</p>
                 }
             }
         }
         @if (interrupted(batch)) {
-            <p class="field-hint">Interrupted: pick or drop the same files into this folder again to go on where they
-            stopped.</p>
+            <p class="field-hint" i18n>Interrupted. Pick or drop the same files into this folder again to go on where
+            they stopped.</p>
         }
     </section>
 }
