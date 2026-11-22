@@ -124,7 +124,9 @@ describe('MarkdownViewComponent', () => {
     it('holds back the images of other sites until asked', async () => {
         await show();
         expect(article().querySelector('img')).toBeNull();
-        expect(element.querySelector('.markdown-external')!.textContent).toContain('1 image of other sites not shown');
+        expect(element.querySelector('.markdown-external')!.textContent).toContain(
+            "1 image from other sites isn't shown.",
+        );
 
         element.querySelector<HTMLButtonElement>('.markdown-external button')!.click();
         await stable();

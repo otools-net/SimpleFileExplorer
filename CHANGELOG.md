@@ -260,6 +260,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   open this document. Try again."; a book's layouts say how the book is shown; a muted Flash movie's sound button is
   **Unmute**; a document, book or movie that can't be shown says "Could not open the book: …." and no longer "It can
   only be downloaded." (wrong without the download right). Their texts are ready for translation.
+- **Markdown and subtitles viewers reworded**: their buttons' hints say what a click does in full sentences ("Show the
+  document as it is meant to be read."); images of other sites held back read "2 images from other sites aren't
+  shown."; in subtitles the filter, **Shift times** ("Move every cue by the seconds typed (Enter). Ctrl+Z undoes it.")
+  and the seconds box explain themselves, a cue overlapping the one before says so in a sentence, an empty file says
+  "This file has no cues.", and a file that isn't valid reads "Line 3: … (and 2 more problems).". Their texts are
+  ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

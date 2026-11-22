@@ -2,9 +2,7 @@
   "app/formats/archive/archive-view.component.html": 49,
   "app/formats/csv/csv-view.component.html": 22,
   "app/formats/json/json-view.component.html": 29,
-  "app/formats/markdown/markdown-view.component.html": 18,
   "app/formats/reading/reading-panel.component.html": 24,
-  "app/formats/subtitles/subtitles-view.component.html": 24,
   "app/formats/text/text-edit-bar.component.html": 15,
   "app/formats/text/text-edit.component.html": 9,
   "app/formats/text/text-view.component.html": 33

@@ -41,17 +41,12 @@ import {
     subtitleTypeOf,
 } from './subtitles';
 import { FILE_SOURCE } from '../file-source';
+import { cueCounts, subtitlesModes, SubtitlesMode, subtitlesTexts } from './subtitles-texts';
 
-export type SubtitlesMode = 'cues' | 'source' | 'split';
 export const SUBTITLES_MODE_KEY = 'sfe.subtitles.mode';
 /** How long typing pauses before the cues show the source again, and the filter what is typed in it. */
 const PARSE_DELAY_MS = 300;
 const FILTER_DELAY_MS = 200;
-const MODES: readonly { id: SubtitlesMode; label: string; title: string }[] = [
-    { id: 'cues', label: 'Cues', title: 'What is said, and when' },
-    { id: 'source', label: 'Source', title: 'Its text, as written' },
-    { id: 'split', label: 'Split', title: 'Both, side by side' },
-];
 
 /**
  * A subtitle file, SubRip or WebVTT (agents/docs/features/subtitles-viewer.md): its cues (media-captions) with their
@@ -101,7 +96,8 @@ export class SubtitlesViewComponent {
     private readonly shiftBox = viewChild<ElementRef<HTMLInputElement>>('shiftBox');
     private readonly source = viewChild.required<ElementRef<HTMLElement>>('source');
 
-    protected readonly modes = MODES;
+    protected readonly modes = subtitlesModes();
+    protected readonly texts = subtitlesTexts;
     protected readonly virtual = new VirtualRows(() => this.scroller()?.nativeElement ?? null, 32);
     protected readonly mode = signal<SubtitlesMode>(readMode());
     protected readonly state = signal<'loading' | 'ready' | 'failed'>('loading');
@@ -129,12 +125,7 @@ export class SubtitlesViewComponent {
         mode: (): MenuEntry => modesEntry(this.modes, this.mode(), (mode) => this.setMode(mode)),
         lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggleLineNumbers()),
         find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.sourceEditor()?.find()),
-        reading: (): MenuEntry =>
-            readingEntry(
-                this.panelOpen(),
-                () => this.panelOpen.set(!this.panelOpen()),
-                'Reading settings: font, size, colours',
-            ),
+        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen())),
     };
     protected readonly style = computed(() => this.reading.style('code'));
     protected readonly problems = computed(() => this.document()?.problems ?? []);
@@ -157,13 +148,9 @@ export class SubtitlesViewComponent {
     });
     protected readonly counts = computed(() => {
         const cues = this.document()?.cues ?? [];
-        const shown = this.order().length;
-        const count = this.applied().trim()
-            ? `${shown.toLocaleString()} of ${cues.length.toLocaleString()} cues`
-            : `${cues.length.toLocaleString()} ${cues.length === 1 ? 'cue' : 'cues'}`;
+        const shown = this.applied().trim() ? this.order().length : null;
         const overlaps = cues.filter((cue) => cue.overlaps).length;
-        const length = cues.length ? ` · ${formatSpan(cues.at(-1)!.end)}` : '';
-        return `${count}${length}${overlaps ? ` · ${overlaps} overlapping` : ''}`;
+        return cueCounts(cues.length, shown, cues.length ? formatSpan(cues.at(-1)!.end) : null, overlaps);
     });
     protected readonly videoName = computed(() => this.video()?.split('/').at(-1) ?? '');
     protected readonly downloadUrl = computed(() =>
@@ -289,6 +276,11 @@ export class SubtitlesViewComponent {
 
     protected optionId(cue: SubtitleCue): string {
         return `${this.prefix}-${cue.index}`;
+    }
+
+    /** A cue's own id, or its number. */
+    protected cueName(cue: SubtitleCue): string {
+        return cue.id || String(cue.index + 1);
     }
 
     protected time(seconds: number): string {

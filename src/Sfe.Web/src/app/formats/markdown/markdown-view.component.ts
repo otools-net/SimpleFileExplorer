@@ -30,18 +30,13 @@ import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } fr
 import { findEntry, lineNumbersEntry, modesEntry, readingEntry } from '../toolbar-entries';
 import { TextSession } from '../text/text-session';
 import { highlightFences, MarkdownHeading, MarkdownLinks, renderMarkdown, showExternalImages } from './markdown';
+import { externalImagesLine, MarkdownMode, markdownModes, outlineTexts, readingHint } from './markdown-texts';
 import { FILE_SOURCE } from '../file-source';
 
-export type MarkdownMode = 'rendered' | 'source' | 'split';
 export const MARKDOWN_MODE_KEY = 'sfe.markdown.mode';
 export const MARKDOWN_OUTLINE_KEY = 'sfe.markdown.outline';
 /** How long typing pauses before the document shows the source again. */
 const RENDER_DELAY_MS = 300;
-const MODES: readonly { id: MarkdownMode; label: string; title: string }[] = [
-    { id: 'rendered', label: 'Read', title: 'The document as it is meant to be read' },
-    { id: 'source', label: 'Source', title: 'Its text, as written' },
-    { id: 'split', label: 'Split', title: 'Both, side by side' },
-];
 
 /** A file of the library as listings know it, from its path alone (for the links between documents). */
 function itemAt(path: string): LibraryItem {
@@ -104,7 +99,7 @@ export class MarkdownViewComponent {
     private readonly content = viewChild.required<ElementRef<HTMLElement>>('content');
     private readonly source = viewChild.required<ElementRef<HTMLElement>>('source');
 
-    protected readonly modes = MODES;
+    protected readonly modes = markdownModes();
     protected readonly mode = signal<MarkdownMode>(readMode());
     protected readonly outline = signal(readPreference(MARKDOWN_OUTLINE_KEY) !== '0');
     protected readonly state = signal<'loading' | 'ready' | 'failed'>('loading');
@@ -124,9 +119,9 @@ export class MarkdownViewComponent {
         mode: (): MenuEntry => modesEntry(this.modes, this.mode(), (mode) => this.setMode(mode)),
         outline: (): MenuEntry => ({
             id: 'outline',
-            label: 'Outline',
+            label: outlineTexts.label(),
             icon: 'list',
-            title: 'Outline: the headings',
+            title: outlineTexts.hint(),
             checked: this.outline(),
             disabled: !this.headings().length,
             run: () => this.toggleOutline(),
@@ -134,12 +129,9 @@ export class MarkdownViewComponent {
         lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggleLineNumbers()),
         find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.sourceEditor()?.find()),
         reading: (): MenuEntry =>
-            readingEntry(
-                this.panelOpen(),
-                () => this.panelOpen.set(!this.panelOpen()),
-                'Reading settings: font, size, width, colours',
-            ),
+            readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen()), readingHint()),
     };
+    protected readonly externalLine = computed(() => externalImagesLine(this.externalImages()));
     protected readonly style = computed(() => this.reading.style('prose'));
     protected readonly downloadUrl = computed(() =>
         this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,

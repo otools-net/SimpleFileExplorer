@@ -214,7 +214,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     Screenshots `image-editor*.png` retaken (scene `viewer`). Viewer readability baseline 823 → 824 (an import).
   - [ ] **2.7b text viewer and editor, reading settings** (`formats/text/`, `formats/reading/`; ~81, much code).
   - [ ] **2.7c JSON and CSV** (`formats/json/`, `formats/csv/`; ~51).
-  - [ ] **2.7d Markdown and subtitles** (`formats/markdown/`, `formats/subtitles/`; ~42).
+  - [x] **2.7d Markdown and subtitles** (`formats/markdown/`, `formats/subtitles/`; ~42). Done 2026-11-22: 2
+    templates at 0 unmarked texts (42 gone); sentences in `markdown-texts.ts` (modes, outline, reading hint, images
+    of other sites held back as ICU, a held-back image's placeholder) and `subtitles-texts.ts` (modes, the counts line
+    as ICU pieces, the selected cue, the first problem with "(and # more problems)", list label, overlap, empty, Play),
+    pure functions with specs; mode types moved there; toolbar hints match `toolbar-entries.ts`; "Aa" in
+    `translate="no"`. Its line in `docs/user-guide/text-files.md` is committed with 2.7b (same page).
   - [x] **2.7e PDF, EPUB, Flash** (`formats/pdf/`, `formats/epub/`, `formats/flash/`; ~50). Done 2026-11-22: 3 files
     at 0 unmarked texts (50 gone); texts built in code in `pdf-texts.ts` (zoom names and hints from `SCALE_VALUES`,
     page count and matches as ICU), `epub-texts.ts` (layouts, progress), `flash-texts.ts` (a short name and a hint

@@ -1,4 +1,11 @@
-<div class="text-toolbar" role="toolbar" aria-label="Subtitles" sfeOverflowRow="Subtitles">
+<div
+    class="text-toolbar"
+    role="toolbar"
+    aria-label="Subtitles"
+    i18n-aria-label="the toolbar of a subtitle file"
+    sfeOverflowRow="Subtitles"
+    i18n-sfeOverflowRow="the toolbar of a subtitle file"
+>
     @if (state() === 'ready') {
         <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
         @if (session.editing()) {
@@ -10,21 +17,32 @@
                     class="json-filter"
                     data-shift-box
                     placeholder="± seconds"
-                    aria-label="Seconds to move every cue by"
-                    title="Seconds to move every cue by: 2.5 later, -2.5 earlier"
+                    i18n-placeholder="seconds to move the cues by, later or earlier"
+                    aria-label="Seconds to move the cues by"
+                    i18n-aria-label
+                    title="Type the seconds to move every cue by: 2.5 for later, -2.5 for earlier."
+                    i18n-title
                     (keydown.enter)="shift()"
                 />
                 <button
                     type="button"
                     class="markdown-mode csv-header-toggle"
                     data-shift
-                    title="Move every cue by these seconds (Ctrl+Z undoes it)"
+                    title="Move every cue by the seconds typed (Enter). Ctrl+Z undoes it."
+                    i18n-title
                     (click)="shift()"
+                    i18n
                 >Shift times</button>
             </span>
         }
     }
-    <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
+    <div
+        class="markdown-modes"
+        role="radiogroup"
+        aria-label="Show"
+        i18n-aria-label="how a document is shown"
+        [sfeOverflowItem]="more.mode"
+    >
         @for (choice of modes; track choice.id) {
             <button
                 type="button"
@@ -46,8 +64,11 @@
             [sfeOverflowItem]="null"
             overflowStay
             placeholder="Filter cues"
+            i18n-placeholder
             aria-label="Filter cues"
-            title="Shows the cues holding this (Ctrl+F)"
+            i18n-aria-label
+            title="Show only the cues holding these words (Ctrl+F)."
+            i18n-title
             [value]="query()"
             (input)="setQuery($any($event.target).value)"
             (keydown)="onFilterKeydown($event)"
@@ -60,16 +81,20 @@
             [sfeOverflowItem]="more.lineNumbers"
             [class.active]="own().lineNumbers"
             [attr.aria-pressed]="own().lineNumbers"
-            title="Line numbers"
+            title="Show or hide the number of each line."
+            i18n-title
             aria-label="Line numbers"
+            i18n-aria-label
             (click)="toggleLineNumbers()"
         ><svg sfeIcon="line-numbers"></svg></button>
         <button
             type="button"
             class="icon-button"
             [sfeOverflowItem]="more.find"
-            title="Find in the source (Ctrl+F)"
+            title="Find words in the source (Ctrl+F)."
+            i18n-title
             aria-label="Find"
+            i18n-aria-label
             [disabled]="state() !== 'ready'"
             (click)="sourceEditor()?.find()"
         ><svg sfeIcon="search"></svg></button>
@@ -81,10 +106,12 @@
         [sfeOverflowItem]="more.reading"
         [class.active]="panelOpen()"
         [attr.aria-expanded]="panelOpen()"
-        title="Reading settings: font, size, colours"
+        title="Change the font, size and colours of the text."
+        i18n-title
         aria-label="Reading settings"
+        i18n-aria-label
         (click)="panelOpen.set(!panelOpen())"
-    >Aa</button>
+    ><span translate="no">Aa</span></button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @if (panelOpen()) {
@@ -93,13 +120,13 @@
 <sfe-text-edit-bar />
 @switch (state()) {
     @case ('loading') {
-        <p class="text-message">Loading…</p>
+        <p class="text-message" i18n>Loading…</p>
     }
     @case ('failed') {
         <div class="text-message">
             <p>{{ message() }}</p>
             @if (downloadUrl(); as url) {
-                <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+                <p><a class="button" [href]="url" i18n><svg sfeIcon="download"></svg> Download</a></p>
             }
         </div>
     }
@@ -108,9 +135,13 @@
     <div class="json-pane" [hidden]="mode() === 'source'">
         @if (problems()[0]; as problem) {
             <p class="json-problem" role="status" data-problem>
-                Line {{ problem.line }}:
-                {{ problem.message }}{{ problems().length > 1 ? ' (and ' + (problems().length - 1) + ' more)' : '' }}.
-                <button type="button" class="link-button" (click)="showLine(problem.line)">Show in the source</button>
+                {{ texts.problemLine(problem.line, problem.message, problems().length - 1) }}
+                <button
+                    type="button"
+                    class="link-button"
+                    (click)="showLine(problem.line)"
+                    i18n
+                >Show in the source</button>
             </p>
         }
         <div
@@ -118,7 +149,7 @@
             class="csv-scroller subtitle-list"
             role="listbox"
             tabindex="0"
-            [attr.aria-label]="'Cues of ' + item().name"
+            [attr.aria-label]="texts.cueListLabel(item().name)"
             [attr.aria-activedescendant]="activeId()"
             (keydown)="onListKeydown($event)"
         >
@@ -136,11 +167,11 @@
                             [attr.aria-selected]="selected() === cue.index"
                             [style.transform]="'translateY(' + shown.start + 'px)'"
                             [style.height.px]="virtual.height"
-                            [title]="cue.overlaps ? 'Starts before the cue before it has ended' : ''"
+                            [title]="cue.overlaps ? texts.overlapHint() : ''"
                             (click)="select(cue)"
                             (dblclick)="showCue(cue)"
                         >
-                            <span class="subtitle-number">{{ cue.id || cue.index + 1 }}</span>
+                            <span class="subtitle-number">{{ cueName(cue) }}</span>
                             <span class="subtitle-time subtitle-start">{{ time(cue.start) }}</span>
                             <span class="subtitle-time subtitle-end">{{ time(cue.end) }}</span>
                             <span class="subtitle-text">@for (run of cue.runs; track $index) {<span
@@ -154,7 +185,7 @@
                 }
             </div>
             @if (!order().length) {
-                <p class="csv-empty">{{ query().trim() ? 'No cue holds “' + query().trim() + '”.' : 'No cues.' }}</p>
+                <p class="csv-empty">{{ texts.noCues(query().trim()) }}</p>
             }
         </div>
     </div>
@@ -164,7 +195,7 @@
     <footer class="text-status" aria-live="polite">
         <span>{{ details() }}</span>
         @if (session.dirty()) {
-            <span class="text-edited" data-edited>Edited</span>
+            <span class="text-edited" data-edited i18n="the text has unsaved changes">Edited</span>
         }
         <span class="json-selection">
             <span data-counts>{{ counts() }}</span>
@@ -172,7 +203,7 @@
                 <span
                     class="json-path"
                     data-selected-cue
-                >Cue {{ cue.id || cue.index + 1 }} · {{ time(cue.start) }} · {{ span(cue.end - cue.start) }}</span>
+                >{{ texts.selectedCueLine(cueName(cue), time(cue.start), span(cue.end - cue.start)) }}</span>
                 @if (playUrl(cue); as url) {
                     <a
                         class="link-button"
@@ -180,7 +211,8 @@
                         [href]="url"
                         target="_blank"
                         rel="noopener"
-                        [title]="'Play ' + videoName() + ' from this cue, in a new tab'"
+                        [title]="texts.playHint(videoName())"
+                        i18n="plays the video from the cue selected"
                     >Play</a>
                 }
             }

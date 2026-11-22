@@ -2,6 +2,7 @@ import { highlightCode, classHighlighter } from '@lezer/highlight';
 import DOMPurify from 'dompurify';
 import markdownItFactory, { type MarkdownIt } from 'markdown-it';
 import { languageForName } from '../text/languages';
+import { blockedImageText } from './markdown-texts';
 
 /**
  * Markdown of the library, rendered safely (agents/docs/features/markdown-viewer.md). A library file is content of
@@ -182,7 +183,7 @@ function blockedImage(image: HTMLImageElement, src: string): HTMLElement {
     } catch {
         // Shown as written.
     }
-    placeholder.textContent = `${image.alt ? image.alt + ' — ' : ''}image from ${host}`;
+    placeholder.textContent = blockedImageText(image.alt, host);
     placeholder.title = src;
     return placeholder;
 }

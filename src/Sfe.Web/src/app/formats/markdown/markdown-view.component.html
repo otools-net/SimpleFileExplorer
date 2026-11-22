@@ -1,8 +1,21 @@
-<div class="text-toolbar" role="toolbar" aria-label="Document" sfeOverflowRow="Document">
+<div
+    class="text-toolbar"
+    role="toolbar"
+    aria-label="Document"
+    i18n-aria-label="the toolbar of a document"
+    sfeOverflowRow="Document"
+    i18n-sfeOverflowRow="the toolbar of a document"
+>
     @if (state() === 'ready') {
         <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
     }
-    <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
+    <div
+        class="markdown-modes"
+        role="radiogroup"
+        aria-label="Show"
+        i18n-aria-label="how a document is shown"
+        [sfeOverflowItem]="more.mode"
+    >
         @for (choice of modes; track choice.id) {
             <button
                 type="button"
@@ -23,8 +36,10 @@
             [sfeOverflowItem]="more.outline"
             [class.active]="outline()"
             [attr.aria-pressed]="outline()"
-            title="Outline: the headings"
+            title="Show or hide the list of the document's headings, to go to one."
+            i18n-title
             aria-label="Outline"
+            i18n-aria-label
             [disabled]="!headings().length"
             (click)="toggleOutline()"
         ><svg sfeIcon="list"></svg></button>
@@ -36,16 +51,20 @@
             [sfeOverflowItem]="more.lineNumbers"
             [class.active]="own().lineNumbers"
             [attr.aria-pressed]="own().lineNumbers"
-            title="Line numbers"
+            title="Show or hide the number of each line."
+            i18n-title
             aria-label="Line numbers"
+            i18n-aria-label
             (click)="toggleLineNumbers()"
         ><svg sfeIcon="line-numbers"></svg></button>
         <button
             type="button"
             class="icon-button"
             [sfeOverflowItem]="more.find"
-            title="Find in the source (Ctrl+F)"
+            title="Find words in the source (Ctrl+F)."
+            i18n-title
             aria-label="Find"
+            i18n-aria-label
             [disabled]="state() !== 'ready'"
             (click)="sourceEditor()?.find()"
         ><svg sfeIcon="search"></svg></button>
@@ -57,10 +76,12 @@
         [sfeOverflowItem]="more.reading"
         [class.active]="panelOpen()"
         [attr.aria-expanded]="panelOpen()"
-        title="Reading settings: font, size, width, colours"
+        title="Change the font, size, width and colours of the text."
+        i18n-title
         aria-label="Reading settings"
+        i18n-aria-label
         (click)="panelOpen.set(!panelOpen())"
-    >Aa</button>
+    ><span translate="no">Aa</span></button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @if (panelOpen()) {
@@ -69,13 +90,13 @@
 <sfe-text-edit-bar />
 @switch (state()) {
     @case ('loading') {
-        <p class="text-message">Loading…</p>
+        <p class="text-message" i18n>Loading…</p>
     }
     @case ('failed') {
         <div class="text-message">
             <p>{{ message() }}</p>
             @if (downloadUrl(); as url) {
-                <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+                <p><a class="button" [href]="url" i18n><svg sfeIcon="download"></svg> Download</a></p>
             }
         </div>
     }
@@ -86,7 +107,7 @@
     [class.with-outline]="outline() && mode() !== 'source' && headings().length"
 >
     @if (outline() && mode() !== 'source' && headings().length) {
-        <nav class="markdown-outline" aria-label="Outline">
+        <nav class="markdown-outline" aria-label="Outline" i18n-aria-label>
             @for (heading of headings(); track heading.id) {
                 @if (heading.level <= 3) {
                     <a
@@ -112,16 +133,17 @@
     <footer class="text-status" aria-live="polite">
         <span>{{ details() }}</span>
         @if (session.dirty()) {
-            <span class="text-edited" data-edited>Edited</span>
+            <span class="text-edited" data-edited i18n="the text has unsaved changes">Edited</span>
         }
         @if (externalImages()) {
-            <span class="markdown-external">{{ externalImages() }} {{ externalImages() === 1 ? 'image' : 'images' }} of
-            other sites not shown
+            <span class="markdown-external">{{ externalLine() }}
                 <button
                     type="button"
                     class="link-button"
-                    title="Load them from the sites they are on (those sites see that this document is read)"
+                    title="Load the images from their sites. Those sites can then tell that this document is read."
+                    i18n-title
                     (click)="showImages()"
+                    i18n="shows the images of other sites"
                 >Show</button></span>
         }
     </footer>
