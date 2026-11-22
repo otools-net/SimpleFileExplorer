@@ -115,7 +115,7 @@ describe("Properties of a connection's items", () => {
 
         const element = await open(photo);
 
-        expect(element.textContent).toContain('No content to download (an online document)');
+        expect(element.textContent).toContain('None to download: this is an online document.');
     });
 
     it("asks the library's route outside a connection", async () => {

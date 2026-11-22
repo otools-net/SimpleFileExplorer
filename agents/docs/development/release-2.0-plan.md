@@ -179,8 +179,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     size line; a new item at the top says "At the top of the library"; batch rename's problems are sentences;
     `plural()` out of these dialogs (also their counted toasts); other toasts left for 2.8. Screenshots
     `batch-rename-dialog.png`, `extract-dialog.png` retaken; the docs-screenshots tool clicks `Open “Family”`.
-  - [ ] **2.6b properties and trash** (`properties.dialog`, `trash-section`, `place-properties`; ~56 template
-    texts).
+  - [x] **2.6b properties and trash** (`properties.dialog`, `trash-section`, `place-properties`; ~56 template
+    texts). Done 2026-11-22: 2 templates at 0 unmarked texts (56 gone); the sentences in `properties-texts.ts`
+    (sizes, totals, the count on the disk, checksum progress, attributes by `Intl.ListFormat`, `itemKind` and
+    `folderOf` moved from `place-properties.ts`: a kind with and without extension, one `select` each) and
+    `trash-texts.ts` (intro, an entry's "Deleted … by …." sentence, folder hints), pure functions with specs; the
+    count's "(stopped)" fragment a sentence of its own (the server's `Stopped.` word still compared, never shown);
+    errors keep the reason, the template writes "Could not read the properties: …"; Restore's hint still starts
+    "Put it back" (the docs-screenshots tool clicks it); `plural()` out of these files (also the empty-trash
+    toast); copy toasts, restore toasts and confirms left for 2.8. Screenshots `properties-*.png`,
+    `admin-files-trash.png` retaken.
   - [ ] **2.6c operations and uploads** (operations panel, uploads panel and section, `file-transfers.ts`,
     `place-transfers.ts`, `uploads.ts`; ~52 template texts and many texts in code).
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
@@ -332,8 +340,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-22):** steps 1.1 to 2.4d, 2.5a–2.5e and 2.6a done (see their ticks; 2.4, 2.5 and 2.6 were
-  split). Next: **2.6b** (properties and trash), 2.6c, then 2.7–2.8.
+- **Last session (2026-11-22):** steps 1.1 to 2.4d, 2.5a–2.5e, 2.6a and 2.6b done (see their ticks; 2.4, 2.5 and 2.6
+  were split). Next: **2.6c** (operations and uploads), then 2.7–2.8.
   Texts marked and rewritten to
   [ui-texts](ui-texts.md), [translations](translations.md) says how; `app/access/` is a worked example.
 - The docs-screenshots tool clicks elements by the start of their `title` (`clickTitle`): a hint rewritten updates

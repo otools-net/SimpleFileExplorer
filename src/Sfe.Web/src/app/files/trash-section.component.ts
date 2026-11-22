@@ -2,9 +2,17 @@ import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } 
 import { Router, RouterLink } from '@angular/router';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
-import { formatDate, formatSize, joinParts, plural } from '../core/format';
 import { isFileConflict } from '../core/models';
 import { TrashItem } from './file.models';
+import {
+    describeTrashed,
+    openFolderHint,
+    openFolderInTabHint,
+    purgedText,
+    purgeHint,
+    restoreHint,
+    trashIntro,
+} from './trash-texts';
 import { parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
@@ -42,21 +50,10 @@ export class TrashSectionComponent implements OnInit {
 
     protected readonly canRestore = computed(() => this.config.can(Rights.deleteFiles));
     protected readonly canPurge = computed(() => this.config.can(Rights.deletePermanently));
-    protected readonly rootName = computed(() => this.config.config()?.rootName ?? 'the library');
-    protected readonly intro = computed(() => {
-        const days = this.retention();
-        const keeps =
-            days === null
-                ? ''
-                : days === 0
-                  ? ' It keeps them until they are restored or deleted for good.'
-                  : ` Each is deleted for good ${plural(days, 'day')} after it was deleted.`;
-        return (
-            'You see what you deleted, and what was deleted in folders where you may delete. ' +
-            'Restoring puts an item back where it was, with its tags and folder access.' +
-            keeps
-        );
-    });
+    protected readonly rootName = computed(() => this.config.config()?.rootName ?? $localize`The library`);
+    protected readonly intro = computed(() => trashIntro(this.retention()));
+    protected readonly restoreHint = restoreHint();
+    protected readonly purgeHint = purgeHint();
 
     async ngOnInit(): Promise<void> {
         await this.load();
@@ -89,12 +86,11 @@ export class TrashSectionComponent implements OnInit {
     }
 
     protected describe(item: TrashItem): string {
-        return joinParts([
-            item.isFolder && item.files !== null ? plural(item.files, 'file') : null,
-            item.size !== null ? formatSize(item.size) : null,
-            item.previousVersion ? `saved over ${formatDate(item.deletedAt)}` : `deleted ${formatDate(item.deletedAt)}`,
-            item.deletedBy ? `by ${item.deletedBy}` : null,
-        ]);
+        return describeTrashed(item);
+    }
+
+    protected openHint(item: TrashItem): string {
+        return openFolderHint(this.folderOf(item));
     }
 
     /** The menu of an entry (a right click): its buttons, and the folder it was deleted from (here or in a new tab). */
@@ -107,35 +103,34 @@ export class TrashSectionComponent implements OnInit {
         if (this.canRestore() && this.busy() === null)
             entries.push({
                 id: 'restore',
-                label: 'Restore',
+                label: $localize`Restore`,
                 icon: 'undo',
-                title: 'Put it back where it was (a number is added to its name if that is taken)',
+                title: this.restoreHint,
                 run: () => void this.restore(item),
             });
         if (this.canPurge() && this.busy() === null)
             entries.push({
                 id: 'purge',
-                label: 'Delete for good…',
+                label: $localize`Delete for good…`,
                 icon: 'trash',
-                title: 'Delete it for good (asks first)',
+                title: this.purgeHint,
                 run: () => void this.purge(item),
             });
         const folder = this.folderOf(item);
         const params = { path: folder || null };
-        const name = folder || this.rootName();
         entries.push(
             {
                 id: 'openFolder',
-                label: 'Open its folder',
+                label: $localize`Open its folder`,
                 icon: 'folder',
-                title: `List ${name}, where it was`,
+                title: openFolderHint(folder),
                 run: () => void this.router.navigate(['/'], { queryParams: params }),
             },
             {
                 id: 'folderNewTab',
-                label: 'Open its folder in new tab',
+                label: $localize`Open its folder in new tab`,
                 icon: 'external',
-                title: `List ${name} in a tab of its own`,
+                title: openFolderInTabHint(folder),
                 href: this.store.pageUrl(params),
                 newTab: true,
             },
@@ -183,7 +178,7 @@ export class TrashSectionComponent implements OnInit {
         if (!confirm("Delete for good everything of the trash you may? This can't be undone.")) return;
         try {
             const result = await whileBusy(this.emptying, () => this.api.emptyTrash());
-            this.toasts.show(`${plural(result.purged, 'item')} deleted for good.`);
+            this.toasts.show(purgedText(result.purged));
             await this.load();
         } catch (error) {
             this.toasts.error((error as Error).message);

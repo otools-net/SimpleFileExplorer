@@ -11,11 +11,21 @@ import {
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { copyText, CopyPathService } from '../core/copy-path.service';
-import { formatDate, formatDuration, formatResolution, formatSize, joinParts, plural } from '../core/format';
+import { formatDate, formatDuration, formatResolution, joinParts } from '../core/format';
 import { PlaceProperties } from '../core/connection.models';
 import { ItemProperties, LibraryItem } from '../core/models';
 import { ChecksumAlgorithm, FolderTotals, PropertyJob } from './file.models';
-import { folderOf, itemKind, placeProperties, providerName } from './place-properties';
+import { placeProperties, providerName } from './place-properties';
+import {
+    attributesText,
+    checksumText,
+    countText,
+    folderOf,
+    itemKind,
+    jobForgotten,
+    sizeText,
+    totalsText,
+} from './properties-texts';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { registerDialog } from '../library/dialogs.service';
@@ -66,34 +76,25 @@ export class PropertiesDialog {
 
     protected readonly kind = computed(() => {
         const p = this.properties();
-        return !p ? '' : p.details.isFolder ? 'Folder' : itemKind(p.item);
+        return !p ? '' : p.details.isFolder ? $localize`Folder` : itemKind(p.item);
     });
     protected readonly folder = computed(() => {
-        const root = this.config.config()?.rootName ?? 'the library';
-        return folderOf(this.properties()?.details.path ?? '', root, '(the library itself)');
+        const root = this.config.config()?.rootName ?? $localize`The library`;
+        return folderOf(this.properties()?.details.path ?? '', root, false);
     });
     protected readonly remoteKind = computed(() => {
         const item = this.remote()?.item;
         return item ? itemKind(item) : '';
     });
     protected readonly remoteFolder = computed(() => {
-        const name = this.config.place()?.name || 'the connection';
-        return folderOf(this.remote()?.item.path ?? '', name, '(the connection itself)');
+        const name = this.config.place()?.name || $localize`The connection`;
+        return folderOf(this.remote()?.item.path ?? '', name, true);
     });
     protected readonly provider = computed(() => providerName(this.config.config(), this.remote()?.kind ?? ''));
     protected readonly onPlace = computed(() => this.config.place() !== null);
     protected readonly attributes = computed(() => {
         const details = this.properties()?.details;
-        return details
-            ? joinParts(
-                  [
-                      details.hidden && 'hidden',
-                      details.readOnly && 'read-only',
-                      details.isLink && 'a link to another place',
-                  ],
-                  ', ',
-              )
-            : '';
+        return details ? attributesText(details) : '';
     });
     protected readonly media = computed(() => {
         const item = this.properties()?.item;
@@ -104,35 +105,11 @@ export class PropertiesDialog {
               ])
             : '';
     });
-    protected readonly totalsText = computed(() => {
-        const totals = this.totals();
-        if (!totals) return 'In the index: …';
-        if (!totals.indexed && !totals.files && !totals.folders) return 'Not in the index yet: count it on the disk.';
-        return `In the index: ${this.holds(totals.files, totals.folders, totals.bytes)}, as of the last scan.`;
-    });
-    protected readonly countText = computed(() => {
-        const job = this.count();
-        if (!job) return '';
-        if (job.error && job.error !== 'Stopped.') return job.error;
-        const holds = this.holds(job.files, job.folders, job.bytes);
-        if (!job.done) return `On the disk: ${holds} so far…`;
-        return joinParts(
-            [
-                `On the disk: ${job.capped ? 'more than ' : ''}${holds}${job.error ? ' (stopped)' : ''}.`,
-                job.leftOut
-                    ? `${plural(job.leftOut, 'link or unreadable folder', 'links or unreadable folders')} left out.`
-                    : null,
-            ],
-            ' ',
-        );
-    });
-    protected readonly checksumText = computed(() => {
-        const job = this.checksum();
-        if (!job) return '';
-        if (job.error) return job.error;
-        const percent = job.total ? Math.floor((job.bytes * 100) / job.total) : 0;
-        return `Reading the file… ${percent}% (${formatSize(job.bytes)} of ${formatSize(job.total)})`;
-    });
+    protected readonly totalsText = computed(() => totalsText(this.totals()));
+    protected readonly countText = computed(() => countText(this.count()));
+    protected readonly checksumText = computed(() => checksumText(this.checksum()));
+    /** The name of a connection's content hash ("Dropbox content hash"). */
+    protected readonly hashName = computed(() => this.remote()?.hashName ?? $localize`Content hash`);
 
     private timer: ReturnType<typeof setTimeout> | undefined;
     /** Answers of an earlier item are dropped. */
@@ -167,17 +144,12 @@ export class PropertiesDialog {
             this.properties.set(properties);
             if (properties.details.isFolder) void this.loadTotals(item.path, generation);
         } catch (error) {
-            if (generation === this.generation)
-                this.error.set(`The properties could not be read: ${(error as Error).message}`);
+            if (generation === this.generation) this.error.set((error as Error).message);
         }
     }
 
     protected size(bytes: number | null): string {
-        return bytes === null
-            ? ''
-            : bytes < 1024
-              ? plural(bytes, 'byte')
-              : `${formatSize(bytes)} (${bytes.toLocaleString()} bytes)`;
+        return sizeText(bytes);
     }
 
     protected date(value: string): string {
@@ -212,10 +184,6 @@ export class PropertiesDialog {
         this.totalsRequest?.abort();
         this.stop(this.count());
         this.stop(this.checksum());
-    }
-
-    private holds(files: number, folders: number, bytes: number): string {
-        return `${joinParts([plural(files, 'file'), plural(folders, 'folder')], ', ')}, ${formatSize(bytes)}`;
     }
 
     private async loadTotals(path: string, generation: number): Promise<void> {
@@ -254,8 +222,7 @@ export class PropertiesDialog {
                     const now = await this.api.propertyJob(job.id);
                     if (generation === this.generation) target.set(now);
                 } catch {
-                    if (generation === this.generation)
-                        target.set({ ...job, done: true, error: 'The server forgot it: start it again.' });
+                    if (generation === this.generation) target.set({ ...job, done: true, error: jobForgotten() });
                 }
             }
             if (generation === this.generation && (this.counting() || this.summing())) this.follow(generation);

@@ -234,6 +234,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   library's name; the zip's size line says "1 folder isn't in the index and isn't counted."; rename several explains
   each name it can't give in a sentence ("This name is taken in this folder."). Their texts are ready for
   translation.
+- **Properties and Trash reworded**: the properties sheet and Administration › File management › Trash say what a
+  click does in full sentences; **Opened** is now **Last opened**, attributes read "hidden and read-only", a file
+  without an extension is an "Image" or a "File" (capitalised), the item at the top says "This is the top of the
+  library."; a count on the disk says "… when the count was stopped." and "1 link or unreadable folder was left
+  out."; a trash entry says "Deleted (date) by Sam." (or "Saved over …"), and the link to its folder names it in
+  quotes. Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

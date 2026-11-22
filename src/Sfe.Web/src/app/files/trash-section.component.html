@@ -4,10 +4,12 @@
         <button
             type="button"
             class="button small danger"
-            title="Delete for good everything of the trash you may (asks first)"
+            title="Delete for good everything in the trash that you may delete (asks first)."
+            i18n-title
             [sfeBusy]="emptying()"
             [disabled]="emptying() || !items().length"
             (click)="empty()"
+            i18n
         >Empty the trash</button>
     </div>
 }
@@ -15,7 +17,7 @@
     @if (loading()) {
         <li class="tag-loading"><span class="spinner"></span></li>
     } @else if (!items().length) {
-        <li class="muted trash-empty">The trash is empty.</li>
+        <li class="muted trash-empty" i18n>The trash is empty.</li>
     }
     @for (item of items(); track item.id) {
         <li class="tracking-missing" [attr.data-id]="item.id" [sfeContextMenu]="rowMenu(item)">
@@ -26,15 +28,17 @@
                     @if (item.previousVersion) {
                         <span
                             class="trash-version"
-                            title="The file as it was before it was saved over in the text editor: restored, it comes back next to it"
+                            title="The file as it was before it was saved over. Restored, it comes back next to it."
+                            i18n-title
+                            i18n
                         >previous version</span>
                     }
                     <span class="tracking-was">{{ describe(item) }}</span>
-                    <span class="tracking-was">From
+                    <span class="tracking-was" i18n>From
                         <a
                             routerLink="/"
                             [queryParams]="{ path: folderOf(item) || null }"
-                            [title]="'Open ' + (folderOf(item) || 'the library')"
+                            [title]="openHint(item)"
                         >{{ folderOf(item) || rootName() }}</a>
                     </span>
                 </span>
@@ -43,20 +47,22 @@
                         <button
                             type="button"
                             class="button small primary"
-                            title="Put it back where it was (a number is added to its name if that is taken)"
+                            [title]="restoreHint"
                             [sfeBusy]="busy() === item.id + ':restore'"
                             [disabled]="busy() !== null"
                             (click)="restore(item)"
+                            i18n
                         >Restore</button>
                     }
                     @if (canPurge()) {
                         <button
                             type="button"
                             class="button small"
-                            title="Delete it for good (asks first)"
+                            [title]="purgeHint"
                             [sfeBusy]="busy() === item.id + ':purge'"
                             [disabled]="busy() !== null"
                             (click)="purge(item)"
+                            i18n
                         >
                             <svg sfeIcon="trash"></svg>Delete
                         </button>
@@ -69,9 +75,11 @@
 <button
     type="button"
     class="button"
-    title="Show the next page"
+    title="Show the next page of the trash."
+    i18n-title
     [hidden]="!next()"
     [sfeBusy]="loadingMore()"
     [disabled]="loadingMore()"
     (click)="more()"
+    i18n
 >Load more</button>

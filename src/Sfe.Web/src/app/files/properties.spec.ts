@@ -133,7 +133,7 @@ describe('PropertiesDialog', () => {
 
         expect(api.countFolder).toHaveBeenCalledWith('Media/Holidays');
         expect(element.textContent).toContain('On the disk: 13 files, 2 folders, 4 MB.');
-        expect(element.textContent).toContain('1 link or unreadable folder left out.');
+        expect(element.textContent).toContain('1 link or unreadable folder was left out.');
     });
 
     it('stops what runs when it closes', async () => {

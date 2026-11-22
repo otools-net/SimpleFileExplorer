@@ -1,8 +1,6 @@
 {
   "app/editor/image-editor.dialog.html": 20,
   "app/files/operations-panel.component.html": 21,
-  "app/files/properties.dialog.html": 44,
-  "app/files/trash-section.component.html": 12,
   "app/files/uploads-panel.component.html": 26,
   "app/files/uploads-section.component.html": 5,
   "app/formats/archive/archive-view.component.html": 49,

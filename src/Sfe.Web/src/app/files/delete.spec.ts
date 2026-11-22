@@ -310,7 +310,7 @@ describe('TrashSectionComponent', () => {
         const element = await section();
 
         expect(element.querySelector('[data-id="2"] .trash-version')!.textContent).toBe('previous version');
-        expect(element.querySelector('[data-id="2"]')!.textContent).toContain('saved over');
+        expect(element.querySelector('[data-id="2"]')!.textContent).toContain('Saved over');
         expect(element.querySelector('[data-id="1"] .trash-version')).toBeNull();
     });
 });

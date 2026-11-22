@@ -1,70 +1,73 @@
 <sfe-sheet
     #sheet
     heading="Properties"
+    i18n-heading
     [subtitle]="properties()?.item?.name ?? remote()?.item?.name ?? item()?.name ?? null"
     variant="properties-dialog"
     (closed)="closed()"
 >
     @if (error(); as error) {
-        <p class="form-error">{{ error }}</p>
+        <p class="form-error" i18n>Could not read the properties: {{ error }}</p>
     } @else if (remote(); as r) {
         <dl class="properties">
-            <dt>Name</dt><dd class="properties-name">{{ r.item.name }}</dd>
-            <dt>Kind</dt><dd>{{ remoteKind() }}</dd>
-            <dt>Storage</dt><dd class="properties-provider">{{ provider() }}</dd>
+            <dt i18n>Name</dt><dd class="properties-name">{{ r.item.name }}</dd>
+            <dt i18n>Kind</dt><dd>{{ remoteKind() }}</dd>
+            <dt i18n>Storage</dt><dd class="properties-provider">{{ provider() }}</dd>
             @if (r.account) {
-                <dt>Account</dt><dd>{{ r.account }}</dd>
+                <dt i18n>Account</dt><dd>{{ r.account }}</dd>
             }
-            <dt>In</dt><dd>{{ remoteFolder() }}</dd>
-            <dt>Path</dt><dd>{{ r.item.path ? '/' + r.item.path : '/' }}</dd>
+            <dt i18n>In</dt><dd>{{ remoteFolder() }}</dd>
+            <dt i18n>Path</dt><dd>{{ r.item.path ? '/' + r.item.path : '/' }}</dd>
             @if (r.item.kind !== 'directory') {
-                <dt>Size</dt><dd>{{ size(r.item.size) }}</dd>
+                <dt i18n>Size</dt><dd>{{ size(r.item.size) }}</dd>
             }
             @if (r.item.modified) {
-                <dt>Modified</dt><dd>{{ date(r.item.modified) }}</dd>
+                <dt i18n>Modified</dt><dd>{{ date(r.item.modified) }}</dd>
             }
             @if (!r.downloadable) {
-                <dt>Content</dt><dd>No content to download (an online document)</dd>
+                <dt i18n>Content</dt><dd i18n>None to download: this is an online document.</dd>
             }
         </dl>
         @if (r.contentHash) {
-            <section class="properties-section" aria-label="Content hash">
-                <h3>{{ r.hashName ?? 'Content hash' }}</h3>
+            <section class="properties-section" [attr.aria-label]="hashName()">
+                <h3>{{ hashName() }}</h3>
                 <p class="properties-checksum properties-hash"><code>{{ r.contentHash }}</code>
                     <button
                         type="button"
                         class="button small ghost"
-                        title="Copy the content hash"
-                        (click)="copy(r.contentHash, r.hashName ?? 'Content hash')"
+                        title="Copy the content hash to the clipboard."
+                        i18n-title
+                        (click)="copy(r.contentHash, hashName())"
+                        i18n
                     >Copy</button></p>
             </section>
         }
     } @else if (properties(); as p) {
         <dl class="properties">
-            <dt>Name</dt><dd class="properties-name">{{ p.item.name }}</dd>
-            <dt>Kind</dt><dd>{{ kind() }}</dd>
-            <dt>In</dt><dd>{{ folder() }}</dd>
+            <dt i18n>Name</dt><dd class="properties-name">{{ p.item.name }}</dd>
+            <dt i18n>Kind</dt><dd>{{ kind() }}</dd>
+            <dt i18n>In</dt><dd>{{ folder() }}</dd>
             @if (!p.details.isFolder) {
-                <dt>Size</dt><dd>{{ size(p.details.size) }}</dd>
+                <dt i18n>Size</dt><dd>{{ size(p.details.size) }}</dd>
             }
-            <dt>Modified</dt><dd>{{ date(p.details.modified) }}</dd>
+            <dt i18n>Modified</dt><dd>{{ date(p.details.modified) }}</dd>
             @if (p.details.created) {
-                <dt>Created</dt><dd>{{ date(p.details.created) }}</dd>
+                <dt i18n>Created</dt><dd>{{ date(p.details.created) }}</dd>
             }
             @if (p.details.accessed) {
-                <dt>Opened</dt><dd>{{ date(p.details.accessed) }}</dd>
+                <dt i18n>Last opened</dt><dd>{{ date(p.details.accessed) }}</dd>
             }
             @if (attributes()) {
-                <dt>Attributes</dt><dd>{{ attributes() }}</dd>
+                <dt i18n>Attributes</dt><dd>{{ attributes() }}</dd>
             }
             @if (media()) {
-                <dt>Media</dt><dd>{{ media() }}</dd>
+                <dt i18n>Media</dt><dd>{{ media() }}</dd>
             }
             @if (!p.details.isFolder && p.item.indexed === false) {
-                <dt>Index</dt><dd>Not indexed yet: no scan has seen it</dd>
+                <dt i18n>Index</dt><dd i18n>Not indexed yet. No scan has seen it.</dd>
             }
             @if (showTags() && p.item.tags?.length) {
-                <dt>Tags</dt>
+                <dt i18n>Tags</dt>
                 <dd class="properties-tags">
                     @for (tag of p.item.tags; track tag.id) {
                         <sfe-tag-chip [tag]="tag" />
@@ -74,8 +77,8 @@
         </dl>
 
         @if (p.details.isFolder) {
-            <section class="properties-section" aria-label="What the folder holds">
-                <h3>What it holds</h3>
+            <section class="properties-section" aria-label="What the folder holds" i18n-aria-label>
+                <h3 i18n>What it holds</h3>
                 <p class="properties-totals">{{ totalsText() }}</p>
                 @if (count(); as job) {
                     <p class="properties-count" role="status">{{ countText() }}</p>
@@ -85,24 +88,28 @@
                         <button
                             type="button"
                             class="button small"
-                            title="Stop counting"
+                            title="Stop counting the folder."
+                            i18n-title
                             (click)="stop(count())"
+                            i18n
                         >Stop</button>
                     } @else {
                         <button
                             type="button"
                             class="button small count-button"
-                            title="Go through the folder on the server's disk: exact now, but takes a while for large folders"
+                            title="Count the folder on the server's disk now: exact, but slow for large folders."
+                            i18n-title
                             (click)="startCount()"
+                            i18n
                         >Count on disk</button>
                     }
                 </div>
             </section>
         } @else if (p.canChecksum) {
-            <section class="properties-section" aria-label="Checksum">
-                <h3>Checksum</h3>
+            <section class="properties-section" aria-label="Checksum" i18n-aria-label>
+                <h3 i18n>Checksum</h3>
                 <div class="properties-actions">
-                    <label class="visually-hidden" for="checksum-algorithm">Algorithm</label>
+                    <label class="visually-hidden" for="checksum-algorithm" i18n>Algorithm</label>
                     <select
                         id="checksum-algorithm"
                         [value]="algorithm()"
@@ -110,22 +117,26 @@
                         [disabled]="summing()"
                     >
                         @for (option of algorithms; track option[0]) {
-                            <option [value]="option[0]">{{ option[1] }}</option>
+                            <option [value]="option[0]" translate="no">{{ option[1] }}</option>
                         }
                     </select>
                     @if (summing()) {
                         <button
                             type="button"
                             class="button small"
-                            title="Stop reading the file"
+                            title="Stop reading the file."
+                            i18n-title
                             (click)="stop(checksum())"
+                            i18n
                         >Stop</button>
                     } @else {
                         <button
                             type="button"
                             class="button small checksum-button"
-                            title="Read the whole file on the server for its checksum"
+                            title="Read the whole file on the server to compute its checksum."
+                            i18n-title
                             (click)="startChecksum()"
+                            i18n
                         >Compute</button>
                     }
                 </div>
@@ -135,8 +146,10 @@
                             <button
                                 type="button"
                                 class="button small ghost"
-                                title="Copy the checksum"
+                                title="Copy the checksum to the clipboard."
+                                i18n-title
                                 (click)="copy(job.checksum)"
+                                i18n
                             >Copy</button></p>
                     } @else {
                         <p role="status">{{ checksumText() }}</p>
@@ -145,7 +158,7 @@
             </section>
         }
     } @else {
-        <p role="status">Loading…</p>
+        <p role="status" i18n>Loading…</p>
     }
     <span sheetFooter class="spacer"></span>
     @if (copyPaths.enabled() && item() && !onPlace()) {
@@ -153,9 +166,11 @@
             sheetFooter
             type="button"
             class="button"
-            title="Copy where it is on the server"
+            title="Copy where it is on the server."
+            i18n-title
             (click)="copyPaths.copy(item()!.path)"
+            i18n
         >Copy full path</button>
     }
-    <button sheetFooter type="button" class="button primary" (click)="sheet.close()">Close</button>
+    <button sheetFooter type="button" class="button primary" (click)="sheet.close()" i18n>Close</button>
 </sfe-sheet>

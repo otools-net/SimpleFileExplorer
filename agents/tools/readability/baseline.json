@@ -80,8 +80,6 @@
     "src/Sfe.Web/src/app/files/file-transfers.ts": {"fileLines":468},
     "src/Sfe.Web/src/app/files/item-menu.ts": {"fileLines":530,"longFunctions":1,"heavyClasses":1},
     "src/Sfe.Web/src/app/files/operations-panel.component.html": {"longLines":1},
-    "src/Sfe.Web/src/app/files/properties.dialog.html": {"longLines":1},
-    "src/Sfe.Web/src/app/files/trash-section.component.html": {"longLines":1},
     "src/Sfe.Web/src/app/files/uploads.ts": {"fileLines":452,"deepFunctions":2},
     "src/Sfe.Web/src/app/formats/archive/archive-view.component.html": {"fileLines":403,"longLines":5},
     "src/Sfe.Web/src/app/formats/archive/archive-view.component.ts": {"fileLines":928,"deepFunctions":1},
