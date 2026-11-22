@@ -115,7 +115,7 @@
     "src/Sfe.Web/src/app/library/scan/folder-exclusions.dialog.html": {"longLines":1},
     "src/Sfe.Web/src/app/library/scan/remove-from-index.dialog.html": {"longLines":1},
     "src/Sfe.Web/src/app/library/search-explain/search-explain.component.ts": {"longLines":1},
-    "src/Sfe.Web/src/app/library/search-explain/search-explain.ts": {"fileLines":520,"longFunctions":2},
+    "src/Sfe.Web/src/app/library/search-explain/search-explain.ts": {"longFunctions":1},
     "src/Sfe.Web/src/app/library/topbar/main-menu.component.ts": {"heavyClasses":1},
     "src/Sfe.Web/src/app/library/viewer/viewer.component.html": {"longLines":3},
     "src/Sfe.Web/src/app/library/viewer/viewer.component.ts": {"fileLines":823,"longFunctions":1,"heavyClasses":1},
