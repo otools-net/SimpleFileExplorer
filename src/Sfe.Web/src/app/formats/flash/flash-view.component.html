@@ -1,4 +1,11 @@
-    <div class="text-toolbar" role="toolbar" aria-label="Flash movie" sfeOverflowRow="Flash movie">
+    <div
+        class="text-toolbar"
+        role="toolbar"
+        aria-label="Flash movie"
+        i18n-aria-label
+        sfeOverflowRow="Flash movie"
+        i18n-sfeOverflowRow
+    >
         <button
             type="button"
             class="icon-button"
@@ -6,8 +13,8 @@
             [sfeOverflowItem]="null"
             overflowStay
             [disabled]="state() !== 'ready'"
-            [title]="playing() ? 'Pause' : 'Play'"
-            [attr.aria-label]="playing() ? 'Pause' : 'Play'"
+            [title]="texts.playHint(playing())"
+            [attr.aria-label]="texts.play(playing())"
             (click)="togglePlay()"
         ><svg [sfeIcon]="playing() ? 'pause' : 'play'"></svg></button>
         <button
@@ -16,8 +23,10 @@
             data-restart
             [sfeOverflowItem]="more.restart"
             [disabled]="state() !== 'ready'"
-            title="Play again from the start"
-            aria-label="Play again from the start"
+            title="Play the movie again from the start."
+            i18n-title
+            aria-label="Play again"
+            i18n-aria-label
             (click)="restart()"
         ><svg sfeIcon="refresh"></svg></button>
         <button
@@ -28,8 +37,8 @@
             overflowStay
             [class.active]="muted()"
             [attr.aria-pressed]="muted()"
-            [title]="muted() ? 'Sound on' : 'Mute'"
-            [attr.aria-label]="muted() ? 'Sound on' : 'Mute'"
+            [title]="texts.muteHint(muted())"
+            [attr.aria-label]="texts.mute(muted())"
             (click)="toggleMute()"
         ><svg [sfeIcon]="muted() || volume() === 0 ? 'muted' : 'volume'"></svg></button>
         <input
@@ -41,7 +50,9 @@
             max="1"
             step="0.05"
             aria-label="Volume"
-            title="Volume"
+            i18n-aria-label
+            title="Set how loud the movie plays."
+            i18n-title
             [value]="volume()"
             (input)="setVolume($any($event.target).valueAsNumber)"
         />
@@ -52,8 +63,10 @@
             [sfeOverflowItem]="null"
             overflowStay
             [disabled]="state() !== 'ready'"
-            title="Full screen"
+            title="Show the movie on the whole screen."
+            i18n-title
             aria-label="Full screen"
+            i18n-aria-label
             (click)="fullscreen()"
         ><svg sfeIcon="fullscreen"></svg></button>
         <button class="icon-button" sfeOverflowMore></button>
@@ -62,13 +75,14 @@
     <div class="pdf-messages">
         @switch (state()) {
             @case ('loading') {
-                <p class="text-message">Loading…</p>
+                <p class="text-message" i18n>Loading…</p>
             }
             @case ('failed') {
                 <div class="text-message">
                     <p>{{ message() }}</p>
                     @if (downloadUrl(); as url) {
-                        <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+                        <p><a class="button" [href]="url"
+                            ><svg sfeIcon="download"></svg><ng-container i18n>Download</ng-container></a></p>
                     }
                 </div>
             }
@@ -78,6 +92,6 @@
     @if (state() === 'ready') {
         <footer class="text-status" aria-live="polite">
             <span>{{ details() }}</span>
-            <span data-playing>{{ playing() ? 'Playing' : 'Paused' }}</span>
+            <span data-playing>{{ texts.state(playing()) }}</span>
         </footer>
     }

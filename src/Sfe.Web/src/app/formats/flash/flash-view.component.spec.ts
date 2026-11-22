@@ -170,7 +170,7 @@ describe('FlashViewComponent', () => {
         await show();
 
         expect(element.querySelector('.text-message')!.textContent).toContain(
-            'This movie could not be played: not a SWF',
+            'Could not play the movie: not a SWF.',
         );
         expect(element.querySelector('a.button')).not.toBeNull();
         expect(element.querySelector<HTMLElement>('.flash-stage')!.hidden).toBe(true);
@@ -182,7 +182,7 @@ describe('FlashViewComponent', () => {
         await show();
 
         expect(opened).toHaveLength(0);
-        expect(element.querySelector('.text-message')!.textContent).toContain('could not be played');
+        expect(element.querySelector('.text-message')!.textContent).toContain('Could not play the movie: Not found.');
         expect(element.querySelector('a.button'), 'no right to download').toBeNull();
     });
 });

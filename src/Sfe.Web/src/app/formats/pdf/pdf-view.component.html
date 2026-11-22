@@ -1,11 +1,20 @@
-<div class="text-toolbar" role="toolbar" aria-label="Document" sfeOverflowRow="Document">
+<div
+    class="text-toolbar"
+    role="toolbar"
+    aria-label="Document"
+    i18n-aria-label
+    sfeOverflowRow="Document"
+    i18n-sfeOverflowRow
+>
     <button
         type="button"
         class="icon-button"
         [sfeOverflowItem]="null"
         overflowStay
-        title="Previous page (←)"
+        title="Go to the previous page (←)."
+        i18n-title
         aria-label="Previous page"
+        i18n-aria-label
         data-previous-page
         [disabled]="state() !== 'ready' || page() <= 1"
         (click)="goTo(page() - 1)"
@@ -18,20 +27,29 @@
         overflowStay
         data-page
         aria-label="Page"
-        title="Go to page"
+        i18n-aria-label
+        title="Type a page number and press Enter to go to it."
+        i18n-title
         [value]="page()"
         [disabled]="state() !== 'ready'"
         (keydown.enter)="goTo($any($event.target).value)"
         (blur)="$any($event.target).value = page()"
     />
-    <span class="pdf-pages" [sfeOverflowItem]="null" overflowStay>/ {{ pages() }}</span>
+    <span
+        class="pdf-pages"
+        [sfeOverflowItem]="null"
+        overflowStay
+        i18n="the number of pages, after the page number typed"
+    >/ {{ pages() }}</span>
     <button
         type="button"
         class="icon-button"
         [sfeOverflowItem]="null"
         overflowStay
-        title="Next page (→)"
+        title="Go to the next page (→)."
+        i18n-title
         aria-label="Next page"
+        i18n-aria-label
         data-next-page
         [disabled]="state() !== 'ready' || page() >= pages()"
         (click)="goTo(page() + 1)"
@@ -42,8 +60,10 @@
             class="icon-button"
             [sfeOverflowItem]="null"
             overflowStay
-            title="Smaller (Ctrl+−)"
+            title="Make the pages smaller (Ctrl+−)."
+            i18n-title
             aria-label="Smaller"
+            i18n-aria-label
             data-zoom-out
             [disabled]="state() !== 'ready'"
             (click)="zoom(-1)"
@@ -53,6 +73,7 @@
             data-scale
             [sfeOverflowItem]="more.zoom"
             aria-label="Zoom"
+            i18n-aria-label
             [disabled]="state() !== 'ready'"
             (change)="setScale($any($event.target).value)"
         >
@@ -68,8 +89,10 @@
             class="icon-button"
             [sfeOverflowItem]="null"
             overflowStay
-            title="Larger (Ctrl+=)"
+            title="Make the pages larger (Ctrl+=)."
+            i18n-title
             aria-label="Larger"
+            i18n-aria-label
             data-zoom-in
             [disabled]="state() !== 'ready'"
             (click)="zoom(1)"
@@ -82,8 +105,10 @@
             [sfeOverflowItem]="more.outline"
             [class.active]="showOutline()"
             [attr.aria-pressed]="showOutline()"
-            title="Outline: the document's headings"
+            title="Show or hide the document's headings, to go to one."
+            i18n-title
             aria-label="Outline"
+            i18n-aria-label
             (click)="toggleOutline()"
         ><svg sfeIcon="list"></svg></button>
     }
@@ -95,8 +120,10 @@
             data-find-toggle
             [class.active]="findOpen()"
             [attr.aria-expanded]="findOpen()"
-            title="Find in the document (Ctrl+F)"
+            title="Find words in the document (Ctrl+F)."
+            i18n-title
             aria-label="Find in the document"
+            i18n-aria-label
             [disabled]="state() !== 'ready'"
             (click)="toggleFind()"
         ><svg sfeIcon="search"></svg></button>
@@ -107,17 +134,17 @@
             class="json-filter"
             data-find
             placeholder="Find in the document"
+            i18n-placeholder
             aria-label="Find in the document"
-            title="Find (Ctrl+F); Enter: next, Shift+Enter: previous"
+            i18n-aria-label
+            title="Type words to find. Enter goes to the next match, Shift+Enter to the previous one."
+            i18n-title
             [disabled]="state() !== 'ready'"
             (input)="find($any($event.target).value)"
             (keydown)="onFindKeydown($event)"
         />
         @if (query()) {
-            <span
-                class="pdf-matches"
-                data-matches
-            >{{ matches().total ? matches().current + ' of ' + matches().total : 'Not found' }}</span>
+            <span class="pdf-matches" data-matches>{{ matchesText() }}</span>
         }
         </span>
     </span>
@@ -128,8 +155,10 @@
         [sfeOverflowItem]="more.dark"
         [class.active]="dark()"
         [attr.aria-pressed]="dark()"
-        title="Dark pages, for reading at night"
+        title="Darken the pages, for reading at night."
+        i18n-title
         aria-label="Dark pages"
+        i18n-aria-label
         (click)="toggleDark()"
     ><svg sfeIcon="theme"></svg></button>
     <button class="icon-button" sfeOverflowMore></button>
@@ -138,27 +167,33 @@
 <div class="pdf-messages">
     @switch (state()) {
         @case ('loading') {
-            <p class="text-message">Loading…</p>
+            <p class="text-message" i18n>Loading…</p>
         }
         @case ('locked') {
             <form class="text-message pdf-password" (submit)="unlock($event)">
-                <p>{{ wrongPassword() ? 'That is not its password. Try again:' : 'This document is protected by a password.' }}</p>
+                @if (wrongPassword()) {
+                    <p i18n>That password doesn't open this document. Try again.</p>
+                } @else {
+                    <p i18n>This document is protected by a password. Type it to open the document.</p>
+                }
                 <p><input
                     #passwordBox
                     type="password"
                     class="json-filter"
                     data-password
                     aria-label="Password"
+                    i18n-aria-label
                     autocomplete="off"
                 />
-                    <button type="submit" class="button">Open</button></p>
+                    <button type="submit" class="button" i18n="opens the document with the password">Open</button></p>
             </form>
         }
         @case ('failed') {
             <div class="text-message">
                 <p>{{ message() }}</p>
                 @if (downloadUrl(); as url) {
-                    <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+                    <p><a class="button" [href]="url"
+                        ><svg sfeIcon="download"></svg><ng-container i18n>Download</ng-container></a></p>
                 }
             </div>
         }
@@ -166,7 +201,7 @@
 </div>
 <div class="pdf-panes" [class.with-outline]="showOutline() && outline().length" [hidden]="state() === 'failed'">
     @if (showOutline() && outline().length) {
-        <nav class="markdown-outline pdf-outline" aria-label="Outline">
+        <nav class="markdown-outline pdf-outline" aria-label="Outline" i18n-aria-label>
             @for (entry of outlineRows(); track $index) {
                 <a
                     href=""
@@ -188,6 +223,6 @@
 @if (state() === 'ready') {
     <footer class="text-status" aria-live="polite">
         <span>{{ details() }}</span>
-        <span data-page-status>Page {{ page() }} of {{ pages() }}</span>
+        <span data-page-status i18n>Page {{ page() }} of {{ pages() }}</span>
     </footer>
 }

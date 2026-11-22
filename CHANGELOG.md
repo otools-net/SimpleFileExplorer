@@ -254,6 +254,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   and hints at each aspect ratio in one; a video the browser can't play says "This browser can't play this format."
   and how to play it elsewhere; the folder picker's folders hint "Choose “…”, or open it.". Their texts are ready for
   translation.
+- **PDF, EPUB and Flash viewers reworded**: their buttons' hints are full sentences with the key that does it ("Go to
+  the next page (→).", "Make the pages larger (Ctrl+=)."); each zoom of a PDF says what it does ("Make the pages as
+  wide as the window."); a find with nothing found says "No matches"; a wrong password reads "That password doesn't
+  open this document. Try again."; a book's layouts say how the book is shown; a muted Flash movie's sound button is
+  **Unmute**; a document, book or movie that can't be shown says "Could not open the book: …." and no longer "It can
+  only be downloaded." (wrong without the download right). Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

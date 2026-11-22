@@ -190,7 +190,7 @@ describe('PdfViewComponent', () => {
         element.querySelector<HTMLInputElement>('[data-password]')!.value = 'guess';
         element.querySelector<HTMLFormElement>('.pdf-password')!.dispatchEvent(new Event('submit'));
         await stable();
-        expect(element.querySelector('.pdf-password')!.textContent).toContain('not its password');
+        expect(element.querySelector('.pdf-password')!.textContent).toContain("doesn't open this document");
 
         element.querySelector<HTMLInputElement>('[data-password]')!.value = 'secret';
         element.querySelector<HTMLFormElement>('.pdf-password')!.dispatchEvent(new Event('submit'));
@@ -236,7 +236,7 @@ describe('PdfViewComponent', () => {
         failure = new NotPdfError('Invalid PDF structure.');
         await show();
 
-        expect(element.querySelector('.text-message')!.textContent).toContain('not a PDF that can be shown');
+        expect(element.querySelector('.text-message')!.textContent).toContain("isn't a PDF that can be shown");
         expect(element.querySelector('.text-message a')!.getAttribute('href')).toContain('download=true');
     });
 });

@@ -23,24 +23,17 @@ import { FILE_SOURCE } from '../file-source';
 import { FILE_VIEW_HOST, FileFormat } from '../formats';
 import { readPosition, writePosition } from '../text/positions';
 import { NotPdfError, PDF_LOADER, PdfHandle, PdfLockedError, PdfMatches, PdfOutlineItem } from './pdf-document';
+import { pdfTexts, SCALE_VALUES } from './pdf-texts';
 
 /** Where each PDF was last read, in this browser: `{ path: page }` (as the text files' lines). */
 export const PDF_PAGES_KEY = 'sfe.pdf.pages';
 export const PDF_DARK_KEY = 'sfe.pdf.dark';
 export const PDF_OUTLINE_KEY = 'sfe.pdf.outline';
 const SAVE_PAGE_MS = 500;
-const SCALES: readonly { value: string; label: string }[] = [
-    { value: 'auto', label: 'Automatic' },
-    { value: 'page-width', label: 'Page width' },
-    { value: 'page-fit', label: 'Whole page' },
-    { value: '0.5', label: '50 %' },
-    { value: '0.75', label: '75 %' },
-    { value: '1', label: '100 %' },
-    { value: '1.25', label: '125 %' },
-    { value: '1.5', label: '150 %' },
-    { value: '2', label: '200 %' },
-    { value: '3', label: '300 %' },
-];
+const SCALES: readonly { value: string; label: string }[] = SCALE_VALUES.map((value) => ({
+    value,
+    label: pdfTexts.scale(value),
+}));
 const STEPS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 
 /**
@@ -98,16 +91,16 @@ export class PdfViewComponent {
             const choices = [...SCALES, ...(this.customScale() ? [this.customScale()!] : [])];
             return {
                 id: 'zoom',
-                label: `Zoom: ${choices.find((choice) => choice.value === current)?.label ?? current}`,
+                label: pdfTexts.zoom(choices.find((choice) => choice.value === current)?.label ?? current),
                 icon: 'zoom-in',
-                title: 'The size of the pages',
+                title: pdfTexts.zoomHint(),
                 disabled: this.state() !== 'ready',
                 submenu: () =>
                     choices.map((choice) => ({
                         id: 'zoom-' + choice.value,
                         label: choice.label,
                         icon: 'zoom-in',
-                        title: 'Pages at ' + choice.label,
+                        title: pdfTexts.scaleHint(choice.value),
                         checked: choice.value === current,
                         run: () => this.setScale(choice.value),
                     })),
@@ -115,17 +108,17 @@ export class PdfViewComponent {
         },
         outline: (): MenuEntry => ({
             id: 'outline',
-            label: 'Outline',
+            label: pdfTexts.outline(),
             icon: 'list',
-            title: "Outline: the document's headings",
+            title: pdfTexts.outlineHint(),
             checked: this.showOutline(),
             run: () => this.toggleOutline(),
         }),
         dark: (): MenuEntry => ({
             id: 'dark',
-            label: 'Dark pages',
+            label: pdfTexts.dark(),
             icon: 'theme',
-            title: 'Dark pages, for reading at night',
+            title: pdfTexts.darkHint(),
             checked: this.dark(),
             run: () => this.toggleDark(),
         }),
@@ -143,6 +136,7 @@ export class PdfViewComponent {
     private readonly scale = signal(1);
     protected readonly query = signal('');
     protected readonly matches = signal<PdfMatches>({ current: 0, total: 0 });
+    protected readonly matchesText = computed(() => pdfTexts.matches(this.matches().current, this.matches().total));
     protected readonly dark = signal(readPreference(PDF_DARK_KEY) === '1');
     private handle: PdfHandle | null = null;
     private answer: ((password: string | null) => void) | null = null;
@@ -165,7 +159,7 @@ export class PdfViewComponent {
         const value = this.scaleValue();
         return SCALES.some((choice) => choice.value === value)
             ? null
-            : { value, label: `${Math.round(Number(value) * 100)} %` };
+            : { value, label: pdfTexts.scale(value) };
     });
     protected readonly downloadUrl = computed(() =>
         this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,
@@ -175,7 +169,7 @@ export class PdfViewComponent {
         return joinParts(
             [
                 'PDF',
-                `${this.pages().toLocaleString()} ${this.pages() === 1 ? 'page' : 'pages'}`,
+                pdfTexts.pageCount(this.pages()),
                 size ? formatSize(size) : null,
                 this.title(),
             ],
@@ -248,10 +242,10 @@ export class PdfViewComponent {
             if (destroyed()) return;
             this.message.set(
                 error instanceof NotPdfError
-                    ? 'This file is not a PDF that can be shown: it can only be downloaded.'
+                    ? pdfTexts.notPdf()
                     : error instanceof PdfLockedError
-                      ? 'This document is protected by a password: it can only be downloaded.'
-                      : `It could not be shown: ${(error as Error)?.message ?? error}`,
+                      ? pdfTexts.locked()
+                      : pdfTexts.couldNotShow(String((error as Error)?.message ?? error)),
             );
             this.state.set('failed');
         }

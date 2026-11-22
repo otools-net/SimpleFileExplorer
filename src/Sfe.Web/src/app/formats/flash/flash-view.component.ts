@@ -22,6 +22,7 @@ import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } fr
 import { IconComponent } from '../../shared/icon.component';
 import { FILE_VIEW_HOST, FileFormat } from '../formats';
 import { FLASH_LOADER, FlashHandle, FlashMetadata } from './flash-player';
+import { flashTexts } from './flash-texts';
 
 /** The movies' volume in this browser (0–1), and whether they are muted. */
 export const FLASH_VOLUME_KEY = 'sfe.flash.volume';
@@ -67,6 +68,7 @@ export class FlashViewComponent {
     protected readonly volume = signal(readVolume());
     protected readonly muted = signal(readPreference(FLASH_MUTED_KEY) === '1');
     private handle: FlashHandle | null = null;
+    protected readonly texts = flashTexts;
 
     protected readonly downloadUrl = computed(() =>
         this.fileHost.can(Rights.download) ? (this.config.urls()?.download(this.item().path) ?? null) : null,
@@ -82,7 +84,7 @@ export class FlashViewComponent {
                 metadata?.width && metadata.height
                     ? `${Math.round(metadata.width)} × ${Math.round(metadata.height)}`
                     : null,
-                metadata?.frameRate ? `${Math.round(metadata.frameRate * 10) / 10} fps` : null,
+                metadata?.frameRate ? flashTexts.frameRate(metadata.frameRate) : null,
                 size ? formatSize(size) : null,
             ],
             '  ·  ',
@@ -92,9 +94,9 @@ export class FlashViewComponent {
     protected readonly more = {
         restart: (): MenuEntry => ({
             id: 'restart',
-            label: 'Play again',
+            label: flashTexts.restart(),
             icon: 'refresh',
-            title: 'Play again from the start',
+            title: flashTexts.restartHint(),
             disabled: this.state() !== 'ready',
             run: () => this.restart(),
         }),
@@ -140,9 +142,7 @@ export class FlashViewComponent {
             handle.focus();
         } catch (error) {
             if (destroyed()) return;
-            this.message.set(
-                `This movie could not be played: ${(error as Error)?.message ?? error}. It can only be downloaded.`,
-            );
+            this.message.set(flashTexts.couldNotPlay(String((error as Error)?.message ?? error)));
             this.state.set('failed');
         }
     }

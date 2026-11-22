@@ -1,12 +1,14 @@
-<div class="text-toolbar" role="toolbar" aria-label="Book">
+<div class="text-toolbar" role="toolbar" aria-label="Book" i18n-aria-label>
     <button
         type="button"
         class="icon-button"
         data-toc
         [class.active]="showToc()"
         [attr.aria-pressed]="showToc()"
-        title="Contents"
+        title="Show or hide the book's contents, to go to a chapter."
+        i18n-title
         aria-label="Contents"
+        i18n-aria-label
         [disabled]="!toc().length"
         (click)="toggleToc()"
     ><svg sfeIcon="list"></svg></button>
@@ -14,8 +16,10 @@
         type="button"
         class="icon-button"
         data-previous
-        title="Previous page (←)"
+        title="Go to the previous page (←)."
+        i18n-title
         aria-label="Previous page"
+        i18n-aria-label
         [disabled]="state() !== 'ready' || place()?.atStart"
         (click)="previous()"
     ><svg sfeIcon="left"></svg></button>
@@ -23,12 +27,14 @@
         type="button"
         class="icon-button"
         data-next
-        title="Next page (→)"
+        title="Go to the next page (→)."
+        i18n-title
         aria-label="Next page"
+        i18n-aria-label
         [disabled]="state() !== 'ready' || place()?.atEnd"
         (click)="next()"
     ><svg sfeIcon="right"></svg></button>
-    <div class="markdown-modes" role="radiogroup" aria-label="Layout">
+    <div class="markdown-modes" role="radiogroup" aria-label="Layout" i18n-aria-label>
         @for (choice of modes; track choice.id) {
             <button
                 type="button"
@@ -48,10 +54,12 @@
         data-reading-toggle
         [class.active]="panelOpen()"
         [attr.aria-expanded]="panelOpen()"
-        title="Reading settings: font, size, spacing, colours"
+        title="Change the font, size, spacing and colours of the text."
+        i18n-title
         aria-label="Reading settings"
+        i18n-aria-label
         (click)="panelOpen.set(!panelOpen())"
-    >Aa</button>
+    ><span translate="no">Aa</span></button>
 </div>
 @if (panelOpen()) {
     <sfe-reading-panel profile="prose" (closed)="panelOpen.set(false)" />
@@ -60,13 +68,14 @@
 <div class="pdf-messages">
     @switch (state()) {
         @case ('loading') {
-            <p class="text-message">Loading…</p>
+            <p class="text-message" i18n>Loading…</p>
         }
         @case ('failed') {
             <div class="text-message">
                 <p>{{ message() }}</p>
                 @if (downloadUrl(); as url) {
-                    <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+                    <p><a class="button" [href]="url"
+                        ><svg sfeIcon="download"></svg><ng-container i18n>Download</ng-container></a></p>
                 }
             </div>
         }
@@ -74,7 +83,7 @@
 </div>
 <div class="pdf-panes epub-panes" [class.with-outline]="showToc() && toc().length" [hidden]="state() === 'failed'">
     @if (showToc() && toc().length) {
-        <nav class="markdown-outline epub-toc" aria-label="Contents">
+        <nav class="markdown-outline epub-toc" aria-label="Contents" i18n-aria-label>
             @for (entry of toc(); track $index) {
                 <a
                     href=""
@@ -96,10 +105,7 @@
             @if (chapter(); as label) {
                 <span class="json-path" data-chapter>{{ label }}</span>
             }
-            <span
-                data-progress
-                [title]="place()?.percentage === null ? 'Counting the pages of the book…' : 'How far through the book'"
-            >{{ progress() }}</span>
+            <span data-progress [title]="progressHint()">{{ progress() }}</span>
         </span>
     </footer>
 }

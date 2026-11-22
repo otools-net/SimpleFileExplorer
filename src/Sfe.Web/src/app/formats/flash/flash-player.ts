@@ -62,7 +62,7 @@ export function createFrame(): HTMLIFrameElement {
     frame.setAttribute('sandbox', 'allow-scripts allow-pointer-lock');
     frame.setAttribute('allow', 'autoplay; fullscreen');
     frame.setAttribute('referrerpolicy', 'no-referrer');
-    frame.title = 'Flash movie';
+    frame.title = $localize`Flash movie`;
     frame.src = new URL('flash/player.html', document.baseURI).href;
     return frame;
 }
@@ -73,7 +73,7 @@ export const openFlash: FlashLoader = (container, url, volume, events) =>
         const frame = createFrame();
         const send = (message: object) => frame.contentWindow?.postMessage(message, '*');
         let settled = false;
-        const timeout = setTimeout(() => fail(new Error('Ruffle did not start in time')), LOAD_TIMEOUT_MS);
+        const timeout = setTimeout(() => fail(new Error($localize`Ruffle didn't start in time`)), LOAD_TIMEOUT_MS);
 
         const handle: FlashHandle = {
             frame,
@@ -115,7 +115,7 @@ export const openFlash: FlashLoader = (container, url, volume, events) =>
                     }
                     break;
                 case 'failed':
-                    fail(new Error(String(message['message'] ?? 'Ruffle could not play it')));
+                    fail(new Error(String(message['message'] ?? $localize`Ruffle couldn't play it`)));
                     break;
                 case 'metadata':
                     events.metadata(message['metadata'] as FlashMetadata);

@@ -202,7 +202,7 @@ describe('EpubViewComponent', () => {
         failure = new Error('Not a book');
         await show();
 
-        expect(element.querySelector('.text-message')!.textContent).toContain('could not be opened');
+        expect(element.querySelector('.text-message')!.textContent).toContain('Could not open the book: Not a book.');
         expect(element.querySelector('.text-message a')!.getAttribute('href')).toContain('download=true');
     });
 

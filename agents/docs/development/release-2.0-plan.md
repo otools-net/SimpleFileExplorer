@@ -215,8 +215,21 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   - [ ] **2.7b text viewer and editor, reading settings** (`formats/text/`, `formats/reading/`; ~81, much code).
   - [ ] **2.7c JSON and CSV** (`formats/json/`, `formats/csv/`; ~51).
   - [ ] **2.7d Markdown and subtitles** (`formats/markdown/`, `formats/subtitles/`; ~42).
-  - [ ] **2.7e PDF, EPUB, Flash** (`formats/pdf/`, `formats/epub/`, `formats/flash/`; ~50).
+  - [x] **2.7e PDF, EPUB, Flash** (`formats/pdf/`, `formats/epub/`, `formats/flash/`; ~50). Done 2026-11-22: 3 files
+    at 0 unmarked texts (50 gone); texts built in code in `pdf-texts.ts` (zoom names and hints from `SCALE_VALUES`,
+    page count and matches as ICU), `epub-texts.ts` (layouts, progress), `flash-texts.ts` (a short name and a hint
+    per button), pure functions with specs; failures "Could not … : reason." without "It can only be downloaded."
+    (wrong without the download right); "Not found" → **No matches**, "Sound on" → **Unmute**; **Aa** in
+    `translate="no"`; `flash-player.ts`'s frame title and Ruffle's reasons marked. `messages.xlf` written with 2.8.
   - [ ] **2.7f archive viewer** (`formats/archive/`; ~49).
+  **2.8 split** (2026-11-22: ~200 toast calls and ~40 confirms in the client; `RightCatalog` 650 lines; ~470 sentence
+  strings in `Sfe.Api`/`Sfe.Core`, most not shown to users):
+  - [ ] **2.8a toasts and confirms** (every `ToastService` call, toast action, `confirm`/`prompt` of the client).
+  - [ ] **2.8b rights' names and descriptions** (`RightCatalog` and the other right lists; keys unchanged).
+  - [ ] **2.8c problem details and other server texts users see** (checked against the glossary and style; strings
+    the client or tests compare and problem `type` words unchanged).
+  Steps 2.7b–2.8c were done by subagents in parallel (one per folder; the coordinator wrote the shared files:
+  `messages.xlf`, `hard-coded-texts.json`, readability baseline, changelog, this plan) and committed one by one.
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
   (dividers) to `MenuEntry`; one action registry used by the item menu, folder menu and selection bar; order

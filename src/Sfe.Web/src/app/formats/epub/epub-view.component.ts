@@ -22,6 +22,7 @@ import { fontOf } from '../reading/reading';
 import { ReadingPanelComponent } from '../reading/reading-panel.component';
 import { ReadingService } from '../reading/reading.service';
 import { bookUrl, EPUB_LOADER, EpubHandle, EpubMode, EpubPlace, EpubStyle, EpubTocItem } from './epub-document';
+import { epubTexts } from './epub-texts';
 
 export const EPUB_MODE_KEY = 'sfe.epub.mode';
 export const EPUB_TOC_KEY = 'sfe.epub.toc';
@@ -30,16 +31,6 @@ export const EPUB_PLACES_KEY = 'sfe.epub.places';
 export const MAX_PLACES = 100;
 const SAVE_PLACE_MS = 500;
 const LINE_PIXELS = 48;
-const MODES: readonly { id: EpubMode; label: string; title: string }[] = [
-    { id: 'pages', label: 'Page', title: 'One page at a time, turned with ← →' },
-    {
-        id: 'spread',
-        label: 'Two pages',
-        title: 'Two pages side by side, as an open book (one when the window is narrow)',
-    },
-    { id: 'scroll', label: 'Scroll', title: 'The whole book as one long page, scrolled' },
-];
-
 function readPlaces(): Record<string, string> {
     try {
         const value = JSON.parse(readPreference(EPUB_PLACES_KEY) ?? '{}') as unknown;
@@ -98,7 +89,7 @@ export class EpubViewComponent {
     private readonly stage = viewChild.required<ElementRef<HTMLDivElement>>('stage');
     private readonly frame = viewChild.required<ElementRef<HTMLDivElement>>('frame');
 
-    protected readonly modes = MODES;
+    protected readonly modes = epubTexts.modes();
     protected readonly mode = signal<EpubMode>(readMode());
     protected readonly state = signal<'loading' | 'ready' | 'failed'>('loading');
     protected readonly message = signal('');
@@ -118,10 +109,8 @@ export class EpubViewComponent {
         const href = this.currentHref();
         return href ? (this.toc().filter((entry) => entry.href.split('#')[0] === href)[0]?.label ?? null) : null;
     });
-    protected readonly progress = computed(() => {
-        const percentage = this.place()?.percentage;
-        return percentage === null || percentage === undefined ? '…' : `${Math.round(percentage * 100)} %`;
-    });
+    protected readonly progress = computed(() => epubTexts.progress(this.place()?.percentage));
+    protected readonly progressHint = computed(() => epubTexts.progressHint(this.place()?.percentage === null));
     protected readonly downloadUrl = computed(() =>
         this.fileHost.can(Rights.download) ? (this.config.urls()?.download(this.item().path) ?? null) : null,
     );
@@ -190,9 +179,7 @@ export class EpubViewComponent {
             this.state.set('ready');
         } catch (error) {
             if (destroyed()) return;
-            this.message.set(
-                `This book could not be opened: ${(error as Error)?.message ?? error}. It can only be downloaded.`,
-            );
+            this.message.set(epubTexts.couldNotOpen(String((error as Error)?.message ?? error)));
             this.state.set('failed');
         }
     }
