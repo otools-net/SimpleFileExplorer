@@ -1,21 +1,22 @@
-<div class="text-toolbar archive-toolbar" role="toolbar" aria-label="Archive" sfeOverflowRow="Archive">
+<div class="text-toolbar archive-toolbar" role="toolbar" aria-label="Archive" i18n-aria-label
+    sfeOverflowRow="Archive" i18n-sfeOverflowRow>
     <button
         type="button"
         class="icon-button"
         data-up
         [sfeOverflowItem]="null"
         overflowStay
-        title="Up to the folder above (Backspace)"
-        aria-label="Up"
+        title="Go up to the folder above (Backspace)." i18n-title
+        aria-label="Up" i18n-aria-label
         [disabled]="parent() === undefined"
         (click)="goUp()"
     ><svg sfeIcon="folder-up"></svg></button>
-    <nav class="archive-trail" aria-label="Folders" [sfeOverflowItem]="null" overflowStay>
+    <nav class="archive-trail" aria-label="Folders" i18n-aria-label [sfeOverflowItem]="null" overflowStay>
         <button
             type="button"
             class="archive-crumb"
             data-crumb-root
-            [title]="'The top of ' + item().name"
+            [title]="texts.topOf(item().name)"
             (click)="enter(null)"
         >{{ item().name }}</button>
         @if (shown()?.listing?.trail; as trail) {
@@ -23,7 +24,7 @@
                 <span
                     class="archive-crumb skipped"
                     data-skipped
-                    [title]="trail.skipped.toLocaleString() + ' folders in between'"
+                    [title]="texts.skipped(trail.skipped)"
                 >…</span>
             }
             @for (crumb of trail.last; track crumb.id; let last = $last) {
@@ -33,7 +34,7 @@
                     class="archive-crumb"
                     [class.current]="last"
                     [attr.aria-current]="last ? 'location' : null"
-                    [title]="last ? 'This folder' : 'Open ' + crumb.name"
+                    [title]="texts.crumbHint(crumb.name, last)"
                     (click)="enter(crumb.id)"
                 >{{ crumb.name }}</button>
             }
@@ -46,9 +47,9 @@
         data-go
         [sfeOverflowItem]="null"
         overflowStay
-        placeholder="Go to folder"
-        aria-label="Go to a folder of the archive"
-        title="A folder's path inside the archive (folders separated by /), then Enter"
+        placeholder="Go to folder" i18n-placeholder
+        aria-label="Go to a folder of the archive" i18n-aria-label
+        title="Type the path of a folder inside the archive, its folders separated by /, then press Enter." i18n-title
         (keydown.enter)="goToPath(goTo.value)"
     />
     <input
@@ -58,9 +59,9 @@
         data-find
         [sfeOverflowItem]="null"
         overflowStay
-        [placeholder]="findHere() ? 'Find in this folder' : 'Find in archive'"
-        [attr.aria-label]="findHere() ? 'Find in this folder by name' : 'Find in the archive by name'"
-        [title]="(findHere() ? 'Folders and files right inside this folder' : 'Folders and files of the whole archive') + ' whose name holds what is typed (Esc: back to the folder)'"
+        [placeholder]="texts.find(findHere())"
+        [attr.aria-label]="texts.findLabel(findHere())"
+        [title]="texts.findHint(findHere())"
         (input)="findTyped(find.value)"
         (keydown.escape)="endFind()"
     />
@@ -72,8 +73,8 @@
         overflowStay
         [class.active]="findHere()"
         [attr.aria-pressed]="findHere()"
-        title="Find in this folder only"
-        aria-label="Find in this folder only"
+        title="Look only right inside the folder shown, not in the whole archive." i18n-title
+        aria-label="Find in this folder only" i18n-aria-label
         (click)="toggleFindHere(find.value)"
     ><svg sfeIcon="folder"></svg></button>
     @if (canExtract() && shown()) {
@@ -85,25 +86,23 @@
             [title]="extractTitle()"
             (click)="extractShown()"
         >
-            <svg sfeIcon="extract"></svg><span>Extract…</span>
+            <svg sfeIcon="extract"></svg><span i18n>Extract…</span>
         </button>
     }
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @switch (state()) {
     @case ('loading') {
-        <p class="text-message">Loading…</p>
+        <p class="text-message" i18n>Loading…</p>
     }
     @case ('reading') {
-        <p class="text-message" data-reading role="status">
-            Reading the list of entries…{{ read() > 0 ? ' ' + read().toLocaleString() + ' so far' : '' }}
-        </p>
+        <p class="text-message" data-reading role="status">{{ texts.reading(read()) }}</p>
     }
     @case ('failed') {
         <div class="text-message" data-failed>
             <p>{{ message() }}</p>
             @if (archiveDownload(); as url) {
-                <p><a class="button" [href]="url" download><svg sfeIcon="download"></svg> Download the archive</a></p>
+                <p><a class="button" [href]="url" download><svg sfeIcon="download"></svg><span i18n>Download the archive</span></a></p>
             }
         </div>
     }
@@ -113,10 +112,10 @@
         <form class="archive-password" data-password (submit)="unlockWith(passwordBox.value); $event.preventDefault()">
             <p class="archive-password-why">
                 <svg sfeIcon="lock"></svg>
-                {{ current.listing.needsPassword ? lockedList : lockedFiles }}
+                {{ current.listing.needsPassword ? texts.lockedList() : texts.lockedFiles() }}
                 @if (current.listing.format === 'zip') {
-                    <span class="archive-password-hint">A zip's password protects only the files' content: their names
-                    stay readable.</span>
+                    <span class="archive-password-hint" i18n>A zip's password protects only the content of its files:
+                    their names stay readable.</span>
                 }
             </p>
             <div class="archive-password-row">
@@ -126,27 +125,27 @@
                     class="json-filter"
                     data-password-box
                     autocomplete="off"
-                    aria-label="Password"
-                    placeholder="Password"
+                    aria-label="Password" i18n-aria-label
+                    placeholder="Password" i18n-placeholder
                     [disabled]="unlocking()"
                 />
                 <label
                     class="archive-password-show"
-                    title="Show what is typed"
-                ><input type="checkbox" [checked]="showPassword()" (change)="showPassword.set(!showPassword())" /> Show</label>
+                    title="Show the password as you type it." i18n-title
+                ><input type="checkbox" [checked]="showPassword()" (change)="showPassword.set(!showPassword())" /><span i18n>Show</span></label>
                 <button
                     type="submit"
                     class="button primary"
                     data-unlock
                     [disabled]="unlocking()"
-                    title="Open the archive with this password"
+                    title="Open the archive with this password." i18n-title i18n
                 >Open</button>
                 @if (!current.listing.needsPassword) {
                     <button
                         type="button"
                         class="button"
-                        title="Keep browsing without the password"
-                        (click)="asking.set(false)"
+                        title="Keep browsing the archive without the password." i18n-title
+                        (click)="asking.set(false)" i18n
                     >Not now</button>
                 }
             </div>
@@ -155,27 +154,24 @@
             }
         </form>
     } @else if (current.listing.protected && !current.listing.unlocked) {
-        <p class="archive-note" data-protected><svg sfeIcon="lock"></svg> Some files are protected by a password.
+        <p class="archive-note" data-protected><svg sfeIcon="lock"></svg><span i18n>Some files are protected by a password.</span>
             <button
                 type="button"
                 class="button"
                 data-ask-password
-                title="Give the archive's password to open them"
-                (click)="asking.set(true)"
+                title="Give the archive's password to open them." i18n-title
+                (click)="asking.set(true)" i18n
             >Enter the password</button></p>
     }
     @if (!current.listing.complete && !current.listing.needsPassword) {
         <p
             class="archive-note"
             data-stopped
-            role="status"
+            role="status" i18n
         >Only part of the list is shown: {{ current.listing.stopped }}</p>
     }
     @if (current.listing.leftOut > 0) {
-        <p
-            class="archive-note"
-            data-left-out
-        >{{ current.listing.leftOut.toLocaleString() }} {{ current.listing.leftOut === 1 ? 'entry is' : 'entries are' }} not listed: {{ current.listing.leftOut === 1 ? 'its name leads' : 'their names lead' }} out of the archive, or {{ current.listing.leftOut === 1 ? 'it is' : 'they are' }} nested too deep.</p>
+        <p class="archive-note" data-left-out>{{ texts.leftOut(current.listing.leftOut) }}</p>
     }
 }
 <div
@@ -188,20 +184,20 @@
     [attr.aria-rowcount]="count() + 1"
 >
     <div class="archive-row archive-head" role="row">
-        <span role="columnheader">Name</span>
-        <span role="columnheader" class="archive-size">Size</span>
-        <span role="columnheader" class="archive-packed">Packed</span>
-        <span role="columnheader" class="archive-modified">Modified</span>
+        <span role="columnheader" i18n="column of an archive's entries">Name</span>
+        <span role="columnheader" class="archive-size" i18n="column of an archive's entries">Size</span>
+        <span role="columnheader" class="archive-packed" i18n="column, size inside the archive">Packed</span>
+        <span role="columnheader" class="archive-modified" i18n="column of an archive's entries">Modified</span>
     </div>
     @if (found(); as results) {
         @if (!results.searching && !results.next && results.rows.length === 0) {
             <p
                 class="text-message"
                 data-found-none
-            >No name {{ results.folder === null ? 'in this archive' : 'in this folder' }} holds “{{ results.query }}”.</p>
+            >{{ texts.foundNone(results.query, results.folder !== null) }}</p>
         }
     } @else if (state() === 'ready' && count() === 0 && !shown()?.listing?.needsPassword) {
-        <p class="text-message" data-empty>This folder is empty.</p>
+        <p class="text-message" data-empty i18n>This folder is empty.</p>
     }
     <div class="archive-body" [style.height.px]="virtual.total()">
         @for (row of virtual.items(); track row.key) {
@@ -225,7 +221,7 @@
                             <button
                                 type="button"
                                 class="archive-open"
-                                [title]="'Open ' + entry.name"
+                                [title]="texts.openFolder(entry.name)"
                                 (click)="enter(entry.id); $event.stopPropagation()"
                             >{{ entry.name }}</button>
                         } @else if (entry.kind === 'file' && canDownload() && (!entry.encrypted || unlock())) {
@@ -234,29 +230,31 @@
                                 [href]="entryUrl(entry, false)"
                                 target="_blank"
                                 rel="noopener"
-                                [title]="inPlace(entry) ? 'Open ' + entry.name : 'Open ' + entry.name + ' in a new tab'"
+                                [title]="texts.openFile(entry.name, inPlace(entry))"
                                 (click)="openFromLink($event, entry, row.index)"
                             >{{ entry.name }}</a>
                         } @else if (entry.kind === 'file' && canDownload()) {
                             <button
                                 type="button"
                                 class="archive-open"
-                                [title]="'Give the password to open ' + entry.name"
+                                [title]="texts.givePassword(entry.name)"
                                 (click)="asking.set(true); $event.stopPropagation()"
                             >{{ entry.name }}</button>
                         } @else {
                             <span class="archive-open" [title]="titleOf(entry)">{{ entry.name }}</span>
                         }
                         @if (entry.encrypted) {
-                            <svg class="archive-lock" sfeIcon="lock" aria-label="Protected by a password"></svg>
+                            <svg class="archive-lock" sfeIcon="lock"
+                                aria-label="Protected by a password" i18n-aria-label></svg>
                         }
                         @if (found() && entry.where !== undefined && entry.where !== null) {
                             <button
                                 type="button"
                                 class="archive-where"
                                 data-where
-                                [title]="'Show the folder it is in: ' + (entry.where || item().name)"
+                                [title]="texts.whereHint(entry.where || item().name)"
                                 (click)="showWhere(entry); $event.stopPropagation()"
+                                i18n="the folder a result of Find is in"
                             >in {{ whereOf(entry) }}</button>
                         }
                     </span>
@@ -286,8 +284,8 @@
         <div
             class="text-toolbar archive-toolbar archive-entry-bar"
             role="toolbar"
-            aria-label="File of the archive"
-            sfeOverflowRow="File of the archive"
+            aria-label="File of the archive" i18n-aria-label
+            sfeOverflowRow="File of the archive" i18n-sfeOverflowRow
         >
             <button
                 type="button"
@@ -295,8 +293,8 @@
                 data-back
                 [sfeOverflowItem]="null"
                 overflowStay
-                title="Back to the folder (Esc)"
-                aria-label="Back to the folder"
+                title="Go back to the folder (Esc)." i18n-title
+                aria-label="Back to the folder" i18n-aria-label
                 (click)="closeEntry()"
             ><svg sfeIcon="left"></svg></button>
             <span
@@ -311,8 +309,8 @@
                 data-previous
                 [sfeOverflowItem]="previousEntry"
                 overflowStay
-                title="The file before"
-                aria-label="The file before"
+                [title]="texts.previousHint()"
+                [attr.aria-label]="texts.previous()"
                 [disabled]="neighbour(-1) === null"
                 (click)="step(-1)"
             ><svg sfeIcon="up"></svg></button>
@@ -322,8 +320,8 @@
                 data-next
                 [sfeOverflowItem]="nextEntry"
                 overflowStay
-                title="The file after"
-                aria-label="The file after"
+                [title]="texts.nextHint()"
+                [attr.aria-label]="texts.next()"
                 [disabled]="neighbour(1) === null"
                 (click)="step(1)"
             ><svg sfeIcon="down"></svg></button>
@@ -334,28 +332,28 @@
                 [href]="entryUrl(shown.entry, false)"
                 target="_blank"
                 rel="noopener"
-                title="Open it in a new tab"
-                aria-label="Open it in a new tab"
+                [title]="texts.newTabHint()"
+                [attr.aria-label]="texts.newTab()"
             ><svg sfeIcon="external"></svg></a>
             <a
                 class="icon-button"
                 data-download
                 [sfeOverflowItem]="downloadEntry"
                 [href]="entryUrl(shown.entry, true)"
-                title="Save it from the archive"
-                aria-label="Download"
+                [title]="texts.downloadHint()"
+                [attr.aria-label]="texts.download()"
             ><svg sfeIcon="download"></svg></a>
             <button class="icon-button" sfeOverflowMore></button>
         </div>
         <div class="archive-entry-content">
             @if (cannotPlay()) {
                 <div class="text-message" data-cannot-play>
-                    <p>It can't be played here: the browser doesn't read it, or it is too large to be opened from the
-                    archive.</p>
+                    <p i18n>This file can't be played here: the browser doesn't read its format, or it is too large
+                    to be opened from the archive.</p>
                     <p><a
                         class="button"
                         [href]="entryUrl(shown.entry, true)"
-                    ><svg sfeIcon="download"></svg> Download it</a></p>
+                    ><svg sfeIcon="download"></svg><span i18n>Download it</span></a></p>
                 </div>
             } @else if (shown.media === 'picture') {
                 <img
@@ -389,7 +387,7 @@
                     *ngComponentOutlet="shown.component; inputs: { item: shown.item, format: shown.format }; injector: shown.injector ?? undefined"
                 />
             } @else {
-                <p class="text-message">Loading…</p>
+                <p class="text-message" i18n>Loading…</p>
             }
         </div>
     </div>

@@ -226,7 +226,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     per button), pure functions with specs; failures "Could not … : reason." without "It can only be downloaded."
     (wrong without the download right); "Not found" → **No matches**, "Sound on" → **Unmute**; **Aa** in
     `translate="no"`; `flash-player.ts`'s frame title and Ruffle's reasons marked. `messages.xlf` written with 2.8.
-  - [ ] **2.7f archive viewer** (`formats/archive/`; ~49).
+  - [x] **2.7f archive viewer** (`formats/archive/`; ~49). Done 2026-11-22: `archive-view.component.html` at 0
+    unmarked texts (49 gone); its sentences in `archive-texts.ts` (crumb and Find hints, reading so far, entries left
+    out, sizes and the folder's bottom line as one ICU message, the search's status by place as an ICU `select`,
+    password and failure messages), pure functions with a spec; `fileWord()` and "entry is / entries are" pieces
+    gone; the entry bar's arrows **Previous file** / **Next file** as in the viewer (docs); names quoted with
+    `quoted()`; `i18n-*` kept on their attribute's line (template within its 403-line baseline); component 928 → 888.
   **2.8 split** (2026-11-22: ~200 toast calls and ~40 confirms in the client; `RightCatalog` 650 lines; ~470 sentence
   strings in `Sfe.Api`/`Sfe.Core`, most not shown to users):
   - [ ] **2.8a toasts and confirms** (every `ToastService` call, toast action, `confirm`/`prompt` of the client).

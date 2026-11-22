@@ -150,7 +150,9 @@ describe('ArchiveViewComponent', () => {
             expect.any(AbortSignal),
         );
         expect(crumbs()).toEqual(['trip.zip', '…', 'c', 'd', 'deep']);
-        expect(element.querySelector('[data-skipped]')!.getAttribute('title')).toBe('4,996 folders in between');
+        expect(element.querySelector('[data-skipped]')!.getAttribute('title')).toBe(
+            '4,996 folders in between are not shown.',
+        );
 
         element
             .querySelector('.archive-scroller')!

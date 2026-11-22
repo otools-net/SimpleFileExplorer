@@ -266,6 +266,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   and the seconds box explain themselves, a cue overlapping the one before says so in a sentence, an empty file says
   "This file has no cues.", and a file that isn't valid reads "Line 3: … (and 2 more problems).". Their texts are
   ready for translation.
+- **Archive viewer reworded**: its hints say what a click does in full sentences ("Open the folder “Day 1”.", "Show
+  “notes.md” here, in place of the list.", "4,996 folders in between are not shown."); the file bar's arrows are
+  **Previous file** / **Next file**; counts read right for one ("1 file", "1 byte", "1 name holds “summ”."); a
+  protected archive says "This archive's list is protected by a password: what it holds can't be read without it.";
+  a file that can't be played says why in a sentence. Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

@@ -31,7 +31,9 @@ import { VideoPlayerComponent } from '../../player/video-player.component';
 import { IconComponent } from '../../shared/icon.component';
 import { FILE_SOURCE, FileSource } from '../file-source';
 import { extensionOf, FILE_VIEW_HOST, FileFormat, FileViewHost, formatOf } from '../formats';
+import { quoted } from '../../files/file-dialog-texts';
 import { VirtualRows } from '../virtual-rows';
+import { archiveTexts, entryHint, entrySize, entrySizeHint, folderCounts, foundStatus } from './archive-texts';
 
 /**
  * The first page of a folder, then larger ones while scrolling (keyset pages: one indexed range each on the server).
@@ -168,14 +170,11 @@ export class ArchiveViewComponent {
             this.config.can(Rights.extractFiles) &&
             Boolean(this.dialogs.extract()),
     );
-    protected readonly extractTitle = computed(() =>
-        this.parent() === undefined
-            ? 'Extract the whole archive into a folder of the library, picked next'
-            : 'Extract this folder of the archive into a folder of the library, picked next',
-    );
+    protected readonly texts = archiveTexts;
+    protected readonly extractTitle = computed(() => archiveTexts.extractHint(this.parent() === undefined));
     protected readonly extractEntry = (): MenuEntry => ({
         id: 'extract',
-        label: 'Extract…',
+        label: archiveTexts.extract(),
         icon: 'extract',
         title: this.extractTitle(),
         run: () => this.extractShown(),
@@ -190,33 +189,33 @@ export class ArchiveViewComponent {
     protected readonly cannotPlay = signal(false);
     protected readonly previousEntry = (): MenuEntry => ({
         id: 'previous',
-        label: 'The file before',
+        label: archiveTexts.previous(),
         icon: 'up',
-        title: 'The file before',
+        title: archiveTexts.previousHint(),
         disabled: this.neighbour(-1) === null,
         run: () => this.step(-1),
     });
     protected readonly nextEntry = (): MenuEntry => ({
         id: 'next',
-        label: 'The file after',
+        label: archiveTexts.next(),
         icon: 'down',
-        title: 'The file after',
+        title: archiveTexts.nextHint(),
         disabled: this.neighbour(1) === null,
         run: () => this.step(1),
     });
     protected readonly newTabEntry = (): MenuEntry => ({
         id: 'newTab',
-        label: 'Open in new tab',
+        label: archiveTexts.newTab(),
         icon: 'external',
-        title: 'Open it in a new tab',
+        title: archiveTexts.newTabHint(),
         href: this.entryUrl(this.viewing()!.entry, false),
         newTab: true,
     });
     protected readonly downloadEntry = (): MenuEntry => ({
         id: 'download',
-        label: 'Download',
+        label: archiveTexts.download(),
         icon: 'download',
-        title: 'Save it from the archive',
+        title: archiveTexts.downloadHint(),
         href: this.entryUrl(this.viewing()!.entry, true),
     });
     private readonly components = new Map<string, Promise<Type<unknown>>>();
@@ -228,8 +227,6 @@ export class ArchiveViewComponent {
     protected readonly unlocking = signal(false);
     protected readonly showPassword = signal(false);
     protected readonly passwordMessage = signal<string | null>(null);
-    protected readonly lockedList = "This archive is protected by a password: its list can't be read without it.";
-    protected readonly lockedFiles = 'Its files are protected by a password.';
     protected readonly archiveDownload = computed(() =>
         this.canDownload() ? (this.config.urls()?.download(this.item().path) ?? null) : null,
     );
@@ -387,16 +384,7 @@ export class ArchiveViewComponent {
         return parts.length > 3 ? `…/${parts.slice(-2).join('/')}` : entry.where!;
     }
 
-    protected foundStatus(found: Found): string {
-        const here = found.folder === null ? '' : ' in this folder';
-        const [name, hold] = found.rows.length === 1 ? ['name', 'holds'] : ['names', 'hold'];
-        const count = `${found.rows.length.toLocaleString()} ${name}${here} ${hold} “${found.query}”`;
-        if (found.searching) {
-            const scope = found.folder === null ? 'the archive' : 'this folder';
-            return `Searching ${scope}… ${found.rows.length ? count + ' so far' : ''}`.trim();
-        }
-        return found.next ? `${count} so far: scroll for more` : count;
-    }
+    protected readonly foundStatus = foundStatus;
 
     protected goUp(): void {
         const parent = this.parent();
@@ -630,7 +618,7 @@ export class ArchiveViewComponent {
                     return;
                 }
                 if (!('read' in answer)) {
-                    this.passwordMessage.set(answer.detail ?? 'Nothing in this archive is protected by a password.');
+                    this.passwordMessage.set(answer.detail ?? archiveTexts.nothingLocked());
                     return;
                 }
                 await pause(READING_POLL_MS, new AbortController().signal);
@@ -638,9 +626,9 @@ export class ArchiveViewComponent {
         } catch (error) {
             this.passwordMessage.set(
                 error instanceof ApiError && error.status === 429
-                    ? 'Too many tries: wait a minute before the next one.'
+                    ? archiveTexts.tooManyTries()
                     : error instanceof ApiError && error.type === 'wrong-password'
-                      ? "That password doesn't open this archive."
+                      ? archiveTexts.wrongPassword()
                       : error instanceof Error
                         ? error.message
                         : String(error),
@@ -710,7 +698,7 @@ export class ArchiveViewComponent {
             name: item.name,
             unlock: this.unlock(),
             folders: top ? undefined : [listing.folder.id],
-            what: top ? undefined : `“${listing.folder.name}”`,
+            what: top ? undefined : quoted(listing.folder.name),
         });
     }
 
@@ -721,7 +709,7 @@ export class ArchiveViewComponent {
             path: item.path,
             name: item.name,
             unlock: this.unlock(),
-            what: `“${entry.name}”`,
+            what: quoted(entry.name),
             folders: entry.kind === 'folder' ? [entry.id] : undefined,
             files: entry.kind === 'folder' ? undefined : [entry.id],
         });
@@ -732,42 +720,42 @@ export class ArchiveViewComponent {
         if (entry.kind === 'folder')
             entries.push({
                 id: 'open',
-                label: 'Open',
+                label: archiveTexts.open(),
                 icon: 'folder',
-                title: 'Show this folder of the archive',
+                title: archiveTexts.openFolderHint(),
                 run: () => this.enter(entry.id),
             });
         else if (this.inPlace(entry))
             entries.push({
                 id: 'open',
-                label: 'Open',
+                label: archiveTexts.open(),
                 icon: 'file',
-                title: 'Show it here',
+                title: archiveTexts.showHereHint(),
                 run: () => this.activate(entry),
             });
         else if (entry.kind === 'file' && this.canDownload() && (!entry.encrypted || this.unlock())) {
             entries.push({
                 id: 'newTab',
-                label: 'Open in new tab',
+                label: archiveTexts.newTab(),
                 icon: 'external',
-                title: 'Open it in a new tab',
+                title: archiveTexts.newTabHint(),
                 href: this.entryUrl(entry, false),
                 newTab: true,
             });
             entries.push({
                 id: 'download',
-                label: 'Download',
+                label: archiveTexts.download(),
                 icon: 'download',
-                title: 'Save it from the archive',
+                title: archiveTexts.downloadHint(),
                 href: this.entryUrl(entry, true),
             });
         }
         if ((entry.kind === 'folder' || entry.kind === 'file') && this.canExtract())
             entries.push({
                 id: 'extract',
-                label: 'Extract…',
+                label: archiveTexts.extract(),
                 icon: 'extract',
-                title: `Extract ${entry.name} into a folder of the library, picked next`,
+                title: archiveTexts.extractOneHint(entry.name),
                 run: () => this.extractOne(entry),
             });
         return entries.length
@@ -785,22 +773,10 @@ export class ArchiveViewComponent {
         return 'file';
     }
 
-    protected titleOf(entry: ArchiveItem): string {
-        if (entry.encrypted) return 'Protected by a password';
-        if (entry.kind === 'link') return 'A link: listed, never created when extracting';
-        if (entry.kind === 'other') return 'A device or pipe: listed, never created when extracting';
-        return entry.name;
-    }
-
-    protected sizeOf(entry: ArchiveItem): string {
-        if (entry.kind === 'folder')
-            return `${(entry.allFiles ?? 0).toLocaleString()} ${entry.allFiles === 1 ? 'file' : 'files'}`;
-        return entry.kind === 'file' ? formatSize(entry.size) : '';
-    }
-
-    protected sizeTitle(entry: ArchiveItem): string {
-        return entry.kind === 'folder' ? `${formatSize(entry.size)} in all` : `${entry.size.toLocaleString()} bytes`;
-    }
+    protected readonly titleOf = entryHint;
+    protected readonly sizeOf = entrySize;
+    protected readonly sizeTitle = entrySizeHint;
+    protected readonly countsOf = folderCounts;
 
     protected bytes(bytes: number): string {
         return formatSize(bytes);
@@ -808,17 +784,6 @@ export class ArchiveViewComponent {
 
     protected date(value: string | null): string {
         return formatDate(value);
-    }
-
-    protected countsOf(listing: ArchiveListing): string {
-        const folder = listing.folder;
-        const below = `${(folder.allFiles ?? 0).toLocaleString()} ${fileWord(folder.allFiles)}`;
-        const parts = [
-            `${(folder.folders ?? 0).toLocaleString()} ${folder.folders === 1 ? 'folder' : 'folders'}`,
-            `${(folder.files ?? 0).toLocaleString()} ${fileWord(folder.files)} here`,
-            `${formatSize(folder.size)} in ${below} below`,
-        ];
-        return `${parts.join(' · ')} · ${listing.format.toUpperCase()}`;
     }
 
     /** Shows a folder (or the root): asks until the archive's list is read, then its first page. */
@@ -844,7 +809,7 @@ export class ArchiveViewComponent {
                     return;
                 }
                 if (!isReading(answer)) {
-                    this.fail(answer.detail ?? "This file can't be explored.");
+                    this.fail(answer.detail ?? archiveTexts.cannotExplore());
                     return;
                 }
                 this.state.set('reading');
@@ -855,7 +820,7 @@ export class ArchiveViewComponent {
             if (abort.signal.aborted) return;
             this.fail(
                 error instanceof ApiError && error.status === 404
-                    ? 'There is no such folder in the archive.'
+                    ? archiveTexts.noSuchFolder()
                     : error instanceof Error
                       ? error.message
                       : String(error),
@@ -920,9 +885,4 @@ function pause(ms: number, signal: AbortSignal): Promise<void> {
         signal.addEventListener('abort', done, { once: true });
         setTimeout(() => (document.hidden ? document.addEventListener('visibilitychange', check) : done()), ms);
     });
-}
-
-/** "file" for one, "files" for any other count (or none known). */
-function fileWord(count: number | null | undefined): string {
-    return count === 1 ? 'file' : 'files';
 }

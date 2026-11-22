@@ -39,7 +39,7 @@ reads it: pictures, text files, Markdown, JSON, tables (CSV), subtitles and PDF 
 
 ![A photo of an archive shown in place of its list](../images/archive-entry.png)
 
-- The bar above it goes **back** to the list (or **Esc**), to the file **before** or **after** in the folder (for
+- The bar above it goes **back** to the list (or **Esc**), to the **previous** or **next** file in the folder (for
   pictures, also ← and →), opens it in a **new tab**, or **downloads** it.
 - A Markdown document shows the pictures of the archive it links to, and its links to other documents of the
   archive open them in the same place (**back** returns to the document). Links leading out of the archive are text.
