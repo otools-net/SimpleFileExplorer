@@ -22,6 +22,7 @@ import { MenuEntry } from '../menus/context-menu';
 import { OverflowItemDirective, OverflowMoreComponent, OverflowRowDirective } from '../menus/overflow-row';
 import { IconComponent } from '../shared/icon.component';
 import { downloadFrame } from './frame-capture';
+import { playerTexts as texts } from './player-texts';
 
 const DOUBLE_TAP_MS = 300; // max delay between the two taps of a double tap
 const STREAK_MS = 700; // further taps within this delay add another step
@@ -147,12 +148,9 @@ export class VideoPlayerComponent {
     protected readonly timeText = signal('0:00 / 0:00');
     /** The position and the length, apart: the length leaves the row first when it is narrow. */
     protected readonly timeParts = computed(() => this.timeText().split(' / '));
-    protected readonly playLabel = computed(() => (this.paused() ? 'Play (K)' : 'Pause (K)'));
-    protected readonly muteLabel = computed(() => (this.muted() ? 'Unmute (M)' : 'Mute (M)'));
-    protected readonly loopLabel = computed(() => (this.looping() ? 'Stop looping (R)' : 'Loop (R)'));
+    protected readonly texts = texts;
     /** Cinema mode: the player spans the whole width (when `cinemaButton`). */
     protected readonly cinema = signal(readPreference(CINEMA_KEY) === '1');
-    protected readonly cinemaLabel = computed(() => (this.cinema() ? 'Default view (C)' : 'Cinema mode (C)'));
     /**
      * Narrowest player showing the controls that never leave the row (play, mute, fullscreen, the "⋯" and the
      * position): a video smaller than that is letterboxed to it. The others go into the "⋯" menu when it is narrow.
@@ -165,51 +163,51 @@ export class VideoPlayerComponent {
     protected readonly more = {
         back: (): MenuEntry => ({
             id: 'back',
-            label: `Back ${this.seekStep()} s`,
+            label: texts.back(this.seekStep()),
             icon: 'rewind',
             shortcut: 'J',
-            title: `Back ${this.seekStep()} s (J)`,
+            title: texts.backHint(this.seekStep()),
             run: () => this.stepSeek(-1),
         }),
         forward: (): MenuEntry => ({
             id: 'forward',
-            label: `Forward ${this.seekStep()} s`,
+            label: texts.forward(this.seekStep()),
             icon: 'forward',
             shortcut: 'L',
-            title: `Forward ${this.seekStep()} s (L)`,
+            title: texts.forwardHint(this.seekStep()),
             run: () => this.stepSeek(1),
         }),
         speed: (): MenuEntry => this.speedEntry(),
         convert: (): MenuEntry => ({
             id: 'convert',
-            label: 'Play converted',
+            label: texts.convert(),
             icon: 'refresh',
-            title: 'Play it converted by the server (for a video without picture or sound here)',
+            title: texts.convertHint(),
             run: () => void this.useStream(),
         }),
         loop: (): MenuEntry => ({
             id: 'loop',
-            label: 'Loop',
+            label: texts.loop(false),
             icon: 'loop',
             shortcut: 'R',
-            title: this.loopLabel(),
+            title: texts.loopHint(this.looping()),
             checked: this.looping(),
             run: () => this.toggleLoop(),
         }),
         saveFrame: (): MenuEntry => ({
             id: 'saveFrame',
-            label: 'Save this frame',
+            label: texts.saveFrame(),
             icon: 'camera',
             shortcut: 'S',
-            title: 'Save this frame as a picture (S)',
+            title: texts.saveFrameHint(),
             run: () => this.saveFrame(),
         }),
         cinema: (): MenuEntry => ({
             id: 'cinema',
-            label: 'Cinema mode',
+            label: texts.cinema(false),
             icon: 'cinema',
             shortcut: 'C',
-            title: this.cinemaLabel(),
+            title: texts.cinemaHint(this.cinema()),
             checked: this.cinema(),
             run: () => this.toggleCinema(),
         }),
@@ -305,52 +303,52 @@ export class VideoPlayerComponent {
         const entries: MenuEntry[] = [
             {
                 id: 'play',
-                label: this.paused() ? 'Play' : 'Pause',
+                label: texts.play(this.paused()),
                 icon: this.paused() ? 'play' : 'pause',
                 shortcut: 'K',
-                title: this.playLabel(),
+                title: texts.playHint(this.paused()),
                 run: () => this.togglePlay(),
             },
             this.speedEntry(),
             {
                 id: 'loop',
-                label: this.looping() ? 'Stop looping' : 'Loop',
+                label: texts.loop(this.looping()),
                 icon: 'loop',
                 shortcut: 'R',
-                title: this.loopLabel(),
+                title: texts.loopHint(this.looping()),
                 run: () => this.toggleLoop(),
             },
             {
                 id: 'mute',
-                label: this.muted() ? 'Unmute' : 'Mute',
+                label: texts.mute(this.muted()),
                 icon: this.muted() ? 'volume' : 'muted',
                 shortcut: 'M',
-                title: this.muteLabel(),
+                title: texts.muteHint(this.muted()),
                 run: () => this.toggleMute(),
             },
             {
                 id: 'saveFrame',
-                label: 'Save this frame',
+                label: texts.saveFrame(),
                 icon: 'camera',
                 shortcut: 'S',
-                title: 'Save this frame as a picture (S)',
+                title: texts.saveFrameHint(),
                 run: () => this.saveFrame(),
             },
             {
                 id: 'fullscreen',
-                label: fullscreen ? 'Exit full screen' : 'Full screen',
+                label: texts.fullScreen(fullscreen),
                 icon: fullscreen ? 'exit-fullscreen' : 'fullscreen',
                 shortcut: 'F',
-                title: fullscreen ? 'Leave full screen (F)' : 'Full screen (F)',
+                title: texts.fullScreenHint(fullscreen),
                 run: () => void this.toggleFullscreen(),
             },
         ];
         if (typeof document !== 'undefined' && document.pictureInPictureEnabled)
             entries.push({
                 id: 'pictureInPicture',
-                label: 'Picture in picture',
+                label: texts.pictureInPicture(),
                 icon: 'window',
-                title: 'Keep it playing in a small window, above the other windows',
+                title: texts.pictureInPictureHint(),
                 run: () => void this.togglePictureInPicture(),
             });
         return entries;
@@ -360,15 +358,15 @@ export class VideoPlayerComponent {
     private speedEntry(): MenuEntry {
         return {
             id: 'speed',
-            label: `Speed: ${this.speed()}×`,
+            label: texts.speed(this.speed()),
             icon: 'fast',
-            title: 'How fast it plays',
+            title: texts.speedHint(),
             submenu: () =>
                 this.speeds.map((rate) => ({
                     id: `speed-${rate}`,
-                    label: `${rate}×`,
+                    label: texts.rate(rate),
                     icon: rate === this.speed() ? 'check' : 'fast',
-                    title: `Play at ${rate}×`,
+                    title: texts.rateHint(rate),
                     run: () => this.setSpeed(rate),
                 })),
         };
@@ -521,7 +519,7 @@ export class VideoPlayerComponent {
         this.seekBy(direction * step);
         this.showHint(
             (direction < 0 ? this.hintBackRef() : this.hintForwardRef()).nativeElement,
-            `${direction < 0 ? '−' : '+'}${this.streak.total} s`,
+            texts.jumped(direction < 0 ? '−' : '+', this.streak.total),
         );
     }
 

@@ -5,6 +5,7 @@ import { ConfigService } from '../core/config.service';
 import { formatSize } from '../core/format';
 import { LibraryItem } from '../core/models';
 import { EditedImageAccess, isSavedImage } from './editor.models';
+import { aspectHint, destinationLine, flipHint, overwriteHint, sizeLine } from './editor-texts';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
@@ -70,10 +71,10 @@ export class ImageEditorDialog {
     protected readonly handles = HANDLES;
     protected readonly aspects = ASPECTS;
     protected readonly cropFields: [CropField, string][] = [
-        ['x', 'Left'],
-        ['y', 'Top'],
-        ['width', 'Width'],
-        ['height', 'Height'],
+        ['x', $localize`:the crop frame's distance from the left edge:Left`],
+        ['y', $localize`:the crop frame's distance from the top edge:Top`],
+        ['width', $localize`Width`],
+        ['height', $localize`Height`],
     ];
 
     protected readonly item = signal<LibraryItem | null>(null);
@@ -104,27 +105,22 @@ export class ImageEditorDialog {
     protected readonly subtitle = computed(() => {
         const picture = this.picture();
         if (!picture) return '';
-        const original = `${picture.naturalWidth} × ${picture.naturalHeight}`;
+        const original = { width: picture.naturalWidth, height: picture.naturalHeight };
         const edited = this.pendingCrop() ? this.crop() : this.size();
-        return this.dirty() ? `${original} → ${edited.width} × ${edited.height}` : original;
+        return sizeLine(original, this.dirty() ? edited : null);
     });
     /** The version opened and whether this account may save over it (null: not known, or not allowed). */
     protected readonly access = signal<EditedImageAccess | null>(null);
     protected readonly canOverwrite = computed(() => this.access()?.overwrite === true);
-    protected readonly overwriteHint = computed(() =>
-        this.access()?.permanent
-            ? 'Save over the original picture; this space keeps no previous version (Ctrl+S)'
-            : 'Save over the original picture; the version before goes to the trash (Ctrl+S)',
+    protected readonly overwriteHint = computed(() => overwriteHint(this.access()?.permanent === true));
+    protected readonly flipHint = computed(() => flipHint(this.flipped(), this.isPortrait()));
+    protected readonly destination = computed(() =>
+        destinationLine(
+            this.config.config()?.editor?.outputFolder || null,
+            this.canOverwrite(),
+            this.access()?.permanent === true,
+        ),
     );
-    protected readonly destination = computed(() => {
-        const folder = this.config.config()?.editor?.outputFolder;
-        const copy = folder
-            ? `in “${folder}”, in the same folders as the original`
-            : 'next to the original, with “(edited)” in its name';
-        if (!this.canOverwrite()) return `Saved as a new file ${copy}.`;
-        const before = this.access()?.permanent ? '' : ' (the version before goes to the trash)';
-        return `Save writes over the original${before}; Save a copy makes a new file ${copy}.`;
-    });
 
     /** The picture with the edits applied, shown on the stage. */
     private result: HTMLCanvasElement | null = null;
@@ -172,7 +168,7 @@ export class ImageEditorDialog {
                 this.error.set(
                     error instanceof Error && error.name !== 'EncodingError'
                         ? error.message
-                        : 'This browser cannot open this picture for editing.',
+                        : $localize`This browser can't open this picture for editing.`,
                 );
         }
     }
@@ -226,12 +222,7 @@ export class ImageEditorDialog {
     }
 
     protected aspectHint([id, label]: [string, string]): string {
-        const { width, height } = this.size();
-        return id === 'free'
-            ? 'Free: any width and height'
-            : id === 'original'
-              ? `Original: the picture's own shape${width ? ` (${width} × ${height})` : ''}`
-              : `${label === 'Square' ? 'Square (1:1)' : label}: the frame keeps this shape`;
+        return aspectHint(id, label, this.size());
     }
 
     /** A number typed for the frame: the others follow the aspect ratio and the picture's edges. */

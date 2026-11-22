@@ -29,6 +29,7 @@ import { TagChipComponent } from '../../tags/tag-chip.component';
 import { TagMenu } from '../../tags/tag-menu';
 import { tagQuery } from '../../tags/tags';
 import { TrickplayMarksService } from '../../trickplay/trickplay-marks.service';
+import { videoLinkTexts as links } from '../../player/player-texts';
 import { VideoPlayerComponent } from '../../player/video-player.component';
 import { Dialogs, registerDialog } from '../dialogs.service';
 import { ListingStore } from '../listing.store';
@@ -235,89 +236,89 @@ export class ViewerComponent {
         if (this.zoomed())
             entries.push({
                 id: 'fit',
-                label: 'Fit to the screen',
+                label: $localize`Fit to the screen`,
                 icon: 'zoom-out',
                 shortcut: 'Z',
-                title: 'Fit to the screen (Z, or click the picture)',
+                title: $localize`Make the picture fit the screen. Z or a click on the picture does it too.`,
                 run: () => this.zoomOut(),
             });
         else if (this.zoomable())
             entries.push({
                 id: 'actualSize',
-                label: 'Actual size',
+                label: $localize`Actual size`,
                 icon: 'zoom-in',
                 shortcut: 'Z',
-                title: 'Actual size, 100% (Z, or click the picture)',
+                title: $localize`Show the picture at its actual size (100%). Z or a click on the picture does it too.`,
                 run: () => this.zoomIn(),
             });
         if (this.editable())
             entries.push({
                 id: 'crop',
-                label: 'Crop…',
+                label: $localize`Crop…`,
                 icon: 'crop',
                 shortcut: 'E',
-                title: 'Edit: crop, then save a copy (E)',
+                title: $localize`Open the picture in the editor to crop it, then save it (E).`,
                 run: () => this.edit(),
             });
         if (this.quickLinks.addable()) {
             const pinned = this.quickLinks.paths().has(item.path);
             entries.push({
                 id: 'quickLink',
-                label: pinned ? 'Remove from quick links' : 'Add to quick links',
+                label: pinned ? $localize`Remove from quick links` : $localize`Add to quick links`,
                 icon: 'pin',
                 title: pinned
-                    ? `Take ${item.name} out of your quick links`
-                    : `Show ${item.name} in your quick links, in the sidebar`,
+                    ? $localize`Take “${item.name}:name:” out of your quick links.`
+                    : $localize`Show “${item.name}:name:” in your quick links, in the sidebar.`,
                 run: () => void this.quickLinks.toggle(item.path),
             });
         }
         if (this.copyPaths.enabled())
             entries.push({
                 id: 'copyPath',
-                label: 'Copy full path',
+                label: $localize`Copy full path`,
                 icon: 'copy',
-                title: 'Copy where it is on the server',
+                title: $localize`Copy where it is on the server.`,
                 run: () => this.copyPath(),
             });
         if (item.kind === 'video')
             entries.push({
                 id: 'popOut',
-                label: 'Open in a new window',
+                label: $localize`Open in a new window`,
                 icon: 'window',
                 shortcut: 'W',
-                title: 'Play it in a window of its own, from here (W)',
+                title: $localize`Play the video in a window of its own, from where it is now (W).`,
                 run: () => this.popOut(),
             });
         if (item.kind === 'video' && this.player())
             entries.push({
                 id: 'copyTimeLink',
-                label: 'Copy link at this time',
+                label: links.copyTimeLink(),
                 icon: 'clock',
-                title: 'Copy a link playing it from where it is now',
+                title: links.copyTimeLinkHint(),
                 run: () => void this.copyTimeLink(),
             });
         if (this.external())
             entries.push({
                 id: 'external',
-                label: `Open in ${this.urls()?.externalName}`,
+                label: links.external(this.urls()?.externalName),
                 icon: 'play',
-                title: 'A link working without signing in, for a while',
+                title: links.externalHint(this.urls()?.externalName),
                 run: () => this.openExternal(),
             });
         entries.push({
             id: 'newTab',
-            label: 'Open in new tab',
+            label: $localize`Open in new tab`,
             icon: 'external',
-            title: 'Open it in a tab of its own',
+            title: $localize`Open “${item.name}:name:” in a tab of its own.`,
             href: this.fileUrl() ?? undefined,
             newTab: true,
         });
         if (this.can('files.download'))
             entries.push({
                 id: 'download',
-                label: 'Download',
+                label: $localize`Download`,
                 icon: 'download',
-                title: 'Save this file to this device',
+                title: $localize`Save this file to this device.`,
                 href: this.downloadUrl() ?? undefined,
             });
         // Not what would change or take away the file shown (rename, delete, move): the viewer doesn't follow them.

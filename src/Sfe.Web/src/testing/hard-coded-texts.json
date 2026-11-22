@@ -1,5 +1,4 @@
 {
-  "app/editor/image-editor.dialog.html": 20,
   "app/formats/archive/archive-view.component.html": 49,
   "app/formats/csv/csv-view.component.html": 22,
   "app/formats/epub/epub-view.component.html": 14,
@@ -11,13 +10,5 @@
   "app/formats/subtitles/subtitles-view.component.html": 24,
   "app/formats/text/text-edit-bar.component.html": 15,
   "app/formats/text/text-edit.component.html": 9,
-  "app/formats/text/text-view.component.html": 33,
-  "app/formats/view-page.component.html": 5,
-  "app/formats/virtual-rows.ts": 1,
-  "app/library/viewer/viewer.component.html": 13,
-  "app/player/player-page.component.html": 6,
-  "app/player/video-player.component.html": 9,
-  "app/shared/folder-picker.component.html": 3,
-  "app/shared/help.component.ts": 2,
-  "app/shared/sheet.component.ts": 2
+  "app/formats/text/text-view.component.html": 33
 }

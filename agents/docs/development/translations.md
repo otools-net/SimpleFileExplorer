@@ -97,6 +97,10 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
 - Words listed in a sentence ("scans, trickplay and thumbnails", folder names) are joined by
   `new Intl.ListFormat(textLocale(), { type: 'conjunction' })` (`exclusions.ts`, `tasks.ts`), never
   `join(', ') + ' and '`.
+- `template-texts.ts` finds inline templates by `template:` followed by a backtick, even inside a comment
+  ("signals for a template: `items`" in `virtual-rows.ts` counted one text): reword such a comment.
+- A placeholder followed by a colon in the text (`` $localize`${label}:ratio:: the frame …` ``) works: the first
+  colon after the name ends it (`aspectHint` in `editor/editor-texts.ts`).
 - An ICU `select` matches fixed keys only: to choose between "this folder" and a name, pass a flag
   (`here: 'yes' | 'no'`) and the name as another argument (`pasteTitle` in `file-clipboard.ts`).
 - A sentence holding styled pieces (the search explanation's coloured terms and capitalised logical words): write

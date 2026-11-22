@@ -47,13 +47,13 @@ describe('VideoPlayerComponent', () => {
         await create(false);
         expect(video().loop).toBe(false);
         expect(loopButton().getAttribute('aria-pressed')).toBe('false');
-        expect(loopButton().title).toBe('Loop (R)');
+        expect(loopButton().title).toBe('Play the video again from the start each time it ends (R).');
 
         await create(true);
         expect(video().loop).toBe(true);
         expect(loopButton().classList).toContain('on');
         expect(loopButton().getAttribute('aria-pressed')).toBe('true');
-        expect(loopButton().title).toBe('Stop looping (R)');
+        expect(loopButton().title).toBe('Stop playing the video again when it ends (R).');
     });
 
     it('toggles the loop with its button', async () => {
@@ -478,10 +478,10 @@ describe('VideoPlayerComponent', () => {
                 ...row().querySelectorAll<HTMLElement>(':scope > :not([data-overflowed]):not(.overflow-more)'),
             ];
             expect(stayed.map((item) => item.getAttribute('title') ?? item.className)).toEqual([
-                'Play (K)',
+                'Play the video (K).',
                 'player-time',
-                'Mute (M)',
-                'Fullscreen (F)',
+                'Turn the sound off (M).',
+                'Show the video on the whole screen (F).',
             ]);
             expect(more().classList).toContain('shown');
 
@@ -553,13 +553,13 @@ describe('VideoPlayerComponent', () => {
         it('switches cinema mode with its button and remembers it in this browser', async () => {
             await createWith(true);
             expect(element().classList).not.toContain('cinema');
-            expect(cinemaButton()!.title).toBe('Cinema mode (C)');
+            expect(cinemaButton()!.title).toBe('Spread the video over the whole width of the window (C).');
 
             cinemaButton()!.click();
             await settle();
             expect(element().classList).toContain('cinema');
             expect(cinemaButton()!.getAttribute('aria-pressed')).toBe('true');
-            expect(cinemaButton()!.title).toBe('Default view (C)');
+            expect(cinemaButton()!.title).toBe('Bring the video back to its usual size (C).');
             expect(localStorage.getItem('sfe.player.cinema')).toBe('1');
 
             // The next video (the viewer makes a player per item) opens in cinema mode too.
@@ -587,7 +587,7 @@ describe('VideoPlayerComponent', () => {
         let fullscreenElement: Element | null;
 
         const fullscreenButton = () =>
-            fixture.nativeElement.querySelector('button[aria-label="Fullscreen (F)"]') as HTMLButtonElement;
+            fixture.nativeElement.querySelector('button[aria-label="Full screen"]') as HTMLButtonElement;
         const host = () => fixture.nativeElement.querySelector('sfe-video-player') as HTMLElement;
 
         async function goFullscreen(width: number, height: number): Promise<void> {

@@ -2,8 +2,9 @@
         <a
             class="icon-button"
             [href]="folderUrl()"
-            [title]="'Open the folder ' + folderName()"
+            [title]="folderTitle()"
             aria-label="Open its folder"
+            i18n-aria-label
         ><svg sfeIcon="folder-up"></svg></a>
         <div class="view-page-title">
             <strong>{{ name }}</strong>
@@ -13,8 +14,10 @@
             <a
                 class="icon-button"
                 [href]="config.urls()!.download(path)"
-                title="Download"
+                title="Save this file to this device."
+                i18n-title
                 aria-label="Download"
+                i18n-aria-label
             ><svg sfeIcon="download"></svg></a>
         }
     </header>
@@ -28,14 +31,23 @@
                 }
             }
             @case ('missing') {
-                <div class="viewer-message"><p>{{ path ? 'This file is not there, or you may not see it.' : 'No file given.' }}</p></div>
+                <div class="viewer-message">
+                    @if (path) {
+                        <p i18n>This file isn't there, or you aren't allowed to see it.</p>
+                    } @else {
+                        <p i18n>No file to show: the address doesn't name one.</p>
+                    }
+                </div>
             }
             @case ('unviewable') {
-                <div class="viewer-message"><p>This file has no viewer: download it, or open it from its
+                <div class="viewer-message"><p i18n>This file has no viewer. Download it, or open it from its
                 folder.</p></div>
             }
             @case ('unreachable') {
-                <div class="viewer-message"><p>The server is not reachable.</p><p>{{ error() }}</p></div>
+                <div class="viewer-message">
+                    <p i18n>Could not reach the server.</p>
+                    <p>{{ error() }}</p>
+                </div>
             }
         }
     </main>

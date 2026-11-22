@@ -247,6 +247,13 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   out for its size says so in a sentence; a finished file in an upload says "done", "skipped" or "cancelled"; the
   name clash's check box is **Do the same for the next ones**; an unfinished upload reads "Sent by Sam, last
   received …", and the list says "No uploads under way.". Their texts are ready for translation.
+- **Viewer, player and picture editor reworded**: their buttons' hints are full sentences with the key that does the
+  same ("Play the video (K).", "Go back 10 seconds (J)."); screen readers hear the player's buttons by short names
+  ("Back 10 seconds", "Full screen"); "Fullscreen" is now **Full screen**; the viewer's previous and next buttons
+  are **Previous file** and **Next file**; the picture editor says where Save and Save a copy write in two sentences
+  and hints at each aspect ratio in one; a video the browser can't play says "This browser can't play this format."
+  and how to play it elsewhere; the folder picker's folders hint "Choose “…”, or open it.". Their texts are ready for
+  translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

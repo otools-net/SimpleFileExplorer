@@ -86,7 +86,7 @@ describe('ViewPageComponent', () => {
 
         const element = await open({ path: 'Docs/gone.txt' });
 
-        expect(element.querySelector('.viewer-message')!.textContent).toContain('not there');
+        expect(element.querySelector('.viewer-message')!.textContent).toContain("isn't there");
         expect(api.textFile).not.toHaveBeenCalled();
     });
 });

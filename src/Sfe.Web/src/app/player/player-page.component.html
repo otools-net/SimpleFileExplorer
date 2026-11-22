@@ -14,32 +14,40 @@
             }
             @case ('unsupported') {
                 <div class="viewer-message">
-                    <p>This browser cannot play this
-                    video{{ converted() ? ', and the server could not convert it (it may be converting as many videos as it can).' : '.' }}</p>
+                    @if (converted()) {
+                        <p i18n>This browser can't play this video, and the server couldn't convert it. It may be
+                        converting as many videos as it can.</p>
+                    } @else {
+                        <p i18n>This browser can't play this video.</p>
+                    }
                     <p class="player-page-links">
                         @if (urls()!.externalName; as name) {
                             <button
                                 type="button"
                                 class="button"
-                                [title]="'Open the video in ' + name + ' (a link working without signing in, for a while)'"
+                                [title]="links.externalHint(name)"
                                 (click)="openExternal()"
-                            ><svg sfeIcon="play"></svg>Open in {{ name }}</button>
+                            ><svg sfeIcon="play"></svg>{{ links.external(name) }}</button>
                         }
                         @if (config.can('files.download')) {
                             <a
                                 class="button"
                                 [href]="urls()!.download(path)"
-                                title="Save the video to this device"
-                            ><svg sfeIcon="download"></svg>Download</a>
+                                title="Save the video to this device."
+                                i18n-title
+                            ><svg sfeIcon="download"></svg><ng-container i18n>Download</ng-container></a>
                         }
                     </p>
                 </div>
             }
             @case ('no-video') {
-                <div class="viewer-message"><p>No video given.</p></div>
+                <div class="viewer-message"><p i18n>No video to play: the address doesn't name one.</p></div>
             }
             @case ('unreachable') {
-                <div class="viewer-message"><p>The server is not reachable.</p><p>{{ error() }}</p></div>
+                <div class="viewer-message">
+                    <p i18n>Could not reach the server.</p>
+                    <p>{{ error() }}</p>
+                </div>
             }
         }
     </main>

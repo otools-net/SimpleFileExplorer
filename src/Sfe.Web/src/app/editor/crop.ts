@@ -29,9 +29,9 @@ export interface CropDrag {
  * photos, screens and social posts, landscape before its portrait (`flipAspect` turns one into the other).
  */
 export const ASPECTS: readonly [string, string][] = [
-    ['free', 'Free'],
-    ['original', 'Original'],
-    ['1:1', 'Square'],
+    ['free', $localize`:aspect ratio, any shape:Free`],
+    ['original', $localize`:aspect ratio, the picture's own:Original`],
+    ['1:1', $localize`Square`],
     ['4:3', '4:3'],
     ['3:4', '3:4'],
     ['3:2', '3:2'],

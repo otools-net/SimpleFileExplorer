@@ -7,6 +7,9 @@ Streams: [video-streams.md](video-streams.md).
 - `VideoPlayerComponent` is shared by the viewer and the player page; the seek icons get the step
   (`config.seekSeconds`) overlaid; the viewer gives each item its own elements (`@for` over a one-item list tracked by
   path).
+- Its texts are in `player-texts.ts` (`playerTexts`: a short name per control for `aria-label` and its menu entry, a
+  hint sentence with the key for `title`; `videoLinkTexts`: the links the viewer's and the player page's menus share).
+  On/off buttons (Loop, Cinema mode: `aria-pressed`) keep one name; only their hint follows the state.
 - Player size: `VideoPlayerComponent.minWidth` (the controls that stay: play, mute, fullscreen, the "⋯", the
   position) → host `--player-min-width`; the video's `min-width: min(var(--player-min-width), 100cqw)` against
   `.viewer-stage` (`container-type: size`): a `100%` there resolved against the player, which the video itself sizes,

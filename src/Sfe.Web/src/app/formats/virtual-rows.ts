@@ -12,7 +12,7 @@ import {
 const FALLBACK_HEIGHT = 600;
 
 /**
- * Rows of equal height drawn only where they show (`@tanstack/virtual-core`), as signals for a template: `items`
+ * Rows of equal height drawn only where they show (`@tanstack/virtual-core`), as signals a template reads: `items`
  * (index, start in px) and `total` (the height of all). Only for the views of `formats/` (lazy chunks): not in the
  * initial bundle.
  */

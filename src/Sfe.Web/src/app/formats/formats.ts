@@ -307,21 +307,21 @@ export function isTextFile(item: LibraryItem): boolean {
 
 export const IMAGE_FORMAT: FileFormat = {
     id: 'image',
-    label: 'Picture',
+    label: $localize`:a kind of file:Picture`,
     priority: 0,
     matches: (item) => item.kind === 'image',
     view: { builtin: 'image' },
 };
 export const VIDEO_FORMAT: FileFormat = {
     id: 'video',
-    label: 'Video',
+    label: $localize`:a kind of file:Video`,
     priority: 0,
     matches: (item) => item.kind === 'video',
     view: { builtin: 'video' },
 };
 export const AUDIO_FORMAT: FileFormat = {
     id: 'audio',
-    label: 'Audio',
+    label: $localize`:a kind of file:Audio`,
     priority: 0,
     matches: (item) => item.kind === 'audio',
     view: { builtin: 'audio' },
@@ -331,7 +331,7 @@ const textView = { load: () => import('./text/text-view.component').then((m) => 
 
 export const TEXT_FORMAT: FileFormat = {
     id: 'text',
-    label: 'Text',
+    label: $localize`:a kind of file:Text`,
     priority: 10,
     matches: isTextFile,
     view: textView,
@@ -376,7 +376,7 @@ export function isProseFile(item: LibraryItem): boolean {
 
 export const PROSE_FORMAT: FileFormat = {
     id: 'prose',
-    label: 'Text',
+    label: $localize`:a kind of file:Text`,
     priority: 11,
     matches: isProseFile,
     view: textView,
@@ -390,7 +390,7 @@ export const MARKDOWN_EXTENSIONS: ReadonlySet<string> = new Set(['md', 'markdown
 
 export const MARKDOWN_FORMAT: FileFormat = {
     id: 'markdown',
-    label: 'Markdown',
+    label: $localize`:a kind of file:Markdown`,
     priority: 20,
     matches: (item) => item.kind === 'file' && MARKDOWN_EXTENSIONS.has(extensionOf(item)),
     view: { load: () => import('./markdown/markdown-view.component').then((m) => m.MarkdownViewComponent) },
@@ -414,7 +414,7 @@ export const JSON_EXTENSIONS: ReadonlySet<string> = new Set([
 
 export const JSON_FORMAT: FileFormat = {
     id: 'json',
-    label: 'JSON',
+    label: $localize`:a kind of file:JSON`,
     priority: 20,
     matches: (item) => item.kind === 'file' && JSON_EXTENSIONS.has(extensionOf(item)),
     view: { load: () => import('./json/json-view.component').then((m) => m.JsonViewComponent) },
@@ -428,7 +428,7 @@ export const CSV_EXTENSIONS: ReadonlySet<string> = new Set(['csv', 'tsv', 'psv']
 
 export const CSV_FORMAT: FileFormat = {
     id: 'csv',
-    label: 'Table',
+    label: $localize`:a kind of file:Table`,
     priority: 20,
     matches: (item) => item.kind === 'file' && CSV_EXTENSIONS.has(extensionOf(item)),
     view: { load: () => import('./csv/csv-view.component').then((m) => m.CsvViewComponent) },
@@ -442,7 +442,7 @@ export const SUBTITLE_EXTENSIONS: ReadonlySet<string> = new Set(['srt', 'vtt']);
 
 export const SUBTITLES_FORMAT: FileFormat = {
     id: 'subtitles',
-    label: 'Subtitles',
+    label: $localize`:a kind of file:Subtitles`,
     priority: 20,
     matches: (item) => item.kind === 'file' && SUBTITLE_EXTENSIONS.has(extensionOf(item)),
     view: { load: () => import('./subtitles/subtitles-view.component').then((m) => m.SubtitlesViewComponent) },
@@ -454,7 +454,7 @@ export const SUBTITLES_FORMAT: FileFormat = {
 /** PDF documents: read (pdf.js, bundled), not edited. */
 export const PDF_FORMAT: FileFormat = {
     id: 'pdf',
-    label: 'PDF',
+    label: $localize`:a kind of file:PDF`,
     priority: 20,
     matches: (item) => item.kind === 'file' && extensionOf(item) === 'pdf',
     view: { load: () => import('./pdf/pdf-view.component').then((m) => m.PdfViewComponent) },
@@ -464,7 +464,7 @@ export const PDF_FORMAT: FileFormat = {
 /** EPUB books: read page by page, two pages side by side or scrolled (epub.js), not edited. */
 export const EPUB_FORMAT: FileFormat = {
     id: 'epub',
-    label: 'Book',
+    label: $localize`:a kind of file:Book`,
     priority: 20,
     matches: (item) => item.kind === 'file' && extensionOf(item) === 'epub',
     view: { load: () => import('./epub/epub-view.component').then((m) => m.EpubViewComponent) },
@@ -482,7 +482,7 @@ export function setFlashMovies(enabled: boolean | null | undefined): void {
 /** Flash movies and games: played by Ruffle in a frame of no origin, when the library plays them. */
 export const FLASH_FORMAT: FileFormat = {
     id: 'flash',
-    label: 'Flash',
+    label: $localize`:a kind of file:Flash`,
     priority: 20,
     matches: (item) => item.kind === 'file' && extensionOf(item) === 'swf' && flashMovies(),
     view: { load: () => import('./flash/flash-view.component').then((m) => m.FlashViewComponent) },
@@ -535,7 +535,7 @@ export function isExtractable(item: LibraryItem): boolean {
 /** Archives (zip, 7z, rar, tars): their folders and files, explored without unpacking them. */
 export const ARCHIVE_FORMAT: FileFormat = {
     id: 'archive',
-    label: 'Archive',
+    label: $localize`:a kind of file:Archive`,
     priority: 20,
     matches: isExplorable,
     view: { load: () => import('./archive/archive-view.component').then((m) => m.ArchiveViewComponent) },

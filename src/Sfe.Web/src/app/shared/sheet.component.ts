@@ -25,7 +25,9 @@ import { IconComponent } from './icon.component';
                     type="button"
                     class="icon-button ghost small"
                     aria-label="Close"
-                    title="Close (Esc)"
+                    i18n-aria-label
+                    title="Close this window (Esc)."
+                    i18n-title
                     (click)="close()"
                 >
                     <svg sfeIcon="close"></svg>

@@ -40,9 +40,10 @@ export class ViewPageComponent implements OnInit {
     protected readonly format = signal<FileFormat | null>(null);
     protected readonly component = signal<Type<unknown> | null>(null);
     protected readonly folderUrl = computed(() => `./?${new URLSearchParams({ path: parentPath(this.path) })}`);
-    protected readonly folderName = computed(
-        () => baseName(parentPath(this.path)) || this.config.config()?.rootName || 'the root',
-    );
+    protected readonly folderTitle = computed(() => {
+        const name = baseName(parentPath(this.path));
+        return name ? $localize`Open the folder “${name}:name:”.` : $localize`Open the top of the library.`;
+    });
     protected readonly meta = computed(() => {
         const item = this.item();
         return item

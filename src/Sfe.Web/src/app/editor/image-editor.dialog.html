@@ -1,7 +1,8 @@
 <dialog
     #dialog
     class="image-editor"
-    aria-label="Edit picture"
+    aria-label="Picture editor"
+    i18n-aria-label
     (cancel)="onCancel($event)"
     (close)="onClose()"
     (keydown)="onKeydown($event)"
@@ -11,14 +12,14 @@
             <strong>{{ item()?.name }}</strong>
             <span>{{ subtitle() }}</span>
         </div>
-        <div class="editor-tools" role="toolbar" aria-label="Edits">
+        <div class="editor-tools" role="toolbar" aria-label="Edits" i18n-aria-label>
             @for (tool of tools; track tool.id) {
                 <button
                     type="button"
                     class="icon-button"
                     [class.active]="tool.id === activeTool()"
                     [attr.aria-pressed]="tool.id === activeTool()"
-                    [title]="tool.label + ' (' + tool.key + ')'"
+                    [title]="tool.hint"
                     [attr.aria-label]="tool.label"
                     [disabled]="!picture()"
                     (click)="useTool(tool.id)"
@@ -29,8 +30,10 @@
             <button
                 type="button"
                 class="icon-button"
-                title="Undo the last edit (Ctrl+Z)"
+                title="Undo the last edit (Ctrl+Z)."
+                i18n-title
                 aria-label="Undo"
+                i18n-aria-label
                 [disabled]="!operations().length || saving()"
                 (click)="undo()"
             >
@@ -42,10 +45,12 @@
                 <button
                     type="button"
                     class="button"
-                    title="Save the edited picture as a new file; the original stays as it is (Ctrl+Shift+S)"
+                    title="Save the edited picture as a new file. The original stays as it is (Ctrl+Shift+S)."
+                    i18n-title
                     data-save="copy"
                     [disabled]="!dirty() || saving()"
                     (click)="save()"
+                    i18n
                 >Save a copy</button>
                 <button
                     type="button"
@@ -55,23 +60,28 @@
                     [sfeBusy]="saving()"
                     [disabled]="!dirty() || saving()"
                     (click)="saveOver()"
+                    i18n
                 >Save</button>
             } @else {
                 <button
                     type="button"
                     class="button primary"
-                    title="Save the edited picture as a new file; the original stays as it is (Ctrl+S)"
+                    title="Save the edited picture as a new file. The original stays as it is (Ctrl+S)."
+                    i18n-title
                     data-save="copy"
                     [sfeBusy]="saving()"
                     [disabled]="!dirty() || saving()"
                     (click)="save()"
+                    i18n
                 >Save a copy</button>
             }
             <button
                 type="button"
                 class="icon-button"
-                title="Close without saving (Esc)"
+                title="Close the editor without saving (Esc). Asks first when there are edits."
+                i18n-title
                 aria-label="Close"
+                i18n-aria-label
                 (click)="requestClose()"
             ><svg sfeIcon="close"></svg></button>
         </div>
@@ -81,7 +91,7 @@
             @if (error(); as error) {
                 <div class="viewer-message"><p>{{ error }}</p></div>
             } @else if (!picture()) {
-                <div class="viewer-message"><p>Loading the picture…</p></div>
+                <div class="viewer-message"><p i18n>Loading the picture…</p></div>
             }
             <div class="editor-picture" [hidden]="!picture() || error()">
                 <div #canvasHost class="editor-canvas"></div>
@@ -118,17 +128,21 @@
         </div>
         <aside class="editor-panel">
             @if (activeTool() === 'crop') {
-                <h3>Crop</h3>
+                <h3 i18n>Crop</h3>
                 <div class="aspect-head">
-                    <span id="aspect-label">Aspect ratio</span>
+                    <span id="aspect-label" i18n>Aspect ratio</span>
                     <button
                         type="button"
                         class="button small"
                         [disabled]="!picture() || !flipped()"
                         (click)="flipAspect()"
-                        [title]="flipped() ? 'Use ' + flipped() + ' instead: the same ratio, ' + (isPortrait() ? 'landscape' : 'portrait') + ' (X)' : 'Pick a ratio to turn it between landscape and portrait (X)'"
+                        [title]="flipHint()"
                     >
-                        {{ isPortrait() ? 'Landscape' : 'Portrait' }}
+                        @if (isPortrait()) {
+                            <ng-container i18n>Landscape</ng-container>
+                        } @else {
+                            <ng-container i18n>Portrait</ng-container>
+                        }
                     </button>
                 </div>
                 <div class="aspect-choices" role="radiogroup" aria-labelledby="aspect-label">
@@ -169,27 +183,31 @@
                         </label>
                     }
                 </div>
-                <p class="field-hint">Drag the frame's sides and corners, drag inside it to move it, or drag outside it
-                to draw a new one. Sizes are in pixels of the picture.</p>
+                <p class="field-hint" i18n>Drag the frame's sides and corners to size it, drag inside it to move it,
+                or drag outside it to draw a new one. Sizes are in pixels of the picture.</p>
                 <div class="editor-panel-actions">
                     <button
                         type="button"
                         class="button"
-                        title="Select the whole picture"
+                        title="Put the frame around the whole picture."
+                        i18n-title
                         [disabled]="!pendingCrop()"
                         (click)="resetCrop()"
+                        i18n
                     >Whole picture</button>
                     <button
                         type="button"
                         class="button primary"
-                        title="Crop to the frame, then go on editing (Enter)"
+                        title="Crop to the frame, then go on editing (Enter)."
+                        i18n-title
                         [disabled]="!pendingCrop()"
                         (click)="applyCrop()"
+                        i18n
                     >Apply</button>
                 </div>
             }
             @if (operations().length) {
-                <h3>Edits</h3>
+                <h3 i18n>Edits</h3>
                 <ol class="editor-history">
                     @for (operation of operations(); track $index) {
                         <li>{{ describe(operation) }}</li>

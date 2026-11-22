@@ -200,6 +200,23 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     marked (the uploads section's confirm and toasts left for 2.8); `plural()` out of `app/files/`. Screenshots
     `operations-panel.png`, `upload-panel.png`, `admin-files-uploads.png` retaken (scenes `files`, `uploads`).
     A 121-character line left by 2.6b in `properties-texts.ts` broken (same message).
+  **2.7 split** (2026-11-22: ~334 unmarked template texts in `app/formats/`, `app/editor/`, `app/player/`,
+  `library/viewer/`, `shared/`, and ~9k lines of TS with many texts in code; ~50 template texts a step):
+  - [x] **2.7a viewer shell, player, picture editor, shared** (`library/viewer/`, `app/player/`, `app/editor/`,
+    `app/shared/`, `formats/` top level: `view-page`, `formats.ts`, `toolbar-entries.ts`, `virtual-rows.ts`; ~61).
+    Done 2026-11-22: 9 files at 0 unmarked texts (61 gone); the player's texts in `player-texts.ts` (a short name per
+    control for `aria-label` and menus, a hint sentence with the key; on/off buttons keep one name), the editor's in
+    `editor-texts.ts` (size line, where Save and Save a copy write as whole sentences, aspect and flip hints), pure
+    functions with specs; the viewer's menu reuses the item menu's wordings; "Fullscreen" → **Full screen** (app,
+    docs, e2e), the viewer's arrows **Previous file** / **Next file**, its dialog named "Viewer", the editor's
+    "Picture editor"; format labels and the document toolbars' shared entries marked; `sfe-help`'s name and hint
+    from code; `virtual-rows.ts` counted a comment as a template (reworded). Toasts and confirms left for 2.8.
+    Screenshots `image-editor*.png` retaken (scene `viewer`). Viewer readability baseline 823 → 824 (an import).
+  - [ ] **2.7b text viewer and editor, reading settings** (`formats/text/`, `formats/reading/`; ~81, much code).
+  - [ ] **2.7c JSON and CSV** (`formats/json/`, `formats/csv/`; ~51).
+  - [ ] **2.7d Markdown and subtitles** (`formats/markdown/`, `formats/subtitles/`; ~42).
+  - [ ] **2.7e PDF, EPUB, Flash** (`formats/pdf/`, `formats/epub/`, `formats/flash/`; ~50).
+  - [ ] **2.7f archive viewer** (`formats/archive/`; ~49).
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
   (dividers) to `MenuEntry`; one action registry used by the item menu, folder menu and selection bar; order
@@ -349,8 +366,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-22):** steps 1.1 to 2.4d, 2.5a–2.5e and 2.6a–2.6c done (see their ticks; 2.4, 2.5 and 2.6
-  were split). Next: **2.7** (viewers, player, editors, formats: split it first), then 2.8.
+- **Last session (2026-11-22):** steps 1.1 to 2.4d, 2.5a–2.5e, 2.6a–2.6c and 2.7a done (see their ticks; 2.4 to
+  2.7 were split). Next: **2.7b** (text viewer and editor, reading settings), then 2.7c–2.7f, then 2.8.
+- `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd
+  C:/workspace/…` first.
 - The docs-screenshots scene for `operations-panel.png` is `files` (it calls `operations()` at its end), not
   `operations`; it rewrites the other `files` images with no visible change: keep only those of the step.
   Texts marked and rewritten to

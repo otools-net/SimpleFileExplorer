@@ -522,6 +522,7 @@
         <note category="location">src/app/admin/admin-page.component.html:461,462</note>
         <note category="location">src/app/admin/installation-section.component.html:57,58</note>
         <note category="location">src/app/connections/connections-section.component.html:48,49</note>
+        <note category="location">src/app/editor/image-editor.dialog.html:64,65</note>
         <note category="location">src/app/library/scan/folder-exclusions.dialog.html:44,45</note>
         <note category="location">src/app/tags/tag-editor.dialog.html:159,160</note>
         <note category="location">src/app/tasks/schedule-form.component.html:138,139</note>
@@ -985,6 +986,7 @@
       <notes>
         <note category="location">src/app/access/folder-access.component.html:67,68</note>
         <note category="location">src/app/access/space-editor.component.html:66,67</note>
+        <note category="location">src/app/shared/folder-picker.component.html:37,38</note>
       </notes>
       <segment>
         <source>No folders here.</source>
@@ -4444,6 +4446,7 @@ Space “Holiday photos”
         <note category="location">src/app/library/selection-bar.component.html:156,157</note>
         <note category="location">src/app/library/topbar/search-box.component.ts:76</note>
         <note category="location">src/app/library/topbar/search-help.dialog.ts:61</note>
+        <note category="location">src/app/library/viewer/viewer.component.html:37</note>
         <note category="location">src/app/settings/tabs/library-settings.ts:100</note>
         <note category="location">src/app/tags/file-tags.dialog.html:1</note>
         <note category="location">src/app/tags/file-tags.dialog.ts:40</note>
@@ -4628,6 +4631,7 @@ Space “Holiday photos”
     <unit id="7172558586224768124">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:311</note>
+        <note category="location">src/app/editor/image-editor.dialog.html:4,5</note>
         <note category="location">src/app/settings/tabs/files-settings.ts:9</note>
       </notes>
       <segment>
@@ -6154,6 +6158,403 @@ Space “Holiday photos”
         <source>TB</source>
       </segment>
     </unit>
+    <unit id="5891064527381218201">
+      <notes>
+        <note category="location">src/app/editor/crop.ts:32</note>
+        <note category="description">aspect ratio, any shape</note>
+      </notes>
+      <segment>
+        <source>Free</source>
+      </segment>
+    </unit>
+    <unit id="7329217250595054697">
+      <notes>
+        <note category="location">src/app/editor/crop.ts:33</note>
+        <note category="description">aspect ratio, the picture&apos;s own</note>
+      </notes>
+      <segment>
+        <source>Original</source>
+      </segment>
+    </unit>
+    <unit id="8336049305072615544">
+      <notes>
+        <note category="location">src/app/editor/crop.ts:34</note>
+      </notes>
+      <segment>
+        <source>Square</source>
+      </segment>
+    </unit>
+    <unit id="6368149163805748335">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:5</note>
+        <note category="description">a picture&apos;s width and height</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="width" disp="width"/> × <ph id="1" equiv="height" disp="height"/></source>
+      </segment>
+    </unit>
+    <unit id="8398365408923067937">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:13</note>
+        <note category="description">sizes before and after the edits</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="original" disp="before"/> → <ph id="1" equiv="edited" disp="after"/></source>
+      </segment>
+    </unit>
+    <unit id="3010905518374834134">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:19</note>
+      </notes>
+      <segment>
+        <source>Save the edits over the original picture. This space keeps no previous version (Ctrl+S).</source>
+      </segment>
+    </unit>
+    <unit id="8635917821216299137">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:20</note>
+      </notes>
+      <segment>
+        <source>Save the edits over the original picture. The version before goes to the trash (Ctrl+S).</source>
+      </segment>
+    </unit>
+    <unit id="6785082469039993959">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:30</note>
+      </notes>
+      <segment>
+        <source>Saved as a new file in “<ph id="0" equiv="folder" disp="folder"/>”, in the same folders as the original.</source>
+      </segment>
+    </unit>
+    <unit id="2538186778691147002">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:31</note>
+      </notes>
+      <segment>
+        <source>Saved as a new file next to the original, with “(edited)” in its name.</source>
+      </segment>
+    </unit>
+    <unit id="5989523230723855140">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:33</note>
+      </notes>
+      <segment>
+        <source>Save writes over the original.</source>
+      </segment>
+    </unit>
+    <unit id="8670224831583225544">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:34</note>
+      </notes>
+      <segment>
+        <source>Save writes over the original, and the version before goes to the trash.</source>
+      </segment>
+    </unit>
+    <unit id="4946127764180238392">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:36</note>
+      </notes>
+      <segment>
+        <source>Save a copy makes a new file in “<ph id="0" equiv="folder" disp="folder"/>”, in the same folders as the original.</source>
+      </segment>
+    </unit>
+    <unit id="3123636175379629684">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:37</note>
+      </notes>
+      <segment>
+        <source>Save a copy makes a new file next to the original, with “(edited)” in its name.</source>
+      </segment>
+    </unit>
+    <unit id="8069962353756279065">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:43</note>
+      </notes>
+      <segment>
+        <source>Free: the frame takes any width and height.</source>
+      </segment>
+    </unit>
+    <unit id="2300570282343205217">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:46</note>
+      </notes>
+      <segment>
+        <source>Original: the frame keeps the picture&apos;s own shape, <ph id="0" equiv="size" disp="dimensions(size)"/>.</source>
+      </segment>
+    </unit>
+    <unit id="6505082959520668432">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:47</note>
+      </notes>
+      <segment>
+        <source>Original: the frame keeps the picture&apos;s own shape.</source>
+      </segment>
+    </unit>
+    <unit id="8351999921066259486">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:48</note>
+      </notes>
+      <segment>
+        <source>Square (1:1): the frame keeps this shape.</source>
+      </segment>
+    </unit>
+    <unit id="6595885079867548407">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:49</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="ratio" disp="label"/>: the frame keeps this shape.</source>
+      </segment>
+    </unit>
+    <unit id="6144115346967275749">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:57</note>
+      </notes>
+      <segment>
+        <source>Pick a ratio first, then this turns it between landscape and portrait (X).</source>
+      </segment>
+    </unit>
+    <unit id="6289573409096658163">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:59</note>
+      </notes>
+      <segment>
+        <source>Use <ph id="0" equiv="ratio" disp="flipped"/> instead: the same ratio, in landscape (X).</source>
+      </segment>
+    </unit>
+    <unit id="6029819101487101982">
+      <notes>
+        <note category="location">src/app/editor/editor-texts.ts:60</note>
+      </notes>
+      <segment>
+        <source>Use <ph id="0" equiv="ratio" disp="flipped"/> instead: the same ratio, in portrait (X).</source>
+      </segment>
+    </unit>
+    <unit id="6749849515531362622">
+      <notes>
+        <note category="location">src/app/editor/edits.ts:46</note>
+      </notes>
+      <segment>
+        <source>Crop to <ph id="0" equiv="width" disp="rect.width"/> × <ph id="1" equiv="height" disp="rect.height"/></source>
+      </segment>
+    </unit>
+    <unit id="2184922477427494351">
+      <notes>
+        <note category="location">src/app/editor/edits.ts:60</note>
+        <note category="location">src/app/editor/image-editor.dialog.html:131,132</note>
+      </notes>
+      <segment>
+        <source>Crop</source>
+      </segment>
+    </unit>
+    <unit id="988483223797524765">
+      <notes>
+        <note category="location">src/app/editor/edits.ts:60</note>
+      </notes>
+      <segment>
+        <source>Crop the picture (C).</source>
+      </segment>
+    </unit>
+    <unit id="8746519276533221521">
+      <notes>
+        <note category="location">src/app/editor/edits.ts:82</note>
+      </notes>
+      <segment>
+        <source>This browser can&apos;t edit a picture of <ph id="0" equiv="width" disp="size.width"/> × <ph id="1" equiv="height" disp="size.height"/> pixels.</source>
+      </segment>
+    </unit>
+    <unit id="7266541713615823497">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:15</note>
+        <note category="location">src/app/editor/image-editor.dialog.html:210,211</note>
+      </notes>
+      <segment>
+        <source>Edits</source>
+      </segment>
+    </unit>
+    <unit id="7974006371251937760">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:33,34</note>
+      </notes>
+      <segment>
+        <source>Undo the last edit (Ctrl+Z).</source>
+      </segment>
+    </unit>
+    <unit id="5775346636203685655">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:36</note>
+        <note category="location">src/app/files/file-transfers.ts:434</note>
+      </notes>
+      <segment>
+        <source>Undo</source>
+      </segment>
+    </unit>
+    <unit id="5145810439464723756">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:48,49</note>
+      </notes>
+      <segment>
+        <source>Save the edited picture as a new file. The original stays as it is (Ctrl+Shift+S).</source>
+      </segment>
+    </unit>
+    <unit id="5932044959827373686">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:54,55</note>
+        <note category="location">src/app/editor/image-editor.dialog.html:76,77</note>
+      </notes>
+      <segment>
+        <source>Save a copy</source>
+      </segment>
+    </unit>
+    <unit id="5777469051457190291">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:69,70</note>
+      </notes>
+      <segment>
+        <source>Save the edited picture as a new file. The original stays as it is (Ctrl+S).</source>
+      </segment>
+    </unit>
+    <unit id="8091884340438952862">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:81,82</note>
+      </notes>
+      <segment>
+        <source>Close the editor without saving (Esc). Asks first when there are edits.</source>
+      </segment>
+    </unit>
+    <unit id="7819314041543176992">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:84</note>
+        <note category="location">src/app/files/operations-panel.component.ts:80</note>
+        <note category="location">src/app/files/properties.dialog.html:175,176</note>
+        <note category="location">src/app/files/uploads-panel.component.html:42</note>
+        <note category="location">src/app/files/uploads-panel.component.ts:82</note>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:58,59</note>
+        <note category="location">src/app/library/viewer/viewer.component.html:62</note>
+        <note category="location">src/app/shared/sheet.component.ts:28</note>
+        <note category="location">src/app/tags/default-tags-badge.component.html:36</note>
+        <note category="location">src/app/tags/tag-manager.dialog.ts:26,27</note>
+      </notes>
+      <segment>
+        <source>Close</source>
+      </segment>
+    </unit>
+    <unit id="5332007597191952376">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:94,95</note>
+      </notes>
+      <segment>
+        <source>Loading the picture…</source>
+      </segment>
+    </unit>
+    <unit id="7814358426066520520">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:133,134</note>
+      </notes>
+      <segment>
+        <source>Aspect ratio</source>
+      </segment>
+    </unit>
+    <unit id="1403507799985368460">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:142</note>
+      </notes>
+      <segment>
+        <source>Landscape</source>
+      </segment>
+    </unit>
+    <unit id="9024440163320108713">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:144</note>
+      </notes>
+      <segment>
+        <source>Portrait</source>
+      </segment>
+    </unit>
+    <unit id="6467131701379807873">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:186,187</note>
+      </notes>
+      <segment>
+        <source>Drag the frame&apos;s sides and corners to size it, drag inside it to move it, or drag outside it to draw a new one. Sizes are in pixels of the picture.</source>
+      </segment>
+    </unit>
+    <unit id="2079688332808908502">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:192,193</note>
+      </notes>
+      <segment>
+        <source>Put the frame around the whole picture.</source>
+      </segment>
+    </unit>
+    <unit id="1182437934247858051">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:197,198</note>
+      </notes>
+      <segment>
+        <source>Whole picture</source>
+      </segment>
+    </unit>
+    <unit id="4420305756416645267">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:201,202</note>
+      </notes>
+      <segment>
+        <source>Crop to the frame, then go on editing (Enter).</source>
+      </segment>
+    </unit>
+    <unit id="4391289919356861627">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.html:206,207</note>
+      </notes>
+      <segment>
+        <source>Apply</source>
+      </segment>
+    </unit>
+    <unit id="5246819740476460403">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.ts:74</note>
+        <note category="description">the crop frame&apos;s distance from the left edge</note>
+      </notes>
+      <segment>
+        <source>Left</source>
+      </segment>
+    </unit>
+    <unit id="6293970137138896363">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.ts:75</note>
+        <note category="description">the crop frame&apos;s distance from the top edge</note>
+      </notes>
+      <segment>
+        <source>Top</source>
+      </segment>
+    </unit>
+    <unit id="2018922024247045709">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.ts:76</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:125</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:182</note>
+      </notes>
+      <segment>
+        <source>Width</source>
+      </segment>
+    </unit>
+    <unit id="3033623772164647792">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.ts:77</note>
+      </notes>
+      <segment>
+        <source>Height</source>
+      </segment>
+    </unit>
+    <unit id="7202735454612834173">
+      <notes>
+        <note category="location">src/app/editor/image-editor.dialog.ts:171</note>
+      </notes>
+      <segment>
+        <source>This browser can&apos;t open this picture for editing.</source>
+      </segment>
+    </unit>
     <unit id="3052210908898646100">
       <notes>
         <note category="location">src/app/files/batch-rename.dialog.html:2</note>
@@ -6181,6 +6582,7 @@ Space “Holiday photos”
     <unit id="7322373231564004139">
       <notes>
         <note category="location">src/app/files/batch-rename.dialog.html:20,21</note>
+        <note category="location">src/app/formats/toolbar-entries.ts:48</note>
       </notes>
       <segment>
         <source>Find</source>
@@ -7018,14 +7420,6 @@ Space “Holiday photos”
         <source><ph id="0" equiv="archive" disp="quoted(baseName(result.path))"/> extracted to <ph id="1" equiv="where" disp="into"/>.</source>
       </segment>
     </unit>
-    <unit id="5775346636203685655">
-      <notes>
-        <note category="location">src/app/files/file-transfers.ts:434</note>
-      </notes>
-      <segment>
-        <source>Undo</source>
-      </segment>
-    </unit>
     <unit id="1877082256408805881">
       <notes>
         <note category="location">src/app/files/file-transfers.ts:435</note>
@@ -7153,6 +7547,7 @@ Space “Holiday photos”
     <unit id="4401326409179569796">
       <notes>
         <note category="location">src/app/files/item-menu.ts:252</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:257</note>
       </notes>
       <segment>
         <source>Crop…</source>
@@ -7364,8 +7759,12 @@ Space “Holiday photos”
     <unit id="3099741642167775297">
       <notes>
         <note category="location">src/app/files/item-menu.ts:370</note>
+        <note category="location">src/app/formats/view-page.component.html:19,20</note>
         <note category="location">src/app/library/selection-bar.component.html:143,144</note>
         <note category="location">src/app/library/selection-bar.component.ts:190</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:319</note>
+        <note category="location">src/app/player/player-page.component.html:38</note>
+        <note category="location">src/app/player/player-page.component.ts:88</note>
         <note category="location">src/app/tracking/tracking-parts.ts:121</note>
       </notes>
       <segment>
@@ -7391,6 +7790,8 @@ Space “Holiday photos”
     <unit id="4246527954708249842">
       <notes>
         <note category="location">src/app/files/item-menu.ts:376</note>
+        <note category="location">src/app/formats/view-page.component.html:17,18</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:321</note>
         <note category="location">src/app/tracking/tracking-parts.ts:123</note>
       </notes>
       <segment>
@@ -7436,6 +7837,7 @@ Space “Holiday photos”
         <note category="location">src/app/library/folder-menu.ts:184</note>
         <note category="location">src/app/library/folder-menu.ts:344</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:228</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
       </notes>
       <segment>
         <source>Remove from quick links</source>
@@ -7447,6 +7849,7 @@ Space “Holiday photos”
         <note category="location">src/app/library/folder-menu.ts:184</note>
         <note category="location">src/app/library/folder-menu.ts:344</note>
         <note category="location">src/app/library/selection-bar.component.ts:145</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
       </notes>
       <segment>
         <source>Add to quick links</source>
@@ -7456,6 +7859,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/item-menu.ts:401</note>
         <note category="location">src/app/library/folder-menu.ts:187</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:270</note>
       </notes>
       <segment>
         <source>Take “<ph id="0" equiv="name" disp="item.name"/>” out of your quick links.</source>
@@ -7465,6 +7869,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/item-menu.ts:402</note>
         <note category="location">src/app/library/folder-menu.ts:188</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:271</note>
       </notes>
       <segment>
         <source>Show “<ph id="0" equiv="name" disp="item.name"/>” in your quick links, in the sidebar.</source>
@@ -7477,6 +7882,8 @@ Space “Holiday photos”
         <note category="location">src/app/library/folder-menu.ts:195</note>
         <note category="location">src/app/library/folder-menu.ts:355</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:192</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:278</note>
+        <note category="location">src/app/player/player-page.component.ts:96</note>
         <note category="location">src/app/tracking/tracking-parts.ts:129</note>
       </notes>
       <segment>
@@ -7488,6 +7895,8 @@ Space “Holiday photos”
         <note category="location">src/app/files/item-menu.ts:411</note>
         <note category="location">src/app/files/properties.dialog.html:169,170</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:194</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:280</note>
+        <note category="location">src/app/player/player-page.component.ts:98</note>
         <note category="location">src/app/tracking/tracking-parts.ts:131</note>
       </notes>
       <segment>
@@ -7545,6 +7954,7 @@ Space “Holiday photos”
     <unit id="8408671376508447504">
       <notes>
         <note category="location">src/app/files/item-menu.ts:452</note>
+        <note category="location">src/app/formats/view-page.component.ts:45</note>
         <note category="location">src/app/library/folder-menu.ts:159</note>
         <note category="location">src/app/library/items/item-parts.ts:163</note>
       </notes>
@@ -7561,6 +7971,7 @@ Space “Holiday photos”
         <note category="location">src/app/library/folder-menu.ts:362</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:182</note>
         <note category="location">src/app/library/topbar/search-box.component.ts:271</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:310</note>
         <note category="location">src/app/menus/context-menu.ts:310</note>
         <note category="location">src/app/menus/context-menu.ts:350</note>
         <note category="location">src/app/tracking/tracking-parts.ts:96</note>
@@ -7590,6 +8001,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/item-menu.ts:478</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:184</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:312</note>
         <note category="location">src/app/tracking/tracking-parts.ts:98</note>
       </notes>
       <segment>
@@ -7877,20 +8289,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Operations and uploads</source>
-      </segment>
-    </unit>
-    <unit id="7819314041543176992">
-      <notes>
-        <note category="location">src/app/files/operations-panel.component.ts:80</note>
-        <note category="location">src/app/files/properties.dialog.html:175,176</note>
-        <note category="location">src/app/files/uploads-panel.component.html:42</note>
-        <note category="location">src/app/files/uploads-panel.component.ts:82</note>
-        <note category="location">src/app/library/topbar/search-help.dialog.html:58,59</note>
-        <note category="location">src/app/tags/default-tags-badge.component.html:36</note>
-        <note category="location">src/app/tags/tag-manager.dialog.ts:26,27</note>
-      </notes>
-      <segment>
-        <source>Close</source>
       </segment>
     </unit>
     <unit id="6107224573771712663">
@@ -8343,7 +8741,7 @@ Space “Holiday photos”
     </unit>
     <unit id="622219730189013984">
       <notes>
-        <note category="location">src/app/files/properties-texts.ts:86</note>
+        <note category="location">src/app/files/properties-texts.ts:86,87</note>
         <note category="description">a file&apos;s kind after its extension</note>
       </notes>
       <segment>
@@ -8839,6 +9237,7 @@ Space “Holiday photos”
     <unit id="3456997820832516180">
       <notes>
         <note category="location">src/app/files/trash-section.component.ts:124</note>
+        <note category="location">src/app/formats/view-page.component.html:6,7</note>
       </notes>
       <segment>
         <source>Open its folder</source>
@@ -8946,6 +9345,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/trash-texts.ts:58</note>
         <note category="location">src/app/files/upload-texts.ts:118</note>
+        <note category="location">src/app/formats/view-page.component.ts:45</note>
       </notes>
       <segment>
         <source>Open the top of the library.</source>
@@ -9154,6 +9554,7 @@ Space “Holiday photos”
         <note category="location">src/app/files/uploads-panel.component.html:28,29</note>
         <note category="location">src/app/files/uploads-panel.component.html:130,131</note>
         <note category="location">src/app/files/uploads-panel.component.ts:67</note>
+        <note category="location">src/app/player/player-texts.ts:8</note>
       </notes>
       <segment>
         <source>Pause</source>
@@ -9308,6 +9709,208 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Stop it and remove what it received (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="3392209594183402175">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:310</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Picture</source>
+      </segment>
+    </unit>
+    <unit id="6549265851868599441">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:317</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Video</source>
+      </segment>
+    </unit>
+    <unit id="347407180135731058">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:324</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:83</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Audio</source>
+      </segment>
+    </unit>
+    <unit id="6162693758764653365">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:334</note>
+        <note category="location">src/app/formats/formats.ts:379</note>
+        <note category="location">src/app/logs/logs-section.component.html:11,12</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Text</source>
+      </segment>
+    </unit>
+    <unit id="7153255681393081191">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:393</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Markdown</source>
+      </segment>
+    </unit>
+    <unit id="2742664813202759813">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:417</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>JSON</source>
+      </segment>
+    </unit>
+    <unit id="1358239534403218079">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:431</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Table</source>
+      </segment>
+    </unit>
+    <unit id="2631340539474479416">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:445</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Subtitles</source>
+      </segment>
+    </unit>
+    <unit id="6437441283465569103">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:457</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>PDF</source>
+      </segment>
+    </unit>
+    <unit id="4335548177977692221">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:467</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Book</source>
+      </segment>
+    </unit>
+    <unit id="1889285841762768492">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:485</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Flash</source>
+      </segment>
+    </unit>
+    <unit id="1055686627716339120">
+      <notes>
+        <note category="location">src/app/formats/formats.ts:538</note>
+        <note category="description">a kind of file</note>
+      </notes>
+      <segment>
+        <source>Archive</source>
+      </segment>
+    </unit>
+    <unit id="7453161494286187410">
+      <notes>
+        <note category="location">src/app/formats/toolbar-entries.ts:17</note>
+      </notes>
+      <segment>
+        <source>Show: <ph id="0" equiv="mode" disp="shown?.label ?? current"/></source>
+      </segment>
+    </unit>
+    <unit id="107539381804564201">
+      <notes>
+        <note category="location">src/app/formats/toolbar-entries.ts:19</note>
+      </notes>
+      <segment>
+        <source>Choose how the document is shown.</source>
+      </segment>
+    </unit>
+    <unit id="4150190668090736414">
+      <notes>
+        <note category="location">src/app/formats/toolbar-entries.ts:35</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:147</note>
+        <note category="location">src/app/settings/tabs/appearance-settings.ts:204</note>
+      </notes>
+      <segment>
+        <source>Line numbers</source>
+      </segment>
+    </unit>
+    <unit id="1553053709455653831">
+      <notes>
+        <note category="location">src/app/formats/toolbar-entries.ts:37</note>
+      </notes>
+      <segment>
+        <source>Show or hide the number of each line.</source>
+      </segment>
+    </unit>
+    <unit id="2373004687082123026">
+      <notes>
+        <note category="location">src/app/formats/toolbar-entries.ts:46</note>
+      </notes>
+      <segment>
+        <source>Find words in the source (Ctrl+F).</source>
+      </segment>
+    </unit>
+    <unit id="8572497085795850754">
+      <notes>
+        <note category="location">src/app/formats/toolbar-entries.ts:54</note>
+      </notes>
+      <segment>
+        <source>Change the font, size and colours of the text.</source>
+      </segment>
+    </unit>
+    <unit id="8067094328202692383">
+      <notes>
+        <note category="location">src/app/formats/toolbar-entries.ts:56</note>
+      </notes>
+      <segment>
+        <source>Reading settings</source>
+      </segment>
+    </unit>
+    <unit id="7142736646526723694">
+      <notes>
+        <note category="location">src/app/formats/view-page.component.html:36,37</note>
+      </notes>
+      <segment>
+        <source>This file isn&apos;t there, or you aren&apos;t allowed to see it.</source>
+      </segment>
+    </unit>
+    <unit id="8315005858258987758">
+      <notes>
+        <note category="location">src/app/formats/view-page.component.html:38,39</note>
+      </notes>
+      <segment>
+        <source>No file to show: the address doesn&apos;t name one.</source>
+      </segment>
+    </unit>
+    <unit id="389877403924263863">
+      <notes>
+        <note category="location">src/app/formats/view-page.component.html:43,44</note>
+      </notes>
+      <segment>
+        <source>This file has no viewer. Download it, or open it from its folder.</source>
+      </segment>
+    </unit>
+    <unit id="462716559755708870">
+      <notes>
+        <note category="location">src/app/formats/view-page.component.html:48,49</note>
+        <note category="location">src/app/player/player-page.component.html:48,49</note>
+      </notes>
+      <segment>
+        <source>Could not reach the server.</source>
       </segment>
     </unit>
     <unit id="3849702961755925807">
@@ -11975,6 +12578,7 @@ Space “Holiday photos”
     <unit id="6751725818938938053">
       <notes>
         <note category="location">src/app/library/sidebar/sidebar.component.html:39,40</note>
+        <note category="location">src/app/library/viewer/viewer.component.html:20,21</note>
       </notes>
       <segment>
         <source>Find the files tagged “<ph id="0" equiv="INTERPOLATION" disp="{{ usage.tag.displayName }}"/>”.</source>
@@ -12205,6 +12809,7 @@ Space “Holiday photos”
     <unit id="4088802997354529592">
       <notes>
         <note category="location">src/app/library/topbar/main-menu.component.html:151</note>
+        <note category="location">src/app/player/player-texts.ts:22</note>
       </notes>
       <segment>
         <source>Full screen</source>
@@ -12915,21 +13520,181 @@ Space “Holiday photos”
         <source>Show the sidebar: quick links and tags.</source>
       </segment>
     </unit>
+    <unit id="6239936537351977310">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:5</note>
+      </notes>
+      <segment>
+        <source>Viewer</source>
+      </segment>
+    </unit>
+    <unit id="5052583664131660165">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:34,35</note>
+      </notes>
+      <segment>
+        <source>See or change the tags of this file (T).</source>
+      </segment>
+    </unit>
+    <unit id="5532989582519760671">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:46,47</note>
+      </notes>
+      <segment>
+        <source>More things to do with this file.</source>
+      </segment>
+    </unit>
+    <unit id="117068237894470695">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:48,49</note>
+        <note category="location">src/app/menus/overflow-row.ts:225</note>
+      </notes>
+      <segment>
+        <source>More actions</source>
+      </segment>
+    </unit>
+    <unit id="275783467443334601">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:59,60</note>
+      </notes>
+      <segment>
+        <source>Close the viewer (Esc).</source>
+      </segment>
+    </unit>
+    <unit id="3126388607372280079">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:82,83</note>
+      </notes>
+      <segment>
+        <source>This browser can&apos;t play this format, and the server couldn&apos;t convert it. It may be converting as many videos as it can.</source>
+      </segment>
+    </unit>
+    <unit id="5299801612867165940">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:85,86</note>
+      </notes>
+      <segment>
+        <source>This browser can&apos;t play this format.</source>
+      </segment>
+    </unit>
+    <unit id="3626809208177385442">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:88,89</note>
+      </notes>
+      <segment>
+        <source>Use “Open in <ph id="0" equiv="INTERPOLATION" disp="{{ player }}"/>” in the ⋮ menu, or download it.</source>
+      </segment>
+    </unit>
+    <unit id="1078480450333190557">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:90,91</note>
+      </notes>
+      <segment>
+        <source>Download it to play it in another app.</source>
+      </segment>
+    </unit>
+    <unit id="884956141061978479">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:152,153</note>
+      </notes>
+      <segment>
+        <source>Could not load the viewer of this file. Reload the page to try again.</source>
+      </segment>
+    </unit>
+    <unit id="127205157250570730">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:163,164</note>
+      </notes>
+      <segment>
+        <source>Previous file</source>
+      </segment>
+    </unit>
+    <unit id="5623605280326151930">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:165,166</note>
+      </notes>
+      <segment>
+        <source>Show the previous file (← or the wheel up).</source>
+      </segment>
+    </unit>
+    <unit id="4270149703754176648">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:173,174</note>
+      </notes>
+      <segment>
+        <source>Next file</source>
+      </segment>
+    </unit>
+    <unit id="1307653467362637812">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.html:175,176</note>
+      </notes>
+      <segment>
+        <source>Show the next file (→ or the wheel down).</source>
+      </segment>
+    </unit>
+    <unit id="3777155993939830193">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.ts:239</note>
+      </notes>
+      <segment>
+        <source>Fit to the screen</source>
+      </segment>
+    </unit>
+    <unit id="8816396990333430278">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.ts:242</note>
+      </notes>
+      <segment>
+        <source>Make the picture fit the screen. Z or a click on the picture does it too.</source>
+      </segment>
+    </unit>
+    <unit id="1391318635220807024">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.ts:248</note>
+      </notes>
+      <segment>
+        <source>Actual size</source>
+      </segment>
+    </unit>
+    <unit id="5170175621114821948">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.ts:251</note>
+      </notes>
+      <segment>
+        <source>Show the picture at its actual size (100%). Z or a click on the picture does it too.</source>
+      </segment>
+    </unit>
+    <unit id="716547902763696929">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.ts:260</note>
+      </notes>
+      <segment>
+        <source>Open the picture in the editor to crop it, then save it (E).</source>
+      </segment>
+    </unit>
+    <unit id="3261835072235742785">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.ts:286</note>
+      </notes>
+      <segment>
+        <source>Open in a new window</source>
+      </segment>
+    </unit>
+    <unit id="7509820946474023407">
+      <notes>
+        <note category="location">src/app/library/viewer/viewer.component.ts:289</note>
+      </notes>
+      <segment>
+        <source>Play the video in a window of its own, from where it is now (W).</source>
+      </segment>
+    </unit>
     <unit id="8183561498065807804">
       <notes>
         <note category="location">src/app/logs/logs-section.component.html:5,6</note>
       </notes>
       <segment>
         <source>Search the log</source>
-      </segment>
-    </unit>
-    <unit id="6162693758764653365">
-      <notes>
-        <note category="location">src/app/logs/logs-section.component.html:11,12</note>
-        <note category="description">words searched for in the log</note>
-      </notes>
-      <segment>
-        <source>Text</source>
       </segment>
     </unit>
     <unit id="7395858288297695775">
@@ -13344,14 +14109,6 @@ Space “Holiday photos”
         <source>Actions for “<ph id="0" equiv="name" disp="this.menu.open()?.target.name ?? &apos;&apos;"/>”</source>
       </segment>
     </unit>
-    <unit id="117068237894470695">
-      <notes>
-        <note category="location">src/app/menus/overflow-row.ts:225</note>
-      </notes>
-      <segment>
-        <source>More actions</source>
-      </segment>
-    </unit>
     <unit id="189141813976057278">
       <notes>
         <note category="location">src/app/menus/overflow-row.ts:226</note>
@@ -13551,6 +14308,361 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Update – SFE</source>
+      </segment>
+    </unit>
+    <unit id="5456004118682026312">
+      <notes>
+        <note category="location">src/app/player/player-page.component.html:18,19</note>
+      </notes>
+      <segment>
+        <source>This browser can&apos;t play this video, and the server couldn&apos;t convert it. It may be converting as many videos as it can.</source>
+      </segment>
+    </unit>
+    <unit id="3710496863839693970">
+      <notes>
+        <note category="location">src/app/player/player-page.component.html:21,22</note>
+      </notes>
+      <segment>
+        <source>This browser can&apos;t play this video.</source>
+      </segment>
+    </unit>
+    <unit id="5384445373626896134">
+      <notes>
+        <note category="location">src/app/player/player-page.component.html:36,37</note>
+        <note category="location">src/app/player/player-page.component.ts:90</note>
+      </notes>
+      <segment>
+        <source>Save the video to this device.</source>
+      </segment>
+    </unit>
+    <unit id="5976246476060608940">
+      <notes>
+        <note category="location">src/app/player/player-page.component.html:44,45</note>
+      </notes>
+      <segment>
+        <source>No video to play: the address doesn&apos;t name one.</source>
+      </segment>
+    </unit>
+    <unit id="8564202903947049539">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:8</note>
+      </notes>
+      <segment>
+        <source>Play</source>
+      </segment>
+    </unit>
+    <unit id="5426558265036838439">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:9</note>
+      </notes>
+      <segment>
+        <source>Play the video (K).</source>
+      </segment>
+    </unit>
+    <unit id="1820142335198135744">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:9</note>
+      </notes>
+      <segment>
+        <source>Pause the video (K).</source>
+      </segment>
+    </unit>
+    <unit id="6453471031802119612">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:10</note>
+      </notes>
+      <segment>
+        <source>Unmute</source>
+      </segment>
+    </unit>
+    <unit id="2494293689061559568">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:10</note>
+      </notes>
+      <segment>
+        <source>Mute</source>
+      </segment>
+    </unit>
+    <unit id="7857410703144303130">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:11</note>
+      </notes>
+      <segment>
+        <source>Turn the sound back on (M).</source>
+      </segment>
+    </unit>
+    <unit id="2892743956968035084">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:11</note>
+      </notes>
+      <segment>
+        <source>Turn the sound off (M).</source>
+      </segment>
+    </unit>
+    <unit id="5319701530389694877">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:12</note>
+      </notes>
+      <segment>
+        <source>Stop looping</source>
+      </segment>
+    </unit>
+    <unit id="2784956659778044823">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:12</note>
+      </notes>
+      <segment>
+        <source>Loop</source>
+      </segment>
+    </unit>
+    <unit id="328698365074616682">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:15</note>
+      </notes>
+      <segment>
+        <source>Stop playing the video again when it ends (R).</source>
+      </segment>
+    </unit>
+    <unit id="1209079084821143090">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:16</note>
+      </notes>
+      <segment>
+        <source>Play the video again from the start each time it ends (R).</source>
+      </segment>
+    </unit>
+    <unit id="8895672285155488220">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:17</note>
+      </notes>
+      <segment>
+        <source>Default view</source>
+      </segment>
+    </unit>
+    <unit id="1194320952942968228">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:17</note>
+      </notes>
+      <segment>
+        <source>Cinema mode</source>
+      </segment>
+    </unit>
+    <unit id="9198925742254006633">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:20</note>
+      </notes>
+      <segment>
+        <source>Bring the video back to its usual size (C).</source>
+      </segment>
+    </unit>
+    <unit id="1244625644185388414">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:21</note>
+      </notes>
+      <segment>
+        <source>Spread the video over the whole width of the window (C).</source>
+      </segment>
+    </unit>
+    <unit id="935797500101146847">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:22</note>
+      </notes>
+      <segment>
+        <source>Exit full screen</source>
+      </segment>
+    </unit>
+    <unit id="154905090584068282">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:24</note>
+      </notes>
+      <segment>
+        <source>Leave full screen (F).</source>
+      </segment>
+    </unit>
+    <unit id="7977696298413472195">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:24</note>
+      </notes>
+      <segment>
+        <source>Show the video on the whole screen (F).</source>
+      </segment>
+    </unit>
+    <unit id="1371612548150579183">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:26</note>
+      </notes>
+      <segment>
+        <source>{seconds, plural, one {Back # second} other {Back # seconds}}</source>
+      </segment>
+    </unit>
+    <unit id="2653567595909682499">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:28</note>
+      </notes>
+      <segment>
+        <source>{seconds, plural, one {Go back # second (J).} other {Go back # seconds (J).}}</source>
+      </segment>
+    </unit>
+    <unit id="8957891548743837404">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:30</note>
+      </notes>
+      <segment>
+        <source>{seconds, plural, one {Forward # second} other {Forward # seconds}}</source>
+      </segment>
+    </unit>
+    <unit id="2356801888413447419">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:32</note>
+      </notes>
+      <segment>
+        <source>{seconds, plural, one {Go forward # second (L).} other {Go forward # seconds (L).}}</source>
+      </segment>
+    </unit>
+    <unit id="9136791650986685250">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:37</note>
+        <note category="description">seconds jumped shown on the video</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="sign" disp="sign"/><ph id="1" equiv="seconds" disp="seconds"/> s</source>
+      </segment>
+    </unit>
+    <unit id="568432348954406996">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:38</note>
+      </notes>
+      <segment>
+        <source>Speed: <ph id="0" equiv="rate" disp="rate"/>×</source>
+      </segment>
+    </unit>
+    <unit id="8217328562146517267">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:39</note>
+      </notes>
+      <segment>
+        <source>Choose how fast the video plays.</source>
+      </segment>
+    </unit>
+    <unit id="5338273048592784687">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:40</note>
+        <note category="description">a playback speed</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="rate" disp="rate"/>×</source>
+      </segment>
+    </unit>
+    <unit id="3482302431551270182">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:41</note>
+      </notes>
+      <segment>
+        <source>Play the video at <ph id="0" equiv="rate" disp="rate"/>× its normal speed.</source>
+      </segment>
+    </unit>
+    <unit id="2343052409517784247">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:42</note>
+      </notes>
+      <segment>
+        <source>Play converted</source>
+      </segment>
+    </unit>
+    <unit id="5862089324178792585">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:44</note>
+      </notes>
+      <segment>
+        <source>Play the video as the server converts it, for a video that shows no picture or plays no sound here.</source>
+      </segment>
+    </unit>
+    <unit id="6084466588922368438">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:46</note>
+      </notes>
+      <segment>
+        <source>Save this frame</source>
+      </segment>
+    </unit>
+    <unit id="433110324195232686">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:47</note>
+      </notes>
+      <segment>
+        <source>Save the frame shown as a picture (S).</source>
+      </segment>
+    </unit>
+    <unit id="3363023852856391173">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:48</note>
+      </notes>
+      <segment>
+        <source>Picture in picture</source>
+      </segment>
+    </unit>
+    <unit id="1829695592187297363">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:49</note>
+      </notes>
+      <segment>
+        <source>Keep the video playing in a small window, above the other windows.</source>
+      </segment>
+    </unit>
+    <unit id="3542313592365378769">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:54</note>
+      </notes>
+      <segment>
+        <source>Copy link at this time</source>
+      </segment>
+    </unit>
+    <unit id="3521725009632362893">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:55</note>
+      </notes>
+      <segment>
+        <source>Copy a link that plays the video from where it is now.</source>
+      </segment>
+    </unit>
+    <unit id="2755128506738561313">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:56</note>
+      </notes>
+      <segment>
+        <source>Open in <ph id="0" equiv="player" disp="player"/></source>
+      </segment>
+    </unit>
+    <unit id="6844326956071804726">
+      <notes>
+        <note category="location">src/app/player/player-texts.ts:58</note>
+      </notes>
+      <segment>
+        <source>Play it in <ph id="0" equiv="player" disp="player"/> through a link that works without signing in, for a while.</source>
+      </segment>
+    </unit>
+    <unit id="1400517879560211591">
+      <notes>
+        <note category="location">src/app/player/video-player.component.html:54,55</note>
+      </notes>
+      <segment>
+        <source>Position in the video</source>
+      </segment>
+    </unit>
+    <unit id="96304467888824421">
+      <notes>
+        <note category="location">src/app/player/video-player.component.html:70</note>
+      </notes>
+      <segment>
+        <source>Player controls</source>
+      </segment>
+    </unit>
+    <unit id="8276953537592451474">
+      <notes>
+        <note category="location">src/app/player/video-player.component.html:129,130</note>
+      </notes>
+      <segment>
+        <source>Playback speed</source>
       </segment>
     </unit>
     <unit id="1395493186609386132">
@@ -14113,15 +15225,6 @@ Space “Holiday photos”
         <source>Line height</source>
       </segment>
     </unit>
-    <unit id="2018922024247045709">
-      <notes>
-        <note category="location">src/app/settings/tabs/appearance-settings.ts:125</note>
-        <note category="location">src/app/settings/tabs/appearance-settings.ts:182</note>
-      </notes>
-      <segment>
-        <source>Width</source>
-      </segment>
-    </unit>
     <unit id="2526925893691461533">
       <notes>
         <note category="location">src/app/settings/tabs/appearance-settings.ts:133</note>
@@ -14138,15 +15241,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Wrap long lines</source>
-      </segment>
-    </unit>
-    <unit id="4150190668090736414">
-      <notes>
-        <note category="location">src/app/settings/tabs/appearance-settings.ts:147</note>
-        <note category="location">src/app/settings/tabs/appearance-settings.ts:204</note>
-      </notes>
-      <segment>
-        <source>Line numbers</source>
       </segment>
     </unit>
     <unit id="3197694845722947180">
@@ -15928,14 +17022,6 @@ Space “Holiday photos”
         <source>Extensions played in the video player and given thumbnails and trickplay.</source>
       </segment>
     </unit>
-    <unit id="347407180135731058">
-      <notes>
-        <note category="location">src/app/settings/tabs/scanning-settings.ts:83</note>
-      </notes>
-      <segment>
-        <source>Audio</source>
-      </segment>
-    </unit>
     <unit id="1163575280278129969">
       <notes>
         <note category="location">src/app/settings/tabs/scanning-settings.ts:85</note>
@@ -16318,6 +17404,79 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>“When it is on a network share” looks at each one on its own.</source>
+      </segment>
+    </unit>
+    <unit id="1365048788902363557">
+      <notes>
+        <note category="location">src/app/shared/folder-picker.component.html:10,11</note>
+      </notes>
+      <segment>
+        <source>Go up to the folder above.</source>
+      </segment>
+    </unit>
+    <unit id="2611113422750178042">
+      <notes>
+        <note category="location">src/app/shared/folder-picker.component.html:20,21</note>
+        <note category="location">src/app/shared/folder-picker.component.html:31,32</note>
+      </notes>
+      <segment>
+        <source>Choose “<ph id="0" equiv="INTERPOLATION" disp="{{ place.path }}"/>”, or open it.</source>
+      </segment>
+    </unit>
+    <unit id="3378051434073615359">
+      <notes>
+        <note category="location">src/app/shared/folder-picker.component.html:40,41</note>
+      </notes>
+      <segment>
+        <source>Only the first folders are listed.</source>
+      </segment>
+    </unit>
+    <unit id="7089735317145022748">
+      <notes>
+        <note category="location">src/app/shared/help.component.ts:35,36</note>
+      </notes>
+      <segment>
+        <source>Hide this explanation.</source>
+      </segment>
+    </unit>
+    <unit id="5601530442010506564">
+      <notes>
+        <note category="location">src/app/shared/help.component.ts:39,40</note>
+      </notes>
+      <segment>
+        <source>Got it</source>
+      </segment>
+    </unit>
+    <unit id="7795181122804372334">
+      <notes>
+        <note category="location">src/app/shared/help.component.ts:50</note>
+      </notes>
+      <segment>
+        <source>About <ph id="0" equiv="subject" disp="this.about()"/></source>
+      </segment>
+    </unit>
+    <unit id="4545282279791023582">
+      <notes>
+        <note category="location">src/app/shared/help.component.ts:52</note>
+      </notes>
+      <segment>
+        <source>Hide the explanation.</source>
+      </segment>
+    </unit>
+    <unit id="3298777944956114928">
+      <notes>
+        <note category="location">src/app/shared/help.component.ts:52</note>
+      </notes>
+      <segment>
+        <source>Show what “<ph id="0" equiv="subject" disp="this.about()"/>” means.</source>
+      </segment>
+    </unit>
+    <unit id="3369273833350740600">
+      <notes>
+        <note category="location">src/app/shared/sheet.component.ts:29,30</note>
+      </notes>
+      <segment>
+        <source>Close this window (Esc).</source>
       </segment>
     </unit>
     <unit id="3128719507065572542">

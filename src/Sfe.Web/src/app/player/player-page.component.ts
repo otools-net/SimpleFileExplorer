@@ -20,6 +20,7 @@ import { baseName } from '../core/paths';
 import { IconComponent } from '../shared/icon.component';
 import { waitForTrickplay } from '../trickplay/trickplay';
 import { enterPlace } from '../library/connection-pages';
+import { videoLinkTexts as links } from './player-texts';
 import { VideoPlayerComponent } from './video-player.component';
 
 /**
@@ -47,6 +48,7 @@ export class PlayerPageComponent implements OnInit {
     protected readonly state = signal<'loading' | 'playing' | 'unsupported' | 'no-video' | 'unreachable'>('loading');
     protected readonly error = signal('');
     protected readonly urls = this.config.urls;
+    protected readonly links = links;
     /** The server's conversion, once the configuration says it converts videos. */
     protected readonly stream = computed(() => (this.config.config() ? this.config.videoStream(this.path) : null));
     /** The server's conversion failed too. */
@@ -67,33 +69,33 @@ export class PlayerPageComponent implements OnInit {
                 if (this.player())
                     entries.push({
                         id: 'copyTimeLink',
-                        label: 'Copy link at this time',
+                        label: links.copyTimeLink(),
                         icon: 'clock',
-                        title: 'Copy a link playing it from where it is now',
+                        title: links.copyTimeLinkHint(),
                         run: () => void this.copyTimeLink(),
                     });
                 if (this.urls()?.externalName)
                     entries.push({
                         id: 'external',
-                        label: `Open in ${this.urls()!.externalName}`,
+                        label: links.external(this.urls()?.externalName),
                         icon: 'play',
-                        title: 'A link working without signing in, for a while',
+                        title: links.externalHint(this.urls()!.externalName),
                         run: () => this.openExternal(),
                     });
                 if (this.state() !== 'loading' && this.config.can('files.download'))
                     entries.push({
                         id: 'download',
-                        label: 'Download',
+                        label: $localize`Download`,
                         icon: 'download',
-                        title: 'Save the video to this device',
+                        title: $localize`Save the video to this device.`,
                         href: this.urls()!.download(this.path),
                     });
                 if (copyPaths.enabled())
                     entries.push({
                         id: 'copyPath',
-                        label: 'Copy full path',
+                        label: $localize`Copy full path`,
                         icon: 'copy',
-                        title: 'Copy where it is on the server',
+                        title: $localize`Copy where it is on the server.`,
                         run: () => void copyPaths.copy(this.path),
                     });
                 return entries;

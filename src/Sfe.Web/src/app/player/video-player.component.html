@@ -37,8 +37,8 @@
 <button
     type="button"
     class="player-big-play"
-    aria-label="Play"
-    title="Play (K)"
+    [attr.aria-label]="texts.play(true)"
+    [title]="texts.playHint(true)"
     (click)="togglePlay()"
 ><svg sfeIcon="play"></svg></button>
 <div class="player-controls" (pointerdown)="showControls()">
@@ -51,7 +51,8 @@
             max="0"
             step="any"
             value="0"
-            aria-label="Seek"
+            aria-label="Position in the video"
+            i18n-aria-label
             (input)="onSeekInput()"
             (pointermove)="onSeekHover($event)"
             (pointerleave)="onSeekLeave()"
@@ -66,13 +67,13 @@
         </div>
     </div>
     <!-- One line: what doesn't fit goes into the "⋯" menu, from the right; play, mute and fullscreen stay. -->
-    <div class="player-row" sfeOverflowRow="Player controls">
+    <div class="player-row" sfeOverflowRow="Player controls" i18n-sfeOverflowRow>
         <button
             type="button"
             class="player-button player-seek-button"
             [sfeOverflowItem]="more.back"
-            [title]="'Back ' + seekStep() + ' s (J)'"
-            [attr.aria-label]="'Back ' + seekStep() + ' s (J)'"
+            [title]="texts.backHint(seekStep())"
+            [attr.aria-label]="texts.back(seekStep())"
             (click)="stepSeek(-1); showControls()"
         >
             <svg sfeIcon="rewind"></svg><span
@@ -86,8 +87,8 @@
             class="player-button"
             [sfeOverflowItem]="null"
             overflowStay
-            [title]="playLabel()"
-            [attr.aria-label]="playLabel()"
+            [title]="texts.playHint(paused())"
+            [attr.aria-label]="texts.play(paused())"
             (click)="togglePlay()"
         >
             <svg [sfeIcon]="paused() ? 'play' : 'pause'"></svg>
@@ -96,8 +97,8 @@
             type="button"
             class="player-button player-seek-button"
             [sfeOverflowItem]="more.forward"
-            [title]="'Forward ' + seekStep() + ' s (L)'"
-            [attr.aria-label]="'Forward ' + seekStep() + ' s (L)'"
+            [title]="texts.forwardHint(seekStep())"
+            [attr.aria-label]="texts.forward(seekStep())"
             (click)="stepSeek(1); showControls()"
         >
             <svg sfeIcon="forward"></svg><span
@@ -113,11 +114,12 @@
             <button
                 type="button"
                 class="player-button player-speed"
-                title="Playback speed"
+                [title]="texts.speedHint()"
+                [attr.aria-label]="texts.speed(speed())"
                 aria-haspopup="true"
                 [attr.aria-expanded]="speedMenu()"
                 (click)="toggleSpeedMenu()"
-            >{{ speed() }}×</button>
+            >{{ texts.rate(speed()) }}</button>
             @if (speedMenu()) {
                 <!-- On phones a sheet at the bottom of the screen (phone-sheets.css). -->
                 <div class="sheet-backdrop" aria-hidden="true" (click)="speedMenu.set(false)"></div>
@@ -125,6 +127,7 @@
                     class="player-speed-menu phone-sheet"
                     role="menu"
                     aria-label="Playback speed"
+                    i18n-aria-label
                     [class.wide]="speedMenuHeight < 200"
                     [style.max-height.px]="speedMenuHeight"
                 >
@@ -134,9 +137,9 @@
                             role="menuitemradio"
                             [class.on]="rate === speed()"
                             [attr.aria-checked]="rate === speed()"
-                            [title]="'Play at ' + rate + '×'"
+                            [title]="texts.rateHint(rate)"
                             (click)="setSpeed(rate)"
-                        >{{ rate }}×</button>
+                        >{{ texts.rate(rate) }}</button>
                     }
                 </div>
             }
@@ -146,8 +149,8 @@
                 type="button"
                 class="player-button player-convert"
                 [sfeOverflowItem]="more.convert"
-                title="Play it converted by the server (for a video without picture or sound here)"
-                aria-label="Play it converted by the server"
+                [title]="texts.convertHint()"
+                [attr.aria-label]="texts.convert()"
                 (click)="useStream(); showControls()"
             >
                 <svg sfeIcon="refresh"></svg>
@@ -158,8 +161,8 @@
             class="player-button player-toggle"
             [sfeOverflowItem]="more.loop"
             [class.on]="looping()"
-            [title]="loopLabel()"
-            [attr.aria-label]="loopLabel()"
+            [title]="texts.loopHint(looping())"
+            [attr.aria-label]="texts.loop(false)"
             [attr.aria-pressed]="looping()"
             (click)="toggleLoop(); showControls()"
         >
@@ -169,8 +172,8 @@
             type="button"
             class="player-button"
             [sfeOverflowItem]="more.saveFrame"
-            title="Save this frame as a picture (S)"
-            aria-label="Save this frame as a picture (S)"
+            [title]="texts.saveFrameHint()"
+            [attr.aria-label]="texts.saveFrame()"
             (click)="saveFrame(); showControls()"
         >
             <svg sfeIcon="camera"></svg>
@@ -180,8 +183,8 @@
             class="player-button"
             [sfeOverflowItem]="null"
             overflowStay
-            [title]="muteLabel()"
-            [attr.aria-label]="muteLabel()"
+            [title]="texts.muteHint(muted())"
+            [attr.aria-label]="texts.mute(muted())"
             (click)="toggleMute()"
         >
             <svg [sfeIcon]="muted() ? 'muted' : 'volume'"></svg>
@@ -191,8 +194,8 @@
                 type="button"
                 class="player-button player-cinema"
                 [sfeOverflowItem]="more.cinema"
-                [title]="cinemaLabel()"
-                [attr.aria-label]="cinemaLabel()"
+                [title]="texts.cinemaHint(cinema())"
+                [attr.aria-label]="texts.cinema(false)"
                 [attr.aria-pressed]="cinema()"
                 (click)="toggleCinema(); showControls()"
             >
@@ -204,8 +207,8 @@
             class="player-button"
             [sfeOverflowItem]="null"
             overflowStay
-            [title]="fullscreen() ? 'Exit fullscreen (F)' : 'Fullscreen (F)'"
-            [attr.aria-label]="fullscreen() ? 'Exit fullscreen (F)' : 'Fullscreen (F)'"
+            [title]="texts.fullScreenHint(fullscreen())"
+            [attr.aria-label]="texts.fullScreen(fullscreen())"
             (click)="toggleFullscreen()"
         >
             <svg [sfeIcon]="fullscreen() ? 'exit-fullscreen' : 'fullscreen'"></svg>

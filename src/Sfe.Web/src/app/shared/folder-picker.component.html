@@ -7,7 +7,8 @@
             <li><button
                 type="button"
                 class="link-button"
-                title="The folder above"
+                title="Go up to the folder above."
+                i18n-title
                 (click)="browse(listing.parent)"
             >‥</button></li>
         }
@@ -16,7 +17,8 @@
                 <button
                     type="button"
                     class="link-button"
-                    [title]="'Use ' + place.path + ', or open it'"
+                    title="Choose “{{ place.path }}”, or open it."
+                    i18n-title
                     (click)="browse(place.path)"
                 >{{ place.name }}</button>
             </li>
@@ -26,15 +28,16 @@
                 <button
                     type="button"
                     class="link-button"
-                    [title]="'Use ' + folder.path + ', or open it'"
+                    title="Choose “{{ folder.path }}”, or open it."
+                    i18n-title
                     (click)="browse(folder.path)"
                 >{{ folder.name }}</button>
             </li>
         } @empty {
-            <li class="muted">No folders here.</li>
+            <li class="muted" i18n>No folders here.</li>
         }
         @if (listing.truncated) {
-            <li class="muted">Only the first folders are listed.</li>
+            <li class="muted" i18n>Only the first folders are listed.</li>
         }
     </ul>
 }

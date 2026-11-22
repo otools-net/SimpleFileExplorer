@@ -1,7 +1,8 @@
 <dialog
     #dialog
     class="viewer"
-    aria-label="Preview"
+    aria-label="Viewer"
+    i18n-aria-label
     tabindex="-1"
     [class.has-video]="item()?.kind === 'video'"
     (close)="onClose()"
@@ -16,7 +17,8 @@
                 @for (tag of item()?.tags ?? []; track tag.id) {
                     <sfe-tag-chip
                         [tag]="tag"
-                        [title]="'Find files tagged ' + tag.displayName"
+                        title="Find the files tagged “{{ tag.displayName }}”."
+                        i18n-title
                         [clickable]="true"
                         (pick)="searchTag($event)"
                         [sfeContextMenu]="tagMenu.target(tag, item())"
@@ -29,8 +31,10 @@
                 <button
                     type="button"
                     class="icon-button"
-                    title="Tags (T)"
+                    title="See or change the tags of this file (T)."
+                    i18n-title
                     aria-label="Tags"
+                    i18n-aria-label
                     (click)="openTags()"
                 ><svg sfeIcon="tag"></svg></button>
             }
@@ -39,8 +43,10 @@
                     #menuButton
                     type="button"
                     class="icon-button viewer-menu-button"
-                    title="More actions"
+                    title="More things to do with this file."
+                    i18n-title
                     aria-label="More actions"
+                    i18n-aria-label
                     aria-haspopup="menu"
                     [attr.aria-expanded]="menuOpen()"
                     [class.active]="menuOpen()"
@@ -50,8 +56,10 @@
             <button
                 type="button"
                 class="icon-button"
-                title="Close (Esc)"
+                title="Close the viewer (Esc)."
+                i18n-title
                 aria-label="Close"
+                i18n-aria-label
                 (click)="close()"
             ><svg sfeIcon="close"></svg></button>
         </div>
@@ -70,9 +78,17 @@
         @for (shown of shownItem(); track shown.path) {
             @if (unsupported()) {
                 <div class="viewer-message">
-                    <p>This browser cannot play this
-                    format{{ converted() ? ', and the server could not convert it (it may be converting as many videos as it can).' : '.' }}</p>
-                    <p>{{ urls()?.externalName ? 'Use “Open in ' + urls()?.externalName + '” or download it.' : 'Download it to play it in another app.' }}</p>
+                    @if (converted()) {
+                        <p i18n>This browser can't play this format, and the server couldn't convert it. It may be
+                        converting as many videos as it can.</p>
+                    } @else {
+                        <p i18n>This browser can't play this format.</p>
+                    }
+                    @if (urls()?.externalName; as player) {
+                        <p i18n>Use “Open in {{ player }}” in the ⋮ menu, or download it.</p>
+                    } @else {
+                        <p i18n>Download it to play it in another app.</p>
+                    }
                 </div>
             } @else {
                 @switch (builtin()) {
@@ -133,8 +149,8 @@
                                 *ngComponentOutlet="component; inputs: { item: shown, format: format(), edit: editRequested() }; injector: viewInjector"
                             />
                         } @else if (viewFailed()) {
-                            <div class="viewer-message"><p>This viewer could not be loaded: reload the page to try
-                            again.</p></div>
+                            <div class="viewer-message"><p i18n>Could not load the viewer of this file. Reload the
+                            page to try again.</p></div>
                         }
                     }
                 }
@@ -144,16 +160,20 @@
     <button
         type="button"
         class="viewer-nav prev"
-        aria-label="Previous (←)"
-        title="Previous (← or wheel up)"
+        aria-label="Previous file"
+        i18n-aria-label
+        title="Show the previous file (← or the wheel up)."
+        i18n-title
         [disabled]="!neighbours().previous"
         (click)="go(-1)"
     ><svg sfeIcon="left"></svg></button>
     <button
         type="button"
         class="viewer-nav next"
-        aria-label="Next (→)"
-        title="Next (→ or wheel down)"
+        aria-label="Next file"
+        i18n-aria-label
+        title="Show the next file (→ or the wheel down)."
+        i18n-title
         [disabled]="nextDisabled()"
         (click)="go(1)"
     ><svg sfeIcon="right"></svg></button>

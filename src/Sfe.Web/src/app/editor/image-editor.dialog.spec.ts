@@ -279,7 +279,7 @@ describe('ImageEditorDialog', () => {
 
         expect(button('Save a copy').disabled).toBe(false);
         expect(element.querySelector('.editor-panel')!.textContent).toContain(
-            'Save writes over the original (the version before goes to the trash)',
+            'Save writes over the original, and the version before goes to the trash.',
         );
         button('Save').click();
         await settle(10);
@@ -401,7 +401,7 @@ describe('ImageEditorDialog', () => {
         await open();
 
         expect(element.querySelector('.viewer-message')!.textContent).toContain(
-            'This browser cannot open this picture for editing.',
+            "This browser can't open this picture for editing.",
         );
         expect(button('Save a copy').disabled).toBe(true);
     });

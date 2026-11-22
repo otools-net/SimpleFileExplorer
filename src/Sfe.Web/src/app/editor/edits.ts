@@ -43,19 +43,22 @@ export const EDIT_KINDS: { [K in EditKindName]: EditKind<Extract<EditOperation, 
         size: (operation) => ({ width: operation.rect.width, height: operation.rect.height }),
         draw: (context, input, { rect }) =>
             context.drawImage(input, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height),
-        describe: ({ rect }) => `Crop to ${rect.width} × ${rect.height}`,
+        describe: ({ rect }) => $localize`Crop to ${rect.width}:width: × ${rect.height}:height:`,
     },
 };
 
-/** A tool of the editor's bar: the edit it makes, its button and its shortcut. */
+/** A tool of the editor's bar: the edit it makes, its button (its name, its hint with the key) and its shortcut. */
 export interface EditorTool {
     id: EditKindName;
     label: string;
+    hint: string;
     icon: string;
     key: string;
 }
 
-export const EDITOR_TOOLS: readonly EditorTool[] = [{ id: 'crop', label: 'Crop', icon: 'crop', key: 'C' }];
+export const EDITOR_TOOLS: readonly EditorTool[] = [
+    { id: 'crop', label: $localize`Crop`, hint: $localize`Crop the picture (C).`, icon: 'crop', key: 'C' },
+];
 
 function kindOf<T extends EditOperation>(operation: T): EditKind<T> {
     return EDIT_KINDS[operation.kind] as EditKind<T>;
@@ -76,7 +79,7 @@ export function editedSize(input: Size, operations: readonly EditOperation[]): S
 /** The browser cannot draw a canvas that large (each has its own limit), or has no memory left for it. */
 export class CanvasTooLargeError extends Error {
     constructor(size: Size) {
-        super(`This browser cannot edit a picture of ${size.width} × ${size.height} pixels.`);
+        super($localize`This browser can't edit a picture of ${size.width}:width: × ${size.height}:height: pixels.`);
     }
 }
 

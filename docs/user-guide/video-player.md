@@ -16,7 +16,7 @@ Videos and audio files play in SFE's own player, in the [viewer](viewer.md) or i
 | Camera | S | Saves the frame on screen as a PNG at the video's resolution, named after the video and the position (e.g. `Holiday 1-23.png`); in Firefox with `privacy.resistFingerprinting`, allow the permission it asks for first (see [picture editor](picture-editor.md#good-to-know)) |
 | Mute | M | |
 | Cinema mode | C | In the viewer: the player spans the whole width of the window and the video is enlarged to it (as YouTube's theater mode); press again for the default view. Remembered by this browser |
-| Fullscreen | F | On a phone or tablet a wide video turns the screen sideways, and back when you leave fullscreen (where the browser allows it, e.g. Chrome on Android; an iPhone turns by itself) |
+| Full screen | F | On a phone or tablet a wide video turns the screen sideways, and back when you leave full screen (where the browser allows it, e.g. Chrome on Android; an iPhone turns by itself) |
 | Convert (⟳) | | Shown when the server can convert videos: plays the video converted by the server, from where it is (see below) |
 
 ![Trickplay frames above the seek bar](../images/player-trickplay.png)
@@ -28,7 +28,7 @@ The controls stay on one line. When the player is too narrow for all of them (a 
 of the video leaves the time first (`0:12` instead of `0:12 / 1:05`), then the buttons leave from the right (Cinema
 mode first, Back last) into a **⋯ More actions** button at the end of the line: it lists them, with a check mark next
 to Loop or Cinema mode when they are on, and **Speed** opens its rates in place. **Play**, **Mute** and
-**Fullscreen** always stay. A very small video is shown wider, so that these stay visible.
+**Full screen** always stay. A very small video is shown wider, so that these stay visible.
 
 ![On a phone: the buttons that don't fit, in the More actions menu](../images/player-phone-more.png)
 

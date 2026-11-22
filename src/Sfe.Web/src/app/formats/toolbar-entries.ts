@@ -14,9 +14,9 @@ export function modesEntry<T extends string>(
     const shown = modes.find((mode) => mode.id === current);
     return {
         id: 'mode',
-        label: `Show: ${shown?.label ?? current}`,
+        label: $localize`Show: ${shown?.label ?? current}:mode:`,
         icon: 'rows',
-        title: 'How the document is shown',
+        title: $localize`Choose how the document is shown.`,
         submenu: () =>
             modes.map((mode) => ({
                 id: `mode-${mode.id}`,
@@ -32,22 +32,26 @@ export function modesEntry<T extends string>(
 export function lineNumbersEntry(on: boolean, toggle: () => void): MenuEntry {
     return {
         id: 'lineNumbers',
-        label: 'Line numbers',
+        label: $localize`Line numbers`,
         icon: 'line-numbers',
-        title: 'Line numbers',
+        title: $localize`Show or hide the number of each line.`,
         checked: on,
         run: toggle,
     };
 }
 
-export function findEntry(disabled: boolean, find: () => void, title = 'Find in the source (Ctrl+F)'): MenuEntry {
-    return { id: 'find', label: 'Find', icon: 'search', shortcut: 'Ctrl+F', title, disabled, run: find };
+export function findEntry(
+    disabled: boolean,
+    find: () => void,
+    title = $localize`Find words in the source (Ctrl+F).`,
+): MenuEntry {
+    return { id: 'find', label: $localize`Find`, icon: 'search', shortcut: 'Ctrl+F', title, disabled, run: find };
 }
 
 export function readingEntry(
     open: boolean,
     toggle: () => void,
-    title = 'Reading settings: font, size, colours',
+    title = $localize`Change the font, size and colours of the text.`,
 ): MenuEntry {
-    return { id: 'reading', label: 'Reading settings', icon: 'settings', title, checked: open, run: toggle };
+    return { id: 'reading', label: $localize`Reading settings`, icon: 'settings', title, checked: open, run: toggle };
 }

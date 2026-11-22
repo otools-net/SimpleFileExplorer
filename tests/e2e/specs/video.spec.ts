@@ -145,7 +145,7 @@ test.describe('video, the whole screen', () => {
         test.skip(browserName === 'webkit', "the iPhone's fullscreen is the system's video player: by hand");
         await openVideo(page);
         const host = page.locator(player);
-        await host.locator('.player-row button[aria-label^="Fullscreen"]').tap();
+        await host.locator('.player-row button[aria-label="Full screen"]').tap();
         await expect(host).toHaveClass(/fullscreen/);
         const box = (await host.boundingBox())!;
         const screen = page.viewportSize()!;
@@ -156,7 +156,7 @@ test.describe('video, the whole screen', () => {
         await expect(row).toBeVisible();
         expect((await row.boundingBox())!.x + (await row.boundingBox())!.width).toBeLessThanOrEqual(screen.width + 0.5);
         await expectTapTargets(page, `${player} .player-controls`);
-        await host.locator('.player-row button[aria-label^="Exit fullscreen"]').tap();
+        await host.locator('.player-row button[aria-label="Exit full screen"]').tap();
         await expect(host).not.toHaveClass(/fullscreen/);
         await expect(page.locator('dialog.viewer[open]'), 'the viewer stays').toHaveCount(1);
     });

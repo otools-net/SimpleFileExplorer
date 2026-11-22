@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { IconComponent } from './icon.component';
 
 let nextId = 0;
@@ -20,8 +20,8 @@ let nextId = 0;
             [class.open]="open()"
             [attr.aria-expanded]="open()"
             [attr.aria-controls]="id"
-            [attr.aria-label]="'About ' + about()"
-            [title]="open() ? 'Hide the explanation' : 'What is this? ' + about()"
+            [attr.aria-label]="label()"
+            [title]="hint()"
             (click)="open.set(!open())"
         >
             <svg sfeIcon="help"></svg>
@@ -32,8 +32,10 @@ let nextId = 0;
                 <button
                     type="button"
                     class="link-button help-close"
-                    title="Hide this explanation"
+                    title="Hide this explanation."
+                    i18n-title
                     (click)="open.set(false)"
+                    i18n
                 >Got it</button>
             </div>
         }
@@ -45,4 +47,8 @@ export class HelpComponent {
 
     protected readonly open = signal(false);
     protected readonly id = `help-${++nextId}`;
+    protected readonly label = computed(() => $localize`About ${this.about()}:subject:`);
+    protected readonly hint = computed(() =>
+        this.open() ? $localize`Hide the explanation.` : $localize`Show what “${this.about()}:subject:” means.`,
+    );
 }
