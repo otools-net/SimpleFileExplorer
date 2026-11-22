@@ -22,7 +22,7 @@ import { SidebarService } from './sidebar.service';
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'sidebar-section connection-links', '[hidden]': '!connections().length' },
     template: `
-        <div class="sidebar-heading"><h2>Connections</h2></div>
+        <div class="sidebar-heading"><h2 i18n>Connections</h2></div>
         <ul class="quick-link-list">
             @for (connection of connections(); track connection.id) {
                 <li
@@ -44,7 +44,8 @@ import { SidebarService } from './sidebar.service';
                         <svg [sfeIcon]="kindIcon(connection)"></svg>
                         <span class="quick-link-name">{{ connection.name }}</span>
                         @if (connection.state === 'needsReconnecting') {
-                            <svg sfeIcon="lock" class="connection-warning" aria-label="Sign in again"></svg>
+                            <svg sfeIcon="lock" class="connection-warning" aria-label="Sign in again"
+                                 i18n-aria-label></svg>
                         }
                     </a>
                 </li>
@@ -97,10 +98,12 @@ export class ConnectionLinksComponent implements OnInit {
 
     protected hint(connection: UsableConnection): string {
         const kind = this.kinds().find((candidate) => candidate.kind === connection.kind)?.name ?? connection.kind;
-        const access = connection.access === 'write' ? 'reads and changes' : 'reads only';
-        return connection.state === 'needsReconnecting'
-            ? `${connection.name} (${kind}): it must be signed in to again`
-            : `${connection.name} (${kind}, ${access})`;
+        const name = connection.name;
+        if (connection.state === 'needsReconnecting')
+            return $localize`${name}:connection: (${kind}:kind:): sign in to it again to use it.`;
+        return connection.access === 'write'
+            ? $localize`${name}:connection: (${kind}:kind:): you can read and change its files.`
+            : $localize`${name}:connection: (${kind}:kind:): you can read its files.`;
     }
 }
 

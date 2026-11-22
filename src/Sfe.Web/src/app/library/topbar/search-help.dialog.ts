@@ -17,58 +17,62 @@ interface SyntaxSection {
 /** The query language in short, by theme; docs/reference/search-syntax.md has the fine print. */
 export const SEARCH_SYNTAX: SyntaxSection[] = [
     {
-        title: 'Words',
+        title: $localize`Words`,
         rows: [
-            { examples: ['cat dog'], meaning: 'Names containing both words' },
-            { examples: ['cat, dog'], meaning: 'Either one' },
-            { examples: ['cat -kitten'], meaning: 'Leave out names with a word' },
+            { examples: ['cat dog'], meaning: $localize`Finds names containing both words.` },
+            { examples: ['cat, dog'], meaning: $localize`Finds names containing either word.` },
+            { examples: ['cat -kitten'], meaning: $localize`Leaves out names containing a word.` },
             {
                 examples: ['*holiday'],
-                meaning: 'Match the whole path, not just the name (a * at the start applies to the whole search)',
+                meaning: $localize`Matches the whole path, not just the name; a * at the start counts for the \
+whole search.`,
             },
         ],
     },
     {
-        title: 'File properties',
+        title: $localize`File properties`,
         rows: [
-            { examples: ['s:>1gb', 's:<=10mb', 's:700mb'], meaning: 'Size: larger, smaller or about' },
-            { examples: ['e:mp4'], meaning: 'Extension; several are either one' },
+            {
+                examples: ['s:>1gb', 's:<=10mb', 's:700mb'],
+                meaning: $localize`Size: larger than, smaller than or about.`,
+            },
+            { examples: ['e:mp4'], meaning: $localize`Extension; several find either one.` },
             {
                 examples: ['type:image', 'type:video', 'type:audio', 'type:other'],
-                meaning: 'Kind of file, by its extension',
+                meaning: $localize`Kind of file, known by its extension.`,
             },
         ],
     },
     {
-        title: 'Photos, videos and audio',
+        title: $localize`Photos, videos and audio`,
         rows: [
             {
                 examples: ['w:>=1920', 'h:<720', 'r:1920x1080'],
-                meaning: 'Resolution in pixels: width, height, both sides',
+                meaning: $localize`Resolution in pixels: the width, the height, or both sides.`,
             },
-            { examples: ['r:hr', 'r:lr'], meaning: 'High or low resolution, as the HR/LR marks say' },
+            { examples: ['r:hr', 'r:lr'], meaning: $localize`High or low resolution, as the HR and LR marks say.` },
             {
                 examples: ['d:>10m', 'd:<30s', 'd:1:30'],
-                meaning: 'Duration of videos and audio: longer, shorter or about',
+                meaning: $localize`Duration of videos and audio: longer than, shorter than or about.`,
             },
         ],
     },
     {
-        title: 'Tags',
+        title: $localize`Tags`,
         rows: [
             {
                 examples: ['t:beach', 't:"two words"'],
-                meaning: 'Tagged with it, or with a tag inheriting from it; typing t: suggests tags',
+                meaning: $localize`Files with this tag, or with a tag inheriting from it; typing t: suggests tags.`,
             },
-            { examples: ['special:untagged'], meaning: 'Files without tags' },
+            { examples: ['special:untagged'], meaning: $localize`Files without tags.` },
         ],
     },
     {
-        title: 'Leaving out',
+        title: $localize`Leaving out`,
         rows: [
             {
                 examples: ['-t:work', '-e:jpg', '-s:>1gb', '-w:1920'],
-                meaning: 'A - before any term finds the files it doesn’t',
+                meaning: $localize`A - before any term finds the files it doesn’t.`,
             },
         ],
     },

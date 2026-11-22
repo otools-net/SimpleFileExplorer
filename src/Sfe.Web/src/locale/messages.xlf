@@ -1265,6 +1265,7 @@
         <note category="location">src/app/account/login-page.component.html:21,22</note>
         <note category="location">src/app/account/login-page.component.html:109,110</note>
         <note category="location">src/app/connections/connect.dialog.html:39</note>
+        <note category="location">src/app/library/location/location.component.ts:30</note>
         <note category="location">src/app/tokens/token-create.component.html:37,38</note>
       </notes>
       <segment>
@@ -2788,6 +2789,7 @@ Space “Holiday photos”
         <note category="location">src/app/account/local-only-page.component.ts:63,64</note>
         <note category="location">src/app/account/login-page.component.html:8</note>
         <note category="location">src/app/account/login-page.component.html:135,136</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:167</note>
       </notes>
       <segment>
         <source>Sign in</source>
@@ -3550,6 +3552,7 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-page.component.html:220,221</note>
         <note category="location">src/app/admin/admin-page.component.html:229,230</note>
         <note category="location">src/app/admin/admin-page.component.ts:259</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:142</note>
       </notes>
       <segment>
         <source>Administration</source>
@@ -4050,6 +4053,7 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-sections.ts:345</note>
         <note category="location">src/app/admin/admin-sections.ts:352</note>
         <note category="location">src/app/connections/connection-settings.ts:10</note>
+        <note category="location">src/app/library/sidebar/connection-links.component.ts:25</note>
       </notes>
       <segment>
         <source>Connections</source>
@@ -4124,6 +4128,8 @@ Space “Holiday photos”
     <unit id="4580988005648117665">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:114</note>
+        <note category="location">src/app/library/topbar/search-box.component.html:11</note>
+        <note category="location">src/app/library/topbar/search-box.component.ts:264</note>
         <note category="location">src/app/settings/tabs/browsing-settings.ts:110</note>
       </notes>
       <segment>
@@ -4303,6 +4309,7 @@ Space “Holiday photos”
     <unit id="3418677553313974490">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:192</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:79</note>
       </notes>
       <segment>
         <source>Trash</source>
@@ -4376,6 +4383,8 @@ Space “Holiday photos”
     <unit id="7886570921510760899">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:234</note>
+        <note category="location">src/app/library/topbar/search-box.component.ts:76</note>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:61</note>
         <note category="location">src/app/settings/tabs/library-settings.ts:100</note>
       </notes>
       <segment>
@@ -5194,6 +5203,7 @@ Space “Holiday photos”
     <unit id="2895747618881739814">
       <notes>
         <note category="location">src/app/admin/video-streams.component.ts:127</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:41,43</note>
       </notes>
       <segment>
         <source>Visitor</source>
@@ -5659,6 +5669,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/connections/connections-section.component.html:58,59</note>
         <note category="location">src/app/connections/connections-section.component.html:81,82</note>
+        <note category="location">src/app/library/sidebar/connection-links.component.ts:47,48</note>
       </notes>
       <segment>
         <source>Sign in again</source>
@@ -6027,6 +6038,1661 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>TB</source>
+      </segment>
+    </unit>
+    <unit id="2217137485843441000">
+      <notes>
+        <note category="location">src/app/library/location/folder-nav.component.ts:47</note>
+      </notes>
+      <segment>
+        <source>Parent folder</source>
+      </segment>
+    </unit>
+    <unit id="5064816944902805732">
+      <notes>
+        <note category="location">src/app/library/location/folder-nav.component.ts:47</note>
+        <note category="location">src/app/library/location/location-links.service.ts:53</note>
+      </notes>
+      <segment>
+        <source>Previous folder</source>
+      </segment>
+    </unit>
+    <unit id="5523357630140634984">
+      <notes>
+        <note category="location">src/app/library/location/folder-nav.component.ts:47</note>
+        <note category="location">src/app/library/location/location-links.service.ts:61</note>
+      </notes>
+      <segment>
+        <source>Next folder</source>
+      </segment>
+    </unit>
+    <unit id="6002127661572857722">
+      <notes>
+        <note category="location">src/app/library/location/folder-nav.component.ts:48</note>
+      </notes>
+      <segment>
+        <source>Nearby folders</source>
+      </segment>
+    </unit>
+    <unit id="1975867108386612355">
+      <notes>
+        <note category="location">src/app/library/location/location-links.service.ts:46</note>
+      </notes>
+      <segment>
+        <source>Go up to “<ph id="0" equiv="folder" disp="parentName"/>” (Backspace).</source>
+      </segment>
+    </unit>
+    <unit id="8410467823515066435">
+      <notes>
+        <note category="location">src/app/library/location/location-links.service.ts:50</note>
+      </notes>
+      <segment>
+        <source>Previous folder: “<ph id="0" equiv="folder" disp="siblings.previous.name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="1378495081338609754">
+      <notes>
+        <note category="location">src/app/library/location/location-links.service.ts:52</note>
+      </notes>
+      <segment>
+        <source>This is the first folder.</source>
+      </segment>
+    </unit>
+    <unit id="5512020077384015674">
+      <notes>
+        <note category="location">src/app/library/location/location-links.service.ts:58</note>
+      </notes>
+      <segment>
+        <source>Next folder: “<ph id="0" equiv="folder" disp="siblings.next.name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="958436430283944501">
+      <notes>
+        <note category="location">src/app/library/location/location-links.service.ts:60</note>
+      </notes>
+      <segment>
+        <source>This is the last folder.</source>
+      </segment>
+    </unit>
+    <unit id="1681901749044148502">
+      <notes>
+        <note category="location">src/app/library/location/location-links.service.ts:71</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="hint" disp="title"/> This is folder <ph id="1" equiv="position" disp="position"/> of <ph id="2" equiv="count" disp="count"/>.</source>
+      </segment>
+    </unit>
+    <unit id="3047153106209135753">
+      <notes>
+        <note category="location">src/app/library/location/location-strip.component.ts:28,29</note>
+      </notes>
+      <segment>
+        <source>Back to the top of “<ph id="0" equiv="INTERPOLATION" disp="{{ fullName() }}"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="5341365790745562200">
+      <notes>
+        <note category="location">src/app/library/location/location-strip.component.ts:38,39</note>
+        <note category="location">src/app/library/location/location.component.html:25,26</note>
+      </notes>
+      <segment>
+        <source>Search “<ph id="0" equiv="INTERPOLATION" disp="{{ store.route().q }}"/>”</source>
+      </segment>
+    </unit>
+    <unit id="471816275243265264">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:5</note>
+        <note category="description">where the listing is</note>
+      </notes>
+      <segment>
+        <source>Location</source>
+      </segment>
+    </unit>
+    <unit id="5744880155732837230">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:46,47</note>
+      </notes>
+      <segment>
+        <source>Upload files</source>
+      </segment>
+    </unit>
+    <unit id="6268007114657674089">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:48,49</note>
+      </notes>
+      <segment>
+        <source>Upload files into this folder, or drop them on the page.</source>
+      </segment>
+    </unit>
+    <unit id="6148964674735727397">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:57,58</note>
+      </notes>
+      <segment>
+        <source>Upload a folder</source>
+      </segment>
+    </unit>
+    <unit id="4555216765553875888">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:59,60</note>
+      </notes>
+      <segment>
+        <source>Upload a folder, with everything in it, into this folder.</source>
+      </segment>
+    </unit>
+    <unit id="5695157036278702587">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:72,73</note>
+      </notes>
+      <segment>
+        <source>New file</source>
+      </segment>
+    </unit>
+    <unit id="2946216077309757238">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:74,75</note>
+      </notes>
+      <segment>
+        <source>Make a new empty file in this folder.</source>
+      </segment>
+    </unit>
+    <unit id="276577335650445066">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:85,86</note>
+      </notes>
+      <segment>
+        <source>New folder</source>
+      </segment>
+    </unit>
+    <unit id="4434941750967738192">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:87,88</note>
+      </notes>
+      <segment>
+        <source>Make a new folder in this folder (Shift+N).</source>
+      </segment>
+    </unit>
+    <unit id="9075842703518115522">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:99,100</note>
+      </notes>
+      <segment>
+        <source>Copy the full path of this folder</source>
+      </segment>
+    </unit>
+    <unit id="2957647181775177138">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:101,102</note>
+      </notes>
+      <segment>
+        <source>Copy the full path of this folder on the server.</source>
+      </segment>
+    </unit>
+    <unit id="7699622144571229146">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:142,143</note>
+      </notes>
+      <segment>
+        <source>Sort by</source>
+      </segment>
+    </unit>
+    <unit id="4386296856930513376">
+      <notes>
+        <note category="location">src/app/library/location/location.component.html:154,155</note>
+      </notes>
+      <segment>
+        <source>Sort direction</source>
+      </segment>
+    </unit>
+    <unit id="1826652001816486190">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:31</note>
+        <note category="description">sort by</note>
+      </notes>
+      <segment>
+        <source>Date modified</source>
+      </segment>
+    </unit>
+    <unit id="45739481977493163">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:32</note>
+        <note category="description">sort by</note>
+      </notes>
+      <segment>
+        <source>Size</source>
+      </segment>
+    </unit>
+    <unit id="8650499415827640724">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:33</note>
+        <note category="description">sort by</note>
+      </notes>
+      <segment>
+        <source>Type</source>
+      </segment>
+    </unit>
+    <unit id="7410432243549869948">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:34</note>
+        <note category="description">sort by</note>
+      </notes>
+      <segment>
+        <source>Duration</source>
+      </segment>
+    </unit>
+    <unit id="1963136290621768454">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:35</note>
+        <note category="description">sort by</note>
+      </notes>
+      <segment>
+        <source>Resolution</source>
+      </segment>
+    </unit>
+    <unit id="8911059720204770105">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:36</note>
+        <note category="description">sort by</note>
+      </notes>
+      <segment>
+        <source>Path</source>
+      </segment>
+    </unit>
+    <unit id="6758609140014513003">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:65</note>
+      </notes>
+      <segment>
+        <source>Actions on this search.</source>
+      </segment>
+    </unit>
+    <unit id="4303219403340452645">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:66</note>
+      </notes>
+      <segment>
+        <source>Actions on this folder: new folder, upload, tags, quick link and more.</source>
+      </segment>
+    </unit>
+    <unit id="381473371299356146">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:91</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="hint" disp="this.exclusionTitle()"/> Click to change it.</source>
+      </segment>
+    </unit>
+    <unit id="3319935011626673303">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:93</note>
+      </notes>
+      <segment>
+        <source>Ascending order (A to Z, smallest first). Click to reverse it.</source>
+      </segment>
+    </unit>
+    <unit id="4327271727314590085">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:94</note>
+      </notes>
+      <segment>
+        <source>Descending order (Z to A, largest first). Click to reverse it.</source>
+      </segment>
+    </unit>
+    <unit id="5398065907114229376">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:102</note>
+      </notes>
+      <segment>
+        <source>the top of the library</source>
+      </segment>
+    </unit>
+    <unit id="2433094695892425022">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:143</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# folder} other {# folders}}</source>
+      </segment>
+    </unit>
+    <unit id="179465360758381176">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:148</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# file} other {# files}}</source>
+      </segment>
+    </unit>
+    <unit id="4356314757855843027">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:159</note>
+      </notes>
+      <segment>
+        <source>Add or remove tags on all the results of this search (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="515860243307577709">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:160</note>
+      </notes>
+      <segment>
+        <source>Add or remove tags on all the files of this folder, or of its sub-folders too (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="7340205217055436682">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:186</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {#+ result in <ph id="0" equiv="path"/>} other {#+ results in <ph id="1" equiv="path"/>}}</source>
+      </segment>
+    </unit>
+    <unit id="3514959794210909585">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:187</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# result in <ph id="0" equiv="path"/>} other {# results in <ph id="1" equiv="path"/>}}</source>
+      </segment>
+    </unit>
+    <unit id="1391361389226793179">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:189</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {#+ result} other {#+ results}}</source>
+      </segment>
+    </unit>
+    <unit id="8866964221918555270">
+      <notes>
+        <note category="location">src/app/library/location/location.component.ts:190</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# result} other {# results}}</source>
+      </segment>
+    </unit>
+    <unit id="6017738522947209179">
+      <notes>
+        <note category="location">src/app/library/quick-links/pin-button.component.ts:33</note>
+      </notes>
+      <segment>
+        <source>Remove “<ph id="0" equiv="name" disp="this.name()"/>” from the quick links.</source>
+      </segment>
+    </unit>
+    <unit id="1365703007206058678">
+      <notes>
+        <note category="location">src/app/library/quick-links/pin-button.component.ts:34</note>
+      </notes>
+      <segment>
+        <source>Add “<ph id="0" equiv="name" disp="this.name()"/>” to the quick links, or drag it onto the sidebar.</source>
+      </segment>
+    </unit>
+    <unit id="3768174530928337314">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.html:2,3</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:66</note>
+      </notes>
+      <segment>
+        <source>Quick links</source>
+      </segment>
+    </unit>
+    <unit id="1481818386095300955">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.html:63,64</note>
+      </notes>
+      <segment>
+        <source>Move “<ph id="0" equiv="INTERPOLATION" disp="{{ link.name }}"/>” up.</source>
+      </segment>
+    </unit>
+    <unit id="4023141602821332718">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.html:74,75</note>
+      </notes>
+      <segment>
+        <source>Move “<ph id="0" equiv="INTERPOLATION" disp="{{ link.name }}"/>” down.</source>
+      </segment>
+    </unit>
+    <unit id="3043352492892713596">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:64,65</note>
+      </notes>
+      <segment>
+        <source>No quick links yet. Drag folders and files here, or use their pin button, to keep them at hand.</source>
+      </segment>
+    </unit>
+    <unit id="5773353299576696241">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:67</note>
+      </notes>
+      <segment>
+        <source>Stop editing the quick links.</source>
+      </segment>
+    </unit>
+    <unit id="397098723873502323">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:68</note>
+        <note category="location">src/app/tasks/tasks.ts:205</note>
+        <note category="location">src/app/tokens/token-create.component.html:122,123</note>
+      </notes>
+      <segment>
+        <source>Done</source>
+      </segment>
+    </unit>
+    <unit id="7704896127075432004">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:69</note>
+      </notes>
+      <segment>
+        <source>Edit the quick links: move and remove them.</source>
+      </segment>
+    </unit>
+    <unit id="7598633143905991818">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:70</note>
+      </notes>
+      <segment>
+        <source>Edit the quick links</source>
+      </segment>
+    </unit>
+    <unit id="8234634831740239009">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:82</note>
+      </notes>
+      <segment>
+        <source>Move <ph id="0" equiv="name" disp="link.name"/> up</source>
+      </segment>
+    </unit>
+    <unit id="95040940880468761">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:86</note>
+      </notes>
+      <segment>
+        <source>Move <ph id="0" equiv="name" disp="link.name"/> down</source>
+      </segment>
+    </unit>
+    <unit id="867537327533689653">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:90</note>
+      </notes>
+      <segment>
+        <source>Remove <ph id="0" equiv="name" disp="link.name"/> from the quick links</source>
+      </segment>
+    </unit>
+    <unit id="4285172514313401268">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:96</note>
+      </notes>
+      <segment>
+        <source>Take “<ph id="0" equiv="name" disp="link.name"/>” out of the quick links. The folder stays where it is.</source>
+      </segment>
+    </unit>
+    <unit id="3056625551158785665">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:97</note>
+      </notes>
+      <segment>
+        <source>Take “<ph id="0" equiv="name" disp="link.name"/>” out of the quick links. The file stays where it is.</source>
+      </segment>
+    </unit>
+    <unit id="9067326429065781018">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:106</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="name" disp="link.name"/> (the top of the library)</source>
+      </segment>
+    </unit>
+    <unit id="9102819389198549610">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:107</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="place" disp="where"/>: not there any more (moved, renamed or deleted).</source>
+      </segment>
+    </unit>
+    <unit id="3477520778721886090">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:172</note>
+      </notes>
+      <segment>
+        <source>Show in its folder</source>
+      </segment>
+    </unit>
+    <unit id="3797189335784451616">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:174</note>
+      </notes>
+      <segment>
+        <source>List the folder “<ph id="0" equiv="name" disp="link.name"/>” is in, and show it there.</source>
+      </segment>
+    </unit>
+    <unit id="6371588679924903737">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:182</note>
+        <note category="location">src/app/library/topbar/search-box.component.ts:271</note>
+      </notes>
+      <segment>
+        <source>Open in new tab</source>
+      </segment>
+    </unit>
+    <unit id="2216825772739618085">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:184</note>
+      </notes>
+      <segment>
+        <source>Open “<ph id="0" equiv="name" disp="link.name"/>” in a tab of its own.</source>
+      </segment>
+    </unit>
+    <unit id="7096568485547149103">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:192</note>
+      </notes>
+      <segment>
+        <source>Copy full path</source>
+      </segment>
+    </unit>
+    <unit id="2296265600394386378">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:194</note>
+      </notes>
+      <segment>
+        <source>Copy where it is on the server.</source>
+      </segment>
+    </unit>
+    <unit id="8721861281513890587">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:200</note>
+      </notes>
+      <segment>
+        <source>Properties</source>
+      </segment>
+    </unit>
+    <unit id="3761519532767624919">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:202</note>
+      </notes>
+      <segment>
+        <source>Show its size, its dates and what the index knows of it.</source>
+      </segment>
+    </unit>
+    <unit id="8502065112576581103">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:213</note>
+      </notes>
+      <segment>
+        <source>Move up</source>
+      </segment>
+    </unit>
+    <unit id="1150995688082173761">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:215</note>
+      </notes>
+      <segment>
+        <source>Move “<ph id="0" equiv="name" disp="link.name"/>” up in the quick links.</source>
+      </segment>
+    </unit>
+    <unit id="2207764482815871800">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:221</note>
+      </notes>
+      <segment>
+        <source>Move down</source>
+      </segment>
+    </unit>
+    <unit id="7491166058881124061">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:223</note>
+      </notes>
+      <segment>
+        <source>Move “<ph id="0" equiv="name" disp="link.name"/>” down in the quick links.</source>
+      </segment>
+    </unit>
+    <unit id="7011082534772609140">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:228</note>
+      </notes>
+      <segment>
+        <source>Remove from quick links</source>
+      </segment>
+    </unit>
+    <unit id="7104146152115725709">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.service.ts:53</note>
+      </notes>
+      <segment>
+        <source>Added “<ph id="0" equiv="name" disp="this.nameOf(added[0])"/>” to the quick links.</source>
+      </segment>
+    </unit>
+    <unit id="1643473867935516743">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.service.ts:55</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# item} other {# items}} added to the quick links.</source>
+      </segment>
+    </unit>
+    <unit id="9010497426354933455">
+      <notes>
+        <note category="location">src/app/library/quick-links/quick-links.service.ts:71</note>
+      </notes>
+      <segment>
+        <source>Removed “<ph id="0" equiv="name" disp="name"/>” from the quick links.</source>
+      </segment>
+    </unit>
+    <unit id="1087023933658984616">
+      <notes>
+        <note category="location">src/app/library/sidebar/connection-links.component.ts:103</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="connection" disp="name"/> (<ph id="1" equiv="kind" disp="kind"/>): sign in to it again to use it.</source>
+      </segment>
+    </unit>
+    <unit id="187761424342507433">
+      <notes>
+        <note category="location">src/app/library/sidebar/connection-links.component.ts:105</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="connection" disp="name"/> (<ph id="1" equiv="kind" disp="kind"/>): you can read and change its files.</source>
+      </segment>
+    </unit>
+    <unit id="559708017172268346">
+      <notes>
+        <note category="location">src/app/library/sidebar/connection-links.component.ts:106</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="connection" disp="name"/> (<ph id="1" equiv="kind" disp="kind"/>): you can read its files.</source>
+      </segment>
+    </unit>
+    <unit id="5387150058760945778">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:24,25</note>
+      </notes>
+      <segment>
+        <source>Show other tags, picked at random.</source>
+      </segment>
+    </unit>
+    <unit id="5821861467000996904">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:26,27</note>
+      </notes>
+      <segment>
+        <source>Other random tags</source>
+      </segment>
+    </unit>
+    <unit id="6751725818938938053">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:39,40</note>
+      </notes>
+      <segment>
+        <source>Find the files tagged “<ph id="0" equiv="INTERPOLATION" disp="{{ usage.tag.displayName }}"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="2853708828659627510">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:60,61</note>
+      </notes>
+      <segment>
+        <source>Create, edit and delete tags.</source>
+      </segment>
+    </unit>
+    <unit id="1016881991346034960">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:64</note>
+      </notes>
+      <segment>
+        <source>Manage tags</source>
+      </segment>
+    </unit>
+    <unit id="4567885301549754909">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:34</note>
+      </notes>
+      <segment>
+        <source>Most popular</source>
+      </segment>
+    </unit>
+    <unit id="6598701202761920370">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:34</note>
+      </notes>
+      <segment>
+        <source>No file is tagged yet.</source>
+      </segment>
+    </unit>
+    <unit id="4359345885548201383">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:37</note>
+      </notes>
+      <segment>
+        <source>Last searched</source>
+      </segment>
+    </unit>
+    <unit id="5345892093755679629">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:38</note>
+      </notes>
+      <segment>
+        <source>Search with t:name to see the tags here.</source>
+      </segment>
+    </unit>
+    <unit id="3986427785789440498">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:44</note>
+      </notes>
+      <segment>
+        <source>Last viewed</source>
+      </segment>
+    </unit>
+    <unit id="6619670854407107450">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:45</note>
+      </notes>
+      <segment>
+        <source>Open a tagged file to see its tags here.</source>
+      </segment>
+    </unit>
+    <unit id="6220309044029672666">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:48</note>
+      </notes>
+      <segment>
+        <source>I feel lucky</source>
+      </segment>
+    </unit>
+    <unit id="329102016714354592">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:48</note>
+      </notes>
+      <segment>
+        <source>No other tags.</source>
+      </segment>
+    </unit>
+    <unit id="1420820821452743483">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:85</note>
+      </notes>
+      <segment>
+        <source>Quick links and tags</source>
+      </segment>
+    </unit>
+    <unit id="6566220851744770937">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:107</note>
+      </notes>
+      <segment>
+        <source>Open the trash.</source>
+      </segment>
+    </unit>
+    <unit id="8449486268932741195">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:108</note>
+      </notes>
+      <segment>
+        <source>Open the trash. It&apos;s empty.</source>
+      </segment>
+    </unit>
+    <unit id="8830524108826229557">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:111</note>
+      </notes>
+      <segment>
+        <source>Open the trash. It holds more than {count, plural, one {# item} other {# items}}.</source>
+      </segment>
+    </unit>
+    <unit id="895952222380713711">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:114</note>
+      </notes>
+      <segment>
+        <source>Open the trash. It holds {count, plural, one {# item} other {# items}}.</source>
+      </segment>
+    </unit>
+    <unit id="2505292712993436159">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:128</note>
+      </notes>
+      <segment>
+        <source>Fold the list “<ph id="0" equiv="list" disp="section.title"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="5659408281749789575">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:129</note>
+      </notes>
+      <segment>
+        <source>Show the list “<ph id="0" equiv="list" disp="section.title"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="5772995685589083312">
+      <notes>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:134</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# file has this tag} other {# files have this tag}}.</source>
+      </segment>
+    </unit>
+    <unit id="4095022621808977146">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:24,25</note>
+      </notes>
+      <segment>
+        <source>Open My account: your settings and your password.</source>
+      </segment>
+    </unit>
+    <unit id="3106235759767960456">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:52,53</note>
+      </notes>
+      <segment>
+        <source>The server doesn&apos;t answer: changes may not show and actions may fail until it answers again.</source>
+      </segment>
+    </unit>
+    <unit id="326231963051364795">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:56</note>
+      </notes>
+      <segment>
+        <source>Server not answering</source>
+      </segment>
+    </unit>
+    <unit id="4594876942770083712">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:67,68</note>
+      </notes>
+      <segment>
+        <source>Open Keep alive: what the last pings of the library&apos;s folder found.</source>
+      </segment>
+    </unit>
+    <unit id="4484271963368011559">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:98</note>
+      </notes>
+      <segment>
+        <source>Scan this folder</source>
+      </segment>
+    </unit>
+    <unit id="3152531052287042537">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:109</note>
+      </notes>
+      <segment>
+        <source>Remove from index…</source>
+      </segment>
+    </unit>
+    <unit id="672346442080462723">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:116,117</note>
+      </notes>
+      <segment>
+        <source>Keep this folder out of scans, trickplay or thumbnails, for everyone using this space.</source>
+      </segment>
+    </unit>
+    <unit id="8834275305700439126">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:120</note>
+      </notes>
+      <segment>
+        <source>Scans and previews…</source>
+      </segment>
+    </unit>
+    <unit id="2076163243174576914">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:129,130</note>
+      </notes>
+      <segment>
+        <source>Switch to the space “<ph id="0" equiv="INTERPOLATION" disp="{{ tenant.name }}"/>”: its own library, tags and settings.</source>
+      </segment>
+    </unit>
+    <unit id="7444103529530945506">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:140,141</note>
+      </notes>
+      <segment>
+        <source>Open the administration: settings, tags, duplicates, tasks, spaces, accounts, your account and more.</source>
+      </segment>
+    </unit>
+    <unit id="7511633018413962253">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:148,149</note>
+      </notes>
+      <segment>
+        <source>Show the page full screen, or leave full screen.</source>
+      </segment>
+    </unit>
+    <unit id="4088802997354529592">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:151</note>
+      </notes>
+      <segment>
+        <source>Full screen</source>
+      </segment>
+    </unit>
+    <unit id="5391547839460262973">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:156,157</note>
+      </notes>
+      <segment>
+        <source>Sign out on this browser.</source>
+      </segment>
+    </unit>
+    <unit id="2949848596707725099">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:159</note>
+      </notes>
+      <segment>
+        <source>Sign out</source>
+      </segment>
+    </unit>
+    <unit id="7796345692884547147">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:164,165</note>
+      </notes>
+      <segment>
+        <source>Sign in with an account.</source>
+      </segment>
+    </unit>
+    <unit id="8038549977004386948">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>Network folder not answering</source>
+      </segment>
+    </unit>
+    <unit id="4880366220057855644">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>Network folder answering</source>
+      </segment>
+    </unit>
+    <unit id="6580335002142664714">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:78</note>
+      </notes>
+      <segment>
+        <source>Scanning, administration, your account and more. The server isn&apos;t answering.</source>
+      </segment>
+    </unit>
+    <unit id="1795336273073681165">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:80</note>
+      </notes>
+      <segment>
+        <source>Scanning, administration, your account and more. The network folder isn&apos;t answering.</source>
+      </segment>
+    </unit>
+    <unit id="7120700138984782826">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:82</note>
+      </notes>
+      <segment>
+        <source>Scanning, administration, your account and more. The network folder is answering.</source>
+      </segment>
+    </unit>
+    <unit id="7606552201934391683">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:83</note>
+      </notes>
+      <segment>
+        <source>Scanning, administration, your account and more.</source>
+      </segment>
+    </unit>
+    <unit id="9073837285264700749">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:87</note>
+      </notes>
+      <segment>
+        <source>More (server not answering)</source>
+      </segment>
+    </unit>
+    <unit id="5199580876731394972">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:89</note>
+      </notes>
+      <segment>
+        <source>More (network folder not answering)</source>
+      </segment>
+    </unit>
+    <unit id="5937251202465808296">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:90</note>
+      </notes>
+      <segment>
+        <source>More</source>
+      </segment>
+    </unit>
+    <unit id="5841525798799437277">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:94</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:99</note>
+      </notes>
+      <segment>
+        <source>A scan is in progress.</source>
+      </segment>
+    </unit>
+    <unit id="6945611625735267266">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:95</note>
+      </notes>
+      <segment>
+        <source>Bring the index of this folder and its sub-folders up to date, for search (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="1871527591521751416">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:100,101</note>
+      </notes>
+      <segment>
+        <source>Take this folder and its sub-folders out of the index; the files stay on the disk (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="1104712005000603856">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:106</note>
+      </notes>
+      <segment>
+        <source>Version <ph id="0" equiv="version" disp="config.version"/>, commit <ph id="1" equiv="commit" disp="config.commit"/></source>
+      </segment>
+    </unit>
+    <unit id="2512296993220019688">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:107</note>
+      </notes>
+      <segment>
+        <source>Version <ph id="0" equiv="version" disp="config?.version"/></source>
+      </segment>
+    </unit>
+    <unit id="409692318544913298">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.html:8,9</note>
+      </notes>
+      <segment>
+        <source>Search the index…</source>
+      </segment>
+    </unit>
+    <unit id="285579536600266777">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.html:40,41</note>
+      </notes>
+      <segment>
+        <source>Explain this search</source>
+      </segment>
+    </unit>
+    <unit id="4029649057038200865">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.html:50</note>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:3,4</note>
+      </notes>
+      <segment>
+        <source>Search syntax</source>
+      </segment>
+    </unit>
+    <unit id="1906875439065705004">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.html:51</note>
+      </notes>
+      <segment>
+        <source>Show the search syntax and tips (?).</source>
+      </segment>
+    </unit>
+    <unit id="7033543874915157281">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.html:68,69</note>
+        <note category="location">src/app/library/topbar/search-box.component.ts:266</note>
+      </notes>
+      <segment>
+        <source>Search this again.</source>
+      </segment>
+    </unit>
+    <unit id="9010587734461769631">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.html:77,78</note>
+      </notes>
+      <segment>
+        <source>Remove from the search history</source>
+      </segment>
+    </unit>
+    <unit id="8142321421267963696">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.html:78</note>
+      </notes>
+      <segment>
+        <source>Remove this search from the search history.</source>
+      </segment>
+    </unit>
+    <unit id="2475393767190828169">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>Hide the explanation of this search.</source>
+      </segment>
+    </unit>
+    <unit id="6602799025767462067">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:74</note>
+      </notes>
+      <segment>
+        <source>Explain this search in plain words.</source>
+      </segment>
+    </unit>
+    <unit id="5196049555446921530">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:75</note>
+      </notes>
+      <segment>
+        <source>Recent searches</source>
+      </segment>
+    </unit>
+    <unit id="3410863405254316377">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:88</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# file or more found} other {# files or more found}}.</source>
+      </segment>
+    </unit>
+    <unit id="3248938826517484499">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:89</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# file found} other {# files found}}.</source>
+      </segment>
+    </unit>
+    <unit id="8643994316468643307">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:212</note>
+      </notes>
+      <segment>
+        <source>No tag matches “<ph id="0" equiv="text" disp="term.text"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="669379202478188871">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:212</note>
+      </notes>
+      <segment>
+        <source>No tags yet.</source>
+      </segment>
+    </unit>
+    <unit id="8850285345908432056">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:273</note>
+      </notes>
+      <segment>
+        <source>Open this search in a tab of its own.</source>
+      </segment>
+    </unit>
+    <unit id="8782673928466981893">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:279</note>
+      </notes>
+      <segment>
+        <source>Remove from the history</source>
+      </segment>
+    </unit>
+    <unit id="5895952313568466534">
+      <notes>
+        <note category="location">src/app/library/topbar/search-box.component.ts:281</note>
+      </notes>
+      <segment>
+        <source>Forget this search on this browser.</source>
+      </segment>
+    </unit>
+    <unit id="25823153039261721">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:5,6</note>
+      </notes>
+      <segment>
+        <source>Click an example to add it to the search.</source>
+      </segment>
+    </unit>
+    <unit id="1677926727074594583">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:21,22</note>
+      </notes>
+      <segment>
+        <source>Add <ph id="0" equiv="INTERPOLATION" disp="{{ example }}"/> to the search.</source>
+      </segment>
+    </unit>
+    <unit id="3285315590661482349">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:34,35</note>
+      </notes>
+      <segment>
+        <source>Tips</source>
+      </segment>
+    </unit>
+    <unit id="3690965534391300023">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:36,37</note>
+      </notes>
+      <segment>
+        <source>Results update as you type once the search has more than 3 characters; press Enter to search shorter ones.</source>
+      </segment>
+    </unit>
+    <unit id="7936281839234131276">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:38,39</note>
+      </notes>
+      <segment>
+        <source>A search looks in the current folder and below it (the chip at the end of the box); click the chip to search the whole library.</source>
+      </segment>
+    </unit>
+    <unit id="8372052618851638032">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:40,41</note>
+      </notes>
+      <segment>
+        <source>Only files in the index are found: <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Scan this folder</pc> in the ⋮ menu brings the index up to date.</source>
+      </segment>
+    </unit>
+    <unit id="7869359153039997660">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:42,43</note>
+      </notes>
+      <segment>
+        <source>Files with a hidden tag, like <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Archived</pc>, only show up when the search names that tag.</source>
+      </segment>
+    </unit>
+    <unit id="4531028357122753791">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:44,45</note>
+      </notes>
+      <segment>
+        <source>The speech-bubble button in the box explains a search in plain words.</source>
+      </segment>
+    </unit>
+    <unit id="3732970766329022708">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:45,46</note>
+      </notes>
+      <segment>
+        <source>Press <pc id="0" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">/</pc> to go to the search box, <pc id="1" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">?</pc> to open this help.</source>
+      </segment>
+    </unit>
+    <unit id="2515245708037125398">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:46,48</note>
+      </notes>
+      <segment>
+        <source>Once an item has the focus (<pc id="0" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">Tab</pc>), the arrows move between items, <pc id="1" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">Space</pc> selects, <pc id="2" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">Shift</pc>+arrows select as they go.</source>
+      </segment>
+    </unit>
+    <unit id="7392629679993079238">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:49,53</note>
+      </notes>
+      <segment>
+        <source>In a folder, <pc id="0" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">Shift</pc>+<pc id="1" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">N</pc> makes a new folder, <pc id="2" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">F2</pc> renames the item selected and <pc id="3" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">Delete</pc> deletes the selection (<pc id="4" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">Shift</pc>+<pc id="5" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">Delete</pc>: for good). Right-click an item, a folder link or an empty part of the page for its menu, or use an item&apos;s ⋮ button (<pc id="6" equivStart="START_TAG_KBD" equivEnd="CLOSE_TAG_KBD" type="other" dispStart="&lt;kbd&gt;" dispEnd="&lt;/kbd&gt;">Shift</pc>+right-click: the browser&apos;s own menu).</source>
+      </segment>
+    </unit>
+    <unit id="3944777890532106558">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:57</note>
+      </notes>
+      <segment>
+        <source>Close this help (Esc).</source>
+      </segment>
+    </unit>
+    <unit id="7819314041543176992">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.html:58,59</note>
+      </notes>
+      <segment>
+        <source>Close</source>
+      </segment>
+    </unit>
+    <unit id="7570842650861337346">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:20</note>
+      </notes>
+      <segment>
+        <source>Words</source>
+      </segment>
+    </unit>
+    <unit id="5770153287792582202">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:22</note>
+      </notes>
+      <segment>
+        <source>Finds names containing both words.</source>
+      </segment>
+    </unit>
+    <unit id="5583982719253317619">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:23</note>
+      </notes>
+      <segment>
+        <source>Finds names containing either word.</source>
+      </segment>
+    </unit>
+    <unit id="4953896968156912687">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:24</note>
+      </notes>
+      <segment>
+        <source>Leaves out names containing a word.</source>
+      </segment>
+    </unit>
+    <unit id="1236508859904144077">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:27,28</note>
+      </notes>
+      <segment>
+        <source>Matches the whole path, not just the name; a * at the start counts for the whole search.</source>
+      </segment>
+    </unit>
+    <unit id="7303413595805128795">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:33</note>
+      </notes>
+      <segment>
+        <source>File properties</source>
+      </segment>
+    </unit>
+    <unit id="8914968286038400441">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:37</note>
+      </notes>
+      <segment>
+        <source>Size: larger than, smaller than or about.</source>
+      </segment>
+    </unit>
+    <unit id="7055653081291084996">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:39</note>
+      </notes>
+      <segment>
+        <source>Extension; several find either one.</source>
+      </segment>
+    </unit>
+    <unit id="1919984267892596295">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:42</note>
+      </notes>
+      <segment>
+        <source>Kind of file, known by its extension.</source>
+      </segment>
+    </unit>
+    <unit id="8932107209137121944">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:47</note>
+      </notes>
+      <segment>
+        <source>Photos, videos and audio</source>
+      </segment>
+    </unit>
+    <unit id="1920658888246403154">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:51</note>
+      </notes>
+      <segment>
+        <source>Resolution in pixels: the width, the height, or both sides.</source>
+      </segment>
+    </unit>
+    <unit id="1606591068315055413">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:53</note>
+      </notes>
+      <segment>
+        <source>High or low resolution, as the HR and LR marks say.</source>
+      </segment>
+    </unit>
+    <unit id="1511357865528561856">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:56</note>
+      </notes>
+      <segment>
+        <source>Duration of videos and audio: longer than, shorter than or about.</source>
+      </segment>
+    </unit>
+    <unit id="2835665488907328478">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:65</note>
+      </notes>
+      <segment>
+        <source>Files with this tag, or with a tag inheriting from it; typing t: suggests tags.</source>
+      </segment>
+    </unit>
+    <unit id="5561998119059863141">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:67</note>
+      </notes>
+      <segment>
+        <source>Files without tags.</source>
+      </segment>
+    </unit>
+    <unit id="5456442343773803369">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:71</note>
+      </notes>
+      <segment>
+        <source>Leaving out</source>
+      </segment>
+    </unit>
+    <unit id="4787132204243253789">
+      <notes>
+        <note category="location">src/app/library/topbar/search-help.dialog.ts:75</note>
+      </notes>
+      <segment>
+        <source>A - before any term finds the files it doesn’t.</source>
+      </segment>
+    </unit>
+    <unit id="8575070835897793579">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope-menu.ts:34</note>
+        <note category="location">src/app/library/topbar/search-scope-menu.ts:43</note>
+      </notes>
+      <segment>
+        <source>Search in</source>
+      </segment>
+    </unit>
+    <unit id="308368417663885921">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope-menu.ts:45</note>
+      </notes>
+      <segment>
+        <source>Choose where to search: this folder, all of this place, or everywhere.</source>
+      </segment>
+    </unit>
+    <unit id="3708444314647476622">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:14</note>
+        <note category="description">search scope chip</note>
+      </notes>
+      <segment>
+        <source>everywhere</source>
+      </segment>
+    </unit>
+    <unit id="2062710253547470687">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:15</note>
+        <note category="description">search scope chip</note>
+      </notes>
+      <segment>
+        <source>in <ph id="0" equiv="folder" disp="route.path.split(&apos;/&apos;).pop()"/></source>
+      </segment>
+    </unit>
+    <unit id="7754337732492190648">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:16</note>
+        <note category="description">search scope chip</note>
+      </notes>
+      <segment>
+        <source>in <ph id="0" equiv="place" disp="scopes.location"/></source>
+      </segment>
+    </unit>
+    <unit id="7232972753282740938">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:21</note>
+      </notes>
+      <segment>
+        <source>Searches will look inside “<ph id="0" equiv="folder" disp="route.path"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="8258615421642333099">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:23</note>
+      </notes>
+      <segment>
+        <source>Searching the library and every connection, each apart. Click to choose where to search.</source>
+      </segment>
+    </unit>
+    <unit id="7457464008290539999">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:25</note>
+      </notes>
+      <segment>
+        <source>Searching “<ph id="0" equiv="folder" disp="route.path"/>”. Click to choose where to search.</source>
+      </segment>
+    </unit>
+    <unit id="825874481226835792">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:26</note>
+      </notes>
+      <segment>
+        <source>Searching <ph id="0" equiv="place" disp="scopes.location"/>. Click to choose where to search.</source>
+      </segment>
+    </unit>
+    <unit id="2432137937496839254">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:43</note>
+      </notes>
+      <segment>
+        <source>In “<ph id="0" equiv="folder" disp="route.path.split(&apos;/&apos;).pop()"/>”</source>
+      </segment>
+    </unit>
+    <unit id="7360613753751271640">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:45</note>
+      </notes>
+      <segment>
+        <source>Search “<ph id="0" equiv="path" disp="route.path"/>” and the folders inside it.</source>
+      </segment>
+    </unit>
+    <unit id="7534187821104799495">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:51</note>
+      </notes>
+      <segment>
+        <source>All of <ph id="0" equiv="place" disp="scopes.location"/></source>
+      </segment>
+    </unit>
+    <unit id="8488490953807035452">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:53</note>
+      </notes>
+      <segment>
+        <source>Search everything in <ph id="0" equiv="place" disp="scopes.location"/>.</source>
+      </segment>
+    </unit>
+    <unit id="4944057561753398636">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:60</note>
+      </notes>
+      <segment>
+        <source>Everywhere</source>
+      </segment>
+    </unit>
+    <unit id="476262953223505292">
+      <notes>
+        <note category="location">src/app/library/topbar/search-scope.ts:62</note>
+      </notes>
+      <segment>
+        <source>Search the library and every connection you use; the results come by place.</source>
+      </segment>
+    </unit>
+    <unit id="5737287568482767307">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:11</note>
+      </notes>
+      <segment>
+        <source>Grid</source>
+      </segment>
+    </unit>
+    <unit id="1549475824949822616">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:11</note>
+      </notes>
+      <segment>
+        <source>Show the items as a grid of tiles.</source>
+      </segment>
+    </unit>
+    <unit id="7906458871395232033">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:12</note>
+      </notes>
+      <segment>
+        <source>List</source>
+      </segment>
+    </unit>
+    <unit id="7723337699857422596">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:12</note>
+      </notes>
+      <segment>
+        <source>Show the items as a list, one per line.</source>
+      </segment>
+    </unit>
+    <unit id="7774389819688766923">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:16</note>
+      </notes>
+      <segment>
+        <source>One per row</source>
+      </segment>
+    </unit>
+    <unit id="4075763914308719155">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:17</note>
+      </notes>
+      <segment>
+        <source>Show one item per row, with large previews.</source>
+      </segment>
+    </unit>
+    <unit id="3982403428275430291">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:34</note>
+        <note category="location">src/app/settings/tabs/library-settings.ts:103</note>
+        <note category="description">the panel of quick links and tags</note>
+      </notes>
+      <segment>
+        <source>Sidebar</source>
+      </segment>
+    </unit>
+    <unit id="8417177278759545638">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:41,42</note>
+      </notes>
+      <segment>
+        <source>Go to the top of the library.</source>
+      </segment>
+    </unit>
+    <unit id="5474901734608805094">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:50</note>
+      </notes>
+      <segment>
+        <source>Layout</source>
+      </segment>
+    </unit>
+    <unit id="732713143617662315">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:67</note>
+      </notes>
+      <segment>
+        <source>Hide the sidebar: quick links and tags.</source>
+      </segment>
+    </unit>
+    <unit id="3092327461922072876">
+      <notes>
+        <note category="location">src/app/library/topbar/topbar.component.ts:68</note>
+      </notes>
+      <segment>
+        <source>Show the sidebar: quick links and tags.</source>
       </segment>
     </unit>
     <unit id="8183561498065807804">
@@ -7951,14 +9617,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Missing files not found again in that time are forgotten, with their tags. 0: until found or forgotten by hand.</source>
-      </segment>
-    </unit>
-    <unit id="3982403428275430291">
-      <notes>
-        <note category="location">src/app/settings/tabs/library-settings.ts:103</note>
-      </notes>
-      <segment>
-        <source>Sidebar</source>
       </segment>
     </unit>
     <unit id="2898060314972143163">
@@ -10289,16 +11947,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source><ph id="0" equiv="weekday" disp="weekday.format(date)"/> <ph id="1" equiv="time" disp="time"/></source>
-      </segment>
-    </unit>
-    <unit id="397098723873502323">
-      <notes>
-        <note category="location">src/app/tasks/tasks.ts:205</note>
-        <note category="location">src/app/tokens/token-create.component.html:122,123</note>
-        <note category="description">a schedule that ran once</note>
-      </notes>
-      <segment>
-        <source>Done</source>
       </segment>
     </unit>
     <unit id="1022858078044554145">

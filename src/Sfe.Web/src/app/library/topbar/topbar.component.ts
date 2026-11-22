@@ -8,9 +8,14 @@ import { Popovers } from './popovers.service';
 import { SearchBoxComponent } from './search-box.component';
 
 const VIEW_BUTTONS: { view: View; icon: string; label: string; title: string }[] = [
-    { view: 'grid', icon: 'grid', label: 'Grid', title: 'Grid' },
-    { view: 'list', icon: 'list', label: 'List', title: 'List' },
-    { view: 'single', icon: 'rows', label: 'One per row', title: 'One per row (large previews)' },
+    { view: 'grid', icon: 'grid', label: $localize`Grid`, title: $localize`Show the items as a grid of tiles.` },
+    { view: 'list', icon: 'list', label: $localize`List`, title: $localize`Show the items as a list, one per line.` },
+    {
+        view: 'single',
+        icon: 'rows',
+        label: $localize`One per row`,
+        title: $localize`Show one item per row, with large previews.`,
+    },
 ];
 
 /** The bar at the top: sidebar toggle, library root, search, layout switch and the ⋮ menu. */
@@ -26,21 +31,23 @@ const VIEW_BUTTONS: { view: View; icon: string; label: string; title: string }[]
             class="icon-button ghost sidebar-toggle"
             aria-controls="sidebar"
             aria-label="Sidebar"
+            i18n-aria-label="the panel of quick links and tags"
             [attr.aria-expanded]="sidebar.open()"
-            [title]="sidebar.open() ? 'Hide the sidebar (quick links and tags)' : 'Show the sidebar (quick links and tags)'"
+            [title]="sidebar.open() ? hideSidebar : showSidebar"
             (click)="sidebar.toggle()"
         >
             <svg sfeIcon="sidebar"></svg>
         </button>
-        <a class="brand" routerLink="/" [queryParams]="store.libraryParams('')" title="Library root">
+        <a class="brand" routerLink="/" [queryParams]="store.libraryParams('')" title="Go to the top of the library."
+           i18n-title>
             <svg sfeIcon="folder"></svg>
-            <span>SFE</span>
+            <span translate="no">SFE</span>
         </a>
 
         <form sfeSearchBox></form>
 
         <div class="actions">
-            <div class="segmented" role="group" aria-label="Layout">
+            <div class="segmented" role="group" aria-label="Layout" i18n-aria-label>
                 @for (button of views; track button.view) {
                     <button type="button" class="icon-button" [attr.aria-pressed]="store.view() === button.view"
                             [attr.aria-label]="button.label" [title]="button.title" (click)="switchView(button.view)">
@@ -57,6 +64,8 @@ export class TopbarComponent {
     protected readonly sidebar = inject(SidebarService);
     private readonly popovers = inject(Popovers);
     protected readonly views = VIEW_BUTTONS;
+    protected readonly hideSidebar = $localize`Hide the sidebar: quick links and tags.`;
+    protected readonly showSidebar = $localize`Show the sidebar: quick links and tags.`;
     readonly searchBox = viewChild.required(SearchBoxComponent);
 
     protected switchView(view: View): void {

@@ -27,7 +27,7 @@ import { dragItemsData, parseDragItems } from '../../files/drag-items';
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         class: 'sidebar-section quick-links',
-        'aria-label': 'Quick links',
+        '[attr.aria-label]': 'label',
         '[hidden]': '!links.enabled()',
         '[class.drop-ready]': 'links.dragging()',
         '[class.drop-over]': 'dropIndex() !== null',
@@ -61,7 +61,13 @@ export class QuickLinksComponent implements OnInit {
     protected readonly dropIndex = signal<number | null>(null);
     /** The link being dragged to another place. */
     protected readonly moving = signal<string | null>(null);
-    protected readonly emptyText = 'Drag folders and files here, or use their pin button, to keep them at hand.';
+    protected readonly emptyText = $localize`No quick links yet. Drag folders and files here, or use their pin button, \
+to keep them at hand.`;
+    protected readonly label = $localize`Quick links`;
+    protected readonly doneTitle = $localize`Stop editing the quick links.`;
+    protected readonly doneLabel = $localize`Done`;
+    protected readonly editTitle = $localize`Edit the quick links: move and remove them.`;
+    protected readonly editLabel = $localize`Edit the quick links`;
     private readonly route = computed(() => this.store.route());
 
     ngOnInit(): void {
@@ -72,8 +78,23 @@ export class QuickLinksComponent implements OnInit {
         return kindIcon[link.kind];
     }
 
-    protected kindWord(link: QuickLink): string {
-        return link.kind === 'directory' ? 'folder' : 'file';
+    protected moveUpLabel(link: QuickLink): string {
+        return $localize`Move ${link.name}:name: up`;
+    }
+
+    protected moveDownLabel(link: QuickLink): string {
+        return $localize`Move ${link.name}:name: down`;
+    }
+
+    protected removeLabel(link: QuickLink): string {
+        return $localize`Remove ${link.name}:name: from the quick links`;
+    }
+
+    /** Removing a link never touches the folder or file it leads to: the hint says so. */
+    protected removeTitle(link: QuickLink): string {
+        return link.kind === 'directory'
+            ? $localize`Take “${link.name}:name:” out of the quick links. The folder stays where it is.`
+            : $localize`Take “${link.name}:name:” out of the quick links. The file stays where it is.`;
     }
 
     protected isCurrent(link: QuickLink): boolean {
@@ -82,8 +103,8 @@ export class QuickLinksComponent implements OnInit {
     }
 
     protected hint(link: QuickLink): string {
-        const where = link.path ? `/${link.path}` : `${link.name} (the library's folder)`;
-        return link.exists ? where : `${where}: not found any more (moved, renamed or deleted)`;
+        const where = link.path ? `/${link.path}` : $localize`${link.name}:name: (the top of the library)`;
+        return link.exists ? where : $localize`${where}:place:: not there any more (moved, renamed or deleted).`;
     }
 
     protected openFolder(event: MouseEvent, link: QuickLink): void {
@@ -148,9 +169,9 @@ export class QuickLinksComponent implements OnInit {
         const entries: MenuEntry[] = [
             {
                 id: 'open',
-                label: 'Show in its folder',
+                label: $localize`Show in its folder`,
                 icon: 'folder',
-                title: `List the folder ${link.name} is in, and show it there`,
+                title: $localize`List the folder “${link.name}:name:” is in, and show it there.`,
                 run: () => {
                     this.sidebar.closeIfOverlay();
                     this.store.reveal(link.path);
@@ -158,9 +179,9 @@ export class QuickLinksComponent implements OnInit {
             },
             {
                 id: 'newTab',
-                label: 'Open in new tab',
+                label: $localize`Open in new tab`,
                 icon: 'external',
-                title: `Open ${link.name} in a tab of its own`,
+                title: $localize`Open “${link.name}:name:” in a tab of its own.`,
                 href: this.actions.fileUrl(item),
                 newTab: true,
             },
@@ -168,17 +189,17 @@ export class QuickLinksComponent implements OnInit {
         if (this.copyPaths.enabled())
             entries.push({
                 id: 'copyPath',
-                label: 'Copy full path',
+                label: $localize`Copy full path`,
                 icon: 'copy',
-                title: 'Copy where it is on the server',
+                title: $localize`Copy where it is on the server.`,
                 run: () => void this.copyPaths.copy(link.path),
             });
         if (this.dialogs.properties())
             entries.push({
                 id: 'properties',
-                label: 'Properties',
+                label: $localize`Properties`,
                 icon: 'info',
-                title: 'Its size, dates and what the index knows of it',
+                title: $localize`Show its size, its dates and what the index knows of it.`,
                 run: () => void this.dialogs.properties()?.open(item),
             });
         return entries;
@@ -189,24 +210,24 @@ export class QuickLinksComponent implements OnInit {
         if (index > 0)
             entries.push({
                 id: 'moveUp',
-                label: 'Move up',
+                label: $localize`Move up`,
                 icon: 'up',
-                title: `Move “${link.name}” up in the quick links`,
+                title: $localize`Move “${link.name}:name:” up in the quick links.`,
                 run: () => void this.links.move(link.path, index - 1),
             });
         if (index < this.links.links().length - 1)
             entries.push({
                 id: 'moveDown',
-                label: 'Move down',
+                label: $localize`Move down`,
                 icon: 'down',
-                title: `Move “${link.name}” down in the quick links`,
+                title: $localize`Move “${link.name}:name:” down in the quick links.`,
                 run: () => void this.links.move(link.path, index + 2),
             });
         entries.push({
             id: 'remove',
-            label: 'Remove from quick links',
+            label: $localize`Remove from quick links`,
             icon: 'close',
-            title: `Take “${link.name}” out of the quick links (the ${this.kindWord(link)} stays)`,
+            title: this.removeTitle(link),
             run: () => void this.links.remove(link.path),
         });
         return entries;

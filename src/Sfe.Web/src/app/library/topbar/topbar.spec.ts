@@ -125,16 +125,16 @@ describe('LocationComponent', () => {
         await show('Media/B');
 
         expect(nav().map((a) => a.title)).toEqual([
-            'Parent folder: Media (Backspace)',
-            'Previous folder: A (2 of 2)',
-            'Last folder',
+            'Go up to “Media” (Backspace).',
+            'Previous folder: “A”. This is folder 2 of 2.',
+            'This is the last folder.',
         ]);
         expect(nav().map((a) => a.getAttribute('aria-disabled'))).toEqual(['false', 'false', 'true']);
     });
 
     it('names the root as the parent of a top folder, and has no folder links at the root or in a search', async () => {
         await show('Media');
-        expect(nav()[0].title).toBe('Parent folder: Library (Backspace)');
+        expect(nav()[0].title).toBe('Go up to “Library” (Backspace).');
 
         await show('');
         expect(nav()).toEqual([]);
@@ -192,7 +192,7 @@ describe('LocationComponent', () => {
         expect(menu.open()).toBeNull();
 
         await show('Media', 'beach');
-        expect(element.querySelector<HTMLButtonElement>('.location-more')!.title).toBe('Actions on this search');
+        expect(element.querySelector<HTMLButtonElement>('.location-more')!.title).toBe('Actions on this search.');
     });
 });
 
@@ -231,7 +231,7 @@ describe('MainMenuComponent', () => {
 
         expect(
             [...element.querySelectorAll('[role=menuitem]')].map((e) => e.textContent!.trim().split(/\s+/)[0]),
-        ).toEqual(['admin', 'Scan', 'Remove', 'Administration', 'Toggle', 'Sign']);
+        ).toEqual(['admin', 'Scan', 'Remove', 'Administration', 'Full', 'Sign']);
         expect(element.querySelector('.menu-account')!.textContent).toContain('admin');
         expect(element.querySelector('.menu-account small')!.textContent).toBe('Library');
     });
@@ -240,10 +240,10 @@ describe('MainMenuComponent', () => {
         await create({ rights: [Rights.browse, Rights.viewFiles, Rights.viewTags], user: null, tenants: [] });
 
         expect([...element.querySelectorAll('[role=menuitem]')].map((e) => e.textContent!.trim())).toEqual([
-            'Toggle fullscreen',
+            'Full screen',
             'Sign in',
         ]);
-        expect(element.querySelector('.menu-account')!.textContent).toContain('Guest');
+        expect(element.querySelector('.menu-account')!.textContent).toContain('Visitor');
     });
 
     it('shows the administration page to an account with one of its rights only', async () => {
@@ -287,7 +287,7 @@ describe('MainMenuComponent', () => {
         document.documentElement.requestFullscreen = request;
         TestBed.inject(Popovers).toggle('menu');
 
-        entry('Toggle fullscreen')!.click();
+        entry('Full screen')!.click();
 
         expect(request).toHaveBeenCalled();
         expect(TestBed.inject(Popovers).open()).toBeNull();
@@ -374,7 +374,7 @@ describe('MainMenuComponent', () => {
         await settle();
 
         expect(entry('Scan this folder')!.disabled).toBe(true);
-        expect(entry('Scan this folder')!.title).toBe('A scan is in progress');
+        expect(entry('Scan this folder')!.title).toBe('A scan is in progress.');
     });
 });
 
@@ -399,7 +399,7 @@ describe('MainMenuComponent keep alive', () => {
 
         expect(badge()).toBeNull();
         expect(line()).toBeNull();
-        expect(button().title).toBe('Scan this folder, administration, your account and more');
+        expect(button().title).toBe('Scanning, administration, your account and more.');
     });
 
     it('shows a green dot while the library folder answers', async () => {
@@ -407,7 +407,7 @@ describe('MainMenuComponent keep alive', () => {
 
         expect(badge()!.classList).not.toContain('failing');
         expect(badge()!.textContent).toBe('');
-        expect(button().title).toContain('Network folder answering');
+        expect(button().title).toContain('The network folder is answering.');
         expect(button().getAttribute('aria-label')).toBe('More');
         expect(line()!.textContent).toContain('Network folder answering');
     });
@@ -443,7 +443,7 @@ describe('MainMenuComponent keep alive', () => {
             expect(badge()!.classList).toContain('failing');
             expect(badge()!.textContent).toBe('!');
             expect(button().getAttribute('aria-label')).toBe('More (server not answering)');
-            expect(button().title).toContain('Server not answering');
+            expect(button().title).toContain("The server isn't answering.");
             expect(line()!.textContent).toContain('Server not answering');
             expect(element.querySelectorAll('.menu-keep-alive-line')).toHaveLength(1);
 

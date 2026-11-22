@@ -32,14 +32,14 @@ password. Details: [First start](../first-start.md#locked-out-or-lost-administra
 
 The ⋮ button at the top right holds:
 
-- who is signed in, and the space you are in: click your name to open **My account** (your preferences, password
+- who is signed in, and the space you are in: click your name to open **My account** (your settings, password
   and [access tokens](../administration/my-account.md#access-tokens) for your programs);
 - **Scan this folder** and **Remove from index…** ([Scanning](scanning.md));
 - your other spaces, if you have several: picking one switches to it (and reloads the page);
 - **Administration** ([the administration page](../administration/README.md)): settings, tags, duplicates, accounts,
-  tasks, and **My account** (your preferences, password and access tokens);
-- **Toggle fullscreen**, which shows the page full screen or leaves it;
-- **Sign out** (or **Sign in** for a visitor);
+  tasks, and **My account** (your settings, password and access tokens);
+- **Full screen**, which shows the page full screen or leaves it;
+- **Sign out** (or **Sign in** for a visitor, whose name shows as **Visitor**);
 - the version of SFE, at the bottom.
 
 Each entry shows only with its right.

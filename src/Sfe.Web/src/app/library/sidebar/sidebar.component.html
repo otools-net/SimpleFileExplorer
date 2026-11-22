@@ -11,7 +11,7 @@
                     class="sidebar-fold"
                     [attr.aria-expanded]="open"
                     [attr.aria-controls]="'sidebar-tags-' + section.key"
-                    [title]="(open ? 'Fold ' : 'Show ') + section.title"
+                    [title]="foldTitle(section, open)"
                     (click)="toggleFolded(section)"
                 >
                     <svg sfeIcon="down"></svg>{{ section.title }}
@@ -21,8 +21,10 @@
                 <button
                     type="button"
                     class="icon-button ghost small"
-                    title="Other random tags"
+                    title="Show other tags, picked at random."
+                    i18n-title
                     aria-label="Other random tags"
+                    i18n-aria-label
                     (click)="sidebar.reload()"
                 >
                     <svg sfeIcon="refresh"></svg>
@@ -34,7 +36,8 @@
                 <li>
                     <sfe-tag-chip
                         [tag]="usage.tag"
-                        [title]="'Find files tagged ' + usage.tag.displayName"
+                        title="Find the files tagged “{{ usage.tag.displayName }}”."
+                        i18n-title
                         [clickable]="true"
                         (pick)="search($event)"
                         [sfeContextMenu]="tagMenu.target(usage.tag)"
@@ -54,10 +57,11 @@
         <button
             type="button"
             class="button small sidebar-manage"
-            title="Create, edit and delete tags"
+            title="Create, edit and delete tags."
+            i18n-title
             (click)="manage()"
         >
-            <svg sfeIcon="tag"></svg>Manage tags
+            <svg sfeIcon="tag"></svg><ng-container i18n>Manage tags</ng-container>
         </button>
     }
     @if (config.canAny(trashRights)) {
@@ -72,7 +76,7 @@
             [attr.aria-label]="trashTitle(trash)"
             (click)="sidebar.closeIfOverlay()"
         >
-            <svg [sfeIcon]="trash?.count ? 'trash-full' : 'trash'"></svg>Trash
+            <svg [sfeIcon]="trash?.count ? 'trash-full' : 'trash'"></svg><ng-container i18n>Trash</ng-container>
             @if (trash?.count) {
                 <span class="sidebar-badge" aria-hidden="true">{{ trash!.count }}{{ trash!.more ? '+' : '' }}</span>
             }

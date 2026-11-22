@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
-import { plural } from '../../core/format';
+import { icu } from '../../core/i18n/icu';
 import { QuickLink } from '../library.models';
 import { baseName } from '../../core/paths';
 import { Rights } from '../../core/rights';
@@ -50,9 +50,11 @@ export class QuickLinksService {
         const added = paths.filter((path) => !this.has(path));
         const message =
             added.length === 1
-                ? `Added “${this.nameOf(added[0])}” to the quick links`
+                ? $localize`Added “${this.nameOf(added[0])}:name:” to the quick links.`
                 : added.length
-                  ? `Added ${plural(added.length, 'item')} to the quick links`
+                  ? icu($localize`{count, plural, one {# item} other {# items}} added to the quick links.`, {
+                        count: added.length,
+                    })
                   : null;
         return this.change(() => this.api.addQuickLinks(paths, position), message);
     }
@@ -64,7 +66,10 @@ export class QuickLinksService {
 
     remove(path: string): Promise<boolean> {
         const name = this.nameOf(path);
-        return this.change(() => this.api.removeQuickLink(path), `Removed “${name}” from the quick links`);
+        return this.change(
+            () => this.api.removeQuickLink(path),
+            $localize`Removed “${name}:name:” from the quick links.`,
+        );
     }
 
     /** Adds the folder or file, or removes it when it is a quick link already (the pin buttons). */

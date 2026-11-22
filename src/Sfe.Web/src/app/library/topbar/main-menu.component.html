@@ -21,7 +21,8 @@
             routerLink="/admin"
             [queryParams]="{ section: 'account' }"
             [state]="{ sfeFromLibrary: true }"
-            title="My account: your preferences and your password"
+            title="Open My account: your settings and your password."
+            i18n-title
             (click)="popovers.close()"
         >
             <svg sfeIcon="user"></svg>
@@ -34,7 +35,11 @@
         <p class="menu-account" role="none">
             <svg sfeIcon="user"></svg>
             <span>
-                {{ user() ? (user()!.displayName || user()!.userName) : 'Guest' }}
+                @if (user(); as user) {
+                    {{ user.displayName || user.userName }}
+                } @else {
+                    <ng-container i18n="someone browsing without an account">Visitor</ng-container>
+                }
                 <small>{{ config()?.tenant?.name }}</small>
             </span>
         </p>
@@ -44,9 +49,11 @@
         <p
             class="menu-keep-alive-line menu-server-lost failing"
             role="none"
-            title="The connection to the server is lost: changes may not show and actions may fail until it answers again"
+            title="The server doesn't answer: changes may not show and actions may fail until it answers again."
+            i18n-title
         >
-            <span class="menu-keep-alive failing" aria-hidden="true">!</span>Server not answering
+            <span class="menu-keep-alive failing" aria-hidden="true">!</span
+            ><ng-container i18n>Server not answering</ng-container>
         </p>
     } @else if (keepAlive() !== 'none') {
         @if (canSeeKeepAlive()) {
@@ -57,7 +64,8 @@
                 [queryParams]="{ section: 'keepAlive' }"
                 [state]="{ sfeFromLibrary: true }"
                 [class.failing]="keepAlive() === 'failing'"
-                title="Keep alive: what the last pings of the library folder found"
+                title="Open Keep alive: what the last pings of the library's folder found."
+                i18n-title
                 (click)="popovers.close()"
             >
                 <span
@@ -84,10 +92,10 @@
             type="button"
             role="menuitem"
             [disabled]="scan.busy()"
-            [title]="scan.running() ? 'A scan is in progress' : 'Index this folder and its sub-folders for search (asks first)'"
+            [title]="scanTitle()"
             (click)="run(startScan)"
         >
-            <svg sfeIcon="scan"></svg>Scan this folder
+            <svg sfeIcon="scan"></svg><ng-container i18n>Scan this folder</ng-container>
         </button>
     }
     @if (canRemove()) {
@@ -95,20 +103,21 @@
             type="button"
             role="menuitem"
             [disabled]="scan.running()"
-            [title]="scan.running() ? 'A scan is in progress' : 'Take this folder and its sub-folders out of the search index; the files stay on the disk (asks first)'"
+            [title]="removeTitle()"
             (click)="run(removeFromIndex)"
         >
-            <svg sfeIcon="close"></svg>Remove from index…
+            <svg sfeIcon="close"></svg><ng-container i18n>Remove from index…</ng-container>
         </button>
     }
     @if (canExclude()) {
         <button
             type="button"
             role="menuitem"
-            title="Keep this folder out of scans, trickplay or thumbnails, for the whole space"
+            title="Keep this folder out of scans, trickplay or thumbnails, for everyone using this space."
+            i18n-title
             (click)="run(excludeFolder)"
         >
-            <svg sfeIcon="scan"></svg>Scans and previews…
+            <svg sfeIcon="scan"></svg><ng-container i18n>Scans and previews…</ng-container>
         </button>
     }
     @if (otherTenants().length) {
@@ -117,7 +126,8 @@
             <button
                 type="button"
                 role="menuitem"
-                [title]="'Switch to the space ' + tenant.name + ': its own library, tags and settings'"
+                title="Switch to the space “{{ tenant.name }}”: its own library, tags and settings."
+                i18n-title
                 (click)="switchTo(tenant.slug)"
             >
                 <svg sfeIcon="space"></svg>{{ tenant.name }}
@@ -127,30 +137,34 @@
     <hr>
     @if (adminVisible()) {
         <a role="menuitem" routerLink="/admin" [state]="{ sfeFromLibrary: true }" (click)="popovers.close()"
-           title="Settings, tags, duplicates & moved files, background tasks, spaces & accounts, your account and more">
-            <svg sfeIcon="settings"></svg>Administration
+           title="Open the administration: settings, tags, duplicates, tasks, spaces, accounts, your account and more."
+           i18n-title>
+            <svg sfeIcon="settings"></svg><ng-container i18n>Administration</ng-container>
         </a>
     }
     <button
         type="button"
         role="menuitem"
-        title="Show the page full screen, or leave full screen"
+        title="Show the page full screen, or leave full screen."
+        i18n-title
         (click)="run(toggleFullscreen)"
-    ><svg sfeIcon="fullscreen"></svg>Toggle fullscreen</button>
+    ><svg sfeIcon="fullscreen"></svg><ng-container i18n>Full screen</ng-container></button>
     @if (user()) {
         <button
             type="button"
             role="menuitem"
-            title="Sign out of this browser"
+            title="Sign out on this browser."
+            i18n-title
             (click)="run(signOut)"
-        ><svg sfeIcon="signout"></svg>Sign out</button>
+        ><svg sfeIcon="signout"></svg><ng-container i18n>Sign out</ng-container></button>
     } @else {
         <a
             role="menuitem"
             routerLink="/login"
-            title="Sign in with an account"
+            title="Sign in with an account."
+            i18n-title
             (click)="popovers.close()"
-        ><svg sfeIcon="user"></svg>Sign in</a>
+        ><svg sfeIcon="user"></svg><ng-container i18n>Sign in</ng-container></a>
     }
-    <p class="menu-version" role="none" [title]="versionTitle()">SFE {{ config()?.version }}</p>
+    <p class="menu-version" role="none" translate="no" [title]="versionTitle()">SFE {{ config()?.version }}</p>
 </div>

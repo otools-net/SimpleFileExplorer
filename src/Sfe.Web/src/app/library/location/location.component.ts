@@ -11,7 +11,8 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CopyPathService } from '../../core/copy-path.service';
-import { joinParts, plural } from '../../core/format';
+import { joinParts } from '../../core/format';
+import { icu } from '../../core/i18n/icu';
 import { SortField } from '../library.models';
 import { IconComponent } from '../../shared/icon.component';
 import { defaultSort, SEARCH_SORTS } from '../library-route';
@@ -26,13 +27,13 @@ import { FolderNavComponent } from './folder-nav.component';
 import { LocationLinks } from './location-links.service';
 
 const SORT_OPTIONS: [SortField, string][] = [
-    ['name', 'Name'],
-    ['modified', 'Date modified'],
-    ['size', 'Size'],
-    ['type', 'Type'],
-    ['duration', 'Duration'],
-    ['resolution', 'Resolution'],
-    ['path', 'Path'],
+    ['name', $localize`:sort by:Name`],
+    ['modified', $localize`:sort by:Date modified`],
+    ['size', $localize`:sort by:Size`],
+    ['type', $localize`:sort by:Type`],
+    ['duration', $localize`:sort by:Duration`],
+    ['resolution', $localize`:sort by:Resolution`],
+    ['path', $localize`:sort by:Path`],
 ];
 
 /** Where the listing is: folder navigation, breadcrumbs, the search in words, the counts and the sort. */
@@ -61,8 +62,8 @@ export class LocationComponent {
     private readonly contextMenu = inject(ContextMenu);
     protected readonly moreTitle = computed(() =>
         this.store.route().q
-            ? 'Actions on this search'
-            : 'Actions on this folder: new folder, upload, tags, quick link…',
+            ? $localize`Actions on this search.`
+            : $localize`Actions on this folder: new folder, upload, tags, quick link and more.`,
     );
 
     /** The folder's menu (New folder, Upload…, Tags, quick link, Copy full path, Properties…), under the button. */
@@ -86,6 +87,11 @@ export class LocationComponent {
     protected readonly exclusionTitle = computed(() =>
         exclusionTitle(this.exclusions(), this.store.listing()?.path ?? ''),
     );
+    protected readonly exclusionEditTitle = computed(
+        () => $localize`${this.exclusionTitle()}:hint: Click to change it.`,
+    );
+    protected readonly sortAscending = $localize`Ascending order (A to Z, smallest first). Click to reverse it.`;
+    protected readonly sortDescending = $localize`Descending order (Z to A, largest first). Click to reverse it.`;
     /** The default tags of the folder browsed, its own and its parents': for everyone. */
     protected readonly defaultTags = computed(() => {
         const page = this.store.listing();
@@ -93,7 +99,7 @@ export class LocationComponent {
         return defaults && (defaults.own.length || defaults.inherited.length) ? defaults : null;
     });
     protected readonly folderLabel = computed(() =>
-        this.store.route().path ? `“${this.folderName()}”` : 'the top folder',
+        this.store.route().path ? `“${this.folderName()}”` : $localize`the top of the library`,
     );
     protected readonly canExclude = this.folder.canExclude;
 
@@ -129,12 +135,18 @@ export class LocationComponent {
             const total = this.store.total();
             const count = total?.count ?? this.store.items().length;
             const more = total ? total.capped : this.store.hasMore();
-            return count ? `${plural(count, 'result')}${more ? '+' : ''}${page.path ? ` in ${page.path}` : ''}` : '';
+            return count ? searchSummary(count, more, page.path) : '';
         }
         return 'directoryCount' in page
             ? joinParts([
-                  page.directoryCount ? plural(page.directoryCount, 'folder') : null,
-                  page.fileCount ? plural(page.fileCount, 'file') : null,
+                  page.directoryCount
+                      ? icu($localize`{count, plural, one {# folder} other {# folders}}`, {
+                            count: page.directoryCount,
+                        })
+                      : null,
+                  page.fileCount
+                      ? icu($localize`{count, plural, one {# file} other {# files}}`, { count: page.fileCount })
+                      : null,
               ])
             : '';
     });
@@ -144,8 +156,8 @@ export class LocationComponent {
 
     protected readonly scopeTagsTitle = computed(() =>
         this.store.searching()
-            ? 'Add or remove tags on all the results of this search (asks first)'
-            : 'Add or remove tags on all the files of this folder, or of its sub-folders too (asks first)',
+            ? $localize`Add or remove tags on all the results of this search (asks first).`
+            : $localize`Add or remove tags on all the files of this folder, or of its sub-folders too (asks first).`,
     );
 
     protected newFolder(): void {
@@ -165,4 +177,15 @@ export class LocationComponent {
         const sort = (event.target as HTMLSelectElement).value as SortField;
         this.store.navigate({ sort: sort === defaultSort(this.store.route()) ? '' : sort }, { replace: true });
     }
+}
+
+/** "12 results in Photos", "500+ results": the count of a search's results, and where it looks when not everywhere. */
+function searchSummary(count: number, more: boolean, path: string): string {
+    if (path)
+        return more
+            ? icu($localize`{count, plural, one {#+ result in {path}} other {#+ results in {path}}}`, { count, path })
+            : icu($localize`{count, plural, one {# result in {path}} other {# results in {path}}}`, { count, path });
+    return more
+        ? icu($localize`{count, plural, one {#+ result} other {#+ results}}`, { count })
+        : icu($localize`{count, plural, one {# result} other {# results}}`, { count });
 }

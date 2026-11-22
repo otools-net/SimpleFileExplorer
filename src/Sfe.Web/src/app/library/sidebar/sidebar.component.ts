@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ConfigService } from '../../core/config.service';
-import { plural } from '../../core/format';
+import { icu } from '../../core/i18n/icu';
 import { TagSummary, TagUsage } from '../../core/tag.models';
 import { TrashCount } from '../library.models';
 import { readPreference, writePreference } from '../../core/preferences';
@@ -31,16 +31,21 @@ interface Section {
 const FOLDED_PREFERENCE = 'sfe.sidebar.sections';
 
 const SECTIONS: Section[] = [
-    { key: 'popular', title: 'Most popular', empty: 'No file is tagged yet.' },
+    { key: 'popular', title: $localize`Most popular`, empty: $localize`No file is tagged yet.` },
     {
         key: 'searched',
-        title: 'Last searched',
-        empty: 'Search with t:name to see the tags here.',
+        title: $localize`Last searched`,
+        empty: $localize`Search with t:name to see the tags here.`,
         history: true,
         folded: true,
     },
-    { key: 'viewed', title: 'Last viewed', empty: 'Open a tagged file to see its tags here.', history: true },
-    { key: 'lucky', title: 'I feel lucky', empty: 'No other tags.', folded: true },
+    {
+        key: 'viewed',
+        title: $localize`Last viewed`,
+        empty: $localize`Open a tagged file to see its tags here.`,
+        history: true,
+    },
+    { key: 'lucky', title: $localize`I feel lucky`, empty: $localize`No other tags.`, folded: true },
 ];
 
 /**
@@ -61,7 +66,7 @@ const SECTIONS: Section[] = [
     host: {
         class: 'sidebar',
         id: 'sidebar',
-        'aria-label': 'Quick links and tags',
+        '[attr.aria-label]': 'label',
         role: 'complementary',
         '(document:keydown.escape)': 'closeDrawer()',
         // A press, not a click: iOS sends no click for a tap on what isn't clickable (the page's text, an empty area).
@@ -77,6 +82,7 @@ export class SidebarComponent implements OnInit {
     protected readonly tagMenu = inject(TagMenu);
     private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     protected readonly sections = SECTIONS;
+    protected readonly label = $localize`Quick links and tags`;
     /** The rights of Administration › File management › Trash. */
     protected readonly trashRights = [Rights.deleteFiles, Rights.deletePermanently];
     private readonly folded = signal(readFolded());
@@ -98,9 +104,14 @@ export class SidebarComponent implements OnInit {
     }
 
     protected trashTitle(trash: TrashCount | null): string {
-        if (!trash) return 'Trash';
-        if (!trash.count) return 'Trash: empty';
-        return trash.more ? `Trash: more than ${trash.count} items` : `Trash: ${plural(trash.count, 'item')}`;
+        if (!trash) return $localize`Open the trash.`;
+        if (!trash.count) return $localize`Open the trash. It's empty.`;
+        const count = trash.count;
+        return trash.more
+            ? icu($localize`Open the trash. It holds more than {count, plural, one {# item} other {# items}}.`, {
+                  count,
+              })
+            : icu($localize`Open the trash. It holds {count, plural, one {# item} other {# items}}.`, { count });
     }
 
     protected isFolded(section: Section): boolean {
@@ -112,8 +123,15 @@ export class SidebarComponent implements OnInit {
         writePreference(FOLDED_PREFERENCE, JSON.stringify(this.folded()));
     }
 
+    protected foldTitle(section: Section, open: boolean): string {
+        return open
+            ? $localize`Fold the list “${section.title}:list:”.`
+            : $localize`Show the list “${section.title}:list:”.`;
+    }
+
     protected countTitle(usage: TagUsage): string {
-        return plural(usage.fileCount, 'library file');
+        const count = usage.fileCount;
+        return icu($localize`{count, plural, one {# file has this tag} other {# files have this tag}}.`, { count });
     }
 
     protected search(tag: TagSummary): void {

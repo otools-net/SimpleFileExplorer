@@ -70,24 +70,41 @@ export class MainMenuComponent {
     protected readonly serverLost = inject(ChangeFeed).serverLost;
     protected readonly warning = computed(() => this.serverLost() || this.keepAlive() === 'failing');
     protected readonly keepAliveText = computed(() =>
-        this.keepAlive() === 'failing' ? 'Network folder not answering' : 'Network folder answering',
+        this.keepAlive() === 'failing' ? $localize`Network folder not answering` : $localize`Network folder answering`,
     );
     protected readonly canSeeKeepAlive = computed(() => this.configService.rights().has(Rights.keepAliveSettings));
     protected readonly buttonTitle = computed(() => {
-        const title = 'Scan this folder, administration, your account and more';
-        if (this.serverLost()) return `${title} · Server not answering`;
-        return this.keepAlive() === 'none' ? title : `${title} · ${this.keepAliveText()}`;
+        if (this.serverLost())
+            return $localize`Scanning, administration, your account and more. The server isn't answering.`;
+        if (this.keepAlive() === 'failing')
+            return $localize`Scanning, administration, your account and more. The network folder isn't answering.`;
+        if (this.keepAlive() === 'ok')
+            return $localize`Scanning, administration, your account and more. The network folder is answering.`;
+        return $localize`Scanning, administration, your account and more.`;
     });
     protected readonly buttonLabel = computed(() =>
         this.serverLost()
-            ? 'More (server not answering)'
+            ? $localize`More (server not answering)`
             : this.keepAlive() === 'failing'
-              ? 'More (network folder not answering)'
-              : 'More',
+              ? $localize`More (network folder not answering)`
+              : $localize`More`,
+    );
+    protected readonly scanTitle = computed(() =>
+        this.scan.running()
+            ? $localize`A scan is in progress.`
+            : $localize`Bring the index of this folder and its sub-folders up to date, for search (asks first).`,
+    );
+    protected readonly removeTitle = computed(() =>
+        this.scan.running()
+            ? $localize`A scan is in progress.`
+            : $localize`Take this folder and its sub-folders out of the index; the files stay on the disk \
+(asks first).`,
     );
     protected readonly versionTitle = computed(() => {
         const config = this.config();
-        return config?.commit ? `Version ${config.version}, commit ${config.commit}` : `Version ${config?.version}`;
+        return config?.commit
+            ? $localize`Version ${config.version}:version:, commit ${config.commit}:commit:`
+            : $localize`Version ${config?.version}:version:`;
     });
 
     protected readonly startScan = () => this.scan.start();

@@ -2,7 +2,7 @@
     @if (links.folderNav(); as nav) {
         <nav [sfeFolderNav]="nav"></nav>
     }
-    <nav class="crumbs" aria-label="Location">
+    <nav class="crumbs" aria-label="Location" i18n-aria-label="where the listing is">
         @for (crumb of links.crumbs(); track crumb.path; let first = $first, last = $last) {
             @if (!first) {
                 <svg sfeIcon="right" class="sep"></svg>
@@ -22,7 +22,7 @@
         }
         @if (store.route().q) {
             <svg sfeIcon="right" class="sep"></svg>
-            <span class="current search-label">Search “{{ store.route().q }}”</span>
+            <span class="current search-label" i18n>Search “{{ store.route().q }}”</span>
         }
     </nav>
     @if (!store.route().q) {
@@ -44,7 +44,9 @@
             type="button"
             class="icon-button small ghost upload-button location-action"
             aria-label="Upload files"
-            title="Upload files into this folder (or drop them on the page)"
+            i18n-aria-label
+            title="Upload files into this folder, or drop them on the page."
+            i18n-title
             (click)="filesInput.click()"
         >
             <svg sfeIcon="upload"></svg>
@@ -53,7 +55,9 @@
             type="button"
             class="icon-button small ghost upload-folder-button location-action"
             aria-label="Upload a folder"
-            title="Upload a folder, with everything in it, into this folder"
+            i18n-aria-label
+            title="Upload a folder, with everything in it, into this folder."
+            i18n-title
             (click)="folderInput.click()"
         >
             <svg sfeIcon="folder-up"></svg>
@@ -66,7 +70,9 @@
             type="button"
             class="icon-button small ghost new-file-button location-action"
             aria-label="New file"
-            title="New empty file in this folder"
+            i18n-aria-label
+            title="Make a new empty file in this folder."
+            i18n-title
             (click)="newFile()"
         >
             <svg sfeIcon="file-plus"></svg>
@@ -77,7 +83,9 @@
             type="button"
             class="icon-button small ghost new-folder-button location-action"
             aria-label="New folder"
-            title="New folder in this folder (Shift+N)"
+            i18n-aria-label
+            title="Make a new folder in this folder (Shift+N)."
+            i18n-title
             (click)="newFolder()"
         >
             <svg sfeIcon="folder-plus"></svg>
@@ -89,7 +97,9 @@
             type="button"
             class="icon-button small ghost copy-folder-path location-action"
             aria-label="Copy the full path of this folder"
-            title="Copy the full path of this folder"
+            i18n-aria-label
+            title="Copy the full path of this folder on the server."
+            i18n-title
             (click)="copyPaths.copy(store.route().path)"
         >
             <svg sfeIcon="copy"></svg>
@@ -120,7 +130,7 @@
                 <button
                     type="button"
                     class="exclusion-chip"
-                    [title]="exclusionTitle() + ' Click to change it.'"
+                    [title]="exclusionEditTitle()"
                     (click)="openExclusions()"
                 >{{ exclusion }}</button>
             } @else {
@@ -129,7 +139,7 @@
         }
     </p>
     <div class="sort">
-        <label for="sort-select" class="visually-hidden">Sort by</label>
+        <label for="sort-select" class="visually-hidden" i18n>Sort by</label>
         <select id="sort-select" (change)="changeSort($event)">
             @for (option of sortOptions; track option[0]) {
                 <!-- Only searches have a path, duration or resolution order. -->
@@ -142,7 +152,8 @@
             type="button"
             class="icon-button small sort-direction"
             aria-label="Sort direction"
-            title="Sort direction"
+            i18n-aria-label
+            [title]="store.route().desc ? sortDescending : sortAscending"
             [class.desc]="store.route().desc"
             (click)="store.navigate({ desc: !store.route().desc }, { replace: true })"
         >

@@ -70,7 +70,7 @@ describe('SidebarComponent', () => {
         expect(names('Most popular')).toEqual(['Sun', 'Science "Fiction"']);
         expect(section('Most popular').querySelector('.tag-count')!.textContent).toBe((1234).toLocaleString());
         expect(section('Most popular').querySelector('.tag-count')!.getAttribute('title')).toBe(
-            `${(1234).toLocaleString()} library files`,
+            `${(1234).toLocaleString()} files have this tag.`,
         );
         expect(names('Last viewed')).toEqual(['Sun']);
     });
@@ -186,7 +186,7 @@ describe('SidebarComponent', () => {
             expect(icon()).toBe('#i-trash');
             expect(badge()).toBeNull();
             expect(link().classList).not.toContain('full');
-            expect(link().getAttribute('aria-label')).toBe('Trash: empty');
+            expect(link().getAttribute('aria-label')).toBe("Open the trash. It's empty.");
         });
 
         it('shows a trash holding items, with their number', async () => {
@@ -196,7 +196,7 @@ describe('SidebarComponent', () => {
             expect(icon()).toBe('#i-trash-full');
             expect(badge()).toBe('3');
             expect(link().classList).toContain('full');
-            expect(link().getAttribute('aria-label')).toBe('Trash: 3 items');
+            expect(link().getAttribute('aria-label')).toBe('Open the trash. It holds 3 items.');
         });
 
         it('stops counting at 99', async () => {
@@ -204,7 +204,7 @@ describe('SidebarComponent', () => {
             await create();
 
             expect(badge()).toBe('99+');
-            expect(link().title).toBe('Trash: more than 99 items');
+            expect(link().title).toBe('Open the trash. It holds more than 99 items.');
         });
 
         it('counts again when the change feed says the trash changed', async () => {

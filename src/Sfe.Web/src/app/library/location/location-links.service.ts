@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { ConfigService } from '../../core/config.service';
 import { baseName, parentPath } from '../../core/paths';
+import { FolderSiblings } from '../library.models';
 import { ListingStore } from '../listing.store';
 
 export interface FolderLink {
@@ -40,25 +41,32 @@ export class LocationLinks {
         if (q || !path) return null;
         const parent = parentPath(path);
         const siblings = this.store.siblings();
-        const where = siblings?.position ? ` (${siblings.position} of ${siblings.count})` : '';
+        const parentName = baseName(parent) || this.config.config()?.rootName;
         return [
-            { path: parent, title: `Parent folder: ${baseName(parent) || this.config.config()?.rootName} (Backspace)` },
+            { path: parent, title: $localize`Go up to “${parentName}:folder:” (Backspace).` },
             {
                 path: siblings?.previous?.path ?? null,
                 title: siblings?.previous
-                    ? `Previous folder: ${siblings.previous.name}${where}`
+                    ? siblingTitle($localize`Previous folder: “${siblings.previous.name}:folder:”.`, siblings)
                     : siblings
-                      ? 'First folder'
-                      : 'Previous folder',
+                      ? $localize`This is the first folder.`
+                      : $localize`Previous folder`,
             },
             {
                 path: siblings?.next?.path ?? null,
                 title: siblings?.next
-                    ? `Next folder: ${siblings.next.name}${where}`
+                    ? siblingTitle($localize`Next folder: “${siblings.next.name}:folder:”.`, siblings)
                     : siblings
-                      ? 'Last folder'
-                      : 'Next folder',
+                      ? $localize`This is the last folder.`
+                      : $localize`Next folder`,
             },
         ];
     });
+}
+
+/** A previous or next folder's hint, with where the folder browsed sits among its siblings when known. */
+function siblingTitle(title: string, siblings: FolderSiblings): string {
+    if (!siblings.position) return title;
+    const { position, count } = siblings;
+    return $localize`${title}:hint: This is folder ${position}:position: of ${count}:count:.`;
 }

@@ -13,7 +13,9 @@ themselves follow [ui-texts](ui-texts.md).
 
 - Nothing to load or look up while English is the only language: an unmarked `$localize` returns its text; the cost is
   the `$localize` polyfill (~0.5 KB gzip, plus the en-GB locale data the build adds: polyfills 1.9 KB in all).
-  `intl-messageformat` is ~10 KB gzip, in the bundle once code uses `icu()`.
+  `intl-messageformat` is ~10 KB gzip, in the bundle once code uses `icu()`. Since 2.5a (the sidebar, location bar
+  and search box use it) it is in `main`: the initial bundle passed the 1 MB error budget (1.01 MB raw, 239 KB
+  transferred), raised to 1.1 MB in `angular.json` (2026-11-22).
 - The texts stay in the templates (no keys to invent, no JSON to keep in step by hand); `ng extract-i18n` finds them,
   with descriptions and meanings for translators; templates get ICU plurals and selects natively.
 - A language later: either one build per language (`localize` in `angular.json`, served under `/fr/`…), or the
@@ -74,6 +76,8 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
   line break is safe between cases, not inside one.
 - A text that also builds an id, a key or a `track` (the administration's group titles made `admin-group-viewing`)
   changes with the language: give the thing a stable key and look its title up (`ADMIN_GROUP_TITLES`).
+- A component's `host` metadata takes only static strings (`'aria-label': 'Quick links'` can't be a
+  `$localize`): bind it to a field instead (`'[attr.aria-label]': 'label'`, ``label = $localize`Quick links` ``).
 - A text split into elements (`<span translate="no">ffmpeg</span> <span i18n>(optional)</span>`) loses the space
   between them: Angular drops whitespace-only text between two elements. Keep the space inside one of them.
 - Error messages shown with a prefix (`Could not load the spaces: …`): keep the reason alone in the signal and write

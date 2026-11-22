@@ -225,7 +225,7 @@ describe('ConnectionLinksComponent', () => {
         const links = [...(fixture.nativeElement as HTMLElement).querySelectorAll('a')];
         expect(links.map((link) => link.textContent!.trim())).toEqual(['My Dropbox', 'Old']);
         expect(links[0].getAttribute('href')).toBe('/?c=7');
-        expect(links[1].title).toContain('signed in to again');
+        expect(links[1].title).toContain('sign in to it again');
     });
 
     it('stays hidden and asks nothing without connections', async () => {

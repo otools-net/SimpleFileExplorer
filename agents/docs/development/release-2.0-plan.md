@@ -121,6 +121,23 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     `core/`) marked; level-dependent buttons and titles as ICU `select`; `plural()` out of the area; the connect
     dialog's template re-indented by hand. Toasts, confirms and `connections-landing.ts` left for 2.8.
   Toasts and confirms of these areas stay for 2.8 (as in 2.3).
+  **2.5 split** (2026-11-22: `app/library/` ~8k lines of TS and `menus/` 1k, ~160 unmarked template texts, many
+  texts in code; tags, duplicates and trickplay had no area):
+  - [x] **2.5a top bar, sidebar, location, quick links** (`library/topbar/`, `library/sidebar/`,
+    `library/location/`, `library/quick-links/`). Done 2026-11-22: 9 files at 0 unmarked texts (86 gone); `plural()`
+    out of these folders (the quick links' "added" toast an ICU plural); host `aria-label`s bound to `$localize`
+    fields; search syntax rows as sentences, tracked by `$index`; ⋮ "Toggle fullscreen" → **Full screen**, "Guest"
+    → **Visitor**; the folder buttons' hints "Go up to “…”", "This is folder 2 of 5."; the menu's "Remove from
+    index…" kept (settings and docs name it). `default-tags-badge`'s "the top folder" left for 2.5d. Screenshots
+    `main-menu.png`, `search-help.png` retaken; the docs-screenshots tool follows the new hints. `icu()` brought
+    `intl-messageformat` into `main`: the initial error budget raised from 1 MB to 1.1 MB.
+  - [ ] **2.5b listing and menus** (`library/items/`, `library/everywhere/`, selection bar, `library/folder-menu.ts`,
+    `files/item-menu.ts`, `menus/`, `library/*.ts`: connection problems and pages). 2.9 reorders the menus; the
+    labels marked here move with them.
+  - [ ] **2.5c scan and the wording of searches** (`library/scan/`, `library/search-explain/`: sentences built from
+    the query's parts, a session of its own).
+  - [ ] **2.5d tags, duplicates, missing files, similar videos, trickplay** (`app/tags/`, `app/tracking/`,
+    `app/trickplay/`).
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
   (dividers) to `MenuEntry`; one action registry used by the item menu, folder menu and selection bar; order
@@ -270,9 +287,11 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-21):** steps 1.1 to 2.3 and 2.4a–2.4d done (see their ticks; 2.4 was split in four).
-  Next: **2.5** (library, listing and menus: likely too big for one session, split it first), then 2.6–2.8. Texts marked and rewritten to [ui-texts](ui-texts.md), [translations](translations.md)
-  says how; `app/access/` is a worked example.
+- **Last session (2026-11-22):** steps 1.1 to 2.4d and 2.5a done (see their ticks; 2.4 and 2.5 were split in
+  four). Next: **2.5b** (listing and menus), then 2.5c, 2.5d, 2.6–2.8. Texts marked and rewritten to
+  [ui-texts](ui-texts.md), [translations](translations.md) says how; `app/access/` is a worked example.
+- The docs-screenshots tool clicks elements by the start of their `title` (`clickTitle`): a hint rewritten updates
+  `agents/tools/docs-screenshots/shots.mjs` too (grep it for the old words).
 - **Resume:** `git status` on `edge`; anything uncommitted belongs to the step named here. Run `npm test` (from
   `C:/workspace/…` in Git Bash, not `/c/…`: [testing-client](testing-client.md)), the step's e2e specs
   (`cd tests/e2e; npm run e2e -- specs/<file> --project=android --project=iphone`) and

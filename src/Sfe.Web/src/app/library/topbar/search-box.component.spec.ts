@@ -183,7 +183,7 @@ describe('SearchBoxComponent', () => {
             store.status.set('ready');
             await settle();
             expect(count()!.textContent).toBe((1234).toLocaleString());
-            expect(count()!.title).toBe(`${(1234).toLocaleString()} files found`);
+            expect(count()!.title).toBe(`${(1234).toLocaleString()} files found.`);
 
             store.total.set({ count: 10000, capped: true });
             await settle();

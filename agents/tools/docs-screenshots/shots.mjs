@@ -90,13 +90,13 @@ const scenes = {
         await b.shot(OUT + 'scan-finished.png', { x: 0, y: 0, width: 1280, height: 120 });
         await b.open('?path=Photos%2F2024%20Beach%20trip');
         await b.shot(OUT + 'library-grid.png');
-        await b.clickTitle('List');
+        await b.clickTitle('Show the items as a list');
         await sleep(1500);
         await b.shot(OUT + 'library-list.png');
-        await b.clickTitle('One per row');
+        await b.clickTitle('Show one item per row');
         await sleep(2000);
         await b.shot(OUT + 'library-single.png');
-        await b.clickTitle('Grid');
+        await b.clickTitle('Show the items as a grid');
         await b.open('?path=Photos');
         await b.shot(OUT + 'library-folders.png');
         await b.close();
@@ -116,7 +116,7 @@ const scenes = {
         const phone = await session({ width: 390, height: 844, mobile: true });
         await phone.open('?path=Photos');
         await phone.clickTitle('Show the sidebar');
-        await phone.clickTitle('Edit: move and remove');
+        await phone.clickTitle('Edit the quick links: move');
         await sleep(400);
         await phone.shot(OUT + 'phone-quick-links.png');
         await phone.close();
@@ -124,7 +124,7 @@ const scenes = {
     async menu() {
         const b = await session();
         await b.open('?path=Photos');
-        await b.clickTitle('Scan this folder, administration');
+        await b.clickTitle('Scanning, administration');
         await b.shot(OUT + 'main-menu.png');
         await b.close();
     },
@@ -139,7 +139,7 @@ const scenes = {
         await b.eval(settings({ 'keepAlive.mode': 'always', 'keepAlive.folders': ['Gone'] }));
         await sleep(2000);
         await b.open('?path=Photos', 3000);
-        await b.clickTitle('Scan this folder, administration');
+        await b.clickTitle('Scanning, administration');
         await b.shot(OUT + 'main-menu-keep-alive.png', { x: 960, y: 0, width: 320, height: 200 });
         await b.eval(settings({ 'keepAlive.mode': 'off', 'keepAlive.folders': [] }));
         await b.close();
@@ -451,10 +451,10 @@ const scenes = {
         const tile = await b.rect('.files > *:nth-child(2)');
         await b.shot(OUT + 'trickplay-hover.png', { x: Math.max(0, tile.x - 16), y: Math.max(0, tile.y - 16), width: tile.width + 32, height: tile.height + 32 });
         await b.open('?path=Music', 3000);
-        await b.clickTitle('List');
+        await b.clickTitle('Show the items as a list');
         await sleep(1200);
         await b.shot(OUT + 'library-audio.png', { x: 0, y: 0, width: 1280, height: 360 });
-        await b.clickTitle('Grid');
+        await b.clickTitle('Show the items as a grid');
         await b.close();
     },
     async tags() {
@@ -570,7 +570,7 @@ const scenes = {
         await b.shot(OUT + 'search-history.png', { x: 0, y: 0, width: 1280, height: 420 });
         await b.key('Escape', 'Escape', 27);
         await b.open('');
-        await b.clickTitle('Search syntax and tips');
+        await b.clickTitle('Show the search syntax and tips');
         await sleep(800);
         await b.shot(OUT + 'search-help.png');
         await b.close();
@@ -578,7 +578,7 @@ const scenes = {
     async removeFromIndex() {
         const b = await session();
         await b.open('?path=Inbox');
-        await b.clickTitle('Scan this folder, administration');
+        await b.clickTitle('Scanning, administration');
         await b.clickText('[role=menu] button, [role=menuitem]', 'Remove from index');
         await sleep(1500);
         await b.shot(OUT + 'remove-from-index.png');
@@ -794,7 +794,7 @@ const scenes = {
         try {
             const b = await session();
             await b.open('?path=Inbox');
-            await b.clickTitle('List');
+            await b.clickTitle('Show the items as a list');
             const job = await b.eval(`fetch('api/v1/files/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ kind: 'copy', paths: ['Documents/Camera roll'], target: 'Inbox' }) }).then(r => r.json()).then(j => j.id)`);
             await b.waitFor('.write-progress');
             await sleep(1200);
@@ -802,7 +802,7 @@ const scenes = {
             await b.shot(OUT + 'partial-file.png', { x: 0, y: Math.max(0, row.y - 100), width: 1280, height: 220 });
             await b.eval(`fetch('api/v1/files/jobs/${job}/cancel', { method: 'POST', headers: { 'X-SFE-Request': '1' } }).then(r => r.status)`);
             await sleep(1500);
-            await b.clickTitle('Grid');
+            await b.clickTitle('Show the items as a grid');
             await b.close();
         } finally {
             fs.rmSync(source, { recursive: true, force: true });
@@ -824,7 +824,7 @@ const scenes = {
         await b.shot(OUT + 'rename-dialog.png');
         await b.key('Escape', 'Escape', 27);
         await sleep(400);
-        await b.clickTitle('New folder in this folder');
+        await b.clickTitle('Make a new folder in this folder');
         await sleep(600);
         await b.shot(OUT + 'new-folder-dialog.png');
         await b.key('Escape', 'Escape', 27);

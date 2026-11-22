@@ -84,13 +84,13 @@ describe('LocationStripComponent', () => {
         expect(bar(element).classList).toContain('shown');
         expect(bar(element).hasAttribute('inert')).toBe(false);
         expect([...element.querySelectorAll<HTMLAnchorElement>('.folder-nav a')].map((a) => a.title)).toEqual([
-            'Parent folder: 2020 (Backspace)',
-            'Previous folder: Spring (2 of 2)',
-            'Last folder',
+            'Go up to “2020” (Backspace).',
+            'Previous folder: “Spring”. This is folder 2 of 2.',
+            'This is the last folder.',
         ]);
         expect(title(element).querySelector('.parent')!.textContent).toBe('2020');
         expect(title(element).querySelector('.current')!.textContent).toBe('Summer');
-        expect(title(element).title).toBe('Back to the top: Library / Media / 2020 / Summer');
+        expect(title(element).title).toBe('Back to the top of “Library / Media / 2020 / Summer”.');
     });
 
     it('names the search, without folder buttons, and the root alone at the top', async () => {

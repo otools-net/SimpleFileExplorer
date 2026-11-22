@@ -11,7 +11,7 @@ import { FolderLink } from './location-links.service';
     selector: 'nav[sfeFolderNav]',
     imports: [IconComponent, RouterLink, ContextMenuDirective],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { class: 'folder-nav', 'aria-label': 'Nearby folders' },
+    host: { class: 'folder-nav', '[attr.aria-label]': 'label' },
     template: `
         @for (link of links(); track $index) {
             @if (link.path !== null) {
@@ -44,5 +44,6 @@ export class FolderNavComponent {
     protected readonly folder = inject(FolderMenu);
     readonly links = input.required<FolderLink[]>({ alias: 'sfeFolderNav' });
     protected readonly icons = ['up', 'left', 'right'];
-    protected readonly labels = ['Parent folder', 'Previous folder', 'Next folder'];
+    protected readonly labels = [$localize`Parent folder`, $localize`Previous folder`, $localize`Next folder`];
+    protected readonly label = $localize`Nearby folders`;
 }

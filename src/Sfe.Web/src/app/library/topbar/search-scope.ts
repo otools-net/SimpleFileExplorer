@@ -11,17 +11,19 @@ export interface SearchScopes {
 
 /** The scope's button text: the folder, the location, or everywhere. */
 export function scopeText(route: LibraryRoute, scopes: SearchScopes): string {
-    if (route.q && route.all) return 'everywhere';
-    if (route.path) return `in ${route.path.split('/').pop()}`;
-    return route.c || (route.q && scopes.everywhere) ? `in ${scopes.location}` : '';
+    if (route.q && route.all) return $localize`:search scope chip:everywhere`;
+    if (route.path) return $localize`:search scope chip:in ${route.path.split('/').pop()}:folder:`;
+    return route.c || (route.q && scopes.everywhere) ? $localize`:search scope chip:in ${scopes.location}:place:` : '';
 }
 
 /** The scope's button hint. */
 export function scopeTitle(route: LibraryRoute, scopes: SearchScopes): string {
-    if (!route.q) return route.path ? `Searches will look inside “${route.path}”.` : '';
-    if (route.all) return 'Searching the library and every connection, each apart. Click to choose where to search.';
-    const where = route.path ? `“${route.path}”` : scopes.location;
-    return `Searching ${where}. Click to choose where to search.`;
+    if (!route.q) return route.path ? $localize`Searches will look inside “${route.path}:folder:”.` : '';
+    if (route.all)
+        return $localize`Searching the library and every connection, each apart. Click to choose where to search.`;
+    return route.path
+        ? $localize`Searching “${route.path}:folder:”. Click to choose where to search.`
+        : $localize`Searching ${scopes.location}:place:. Click to choose where to search.`;
 }
 
 /**
@@ -38,26 +40,26 @@ export function scopeEntries(
     if (route.path)
         entries.push({
             id: 'folder',
-            label: `In “${route.path.split('/').pop()}”`,
+            label: $localize`In “${route.path.split('/').pop()}:folder:”`,
             icon: 'folder',
-            title: `Search “${route.path}” and the folders inside it`,
+            title: $localize`Search “${route.path}:path:” and the folders inside it.`,
             checked: !all,
             run: () => go({ all: false }),
         });
     entries.push({
         id: 'location',
-        label: `All of ${scopes.location}`,
+        label: $localize`All of ${scopes.location}:place:`,
         icon: route.c ? 'globe' : 'space',
-        title: `Search everything in ${scopes.location}`,
+        title: $localize`Search everything in ${scopes.location}:place:.`,
         checked: !all && !route.path,
         run: () => go({ path: '', all: false }),
     });
     if (scopes.everywhere)
         entries.push({
             id: 'everywhere',
-            label: 'Everywhere',
+            label: $localize`Everywhere`,
             icon: 'search',
-            title: 'Search the library and every connection you use; the results come by location',
+            title: $localize`Search the library and every connection you use; the results come by place.`,
             checked: all,
             run: () => go({ all: true }),
         });

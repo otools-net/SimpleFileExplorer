@@ -198,6 +198,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   **Add for this space** and **Add for the server**; a group's choice reads **Reads it** / **Reads and changes it**;
   the log's retention line and a connection's index status are full sentences. Their texts are ready for
   translation.
+- **Top bar, sidebar and location bar reworded**: the ⋮ menu, the search box and its syntax help, the search's scope
+  menu, the sidebar (quick links, connections, tag lists, trash), the folder buttons and the location bar say what a
+  click does in full sentences (the trash's hint counts its items, the folder buttons say "This is folder 2 of 5");
+  the ⋮ menu's **Toggle fullscreen** is now **Full screen**, and someone browsing without an account shows as
+  **Visitor**. Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

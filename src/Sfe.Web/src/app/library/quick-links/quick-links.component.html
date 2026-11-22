@@ -1,13 +1,13 @@
 <div class="sidebar-heading">
-    <h2>Quick links</h2>
+    <h2 i18n>Quick links</h2>
     @if (links.links().length) {
         <button
             type="button"
             class="icon-button ghost small quick-links-edit"
             [class.active]="editing()"
             [attr.aria-pressed]="editing()"
-            [title]="editing() ? 'Done' : 'Edit: move and remove the links'"
-            [attr.aria-label]="editing() ? 'Done' : 'Edit the quick links'"
+            [title]="editing() ? doneTitle : editTitle"
+            [attr.aria-label]="editing() ? doneLabel : editLabel"
             (click)="editing.set(!editing())"
         >
             <svg [sfeIcon]="editing() ? 'check' : 'edit'"></svg>
@@ -60,8 +60,9 @@
                         type="button"
                         class="icon-button ghost small"
                         [disabled]="first"
-                        [title]="'Move “' + link.name + '” up'"
-                        [attr.aria-label]="'Move ' + link.name + ' up'"
+                        title="Move “{{ link.name }}” up."
+                        i18n-title
+                        [attr.aria-label]="moveUpLabel(link)"
                         (click)="links.move(link.path, i - 1)"
                     >
                         <svg sfeIcon="up"></svg>
@@ -70,8 +71,9 @@
                         type="button"
                         class="icon-button ghost small"
                         [disabled]="last"
-                        [title]="'Move “' + link.name + '” down'"
-                        [attr.aria-label]="'Move ' + link.name + ' down'"
+                        title="Move “{{ link.name }}” down."
+                        i18n-title
+                        [attr.aria-label]="moveDownLabel(link)"
                         (click)="links.move(link.path, i + 2)"
                     >
                         <svg sfeIcon="down"></svg>
@@ -80,8 +82,8 @@
                 <button
                     type="button"
                     class="icon-button ghost small quick-link-remove"
-                    [title]="'Remove “' + link.name + '” from the quick links (the ' + kindWord(link) + ' stays)'"
-                    [attr.aria-label]="'Remove ' + link.name + ' from the quick links'"
+                    [title]="removeTitle(link)"
+                    [attr.aria-label]="removeLabel(link)"
                     (click)="links.remove(link.path)"
                 >
                     <svg sfeIcon="close"></svg>

@@ -6,7 +6,9 @@
     type="search"
     role="combobox"
     placeholder="Search the index…"
+    i18n-placeholder
     aria-label="Search"
+    i18n-aria-label
     enterkeyhint="search"
     aria-autocomplete="list"
     [attr.aria-controls]="suggesting() ? listId : null"
@@ -36,23 +38,24 @@
     type="button"
     class="icon-button ghost search-explain-button"
     aria-label="Explain this search"
+    i18n-aria-label
     [attr.aria-controls]="search.explainOpen() ? 'search-explain' : null"
     [hidden]="!search.canExplain()"
     [attr.aria-pressed]="search.explainOpen()"
-    [title]="search.explainOpen() ? 'Hide the explanation of this search' : 'Explain this search in plain words'"
+    [title]="search.explainOpen() ? hideExplanation : showExplanation"
     (click)="search.setExplainOpen(!search.explainOpen())"
 >
     <svg sfeIcon="explain"></svg>
 </button>
-<button type="button" class="icon-button ghost" aria-label="Search syntax" title="Search syntax and tips (?)"
-        aria-haspopup="dialog" (click)="help.open()">
+<button type="button" class="icon-button ghost" aria-label="Search syntax" i18n-aria-label
+        title="Show the search syntax and tips (?)." i18n-title aria-haspopup="dialog" (click)="help.open()">
     <svg sfeIcon="help"></svg>
 </button>
 <sfe-search-help #help (use)="addTerm($event)" />
 <ul
     class="popover tag-options search-tag-options"
     role="listbox"
-    [attr.aria-label]="recent().length ? 'Recent searches' : 'Tags'"
+    [attr.aria-label]="recent().length ? recentLabel : tagsLabel"
     [id]="listId"
     [hidden]="!suggesting()"
 >
@@ -62,7 +65,8 @@
             class="search-history-option"
             [id]="listId + '-' + index"
             [attr.aria-selected]="index === active()"
-            title="Search again"
+            title="Search this again."
+            i18n-title
             (mousedown)="$event.preventDefault()"
             (click)="pickRecent(query)"
             [sfeContextMenu]="recentTarget(query)"
@@ -71,7 +75,8 @@
             <span class="search-history-text">@for (part of parts(query); track $index) {@if (part.mark)
             {<b>{{ part.text }}</b>} @else {<ng-container>{{ part.text }}</ng-container>}}</span>
             <button type="button" class="icon-button ghost small" aria-label="Remove from the search history"
-                    title="Remove from the search history" (click)="removeRecent($event, query)">
+                    i18n-aria-label title="Remove this search from the search history." i18n-title
+                    (click)="removeRecent($event, query)">
                 <svg sfeIcon="close"></svg>
             </button>
         </li>

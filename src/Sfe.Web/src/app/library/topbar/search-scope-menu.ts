@@ -31,7 +31,7 @@ export class SearchScopeMenu {
 
     /** The menu of the chip. */
     target(): MenuTarget {
-        return { kind: 'overflow', key: 'searchScope', name: 'Search in', entries: () => this.entries() };
+        return { kind: 'overflow', key: 'searchScope', name: $localize`Search in`, entries: () => this.entries() };
     }
 
     /** "Search in" for the search's menu; null when there is only one place to search. */
@@ -40,9 +40,9 @@ export class SearchScopeMenu {
         if (entries.length < 2) return null;
         return {
             id: 'searchIn',
-            label: 'Search in',
+            label: $localize`Search in`,
             icon: 'search',
-            title: 'This folder, all of this place, or everywhere',
+            title: $localize`Choose where to search: this folder, all of this place, or everywhere.`,
             submenu: () => this.entries(),
         };
     }

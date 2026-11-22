@@ -10,7 +10,7 @@ import {
     viewChild,
 } from '@angular/core';
 import { Api } from '../../core/api.service';
-import { plural } from '../../core/format';
+import { icu } from '../../core/i18n/icu';
 import { TagDetails } from '../../core/tag.models';
 import { ContextMenu, ContextMenuDirective, MenuTarget } from '../../menus/context-menu';
 import { IconComponent } from '../../shared/icon.component';
@@ -70,6 +70,10 @@ export class SearchBoxComponent {
     protected readonly scopeText = computed(() => scopeText(this.store.route(), this.scopeMenu.scopes()));
     protected readonly scopeTitle = computed(() => scopeTitle(this.store.route(), this.scopeMenu.scopes()));
     protected readonly describe = describeTag;
+    protected readonly hideExplanation = $localize`Hide the explanation of this search.`;
+    protected readonly showExplanation = $localize`Explain this search in plain words.`;
+    protected readonly recentLabel = $localize`Recent searches`;
+    protected readonly tagsLabel = $localize`Tags`;
     /** How many files the search found, once its results are listed and only while the box still holds its query. */
     protected readonly found = computed(() => {
         const q = this.store.route().q;
@@ -80,7 +84,9 @@ export class SearchBoxComponent {
         const more = total ? total.capped : this.store.hasMore();
         return {
             text: `${count.toLocaleString()}${more ? '+' : ''}`,
-            title: `${plural(count, 'file')}${more ? ' or more' : ''} found`,
+            title: more
+                ? icu($localize`{count, plural, one {# file or more found} other {# files or more found}}.`, { count })
+                : icu($localize`{count, plural, one {# file found} other {# files found}}.`, { count }),
         };
     });
 
@@ -203,7 +209,7 @@ export class SearchBoxComponent {
         const options = [...results.matches, ...results.descendants].slice(0, 12);
         this.options.set(options);
         this.active.set(options.length ? 0 : -1);
-        this.emptyText.set(term.text ? `No tag matches “${term.text}”.` : 'No tags yet.');
+        this.emptyText.set(term.text ? $localize`No tag matches “${term.text}:text:”.` : $localize`No tags yet.`);
         this.suggesting.set(true);
     }
 
@@ -255,24 +261,24 @@ export class SearchBoxComponent {
             entries: () => [
                 {
                     id: 'search',
-                    label: 'Search',
+                    label: $localize`Search`,
                     icon: 'search',
-                    title: 'Search this again',
+                    title: $localize`Search this again.`,
                     run: () => this.pickRecent(query),
                 },
                 {
                     id: 'newTab',
-                    label: 'Open in new tab',
+                    label: $localize`Open in new tab`,
                     icon: 'external',
-                    title: 'This search in a tab of its own',
+                    title: $localize`Open this search in a tab of its own.`,
                     newTab: true,
                     href: this.store.pageUrl(routeParams({ ...this.store.route(), q: query })),
                 },
                 {
                     id: 'remove',
-                    label: 'Remove from the history',
+                    label: $localize`Remove from the history`,
                     icon: 'close',
-                    title: 'Forget this search',
+                    title: $localize`Forget this search on this browser.`,
                     run: () => this.history.remove(query),
                 },
             ],

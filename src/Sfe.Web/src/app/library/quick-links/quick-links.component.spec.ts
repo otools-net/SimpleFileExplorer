@@ -309,14 +309,14 @@ describe('Quick links', () => {
             await create([]);
             const pin = element.querySelector<HTMLButtonElement>('button[sfePin]')!;
             expect(pin.getAttribute('aria-pressed')).toBe('false');
-            expect(pin.title).toBe('Add “Trips” to the quick links (or drag it onto the sidebar)');
+            expect(pin.title).toBe('Add “Trips” to the quick links, or drag it onto the sidebar.');
 
             api.addQuickLinks.mockResolvedValue([link('Media/Trips')]);
             pin.click();
             await settle();
             expect(api.addQuickLinks).toHaveBeenCalledWith(['Media/Trips'], null);
             expect(pin.classList).toContain('pinned');
-            expect(TestBed.inject(ToastService).show).toHaveBeenCalledWith('Added “Trips” to the quick links');
+            expect(TestBed.inject(ToastService).show).toHaveBeenCalledWith('Added “Trips” to the quick links.');
 
             api.removeQuickLink.mockResolvedValue([]);
             pin.click();
@@ -337,7 +337,7 @@ describe('Quick links', () => {
             await settle();
 
             expect(api.addQuickLinks).toHaveBeenCalledWith(['a.jpg', 'b.jpg'], null);
-            expect(TestBed.inject(ToastService).show).toHaveBeenCalledWith('Added 2 items to the quick links');
+            expect(TestBed.inject(ToastService).show).toHaveBeenCalledWith('2 items added to the quick links.');
         });
 
         it('say what went wrong', async () => {

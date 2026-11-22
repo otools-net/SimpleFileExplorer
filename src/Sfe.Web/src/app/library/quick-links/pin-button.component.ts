@@ -30,8 +30,8 @@ export class PinButtonComponent {
     protected readonly pinned = computed(() => this.links.paths().has(this.sfePin()));
     protected readonly title = computed(() =>
         this.pinned()
-            ? `Remove “${this.name()}” from the quick links`
-            : `Add “${this.name()}” to the quick links (or drag it onto the sidebar)`,
+            ? $localize`Remove “${this.name()}:name:” from the quick links.`
+            : $localize`Add “${this.name()}:name:” to the quick links, or drag it onto the sidebar.`,
     );
 
     protected toggle(event: MouseEvent): void {

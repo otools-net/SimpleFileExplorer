@@ -25,7 +25,8 @@ import { LocationLinks } from './location-links.service';
             <button
                 type="button"
                 class="location-strip-title"
-                [title]="'Back to the top: ' + fullName()"
+                title="Back to the top of “{{ fullName() }}”."
+                i18n-title
                 (click)="toTop()"
             >
                 @if (parent(); as parent) {
@@ -34,7 +35,7 @@ import { LocationLinks } from './location-links.service';
                 }
                 <span class="current">{{ current() }}</span>
                 @if (store.route().q) {
-                    <span class="search-label">Search “{{ store.route().q }}”</span>
+                    <span class="search-label" i18n>Search “{{ store.route().q }}”</span>
                 }
             </button>
         </div>
