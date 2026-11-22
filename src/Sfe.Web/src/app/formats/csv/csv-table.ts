@@ -1,13 +1,14 @@
 import { parse } from 'papaparse';
+import { problemReason, SeparatorKey } from './csv-texts';
 
 /** The separators offered (`auto`: papaparse guesses among them). */
 export type CsvDelimiter = 'auto' | ',' | ';' | '\t' | '|';
-export const DELIMITERS: readonly { id: CsvDelimiter; label: string }[] = [
-    { id: 'auto', label: 'Guess' },
-    { id: ',', label: 'Comma' },
-    { id: ';', label: 'Semicolon' },
-    { id: '\t', label: 'Tab' },
-    { id: '|', label: 'Pipe' },
+export const DELIMITERS: readonly { id: CsvDelimiter; key: SeparatorKey }[] = [
+    { id: 'auto', key: 'guess' },
+    { id: ',', key: 'comma' },
+    { id: ';', key: 'semicolon' },
+    { id: '\t', key: 'tab' },
+    { id: '|', key: 'pipe' },
 ];
 /** How many rows decide the columns' widths and whether they hold numbers. */
 const SAMPLE_ROWS = 500;
@@ -54,7 +55,7 @@ export function parseCsv(text: string, delimiter: CsvDelimiter = 'auto'): CsvTab
     const problems = result.errors
         // One column (or nothing to guess from): read with commas, nothing is wrong.
         .filter((error) => error.code !== 'UndetectableDelimiter')
-        .map((error) => ({ message: error.message, record: (error.row ?? 0) + 1 }));
+        .map((error) => ({ message: problemReason(error.code, error.message), record: (error.row ?? 0) + 1 }));
     return { rows: result.data, delimiter: result.meta.delimiter, problems };
 }
 
@@ -171,9 +172,4 @@ export function shownCell(cell: string | undefined): string {
     if (!cell) return '';
     const short = cell.length > CELL_LENGTH ? `${cell.slice(0, CELL_LENGTH)}…` : cell;
     return short.replace(/\r?\n/g, ' ↵ ');
-}
-
-/** The separator in words (the status bar). */
-export function delimiterName(delimiter: string): string {
-    return DELIMITERS.find((choice) => choice.id === delimiter)?.label.toLowerCase() ?? JSON.stringify(delimiter);
 }

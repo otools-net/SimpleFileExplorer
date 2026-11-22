@@ -213,7 +213,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     from code; `virtual-rows.ts` counted a comment as a template (reworded). Toasts and confirms left for 2.8.
     Screenshots `image-editor*.png` retaken (scene `viewer`). Viewer readability baseline 823 → 824 (an import).
   - [ ] **2.7b text viewer and editor, reading settings** (`formats/text/`, `formats/reading/`; ~81, much code).
-  - [ ] **2.7c JSON and CSV** (`formats/json/`, `formats/csv/`; ~51).
+  - [x] **2.7c JSON and CSV** (`formats/json/`, `formats/csv/`; ~51). Done 2026-11-22: 2 templates at 0 unmarked
+    texts (51 gone); sentences in `json-texts.ts` (modes, Format / Open all / Close all, the filter's matches, keys
+    and items, Show … more, the parse problem with "(and # more)", jsonc-parser reasons by code instead of the
+    `PROBLEMS` map) and `csv-texts.ts` (modes, Header, a whole message per separator by a stable key — `DELIMITERS`
+    gets `key`, `delimiterName` gone, menu ids `separator-<key>` —, the status counts as one ICU, sort hints by state,
+    papaparse's problems by code, its English as fallback), pure functions with specs; "Aa" in `translate="no"`.
   - [x] **2.7d Markdown and subtitles** (`formats/markdown/`, `formats/subtitles/`; ~42). Done 2026-11-22: 2
     templates at 0 unmarked texts (42 gone); sentences in `markdown-texts.ts` (modes, outline, reading hint, images
     of other sites held back as ICU, a held-back image's placeholder) and `subtitles-texts.ts` (modes, the counts line

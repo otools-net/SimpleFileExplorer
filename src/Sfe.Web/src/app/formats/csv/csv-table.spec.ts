@@ -2,7 +2,6 @@ import {
     columnLetters,
     columnsOf,
     delimiterFor,
-    delimiterName,
     filterRecords,
     isNumber,
     numberOf,
@@ -38,7 +37,6 @@ describe('csv-table', () => {
         expect(delimiterFor('tsv')).toBe('\t');
         expect(delimiterFor('psv')).toBe('|');
         expect(delimiterFor('csv')).toBe('auto');
-        expect(delimiterName('\t')).toBe('tab');
     });
 
     it('tells which record is wrong', () => {

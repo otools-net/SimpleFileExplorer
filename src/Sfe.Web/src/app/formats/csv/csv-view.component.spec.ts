@@ -81,7 +81,7 @@ describe('CsvViewComponent', () => {
         expect(column(1)).toEqual(['Annecy', 'Chamonix', 'Chamonix', 'Zermatt']);
         expect(column(2)).toEqual(['12', '18', '1,014', '9']);
         expect(element.querySelector('.csv-body [data-column="2"]')!.classList).toContain('numeric');
-        expect(status()).toBe('4 rows × 3 columns · comma');
+        expect(status()).toBe('4 rows × 3 columns · comma separated');
         expect(element.querySelector('.text-status')!.textContent).toContain('CSV');
         expect(element.hasAttribute('data-owns-keys')).toBe(true);
         expect(element.querySelector('.cm-editor')).toBeNull();
@@ -113,7 +113,7 @@ describe('CsvViewComponent', () => {
             await stable();
             expect(column(0)).toEqual(['2', '3']);
         });
-        expect(status()).toBe('2 of 4 rows × 3 columns · comma');
+        expect(status()).toBe('2 of 4 rows × 3 columns · comma separated');
         await keydown(box, 'Escape');
         await vi.waitFor(async () => {
             await stable();
@@ -173,7 +173,7 @@ describe('CsvViewComponent', () => {
         const drawn = element.querySelectorAll('.csv-body .csv-row').length;
         expect(drawn).toBeGreaterThan(10);
         expect(drawn).toBeLessThan(100);
-        expect(status()).toBe('5,000 rows × 2 columns · comma');
+        expect(status()).toBe('5,000 rows × 2 columns · comma separated');
 
         await keydown(scroller(), 'End', { ctrlKey: true });
         expect(element.querySelector('[data-selected-cell]')!.textContent).toBe('Row 5,000 · square: 25000000');

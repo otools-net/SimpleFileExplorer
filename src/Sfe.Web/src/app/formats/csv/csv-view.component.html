@@ -1,8 +1,21 @@
-<div class="text-toolbar" role="toolbar" aria-label="Table" sfeOverflowRow="Table">
+<div
+    class="text-toolbar"
+    role="toolbar"
+    aria-label="Table"
+    i18n-aria-label="the toolbar of a table"
+    sfeOverflowRow="Table"
+    i18n-sfeOverflowRow="the toolbar of a table"
+>
     @if (state() === 'ready') {
         <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
     }
-    <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
+    <div
+        class="markdown-modes"
+        role="radiogroup"
+        aria-label="Show"
+        i18n-aria-label="how a document is shown"
+        [sfeOverflowItem]="more.mode"
+    >
         @for (choice of modes; track choice.id) {
             <button
                 type="button"
@@ -24,8 +37,11 @@
             [sfeOverflowItem]="null"
             overflowStay
             placeholder="Filter rows"
+            i18n-placeholder
             aria-label="Filter rows"
-            title="Shows the rows with a cell holding this (Ctrl+F)"
+            i18n-aria-label
+            title="Show only the rows with a cell holding this (Ctrl+F)."
+            i18n-title
             [value]="query()"
             (input)="setQuery($any($event.target).value)"
             (keydown)="onFilterKeydown($event)"
@@ -37,20 +53,21 @@
             [sfeOverflowItem]="more.header"
             [class.active]="header()"
             [attr.aria-pressed]="header()"
-            title="The first row names the columns"
+            [title]="texts.headerHint()"
+            i18n="the first row names the columns"
             (click)="toggleHeader()"
         >Header</button>
         <select
             class="csv-delimiter"
             data-delimiter
             [sfeOverflowItem]="more.separator"
-            aria-label="Separator"
-            title="What separates the cells"
+            [attr.aria-label]="texts.separator()"
+            [title]="texts.separatorHint()"
             [value]="delimiter()"
             (change)="setDelimiter($any($event.target).value)"
         >
             @for (choice of delimiters; track choice.id) {
-                <option [value]="choice.id">{{ choice.id === 'auto' ? 'Separator: guess' : choice.label }}</option>
+                <option [value]="choice.id">{{ separatorLabel(choice.key, true) }}</option>
             }
         </select>
     }
@@ -61,16 +78,20 @@
             [sfeOverflowItem]="more.lineNumbers"
             [class.active]="own().lineNumbers"
             [attr.aria-pressed]="own().lineNumbers"
-            title="Line numbers"
+            title="Show or hide the number of each line."
+            i18n-title
             aria-label="Line numbers"
+            i18n-aria-label
             (click)="toggleLineNumbers()"
         ><svg sfeIcon="line-numbers"></svg></button>
         <button
             type="button"
             class="icon-button"
             [sfeOverflowItem]="more.find"
-            title="Find in the source (Ctrl+F)"
+            title="Find words in the source (Ctrl+F)."
+            i18n-title
             aria-label="Find"
+            i18n-aria-label
             [disabled]="state() !== 'ready'"
             (click)="sourceEditor()?.find()"
         ><svg sfeIcon="search"></svg></button>
@@ -82,10 +103,12 @@
         [sfeOverflowItem]="more.reading"
         [class.active]="panelOpen()"
         [attr.aria-expanded]="panelOpen()"
-        title="Reading settings: font, size, colours"
+        title="Change the font, size and colours of the text."
+        i18n-title
         aria-label="Reading settings"
+        i18n-aria-label
         (click)="panelOpen.set(!panelOpen())"
-    >Aa</button>
+    ><span translate="no">Aa</span></button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @if (panelOpen()) {
@@ -94,13 +117,13 @@
 <sfe-text-edit-bar />
 @switch (state()) {
     @case ('loading') {
-        <p class="text-message">Loading…</p>
+        <p class="text-message" i18n>Loading…</p>
     }
     @case ('failed') {
         <div class="text-message">
             <p>{{ message() }}</p>
             @if (downloadUrl(); as url) {
-                <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+                <p><a class="button" [href]="url" i18n><svg sfeIcon="download"></svg> Download</a></p>
             }
         </div>
     }
@@ -108,10 +131,7 @@
 <div class="json-panes csv-panes" [hidden]="state() !== 'ready'">
     <div class="json-pane" [hidden]="mode() === 'source'">
         @if (problems()[0]; as problem) {
-            <p class="json-problem" role="status" data-problem>
-                Record {{ problem.record.toLocaleString() }}:
-                {{ problem.message }}{{ problems().length > 1 ? ' (and ' + (problems().length - 1) + ' more)' : '' }}.
-            </p>
+            <p class="json-problem" role="status" data-problem>{{ problemLine(problem) }}</p>
         }
         <div
             #scroller
@@ -136,7 +156,7 @@
                             type="button"
                             class="csv-sort"
                             [attr.data-column]="$index"
-                            [title]="'Sort by ' + column.name"
+                            [title]="sortHint(column.name, sortOf($index))"
                             (click)="sortBy($index)"
                         >
                             <span class="csv-name">{{ column.name }}</span>
@@ -180,7 +200,7 @@
                 }
             </div>
             @if (!order().length) {
-                <p class="csv-empty">{{ query().trim() ? 'No row holds “' + query().trim() + '”.' : 'No rows.' }}</p>
+                <p class="csv-empty">{{ query().trim() ? texts.noMatch(query().trim()) : texts.empty() }}</p>
             }
         </div>
     </div>
@@ -190,7 +210,7 @@
     <footer class="text-status" aria-live="polite">
         <span>{{ details() }}</span>
         @if (session.dirty()) {
-            <span class="text-edited" data-edited>Edited</span>
+            <span class="text-edited" data-edited i18n="the text has unsaved changes">Edited</span>
         }
         <span class="json-selection">
             <span data-counts>{{ counts() }}</span>
@@ -200,7 +220,9 @@
                     type="button"
                     class="link-button"
                     data-copy-cell
-                    title="Copy the cell selected (Ctrl+C)"
+                    title="Copy the value of the cell selected (Ctrl+C)."
+                    i18n-title
+                    i18n
                     (click)="copyCell()"
                 >Copy cell</button>
             }

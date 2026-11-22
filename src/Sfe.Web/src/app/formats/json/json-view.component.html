@@ -1,4 +1,11 @@
-<div class="text-toolbar" role="toolbar" aria-label="Document" sfeOverflowRow="Document">
+<div
+    class="text-toolbar"
+    role="toolbar"
+    aria-label="Document"
+    i18n-aria-label="the toolbar of a document"
+    sfeOverflowRow="Document"
+    i18n-sfeOverflowRow="the toolbar of a document"
+>
     @if (state() === 'ready') {
         <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
         @if (session.editing()) {
@@ -7,14 +14,20 @@
                 class="icon-button"
                 data-format
                 [sfeOverflowItem]="more.format"
-                title="Format: lay the source out again, indented (comments kept)"
-                aria-label="Format"
+                [title]="texts.formatHint()"
+                [attr.aria-label]="texts.format()"
                 [disabled]="!document()?.root || !!problems().length"
                 (click)="formatSource()"
             ><svg sfeIcon="format"></svg></button>
         }
     }
-    <div class="markdown-modes" role="radiogroup" aria-label="Show" [sfeOverflowItem]="more.mode">
+    <div
+        class="markdown-modes"
+        role="radiogroup"
+        aria-label="Show"
+        i18n-aria-label="how a document is shown"
+        [sfeOverflowItem]="more.mode"
+    >
         @for (choice of modes; track choice.id) {
             <button
                 type="button"
@@ -36,8 +49,11 @@
             [sfeOverflowItem]="null"
             overflowStay
             placeholder="Filter keys and values"
+            i18n-placeholder
             aria-label="Filter keys and values"
-            title="Shows the members whose key or value holds this (Ctrl+F)"
+            i18n-aria-label
+            title="Show only the members whose key or value holds this (Ctrl+F)."
+            i18n-title
             [value]="query()"
             (input)="setQuery($any($event.target).value)"
             (keydown)="onFilterKeydown($event)"
@@ -46,8 +62,8 @@
             type="button"
             class="icon-button"
             [sfeOverflowItem]="more.openAll"
-            title="Open all"
-            aria-label="Open all"
+            [title]="texts.openAllHint()"
+            [attr.aria-label]="texts.openAll()"
             data-expand-all
             [disabled]="!document()?.root"
             (click)="openAll()"
@@ -56,8 +72,8 @@
             type="button"
             class="icon-button"
             [sfeOverflowItem]="more.closeAll"
-            title="Close all"
-            aria-label="Close all"
+            [title]="texts.closeAllHint()"
+            [attr.aria-label]="texts.closeAll()"
             data-collapse-all
             [disabled]="!document()?.root"
             (click)="closeAll()"
@@ -70,16 +86,20 @@
             [sfeOverflowItem]="more.lineNumbers"
             [class.active]="own().lineNumbers"
             [attr.aria-pressed]="own().lineNumbers"
-            title="Line numbers"
+            title="Show or hide the number of each line."
+            i18n-title
             aria-label="Line numbers"
+            i18n-aria-label
             (click)="toggleLineNumbers()"
         ><svg sfeIcon="line-numbers"></svg></button>
         <button
             type="button"
             class="icon-button"
             [sfeOverflowItem]="more.find"
-            title="Find in the source (Ctrl+F)"
+            title="Find words in the source (Ctrl+F)."
+            i18n-title
             aria-label="Find"
+            i18n-aria-label
             [disabled]="state() !== 'ready'"
             (click)="sourceEditor()?.find()"
         ><svg sfeIcon="search"></svg></button>
@@ -91,10 +111,12 @@
         [sfeOverflowItem]="more.reading"
         [class.active]="panelOpen()"
         [attr.aria-expanded]="panelOpen()"
-        title="Reading settings: font, size, colours"
+        title="Change the font, size and colours of the text."
+        i18n-title
         aria-label="Reading settings"
+        i18n-aria-label
         (click)="panelOpen.set(!panelOpen())"
-    >Aa</button>
+    ><span translate="no">Aa</span></button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @if (panelOpen()) {
@@ -103,13 +125,13 @@
 <sfe-text-edit-bar />
 @switch (state()) {
     @case ('loading') {
-        <p class="text-message">Loading…</p>
+        <p class="text-message" i18n>Loading…</p>
     }
     @case ('failed') {
         <div class="text-message">
             <p>{{ message() }}</p>
             @if (downloadUrl(); as url) {
-                <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+                <p><a class="button" [href]="url" i18n><svg sfeIcon="download"></svg> Download</a></p>
             }
         </div>
     }
@@ -118,27 +140,24 @@
     <div class="json-pane" [hidden]="mode() === 'source'">
         @if (problems()[0]; as problem) {
             <p class="json-problem" role="status" data-problem>
-                Not JSON at line {{ problem.line }}, column {{ problem.column }}:
-                {{ problem.message }}{{ problems().length > 1 ? ' (and ' + (problems().length - 1) + ' more)' : '' }}.
+                {{ problemLine(problem) }}
                 <button
                     type="button"
                     class="link-button"
+                    i18n
                     (click)="showOffset(problem.offset, problem.offset + problem.length)"
                 >Show in the source</button>
             </p>
         }
         @if (filtered(); as filter) {
-            <p
-                class="json-filter-count"
-                role="status"
-            >{{ filter.count ? (filter.limited ? 'The first ' + filter.count.toLocaleString() + ' matches' : filter.count.toLocaleString() + (filter.count === 1 ? ' match' : ' matches')) : 'Nothing matches' }}</p>
+            <p class="json-filter-count" role="status">{{ matchCount(filter.count, filter.limited) }}</p>
         }
         <div
             #tree
             class="json-tree"
             role="tree"
             tabindex="0"
-            [attr.aria-label]="'Members of ' + item().name"
+            [attr.aria-label]="texts.members(item().name)"
             [attr.aria-activedescendant]="activeId()"
             (keydown)="onTreeKeydown($event)"
         >
@@ -150,9 +169,8 @@
                             type="button"
                             class="link-button"
                             (click)="showMore(row)"
-                        >Show {{ nextChunk(more).toLocaleString() }} more</button>
-                        <span class="json-size">{{ more.shown.toLocaleString() }} of {{ more.total.toLocaleString() }}
-                        shown</span>
+                        >{{ showMoreLabel(nextChunk(more)) }}</button>
+                        <span class="json-size">{{ shownOf(more.shown, more.total) }}</span>
                     </div>
                 } @else {
                     <div
@@ -174,7 +192,7 @@
                                 class="json-toggle"
                                 tabindex="-1"
                                 [class.open]="row.expanded"
-                                [attr.aria-label]="row.expanded ? 'Close' : 'Open'"
+                                [attr.aria-label]="texts.toggle(row.expanded)"
                                 (click)="toggle(row, $event)"
                             ><svg sfeIcon="right"></svg></button>
                         } @else {
@@ -207,7 +225,7 @@
     <footer class="text-status" aria-live="polite">
         <span>{{ details() }}</span>
         @if (session.dirty()) {
-            <span class="text-edited" data-edited>Edited</span>
+            <span class="text-edited" data-edited i18n="the text has unsaved changes">Edited</span>
         }
         @if (mode() !== 'source' && selectedRow(); as row) {
             <span class="json-selection">
@@ -216,14 +234,18 @@
                     type="button"
                     class="link-button"
                     data-copy-path
-                    title="Copy the path of the member selected"
+                    title="Copy the path of the member selected, as code writes it."
+                    i18n-title
+                    i18n
                     (click)="copyPath(row)"
                 >Copy path</button>
                 <button
                     type="button"
                     class="link-button"
                     data-copy-value
-                    title="Copy its value, as written in the file"
+                    title="Copy the value of the member selected, as written in the file."
+                    i18n-title
+                    i18n
                     (click)="copyValue(row)"
                 >Copy value</button>
             </span>

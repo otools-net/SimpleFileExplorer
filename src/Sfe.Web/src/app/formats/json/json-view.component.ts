@@ -36,6 +36,7 @@ import {
     filterTree,
     formatEdits,
     JsonDocument,
+    JsonProblem,
     JsonRow,
     parseJson,
     pathLabel,
@@ -46,6 +47,7 @@ import {
     valueClass,
 } from './json-tree';
 import { FILE_SOURCE } from '../file-source';
+import { jsonTexts, matchCount, problemLine, showMoreLabel, shownOf } from './json-texts';
 
 export type JsonMode = 'tree' | 'source' | 'split';
 export const JSON_MODE_KEY = 'sfe.json.mode';
@@ -54,11 +56,6 @@ const OPEN_ROWS = 500;
 /** How long typing pauses before the tree shows the source again, and the filter what is typed in it. */
 const PARSE_DELAY_MS = 300;
 const FILTER_DELAY_MS = 200;
-const MODES: readonly { id: JsonMode; label: string; title: string }[] = [
-    { id: 'tree', label: 'Tree', title: 'Its members, to open and close' },
-    { id: 'source', label: 'Source', title: 'Its text, as written' },
-    { id: 'split', label: 'Split', title: 'Both, side by side' },
-];
 
 let views = 0;
 
@@ -110,7 +107,11 @@ export class JsonViewComponent {
     private readonly source = viewChild.required<ElementRef<HTMLElement>>('source');
     private readonly prefix = `json-${++views}`;
 
-    protected readonly modes = MODES;
+    protected readonly modes: readonly { id: JsonMode; label: string; title: string }[] = jsonTexts.modes();
+    protected readonly texts = jsonTexts;
+    protected readonly matchCount = matchCount;
+    protected readonly showMoreLabel = showMoreLabel;
+    protected readonly shownOf = shownOf;
     protected readonly mode = signal<JsonMode>(readMode());
     protected readonly state = signal<'loading' | 'ready' | 'failed'>('loading');
     protected readonly message = signal('');
@@ -133,37 +134,32 @@ export class JsonViewComponent {
     protected readonly more = {
         format: (): MenuEntry => ({
             id: 'format',
-            label: 'Format',
+            label: jsonTexts.format(),
             icon: 'format',
-            title: 'Format: lay the source out again, indented (comments kept)',
+            title: jsonTexts.formatHint(),
             disabled: !this.document()?.root || !!this.problems().length,
             run: () => this.formatSource(),
         }),
         mode: (): MenuEntry => modesEntry(this.modes, this.mode(), (mode) => this.setMode(mode)),
         openAll: (): MenuEntry => ({
             id: 'openAll',
-            label: 'Open all',
+            label: jsonTexts.openAll(),
             icon: 'unfold',
-            title: 'Open all',
+            title: jsonTexts.openAllHint(),
             disabled: !this.document()?.root,
             run: () => this.openAll(),
         }),
         closeAll: (): MenuEntry => ({
             id: 'closeAll',
-            label: 'Close all',
+            label: jsonTexts.closeAll(),
             icon: 'fold',
-            title: 'Close all',
+            title: jsonTexts.closeAllHint(),
             disabled: !this.document()?.root,
             run: () => this.closeAll(),
         }),
         lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggleLineNumbers()),
         find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.sourceEditor()?.find()),
-        reading: (): MenuEntry =>
-            readingEntry(
-                this.panelOpen(),
-                () => this.panelOpen.set(!this.panelOpen()),
-                'Reading settings: font, size, colours',
-            ),
+        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen())),
     };
     protected readonly style = computed(() => this.reading.style('code'));
     protected readonly problems = computed(() => this.document()?.problems ?? []);
@@ -186,12 +182,8 @@ export class JsonViewComponent {
     protected readonly details = computed(() => {
         const file = this.session.file();
         const document = this.document();
-        return file
-            ? textDetails(
-                  file,
-                  document && !document.strict && !document.problems.length ? 'JSON with comments' : 'JSON',
-              )
-            : '';
+        const strict = !document || document.strict || !!document.problems.length;
+        return file ? textDetails(file, jsonTexts.kind(strict)) : '';
     });
 
     constructor() {
@@ -315,6 +307,10 @@ export class JsonViewComponent {
 
     protected valueClass(row: JsonRow): string {
         return `json-value ${valueClass(row.node)}`;
+    }
+
+    protected problemLine(problem: JsonProblem): string {
+        return problemLine(problem, this.problems().length - 1);
     }
 
     protected path(row: JsonRow): string {

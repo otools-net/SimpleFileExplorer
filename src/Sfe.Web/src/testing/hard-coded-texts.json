@@ -1,6 +1,4 @@
 {
-  "app/formats/csv/csv-view.component.html": 22,
-  "app/formats/json/json-view.component.html": 29,
   "app/formats/reading/reading-panel.component.html": 24,
   "app/formats/text/text-edit-bar.component.html": 15,
   "app/formats/text/text-edit.component.html": 9,

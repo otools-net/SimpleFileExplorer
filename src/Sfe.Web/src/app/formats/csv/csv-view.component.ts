@@ -36,7 +36,6 @@ import {
     CsvDelimiter,
     CsvTable,
     delimiterFor,
-    delimiterName,
     DELIMITERS,
     filterRecords,
     parseCsv,
@@ -45,6 +44,7 @@ import {
     sortRecords,
 } from './csv-table';
 import { FILE_SOURCE } from '../file-source';
+import { csvTexts, problemLine, separatorHint, separatorLabel, sortHint, tableCounts } from './csv-texts';
 
 export type CsvMode = 'table' | 'source' | 'split';
 export const CSV_MODE_KEY = 'sfe.csv.mode';
@@ -52,11 +52,6 @@ export const CSV_HEADER_KEY = 'sfe.csv.header';
 /** How long typing pauses before the table shows the source again, and the filter what is typed in it. */
 const PARSE_DELAY_MS = 300;
 const FILTER_DELAY_MS = 200;
-const MODES: readonly { id: CsvMode; label: string; title: string }[] = [
-    { id: 'table', label: 'Table', title: 'Its rows and columns' },
-    { id: 'source', label: 'Source', title: 'Its text, as written' },
-    { id: 'split', label: 'Split', title: 'Both, side by side' },
-];
 
 /** The cell selected: a record (its position in the file's rows) and a column. */
 interface CellPosition {
@@ -112,7 +107,10 @@ export class CsvViewComponent {
     private readonly filterBox = viewChild<ElementRef<HTMLInputElement>>('filterBox');
     private readonly source = viewChild.required<ElementRef<HTMLElement>>('source');
 
-    protected readonly modes = MODES;
+    protected readonly modes: readonly { id: CsvMode; label: string; title: string }[] = csvTexts.modes();
+    protected readonly texts = csvTexts;
+    protected readonly separatorLabel = separatorLabel;
+    protected readonly sortHint = sortHint;
     protected readonly delimiters = DELIMITERS;
     protected readonly virtual = new VirtualRows(() => this.scroller()?.nativeElement ?? null);
     protected readonly mode = signal<CsvMode>(readMode());
@@ -140,35 +138,30 @@ export class CsvViewComponent {
         mode: (): MenuEntry => modesEntry(this.modes, this.mode(), (mode) => this.setMode(mode)),
         header: (): MenuEntry => ({
             id: 'header',
-            label: 'Header',
+            label: csvTexts.header(),
             icon: 'rows',
-            title: 'The first row names the columns',
+            title: csvTexts.headerHint(),
             checked: this.header(),
             run: () => this.toggleHeader(),
         }),
         separator: (): MenuEntry => ({
             id: 'separator',
-            label: 'Separator',
+            label: csvTexts.separator(),
             icon: 'rows',
-            title: 'What separates the cells',
+            title: csvTexts.separatorHint(),
             submenu: () =>
                 this.delimiters.map((choice) => ({
-                    id: 'separator-' + choice.label.toLowerCase(),
-                    label: choice.id === 'auto' ? 'Guess' : choice.label,
+                    id: `separator-${choice.key}`,
+                    label: separatorLabel(choice.key),
                     icon: 'rows',
-                    title: 'Cells separated by: ' + choice.label,
+                    title: separatorHint(choice.key),
                     checked: choice.id === this.delimiter(),
                     run: () => this.setDelimiter(choice.id),
                 })),
         }),
         lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggleLineNumbers()),
         find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.sourceEditor()?.find()),
-        reading: (): MenuEntry =>
-            readingEntry(
-                this.panelOpen(),
-                () => this.panelOpen.set(!this.panelOpen()),
-                'Reading settings: font, size, colours',
-            ),
+        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen())),
     };
     protected readonly style = computed(() => this.reading.style('code'));
     protected readonly table = computed<CsvTable | null>(() => {
@@ -202,13 +195,13 @@ export class CsvViewComponent {
     protected readonly counts = computed(() => {
         const table = this.table();
         if (!table) return '';
-        const total = table.rows.length - this.first();
-        const shown = this.order().length;
-        const rows = this.applied().trim()
-            ? `${shown.toLocaleString()} of ${total.toLocaleString()} rows`
-            : `${total.toLocaleString()} ${total === 1 ? 'row' : 'rows'}`;
-        const columns = this.columns().length;
-        return `${rows} × ${columns} ${columns === 1 ? 'column' : 'columns'} · ${delimiterName(table.delimiter)}`;
+        const counts = {
+            shown: this.order().length,
+            total: table.rows.length - this.first(),
+            columns: this.columns().length,
+            filtered: !!this.applied().trim(),
+        };
+        return tableCounts(counts, table.delimiter);
     });
     protected readonly selectedValue = computed(() => {
         const position = this.selected();
@@ -216,8 +209,8 @@ export class CsvViewComponent {
         const column = position ? this.columns()[position.column] : null;
         if (!position || !table || !column || position.record >= table.rows.length) return null;
         const text = table.rows[position.record][position.column] ?? '';
-        const row = (position.record - this.first() + 1).toLocaleString();
-        return { text, label: `Row ${row} · ${column.name}: ${shownCell(text).slice(0, 60)}` };
+        const row = position.record - this.first() + 1;
+        return { text, label: csvTexts.cell(row, column.name, shownCell(text).slice(0, 60)) };
     });
     protected readonly downloadUrl = computed(() =>
         this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,
@@ -321,6 +314,10 @@ export class CsvViewComponent {
         this.session.setEditor(created);
         this.sourceEditor.set(created);
         return created;
+    }
+
+    protected problemLine(problem: { record: number; message: string }): string {
+        return problemLine(problem, this.problems().length - 1);
     }
 
     protected cell(record: number, column: number): string {

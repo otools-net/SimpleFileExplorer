@@ -1,4 +1,5 @@
 import { applyEdits, format, Node, ParseError, parseTree, printParseErrorCode } from 'jsonc-parser';
+import { membersCount, problemReason } from './json-texts';
 
 /** A container shows this many of its members, then a row to show more. */
 export const CHUNK = 200;
@@ -44,25 +45,6 @@ export interface JsonRow {
     readonly more?: { readonly shown: number; readonly total: number };
 }
 
-const PROBLEMS: Readonly<Record<string, string>> = {
-    InvalidSymbol: 'Unexpected character',
-    InvalidNumberFormat: 'Not a valid number',
-    PropertyNameExpected: 'A property name (in double quotes) is expected',
-    ValueExpected: 'A value is expected',
-    ColonExpected: 'A colon is expected',
-    CommaExpected: 'A comma is expected',
-    CloseBraceExpected: 'A closing } is expected',
-    CloseBracketExpected: 'A closing ] is expected',
-    EndOfFileExpected: 'Nothing more is expected',
-    InvalidCommentToken: 'Comments are not JSON',
-    UnexpectedEndOfComment: 'A comment is not closed',
-    UnexpectedEndOfString: 'A string is not closed',
-    UnexpectedEndOfNumber: 'A number is cut short',
-    InvalidUnicode: 'Not a valid \\u escape',
-    InvalidEscapeCharacter: 'Not a valid escape',
-    InvalidCharacter: 'A character not allowed in a string',
-};
-
 function problemsOf(text: string, errors: readonly ParseError[]): JsonProblem[] {
     const starts = [0];
     for (let at = text.indexOf('\n'); at >= 0; at = text.indexOf('\n', at + 1)) starts.push(at + 1);
@@ -76,7 +58,7 @@ function problemsOf(text: string, errors: readonly ParseError[]): JsonProblem[] 
         }
         const code = printParseErrorCode(error.error);
         return {
-            message: PROBLEMS[code] ?? code,
+            message: problemReason(code),
             offset: error.offset,
             length: error.length,
             line: low + 1,
@@ -271,9 +253,8 @@ export function previewOf(node: Node, text: string, max = PREVIEW_LENGTH): strin
 
 /** How many members, in words: `3 keys`, `1 item`. */
 export function sizeOf(node: Node): string {
-    const count = node.type === 'array' ? (node.children?.length ?? 0) : membersOf(node).length;
-    const word = node.type === 'array' ? 'item' : 'key';
-    return `${count.toLocaleString()} ${word}${count === 1 ? '' : 's'}`;
+    const array = node.type === 'array';
+    return membersCount(array ? (node.children?.length ?? 0) : membersOf(node).length, array);
 }
 
 /** The colour class of a value (`tok-*`, as the source's highlighting). */

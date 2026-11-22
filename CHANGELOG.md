@@ -271,6 +271,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   **Previous file** / **Next file**; counts read right for one ("1 file", "1 byte", "1 name holds “summ”."); a
   protected archive says "This archive's list is protected by a password: what it holds can't be read without it.";
   a file that can't be played says why in a sentence. Their texts are ready for translation.
+- **JSON and CSV viewers reworded**: their buttons' hints are full sentences with the key that does them ("Show only
+  the rows with a cell holding this (Ctrl+F)."); a column's name says what a click does next ("Sort the rows by “km”,
+  largest first."); the CSV status bar reads "4 rows × 3 columns · comma separated" and the separator list's hints
+  "Read the cells as separated by semicolons."; a broken CSV file says "Record 2: A quoted cell isn't closed." in the
+  app's own words; an empty table says "This file has no rows.". Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.
