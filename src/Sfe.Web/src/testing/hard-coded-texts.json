@@ -31,12 +31,5 @@
   "app/player/video-player.component.html": 9,
   "app/shared/folder-picker.component.html": 3,
   "app/shared/help.component.ts": 2,
-  "app/shared/sheet.component.ts": 2,
-  "app/tracking/duplicate-group.component.html": 5,
-  "app/tracking/duplicates-panel.component.ts": 4,
-  "app/tracking/missing-panel.component.html": 14,
-  "app/tracking/similar-panel.component.html": 12,
-  "app/tracking/tracking-parts.ts": 1,
-  "app/trickplay/trickplay-activity.component.html": 3,
-  "app/trickplay/trickplay-status.component.ts": 4
+  "app/shared/sheet.component.ts": 2
 }

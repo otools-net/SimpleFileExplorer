@@ -219,6 +219,13 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   editor's **Disambiguate with** is now **Tell apart with** and **Color** is **Colour**; a folder's default tags at the
   top of the library say so instead of "the top folder"; the badge lists its tags as "Family, Beach and Sunset". Their
   texts are ready for translation.
+- **Duplicates & moves and Trickplay reworded**: the duplicates, similar videos and moved files panels and the
+  trickplay activity and status write their summaries and details as full sentences ("2 tagged files are missing.");
+  removing a duplicate asks "Move this file to the trash?" with the copy kept chosen below, and its button says
+  **Move to trash**; a moved file at the top of the library says "Was at the top of the library"; the trickplay task
+  names the videos it works on in quotes ("Working on “a.mp4” and “b.mp4”."); a listed video's clock and spinner say
+  "Its previews along the timeline are waiting to be made." / "… are being made…". Their texts are ready for
+  translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

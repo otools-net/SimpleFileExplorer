@@ -88,7 +88,7 @@ describe('DuplicatesPanelComponent', () => {
     it('sums up the groups found and what could be freed', async () => {
         await create(results([group(2 * MB, 'a/x.jpg', 'b/x.jpg', 'c/x.jpg'), group(MB, 'a/y.jpg', 'b/y.jpg')]));
 
-        expect(statusText(element)).toBe('2 groups of identical files in the library: 5 MB could be freed');
+        expect(statusText(element)).toBe('2 groups of identical files in the library: 5 MB could be freed.');
         expect(
             groupElements().map((g) => [...g.querySelectorAll('header > *')].map((part) => part.textContent)),
         ).toEqual([
@@ -127,9 +127,9 @@ describe('DuplicatesPanelComponent', () => {
 
         expect(statusText(element)).toBe('No duplicates in the library.');
         const detail = element.querySelector('sfe-status-box .field-hint')!.textContent!;
-        expect(detail).toContain('files under 1 MB are left out');
+        expect(detail).toContain('Files under 1 MB are left out.');
         expect(detail).toContain("3 indexed files without a fingerprint can't be compared");
-        expect(detail).toContain("scans don't fingerprint files");
+        expect(detail).toContain("Scans don't fingerprint files");
         expect(fixture.componentInstance.badge()).toBe('');
     });
 
@@ -188,7 +188,7 @@ describe('DuplicatesPanelComponent', () => {
         expect([...keep.options].map((o) => o.value)).toEqual(['a/x.jpg', 'c/x.jpg']);
         expect(keep.value).toBe('a/x.jpg');
         expect(element.querySelector('.tracking-confirm')!.textContent).toContain(
-            'Move this file to the trash and keep',
+            'Move this file to the trash? Copy kept:',
         );
     });
 
@@ -200,7 +200,7 @@ describe('DuplicatesPanelComponent', () => {
 
         const confirm = element.querySelector('.tracking-confirm')!;
         expect(confirm.querySelector('strong')!.textContent).toBe('b/x.jpg');
-        expect(confirm.textContent).toContain('add its tags to');
+        expect(confirm.textContent).toContain('Its tags go to the copy kept:');
     });
 
     it('cancels the removal without deleting anything', async () => {
@@ -229,7 +229,7 @@ describe('DuplicatesPanelComponent', () => {
         const keep = element.querySelector<HTMLSelectElement>('.tracking-keep')!;
         keep.value = 'c/x.jpg';
         keep.dispatchEvent(new Event('change'));
-        buttonNamed(element, 'Move to the trash')!.click();
+        buttonNamed(element, 'Move to trash')!.click();
         await settle();
 
         expect(api.removeDuplicate).toHaveBeenCalledWith('a/tagged.jpg', 'c/x.jpg');
@@ -241,7 +241,7 @@ describe('DuplicatesPanelComponent', () => {
         expect(rows.map((r) => r.querySelector('.tracking-name')!.textContent)).toEqual(['x.jpg', 'x.jpg']);
         expect(rows[1].querySelector('.tag-name')!.textContent!.trim()).toBe('Sun');
         expect(groupElements()[0].querySelector('header strong')!.textContent).toBe('2 copies');
-        expect(statusText(element)).toBe('2 groups of identical files in the library: 2 MB could be freed');
+        expect(statusText(element)).toBe('2 groups of identical files in the library: 2 MB could be freed.');
         expect(changed).toBe(1);
     });
 
@@ -252,7 +252,7 @@ describe('DuplicatesPanelComponent', () => {
         api.restoreFromTrash.mockResolvedValue(item('a/x.jpg'));
         groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
         await settle();
-        buttonNamed(element, 'Move to the trash')!.click();
+        buttonNamed(element, 'Move to trash')!.click();
         await settle();
         expect(groupElements()).toHaveLength(1);
 
@@ -263,7 +263,7 @@ describe('DuplicatesPanelComponent', () => {
         expect(show).toHaveBeenLastCalledWith('“x.jpg” put back.');
         expect(groupElements()).toHaveLength(2);
         expect(groupElements()[0].querySelectorAll('li.tracking-row')).toHaveLength(2);
-        expect(statusText(element)).toBe('2 groups of identical files in the library: 3 MB could be freed');
+        expect(statusText(element)).toBe('2 groups of identical files in the library: 3 MB could be freed.');
         expect(changed).toBe(2);
     });
 
@@ -287,11 +287,11 @@ describe('DuplicatesPanelComponent', () => {
 
         groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
         await settle();
-        buttonNamed(element, 'Move to the trash')!.click();
+        buttonNamed(element, 'Move to trash')!.click();
         await settle();
 
         expect(groupElements()).toHaveLength(1);
-        expect(statusText(element)).toBe('1 group of identical files in the library: 2 MB could be freed');
+        expect(statusText(element)).toBe('1 group of identical files in the library: 2 MB could be freed.');
         expect(fixture.componentInstance.badge()).toBe('1');
     });
 
@@ -302,7 +302,7 @@ describe('DuplicatesPanelComponent', () => {
 
         groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
         await settle();
-        buttonNamed(element, 'Move to the trash')!.click();
+        buttonNamed(element, 'Move to trash')!.click();
         await settle();
 
         expect(error).toHaveBeenCalledWith('Could not remove “x.jpg”: The files are no longer identical.', 8000);
@@ -317,7 +317,7 @@ describe('DuplicatesPanelComponent', () => {
 
         groupElements()[0].querySelector<HTMLButtonElement>('button.danger')!.click();
         await settle();
-        buttonNamed(element, 'Move to the trash')!.click();
+        buttonNamed(element, 'Move to trash')!.click();
         await settle();
 
         const button = element.querySelector<HTMLButtonElement>('.tracking-confirm button.danger')!;
@@ -336,8 +336,8 @@ describe('DuplicatesPanelComponent', () => {
         await first;
         await settle();
 
-        expect(element.querySelector('[title="Open new/a"]')).not.toBeNull();
-        expect(element.querySelector('[title="Open old/a"]')).toBeNull();
+        expect(element.querySelector('[title="Open “new/a”."]')).not.toBeNull();
+        expect(element.querySelector('[title="Open “old/a”."]')).toBeNull();
     });
 });
 
@@ -379,9 +379,9 @@ describe('MissingPanelComponent', () => {
     it('lists the missing files with where they were and their possible new places', async () => {
         await create(results([missing(1, 'Old/a.jpg', ['New/a.jpg', 'Other/a.jpg']), missing(2, 'root.jpg')]));
 
-        expect(statusText(element)).toBe('2 tagged files missing');
-        expect(rows()[0].querySelector('.tracking-was')!.textContent).toMatch(/^Was in Old · 2 KB · missing since /);
-        expect(rows()[1].querySelector('.tracking-was')!.textContent).toMatch(/^Was in the library root/);
+        expect(statusText(element)).toBe('2 tagged files are missing.');
+        expect(rows()[0].querySelector('.tracking-was')!.textContent).toMatch(/^Was in “Old” · 2 KB · missing since /);
+        expect(rows()[1].querySelector('.tracking-was')!.textContent).toMatch(/^Was at the top of the library/);
         expect(rows()[0].querySelector('.tracking-sub')!.textContent).toBe('Possible new places');
         expect(rows()[1].querySelector('.tracking-sub')!.textContent).toContain('No identical file is indexed');
         expect(fixture.componentInstance.badge()).toBe('2');
@@ -414,7 +414,7 @@ describe('MissingPanelComponent', () => {
         expect(api.relinkMissingFile).toHaveBeenCalledWith(1, 'New/a.jpg');
         expect(show).toHaveBeenCalledWith('Tags of “a.jpg” moved to “New/a.jpg”.');
         expect(rows()).toHaveLength(1);
-        expect(statusText(element)).toBe('1 tagged file missing');
+        expect(statusText(element)).toBe('1 tagged file is missing.');
         expect(changed).toBe(1);
     });
 
@@ -559,7 +559,7 @@ describe('MissingPanelComponent', () => {
         expect(api.missingFiles).toHaveBeenLastCalledWith({ after: 1 });
         expect(rows()).toHaveLength(2);
         // The total of the first page stays.
-        expect(statusText(element)).toBe('2 tagged files missing');
+        expect(statusText(element)).toBe('2 tagged files are missing.');
     });
 
     it('reports a list that could not be read', async () => {
@@ -617,11 +617,11 @@ describe('SimilarPanelComponent', () => {
         await create(results());
 
         expect(statusText(element)).toBe(
-            '1 group of similar videos in the library: 1 KB more than the biggest of each',
+            '1 group of similar videos in the library: 1 KB more than the biggest of each.',
         );
         const detail = element.querySelector('sfe-status-box .field-hint')!.textContent!;
-        expect(detail).toContain('8 of 10 indexed videos compared (the others have no trickplay yet)');
-        expect(detail).toContain('listed from 80% match');
+        expect(detail).toContain('8 of 10 indexed videos compared. The others have no trickplay yet.');
+        expect(detail).toContain('Listed from 80% match.');
         expect(element.querySelector('.tracking-more')!.textContent).toContain('1 more video');
         expect(fixture.componentInstance.badge()).toBe('1');
     });
@@ -637,21 +637,21 @@ describe('SimilarPanelComponent', () => {
     it('mentions trickplay being off', async () => {
         await create(results({ trickplayEnabled: false }));
 
-        expect(element.querySelector('sfe-status-box .field-hint')!.textContent).toContain('trickplay is off');
+        expect(element.querySelector('sfe-status-box .field-hint')!.textContent).toContain('Trickplay is off');
     });
 
     it('follows a running comparison while shown, keeping the list until it is over', async () => {
         vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
         try {
             await create(results({ status: run('running', { checked: 3, total: 10 }) }));
-            expect(statusText(element)).toBe('Comparing videos… 3 of 10 videos read');
+            expect(statusText(element)).toBe('Comparing videos… 3 of 10 videos read.');
 
             api.similarVideos.mockResolvedValue(
                 results({ status: run('running', { checked: 7, total: 10 }), groups: [] }),
             );
             await vi.advanceTimersByTimeAsync(3000);
             fixture.detectChanges();
-            expect(statusText(element)).toBe('Comparing videos… 7 of 10 videos read');
+            expect(statusText(element)).toBe('Comparing videos… 7 of 10 videos read.');
             expect(element.querySelectorAll('section.tracking-group').length).toBe(1);
 
             api.similarVideos.mockResolvedValue(results());

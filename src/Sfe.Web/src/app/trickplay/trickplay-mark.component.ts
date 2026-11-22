@@ -2,9 +2,10 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { IconComponent } from '../shared/icon.component';
 import { TrickplayMarksService } from './trickplay-marks.service';
 
+// Users read these: "previews along the timeline" is their word for trickplay (ui-texts glossary).
 const STATE_TITLES = {
-    pending: 'Waiting for its trickplay',
-    running: 'Creating its trickplay…',
+    pending: $localize`Its previews along the timeline are waiting to be made.`,
+    running: $localize`Its previews along the timeline are being made…`,
 };
 
 /** The mark of a listed video waiting for its trickplay (clock) or being processed (spinner); nothing otherwise. */

@@ -1,23 +1,27 @@
-<p class="settings-intro">Tagged files that a scan no longer found. When a scan indexes the same file somewhere else,
-    moved, renamed or back on its drive, its tags follow it on their own. Files with several possible new places, or
-    none yet, wait here.</p>
+<p class="settings-intro" i18n>Tagged files that a scan no longer found. When a scan indexes the same file somewhere
+    else, moved, renamed or back on its drive, its tags follow it on their own. Files with several possible new places,
+    or none yet, wait here.</p>
 <sfe-status-box [state]="status().state" [text]="status().text" [detail]="status().detail">
     <div class="settings-action inline">
         <button
             type="button"
             class="button small"
-            title="Give the tags of each missing file with exactly one likely new place to that file"
+            title="Give the tags of each missing file that has exactly one likely new place to that file."
+            i18n-title
             [sfeBusy]="relinking()"
             [disabled]="relinking() || !enabled() || !total()"
             (click)="relinkAll()"
+            i18n
         >Relink now</button>
         <button
             type="button"
             class="button small danger"
-            title="Forget every missing file and its tags (asks first)"
+            title="Forget every missing file and its tags (asks first)."
+            i18n-title
             [sfeBusy]="forgettingAll()"
             [disabled]="forgettingAll() || !total()"
             (click)="forgetAll()"
+            i18n
         >Forget all</button>
     </div>
 </sfe-status-box>
@@ -44,24 +48,29 @@
                     <button
                         type="button"
                         class="button small"
-                        title="Type the path of the file it became"
+                        title="Type the path of the file it became."
+                        i18n-title
                         [sfeBusy]="busy() === item.id + ':choose'"
                         [disabled]="busy() !== null"
                         (click)="choose(item)"
+                        i18n
                     >Choose file…</button>
                     <button
                         type="button"
                         class="button small"
-                        title="Forget this missing file and its tags (asks first)"
+                        title="Forget this missing file and its tags (asks first)."
+                        i18n-title
                         [sfeBusy]="busy() === item.id + ':forget'"
                         [disabled]="busy() !== null"
                         (click)="forget(item)"
+                        i18n
                     >Forget</button>
                 </span>
             </div>
             @if (item.candidates.length) {
                 <div class="tracking-candidates">
-                    <p class="tracking-sub">{{ item.candidates.length === 1 ? 'Possible new place' : 'Possible new places' }}</p>
+                    <p class="tracking-sub" i18n>{item.candidates.length, plural, one {Possible new place}
+                        other {Possible new places}}</p>
                     <ul class="tracking-list">
                         @for (candidate of item.candidates; track candidate.path) {
                             <li [sfeTrackingFile]="candidate" (openFolder)="openFolder.emit($event)">
@@ -69,10 +78,12 @@
                                     <button
                                         type="button"
                                         class="button small primary"
-                                        title="This is the moved file: give it the tags"
+                                        title="This is the file it became: give it the tags."
+                                        i18n-title
                                         [sfeBusy]="busy() === item.id + ':' + candidate.path"
                                         [disabled]="busy() !== null"
                                         (click)="relink(item, candidate.path)"
+                                        i18n
                                     >Relink here</button>
                                 </span>
                             </li>
@@ -80,8 +91,8 @@
                     </ul>
                 </div>
             } @else {
-                <p class="tracking-sub">No identical file is indexed. Scan the folder it went to, or choose the
-                file.</p>
+                <p class="tracking-sub" i18n>No identical file is indexed. Scan the folder it went to, or choose the
+                    file.</p>
             }
         </li>
     }
@@ -89,9 +100,11 @@
 <button
     type="button"
     class="button"
-    title="Show the next page"
+    title="Show the next missing files."
+    i18n-title
     [hidden]="!hasMore()"
     [sfeBusy]="loadingMore()"
     [disabled]="loadingMore()"
     (click)="more()"
+    i18n
 >Load more</button>

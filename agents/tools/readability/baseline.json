@@ -129,8 +129,6 @@
     "src/Sfe.Web/src/app/tags/tag-editor.dialog.html": {"longLines":4},
     "src/Sfe.Web/src/app/tasks/task-history.component.html": {"longLines":1},
     "src/Sfe.Web/src/app/tasks/tasks-section.component.html": {"longLines":1},
-    "src/Sfe.Web/src/app/tracking/duplicate-group.component.html": {"longLines":3},
-    "src/Sfe.Web/src/app/tracking/missing-panel.component.html": {"longLines":1},
     "src/Sfe.Web/src/app/tracking/tracking-parts.ts": {"longLines":1},
     "src/Sfe.Web/src/app/trickplay/trickplay-activity.component.html": {"longLines":2},
     "src/Sfe.Web/src/app/trickplay/trickplay-hover.service.ts": {"longFunctions":1},

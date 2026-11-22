@@ -102,6 +102,9 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
   it as one message with `${slot('name')}:name:` placeholders and split it with `phrase(message, { name: pieces })`
   (`search-explain/search-segments.ts`); the placeholders' values are marker strings, so a translation moves them
   with the words.
+- A sentence with a control inside it ("… and keep [select]?"): a translation can't move the control. Split it into
+  a whole question and a label ending in a colon before the control ("Move this file to the trash?" + "Copy kept:",
+  `duplicate-group.component.html`), each its own message, the space kept inside the text (`Copy kept: `).
 - A hint made of several facts (a file's name, "Not indexed yet: …", "Still being written …") puts each whole
   sentence on its own line (`join('\n')`), never a phrase glued in parentheses to the name.
 

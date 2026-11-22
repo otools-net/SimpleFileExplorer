@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
-import { formatDate, formatDuration, formatSize, joinParts, plural } from '../core/format';
+import { formatDuration, formatSize } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { SimilarVideoResults } from './tracking.models';
 import { readPreference, writePreference } from '../core/preferences';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { checkedOf } from '../shared/events';
 import { StatusBoxComponent, TrackingFileComponent } from './tracking-parts';
+import { moreVideos, similarStatus } from './tracking-texts';
 
 const SCOPE_KEY = 'sfe.similarVideos.folderOnly';
 const POLL_MS = 1000;
@@ -47,39 +49,7 @@ export class SimilarPanelComponent {
     private poll = 0;
 
     protected readonly running = computed(() => this.result()?.status.state === 'running');
-    protected readonly status = computed(() => {
-        const failure = this.failure();
-        if (failure) return { state: 'unavailable', text: `Could not read the similar videos: ${failure}`, detail: '' };
-        const result = this.result();
-        if (!result) return { state: null, text: '…', detail: '' };
-        const { status: run, summary } = result;
-        const running = run.state === 'running';
-        const where = result.path ? `with a video in “${result.path}”` : 'in the library';
-        return {
-            state: running ? 'running' : run.state === 'failed' ? 'unavailable' : summary?.groups ? 'found' : 'idle',
-            text: running
-                ? `Comparing videos… ${run.total ? readCount(run.checked, run.total) : ''}`
-                : run.state === 'failed'
-                  ? `The comparison failed: ${run.message}`
-                  : !summary
-                    ? 'The videos have not been compared since SFE started.'
-                    : summary.groups
-                      ? `${plural(summary.groups, 'group')} of similar ` +
-                        `videos ${where}: ${formatSize(summary.wastedBytes)} more than the biggest of each`
-                      : `No similar videos ${where}.`,
-            detail: joinParts([
-                summary ? comparedCount(summary.compared, summary.videos) : null,
-                summary ? `listed from ${summary.minimumPercent}% match` : null,
-                run.state === 'cancelled'
-                    ? 'the last comparison was cancelled: these are the groups of the one before'
-                    : null,
-                summary && run.state === 'completed' && run.finished ? `compared ${formatDate(run.finished)}` : null,
-                !result.trickplayEnabled
-                    ? 'trickplay is off (Trickplay › Settings): videos get no new fingerprints'
-                    : null,
-            ]),
-        };
-    });
+    protected readonly status = computed(() => similarStatus(this.result(), this.failure()));
     /** For the tab. */
     readonly badge = computed(() =>
         this.result()?.summary?.groups ? this.result()!.summary!.groups.toLocaleString() : '',
@@ -87,8 +57,9 @@ export class SimilarPanelComponent {
 
     protected readonly size = formatSize;
     protected readonly duration = formatDuration;
-    protected videosText = (count: number) => plural(count, 'video');
-    protected moreText = (group: Group) => plural(group.count - group.videos.length, 'more video', 'more videos');
+    protected videosText = (count: number) =>
+        icu($localize`{count, plural, one {# video} other {# videos}}`, { count });
+    protected moreText = (group: Group) => moreVideos(group.count - group.videos.length);
 
     constructor() {
         inject(DestroyRef).onDestroy(() => clearTimeout(this.poll));
@@ -155,15 +126,4 @@ export class SimilarPanelComponent {
         writePreference(SCOPE_KEY, only ? '1' : '0');
         void this.load();
     }
-}
-
-/** How far a comparison has read: "1,200 of 3,400 videos read". */
-function readCount(checked: number, total: number): string {
-    return `${checked.toLocaleString()} of ${plural(total, 'video')} read`;
-}
-
-/** How many indexed videos the last comparison took in, and why not all. */
-function comparedCount(compared: number, videos: number): string {
-    const others = compared < videos ? ' (the others have no trickplay yet)' : '';
-    return `${compared.toLocaleString()} of ${plural(videos, 'indexed video')} compared${others}`;
 }

@@ -160,8 +160,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     **Tell apart with**, "Color" → **Colour** (glossary leftover, docs too); the library's own folder is "the
     library" (default tags) or "the top of the library" (the badge, as the location bar); `plural()` out of the
     area; toasts left for 2.8 except those that counted files. Tag screenshots retaken.
-  - [ ] **2.5e duplicates, missing files, similar videos, trickplay** (`app/tracking/`, `app/trickplay/`; ~43
-    template texts, 21 `plural()` calls).
+  - [x] **2.5e duplicates, missing files, similar videos, trickplay** (`app/tracking/`, `app/trickplay/`; ~43
+    template texts, 21 `plural()` calls). Done 2026-11-22: 7 files at 0 unmarked texts (43 gone); the panels'
+    summaries in `tracking-texts.ts` and the task's counts in `trickplay-texts.ts` (pure functions, specs); details
+    are whole sentences joined by a space instead of " · " fragments (the trickplay counts keep " · ": numbers);
+    "where" a placeholder message ("in the library" / "in “…”"), as in 2.5d; the removal question split into two
+    messages ("Move this file to the trash?" + "Copy kept:" / "Its tags go to the copy kept:") around the select;
+    conditional `[title]`s from code (`removeTitle`, `confirmTitle`); trickplay sections tracked by a `key`;
+    "the library root" → "the top of the library"; the listing's trickplay mark says "previews along the timeline"
+    (users' word); `plural()` out of the area, also in the relink toast and the "Forget all" confirm; other toasts,
+    confirms and the "Choose file…" prompt left for 2.8. Admin screenshots of the area retaken.
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
   (dividers) to `MenuEntry`; one action registry used by the item menu, folder menu and selection bar; order
@@ -311,8 +319,9 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-22):** steps 1.1 to 2.4d and 2.5a–2.5d done (see their ticks; 2.4 and 2.5 were split,
-  2.5 in five). Next: **2.5e** (duplicates, missing files, similar videos, trickplay), then 2.6–2.8. Texts marked and rewritten to
+- **Last session (2026-11-22):** steps 1.1 to 2.4d and 2.5a–2.5e done (see their ticks; 2.4 and 2.5 were split,
+  2.5 in five). Next: **2.6** (files dialogs, uploads, operations; split it first if it is big), then 2.7–2.8.
+  Texts marked and rewritten to
   [ui-texts](ui-texts.md), [translations](translations.md) says how; `app/access/` is a worked example.
 - The docs-screenshots tool clicks elements by the start of their `title` (`clickTitle`): a hint rewritten updates
   `agents/tools/docs-screenshots/shots.mjs` too (grep it for the old words).

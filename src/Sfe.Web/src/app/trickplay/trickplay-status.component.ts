@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
-import { formatDate, joinParts, plural } from '../core/format';
+import { joinParts } from '../core/format';
 import { TrickplayStatus } from './trickplay.models';
+import { lastCheck, passCounts, waiting, workingOn } from './trickplay-texts';
 import { ToastService } from '../core/toast.service';
 import { visibleInterval } from '../core/visible-interval';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
@@ -24,16 +25,20 @@ const REFRESH_MS = 3000;
             <button
                 type="button"
                 class="button small"
-                title="Go over the trickplay folders now for videos without trickplay"
+                title="Go over the trickplay folders now for videos without trickplay."
+                i18n-title
                 [sfeBusy]="checking()"
                 [disabled]="checking() || cannotCheck()"
                 (click)="check()"
+                i18n
             >Look for new videos now</button>
             <button
                 type="button"
                 class="button small"
-                title="Videos being processed, waiting and finished"
+                title="Show the videos being processed, waiting and finished."
+                i18n-title
                 (click)="activity.emit()"
+                i18n
             >Show activity</button>
         </div>
     `,
@@ -54,40 +59,30 @@ export class TrickplayStatusComponent {
 
     protected readonly text = computed(() => {
         const error = this.error();
-        if (error) return `Could not read the state: ${error}`;
+        if (error) return $localize`Could not read the state: ${error}:reason:`;
         const status = this.status();
         if (!status) return '…';
         switch (status.state) {
             case 'disabled':
-                return 'Turned off.';
+                return $localize`Turned off.`;
             case 'unavailable':
-                return "ffmpeg can't be found.";
+                return $localize`ffmpeg can't be found.`;
             case 'running':
-                return status.current.length ? `Working on ${status.current.join(', ')}` : 'Looking for videos…';
+                return status.current.length ? workingOn(status.current) : $localize`Looking for videos…`;
             default:
-                return status.lastPassFinished ? 'Up to date.' : 'Waiting.';
+                return status.lastPassFinished ? $localize`Up to date.` : $localize`Waiting.`;
         }
     });
     protected readonly detail = computed(() => {
         const status = this.status();
         if (!status || this.error()) return '';
-        const counts = joinParts([
-            plural(status.checked, 'video') + ' checked',
-            plural(status.generated, 'created', 'created'),
-            status.failed ? plural(status.failed, 'failed', 'failed') : null,
-            status.queued ? plural(status.queued, 'opened video', 'opened videos') + ' waiting' : null,
-            status.pending ? `${status.pending.toLocaleString()}${status.discovering ? '+' : ''} to do` : null,
-        ]);
-        const finished = status.lastPassFinished ? `Last complete check ${formatDate(status.lastPassFinished)}` : null;
         switch (status.state) {
             case 'disabled':
-                return 'Tick “Create trickplay” and save to start.';
+                return $localize`Tick “Create trickplay” and save to start.`;
             case 'unavailable':
-                return "Set its path (Thumbnails:FfmpegPath) in the server's configuration file.";
-            case 'running':
-                return joinParts([counts, finished]);
+                return $localize`Set its path (Thumbnails:FfmpegPath) in the server's configuration file.`;
             default:
-                return joinParts([finished, counts]);
+                return joinParts([...passCounts(status), ...waiting(status), lastCheck(status)]);
         }
     });
 

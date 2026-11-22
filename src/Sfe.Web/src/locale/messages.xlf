@@ -483,6 +483,7 @@
         <note category="location">src/app/tasks/schedule-form.component.html:146,147</note>
         <note category="location">src/app/tasks/tasks-section.component.html:33,35</note>
         <note category="location">src/app/tokens/token-create.component.html:132,133</note>
+        <note category="location">src/app/tracking/duplicate-group.component.html:59,60</note>
       </notes>
       <segment>
         <source>Cancel</source>
@@ -776,6 +777,7 @@
         <note category="location">src/app/access/space-detail.component.html:227</note>
         <note category="location">src/app/connections/connections-section.component.html:220,221</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:125,126</note>
+        <note category="location">src/app/tracking/duplicate-group.component.html:16,17</note>
       </notes>
       <segment>
         <source>Remove</source>
@@ -6392,6 +6394,7 @@ Space “Holiday photos”
         <note category="location">src/app/files/item-menu.ts:370</note>
         <note category="location">src/app/library/selection-bar.component.html:143,144</note>
         <note category="location">src/app/library/selection-bar.component.ts:190</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:123</note>
       </notes>
       <segment>
         <source>Download</source>
@@ -6416,6 +6419,7 @@ Space “Holiday photos”
     <unit id="4246527954708249842">
       <notes>
         <note category="location">src/app/files/item-menu.ts:376</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:125</note>
       </notes>
       <segment>
         <source>Save this file to this device.</source>
@@ -6500,6 +6504,7 @@ Space “Holiday photos”
         <note category="location">src/app/library/folder-menu.ts:195</note>
         <note category="location">src/app/library/folder-menu.ts:355</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:192</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:131</note>
       </notes>
       <segment>
         <source>Copy full path</source>
@@ -6509,6 +6514,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/item-menu.ts:411</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:194</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:133</note>
       </notes>
       <segment>
         <source>Copy where it is on the server.</source>
@@ -6582,6 +6588,7 @@ Space “Holiday photos”
         <note category="location">src/app/library/topbar/search-box.component.ts:271</note>
         <note category="location">src/app/menus/context-menu.ts:310</note>
         <note category="location">src/app/menus/context-menu.ts:350</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:98</note>
       </notes>
       <segment>
         <source>Open in new tab</source>
@@ -6608,6 +6615,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/item-menu.ts:478</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:184</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:100</note>
       </notes>
       <segment>
         <source>Open “<ph id="0" equiv="name" disp="item.name"/>” in a tab of its own.</source>
@@ -6616,6 +6624,7 @@ Space “Holiday photos”
     <unit id="2916624982527770012">
       <notes>
         <note category="location">src/app/files/item-menu.ts:487</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:106</note>
       </notes>
       <segment>
         <source>Open containing folder</source>
@@ -14040,6 +14049,7 @@ Space “Holiday photos”
     <unit id="892286221138618450">
       <notes>
         <note category="location">src/app/tags/scope-tags-texts.ts:31</note>
+        <note category="location">src/app/tracking/tracking-texts.ts:25</note>
         <note category="description">where files are</note>
       </notes>
       <segment>
@@ -14049,6 +14059,8 @@ Space “Holiday photos”
     <unit id="87723741596185646">
       <notes>
         <note category="location">src/app/tags/scope-tags-texts.ts:33</note>
+        <note category="location">src/app/tracking/tracking-texts.ts:25</note>
+        <note category="location">src/app/tracking/tracking-texts.ts:105</note>
         <note category="description">where files are</note>
       </notes>
       <segment>
@@ -16367,6 +16379,938 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>How many tokens an account may hold at once (those neither revoked nor expired).</source>
+      </segment>
+    </unit>
+    <unit id="8105217932674859398">
+      <notes>
+        <note category="location">src/app/tracking/duplicate-group.component.html:24</note>
+      </notes>
+      <segment>
+        <source>Delete this file for good? </source>
+      </segment>
+    </unit>
+    <unit id="4968152418790304884">
+      <notes>
+        <note category="location">src/app/tracking/duplicate-group.component.html:26</note>
+      </notes>
+      <segment>
+        <source>Move this file to the trash? </source>
+      </segment>
+    </unit>
+    <unit id="3694509995962390799">
+      <notes>
+        <note category="location">src/app/tracking/duplicate-group.component.html:29</note>
+      </notes>
+      <segment>
+        <source>Its tags go to the copy kept: </source>
+      </segment>
+    </unit>
+    <unit id="4535562896207985129">
+      <notes>
+        <note category="location">src/app/tracking/duplicate-group.component.html:31</note>
+      </notes>
+      <segment>
+        <source>Copy kept: </source>
+      </segment>
+    </unit>
+    <unit id="747271997431803121">
+      <notes>
+        <note category="location">src/app/tracking/duplicate-group.component.html:36,37</note>
+      </notes>
+      <segment>
+        <source>Copy to keep</source>
+      </segment>
+    </unit>
+    <unit id="7179050879743960741">
+      <notes>
+        <note category="location">src/app/tracking/duplicate-group.component.html:55,56</note>
+      </notes>
+      <segment>
+        <source>Keep this file.</source>
+      </segment>
+    </unit>
+    <unit id="2006174389141238631">
+      <notes>
+        <note category="location">src/app/tracking/duplicate-group.component.html:69</note>
+      </notes>
+      <segment>
+        <source>Delete this copy</source>
+      </segment>
+    </unit>
+    <unit id="2048798344356757326">
+      <notes>
+        <note category="location">src/app/tracking/duplicate-group.component.html:71</note>
+      </notes>
+      <segment>
+        <source>Move to trash</source>
+      </segment>
+    </unit>
+    <unit id="2548485743409442386">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:77</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# copy} other {# copies}}</source>
+      </segment>
+    </unit>
+    <unit id="1302369558286676608">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:82</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="size" disp="each"/> each · <ph id="1" equiv="extra" disp="extra"/> extra</source>
+      </segment>
+    </unit>
+    <unit id="375616451848908449">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:87</note>
+      </notes>
+      <segment>
+        <source>Delete this copy for good, keeping another one (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="701227920465091910">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:88</note>
+      </notes>
+      <segment>
+        <source>Move this copy to the trash, keeping another one (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="6387755355702847875">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:92</note>
+      </notes>
+      <segment>
+        <source>Delete this file from the disk now. It can&apos;t be put back.</source>
+      </segment>
+    </unit>
+    <unit id="4187054003101761960">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:93</note>
+      </notes>
+      <segment>
+        <source>Move this file to the trash now. It can be put back from there.</source>
+      </segment>
+    </unit>
+    <unit id="2389345757831582429">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:97</note>
+      </notes>
+      <segment>
+        <source>Remove “<ph id="0" equiv="name" disp="file.name"/>”</source>
+      </segment>
+    </unit>
+    <unit id="1008782845639963226">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:164,165</note>
+      </notes>
+      <segment>
+        <source>Files of the index with the same size and the same fingerprint, the biggest first. Only indexed files are compared: scan a folder to include its latest files.</source>
+      </segment>
+    </unit>
+    <unit id="963667428950315495">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:169,170</note>
+      </notes>
+      <segment>
+        <source>Only in “<ph id="0" equiv="INTERPOLATION" disp="{{ folder() }}"/>”</source>
+      </segment>
+    </unit>
+    <unit id="6371144928335208366">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:193,194</note>
+        <note category="location">src/app/tracking/similar-panel.component.html:68,69</note>
+      </notes>
+      <segment>
+        <source>Show the next groups.</source>
+      </segment>
+    </unit>
+    <unit id="33149636091572968">
+      <notes>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:200,201</note>
+        <note category="location">src/app/tracking/missing-panel.component.html:110,111</note>
+        <note category="location">src/app/tracking/similar-panel.component.html:75,76</note>
+      </notes>
+      <segment>
+        <source>Load more</source>
+      </segment>
+    </unit>
+    <unit id="7453331671052839896">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:1,3</note>
+      </notes>
+      <segment>
+        <source>Tagged files that a scan no longer found. When a scan indexes the same file somewhere else, moved, renamed or back on its drive, its tags follow it on their own. Files with several possible new places, or none yet, wait here.</source>
+      </segment>
+    </unit>
+    <unit id="8842107094591063142">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:9,10</note>
+      </notes>
+      <segment>
+        <source>Give the tags of each missing file that has exactly one likely new place to that file.</source>
+      </segment>
+    </unit>
+    <unit id="7852261395764714403">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:15,16</note>
+      </notes>
+      <segment>
+        <source>Relink now</source>
+      </segment>
+    </unit>
+    <unit id="3203900543700306947">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:19,20</note>
+      </notes>
+      <segment>
+        <source>Forget every missing file and its tags (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="5421959186266429999">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:25,26</note>
+      </notes>
+      <segment>
+        <source>Forget all</source>
+      </segment>
+    </unit>
+    <unit id="371689902289199215">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:51,52</note>
+      </notes>
+      <segment>
+        <source>Type the path of the file it became.</source>
+      </segment>
+    </unit>
+    <unit id="238196196667176598">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:57,58</note>
+      </notes>
+      <segment>
+        <source>Choose file…</source>
+      </segment>
+    </unit>
+    <unit id="3987328180114063804">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:61,62</note>
+      </notes>
+      <segment>
+        <source>Forget this missing file and its tags (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="4324014649445417243">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:67,68</note>
+      </notes>
+      <segment>
+        <source>Forget</source>
+      </segment>
+    </unit>
+    <unit id="1592991876334147825">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:72,73</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {Possible new place} other {Possible new places}}</source>
+      </segment>
+    </unit>
+    <unit id="6585891487100026639">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:81,82</note>
+      </notes>
+      <segment>
+        <source>This is the file it became: give it the tags.</source>
+      </segment>
+    </unit>
+    <unit id="345825144225761995">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:87,88</note>
+      </notes>
+      <segment>
+        <source>Relink here</source>
+      </segment>
+    </unit>
+    <unit id="2005264585169894599">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:94,95</note>
+      </notes>
+      <segment>
+        <source>No identical file is indexed. Scan the folder it went to, or choose the file.</source>
+      </segment>
+    </unit>
+    <unit id="1523502029240433632">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.html:103,104</note>
+      </notes>
+      <segment>
+        <source>Show the next missing files.</source>
+      </segment>
+    </unit>
+    <unit id="2138706993619992702">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.ts:130,131</note>
+      </notes>
+      <segment>
+        <source>{relinked, plural, one {# file relinked;} other {# files relinked;}} {remaining, plural, one {# file still missing.} other {# files still missing.}}</source>
+      </segment>
+    </unit>
+    <unit id="3699861551374669605">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.ts:134</note>
+      </notes>
+      <segment>
+        <source>No missing file has a single likely new place.</source>
+      </segment>
+    </unit>
+    <unit id="3516805296522155661">
+      <notes>
+        <note category="location">src/app/tracking/missing-panel.component.ts:144,145</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {Forget the missing file and its tags?} other {Forget all # missing files and their tags?}}</source>
+      </segment>
+    </unit>
+    <unit id="2736461380756324054">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.html:1,3</note>
+      </notes>
+      <segment>
+        <source>Videos showing the same pictures in other files: another resolution, quality or format, or trimmed. They are compared from the fingerprints made with their trickplay (Trickplay › Settings): indexed videos without trickplay yet are left out.</source>
+      </segment>
+    </unit>
+    <unit id="6764129652800004033">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.html:7,8</note>
+      </notes>
+      <segment>
+        <source>Only groups with a video in “<ph id="0" equiv="INTERPOLATION" disp="{{ folder() }}"/>”</source>
+      </segment>
+    </unit>
+    <unit id="8615191713244967992">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.html:15,16</note>
+      </notes>
+      <segment>
+        <source>Compare the videos that have trickplay now, in the background.</source>
+      </segment>
+    </unit>
+    <unit id="4614153228480076598">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.html:21,22</note>
+      </notes>
+      <segment>
+        <source>Compare now</source>
+      </segment>
+    </unit>
+    <unit id="7395365085621150984">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.html:32,33</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{ size(group.wastedBytes) }}"/> more than the biggest</source>
+      </segment>
+    </unit>
+    <unit id="5223865102471990268">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.html:41,42</note>
+      </notes>
+      <segment>
+        <source>The longest video of the group: the others are compared to it.</source>
+      </segment>
+    </unit>
+    <unit id="3147371091697922238">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.html:44,45</note>
+      </notes>
+      <segment>
+        <source>Reference</source>
+      </segment>
+    </unit>
+    <unit id="3352984097230357284">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.html:48,49</note>
+      </notes>
+      <segment>
+        <source>Frames in common with the reference, out of the longer of the two.</source>
+      </segment>
+    </unit>
+    <unit id="8771426733656085306">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.html:51,52</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="INTERPOLATION" disp="{{ video.match }}"/>% match</source>
+      </segment>
+    </unit>
+    <unit id="2295385296072082729">
+      <notes>
+        <note category="location">src/app/tracking/similar-panel.component.ts:61</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# video} other {# videos}}</source>
+      </segment>
+    </unit>
+    <unit id="4080178327694137880">
+      <notes>
+        <note category="location">src/app/tracking/tracking-parts.ts:42,43</note>
+      </notes>
+      <segment>
+        <source>Open “<ph id="0" equiv="INTERPOLATION" disp="{{ file().path }}"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="8858864962957050508">
+      <notes>
+        <note category="location">src/app/tracking/tracking-parts.ts:48,49</note>
+      </notes>
+      <segment>
+        <source>Show the folder this file is in.</source>
+      </segment>
+    </unit>
+    <unit id="3580764069155286066">
+      <notes>
+        <note category="location">src/app/tracking/tracking-parts.ts:108</note>
+      </notes>
+      <segment>
+        <source>Show the folder “<ph id="0" equiv="folder" disp="folderName"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="517006251881184604">
+      <notes>
+        <note category="location">src/app/tracking/tracking-parts.ts:113</note>
+      </notes>
+      <segment>
+        <source>Open containing folder in new tab</source>
+      </segment>
+    </unit>
+    <unit id="5483665144426444727">
+      <notes>
+        <note category="location">src/app/tracking/tracking-parts.ts:115</note>
+      </notes>
+      <segment>
+        <source>Open the folder “<ph id="0" equiv="folder" disp="folderName"/>” in a tab of its own.</source>
+      </segment>
+    </unit>
+    <unit id="4082973592575419617">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:22</note>
+      </notes>
+      <segment>
+        <source>Could not look for duplicates: <ph id="0" equiv="reason" disp="failure"/></source>
+      </segment>
+    </unit>
+    <unit id="7758533224871748937">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:30</note>
+      </notes>
+      <segment>
+        <source>{groups, plural, one {# group of identical files <ph id="0" equiv="where"/>: <ph id="1" equiv="size"/> could be freed.} other {# groups of identical files <ph id="2" equiv="where"/>: <ph id="3" equiv="size"/> could be freed.}}</source>
+      </segment>
+    </unit>
+    <unit id="3476624765313822524">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:34</note>
+      </notes>
+      <segment>
+        <source>No duplicates <ph id="0" equiv="where" disp="where"/>.</source>
+      </segment>
+    </unit>
+    <unit id="6789858083889790276">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:37</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# file in all.} other {# files in all.}}</source>
+      </segment>
+    </unit>
+    <unit id="458296349956503783">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:38</note>
+      </notes>
+      <segment>
+        <source>Files under <ph id="0" equiv="size" disp="formatSize(result.minimumSize)"/> are left out.</source>
+      </segment>
+    </unit>
+    <unit id="4215720170557043838">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:41</note>
+      </notes>
+      <segment>
+        <source>Scans don&apos;t fingerprint files (Scanning › Indexing › Fingerprint files): new files are not compared.</source>
+      </segment>
+    </unit>
+    <unit id="120578858856953102">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:50,51</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# indexed file without a fingerprint can&apos;t be compared until it is scanned again.} other {# indexed files without a fingerprint can&apos;t be compared until they are scanned again.}}</source>
+      </segment>
+    </unit>
+    <unit id="4881522391674984">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:55</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# indexed file without a fingerprint can&apos;t be compared.} other {# indexed files without a fingerprint can&apos;t be compared.}}</source>
+      </segment>
+    </unit>
+    <unit id="1213408855810037151">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:66</note>
+      </notes>
+      <segment>
+        <source>Could not read the similar videos: <ph id="0" equiv="reason" disp="failure"/></source>
+      </segment>
+    </unit>
+    <unit id="6597403360047115791">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:77</note>
+      </notes>
+      <segment>
+        <source>Listed from <ph id="0" equiv="percent" disp="summary.minimumPercent"/>% match.</source>
+      </segment>
+    </unit>
+    <unit id="1602900024368985816">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:79</note>
+      </notes>
+      <segment>
+        <source>The last comparison was cancelled: these are the groups of the one before.</source>
+      </segment>
+    </unit>
+    <unit id="4322718165353508993">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:83</note>
+      </notes>
+      <segment>
+        <source>Compared <ph id="0" equiv="date" disp="formatDate(run.finished)"/>.</source>
+      </segment>
+    </unit>
+    <unit id="2316728076991598544">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:85</note>
+      </notes>
+      <segment>
+        <source>Trickplay is off (Trickplay › Settings): videos get no new fingerprints.</source>
+      </segment>
+    </unit>
+    <unit id="393271679203723400">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:95,96</note>
+      </notes>
+      <segment>
+        <source>Comparing videos… {checked, number} of {total, plural, one {# video} other {# videos}} read.</source>
+      </segment>
+    </unit>
+    <unit id="1202004264054433674">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:102</note>
+      </notes>
+      <segment>
+        <source>Comparing videos…</source>
+      </segment>
+    </unit>
+    <unit id="2069653517722948104">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:103</note>
+      </notes>
+      <segment>
+        <source>The comparison failed: <ph id="0" equiv="reason" disp="run.message ?? &apos;&apos;"/></source>
+      </segment>
+    </unit>
+    <unit id="1391051449977357431">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:104</note>
+      </notes>
+      <segment>
+        <source>The videos have not been compared since SFE started.</source>
+      </segment>
+    </unit>
+    <unit id="7986833855290586909">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:105</note>
+      </notes>
+      <segment>
+        <source>with a video in “<ph id="0" equiv="folder" disp="result.path"/>”</source>
+      </segment>
+    </unit>
+    <unit id="7737684758672285032">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:108</note>
+      </notes>
+      <segment>
+        <source>{groups, plural, one {# group of similar videos <ph id="0" equiv="where"/>: <ph id="1" equiv="size"/> more than the biggest of each.} other {# groups of similar videos <ph id="2" equiv="where"/>: <ph id="3" equiv="size"/> more than the biggest of each.}}</source>
+      </segment>
+    </unit>
+    <unit id="6208195462959469005">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:112</note>
+      </notes>
+      <segment>
+        <source>No similar videos <ph id="0" equiv="where" disp="where"/>.</source>
+      </segment>
+    </unit>
+    <unit id="1229796550411951828">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:118</note>
+      </notes>
+      <segment>
+        <source>{compared, number} of {videos, plural, one {# indexed video} other {# indexed videos}} compared.</source>
+      </segment>
+    </unit>
+    <unit id="3328330600677786130">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:121</note>
+      </notes>
+      <segment>
+        <source>The others have no trickplay yet.</source>
+      </segment>
+    </unit>
+    <unit id="202995609243490192">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:129</note>
+      </notes>
+      <segment>
+        <source>Could not read the missing files: <ph id="0" equiv="reason" disp="failure"/></source>
+      </segment>
+    </unit>
+    <unit id="6886125442298260783">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:135</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# tagged file is missing.} other {# tagged files are missing.}}</source>
+      </segment>
+    </unit>
+    <unit id="648758817723337383">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:138</note>
+      </notes>
+      <segment>
+        <source>No tagged file is missing.</source>
+      </segment>
+    </unit>
+    <unit id="1346136395318566134">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:140</note>
+      </notes>
+      <segment>
+        <source>Relinking runs after every scan; “Relink now” runs it again, for instance after scanning by hand.</source>
+      </segment>
+    </unit>
+    <unit id="333302328556736912">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:142</note>
+      </notes>
+      <segment>
+        <source>Keeping the tags of moved files is turned off (see the Settings tab): files no longer found lose their tags.</source>
+      </segment>
+    </unit>
+    <unit id="3252236938843676223">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:153</note>
+      </notes>
+      <segment>
+        <source>Was in “<ph id="0" equiv="folder" disp="item.path.slice(0, slash)"/>” · <ph id="1" equiv="size" disp="size"/> · missing since <ph id="2" equiv="date" disp="since"/></source>
+      </segment>
+    </unit>
+    <unit id="1666655145825294058">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:154</note>
+      </notes>
+      <segment>
+        <source>Was at the top of the library · <ph id="0" equiv="size" disp="size"/> · missing since <ph id="1" equiv="date" disp="since"/></source>
+      </segment>
+    </unit>
+    <unit id="2373537985909469068">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:159</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {And # more file.} other {And # more files.}}</source>
+      </segment>
+    </unit>
+    <unit id="4039840585414725074">
+      <notes>
+        <note category="location">src/app/tracking/tracking-texts.ts:163</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {And # more video.} other {And # more videos.}}</source>
+      </segment>
+    </unit>
+    <unit id="1776071449374990487">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.html:15,16</note>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:28,29</note>
+      </notes>
+      <segment>
+        <source>Go over the trickplay folders now for videos without trickplay.</source>
+      </segment>
+    </unit>
+    <unit id="7580062297711655044">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.html:21,22</note>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:34,35</note>
+      </notes>
+      <segment>
+        <source>Look for new videos now</source>
+      </segment>
+    </unit>
+    <unit id="5793166454377241356">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:67</note>
+      </notes>
+      <segment>
+        <source>Could not read the activity: <ph id="0" equiv="reason" disp="error"/></source>
+      </segment>
+    </unit>
+    <unit id="8808247325844739366">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>Turned off: tick “Create trickplay” in the Settings tab and save.</source>
+      </segment>
+    </unit>
+    <unit id="3324347752037506634">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:75,76</note>
+      </notes>
+      <segment>
+        <source>ffmpeg can&apos;t be found: set its path (Thumbnails:FfmpegPath) in the server&apos;s configuration file.</source>
+      </segment>
+    </unit>
+    <unit id="7198980497394487069">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:79</note>
+      </notes>
+      <segment>
+        <source>Looking for videos without trickplay…</source>
+      </segment>
+    </unit>
+    <unit id="195642559553997273">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:81,82</note>
+      </notes>
+      <segment>
+        <source>{left, plural, one {Creating trickplay: # video left.} other {Creating trickplay: # videos left.}}</source>
+      </segment>
+    </unit>
+    <unit id="1297309491084615837">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:88</note>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>Up to date.</source>
+      </segment>
+    </unit>
+    <unit id="7854018316549854596">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:88</note>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>Waiting.</source>
+      </segment>
+    </unit>
+    <unit id="8690432771825560273">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:117</note>
+        <note category="description">videos whose trickplay is being made</note>
+      </notes>
+      <segment>
+        <source>Working on</source>
+      </segment>
+    </unit>
+    <unit id="1781190378980365538">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:122</note>
+      </notes>
+      <segment>
+        <source>No video is being processed right now.</source>
+      </segment>
+    </unit>
+    <unit id="9001216289639080925">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:126</note>
+        <note category="description">videos waiting for their trickplay</note>
+      </notes>
+      <segment>
+        <source>Waiting</source>
+      </segment>
+    </unit>
+    <unit id="7616974098754968157">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:128</note>
+      </notes>
+      <segment>
+        <source>opened in the player</source>
+      </segment>
+    </unit>
+    <unit id="1085586096949445526">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:132</note>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:71</note>
+      </notes>
+      <segment>
+        <source>Looking for videos…</source>
+      </segment>
+    </unit>
+    <unit id="2413399010969995871">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:132</note>
+      </notes>
+      <segment>
+        <source>No video is waiting.</source>
+      </segment>
+    </unit>
+    <unit id="8029667286066368806">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:136</note>
+      </notes>
+      <segment>
+        <source>Recently finished</source>
+      </segment>
+    </unit>
+    <unit id="4836715311258298109">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-activity.component.ts:146</note>
+      </notes>
+      <segment>
+        <source>No video has been processed since the server started.</source>
+      </segment>
+    </unit>
+    <unit id="7120203415987631754">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-mark.component.ts:7</note>
+      </notes>
+      <segment>
+        <source>Its previews along the timeline are waiting to be made.</source>
+      </segment>
+    </unit>
+    <unit id="3285094963188012111">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-mark.component.ts:8</note>
+      </notes>
+      <segment>
+        <source>Its previews along the timeline are being made…</source>
+      </segment>
+    </unit>
+    <unit id="1511673075214825859">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:38,39</note>
+      </notes>
+      <segment>
+        <source>Show the videos being processed, waiting and finished.</source>
+      </segment>
+    </unit>
+    <unit id="2417852967799354784">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:42,43</note>
+      </notes>
+      <segment>
+        <source>Show activity</source>
+      </segment>
+    </unit>
+    <unit id="8627890178245224165">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:62</note>
+      </notes>
+      <segment>
+        <source>Could not read the state: <ph id="0" equiv="reason" disp="error"/></source>
+      </segment>
+    </unit>
+    <unit id="3101998445464777238">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:67</note>
+      </notes>
+      <segment>
+        <source>Turned off.</source>
+      </segment>
+    </unit>
+    <unit id="7802395781654040692">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:69</note>
+      </notes>
+      <segment>
+        <source>ffmpeg can&apos;t be found.</source>
+      </segment>
+    </unit>
+    <unit id="3965432590183402909">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:81</note>
+      </notes>
+      <segment>
+        <source>Tick “Create trickplay” and save to start.</source>
+      </segment>
+    </unit>
+    <unit id="5857478697536346559">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-status.component.ts:83</note>
+      </notes>
+      <segment>
+        <source>Set its path (Thumbnails:FfmpegPath) in the server&apos;s configuration file.</source>
+      </segment>
+    </unit>
+    <unit id="2256197508854769750">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-texts.ts:8</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# video checked} other {# videos checked}}</source>
+      </segment>
+    </unit>
+    <unit id="1600777140568186147">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-texts.ts:9</note>
+        <note category="description">trickplay made for that many videos</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# created} other {# created}}</source>
+      </segment>
+    </unit>
+    <unit id="5379040529248882896">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-texts.ts:13</note>
+        <note category="description">trickplay failed for that many videos</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# failed} other {# failed}}</source>
+      </segment>
+    </unit>
+    <unit id="4473308562475603017">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-texts.ts:22</note>
+      </notes>
+      <segment>
+        <source>last complete check <ph id="0" equiv="date" disp="formatDate(status.lastPassFinished)"/></source>
+      </segment>
+    </unit>
+    <unit id="6312631196373628878">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-texts.ts:29</note>
+      </notes>
+      <segment>
+        <source>Working on <ph id="0" equiv="videos" disp="videos"/>.</source>
+      </segment>
+    </unit>
+    <unit id="8959514354786835776">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-texts.ts:36</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# opened video waiting} other {# opened videos waiting}}</source>
+      </segment>
+    </unit>
+    <unit id="1881187081239308964">
+      <notes>
+        <note category="location">src/app/trickplay/trickplay-texts.ts:41</note>
+      </notes>
+      <segment>
+        <source>{more, select, yes {{count, number}+ to do} other {{count, number} to do}}</source>
       </segment>
     </unit>
   </file>

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { Api } from '../core/api.service';
-import { formatSize, joinParts, plural } from '../core/format';
+import { formatSize } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { isFileConflict, LibraryItem } from '../core/models';
 import { FileTags } from '../core/tag.models';
 import { DuplicateGroup, DuplicateResults } from './tracking.models';
@@ -9,6 +10,7 @@ import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { checkedOf, valueOf } from '../shared/events';
 import { StatusBoxComponent, TrackingFileComponent } from './tracking-parts';
+import { duplicatesStatus, moreFiles } from './tracking-texts';
 
 const SCOPE_KEY = 'sfe.duplicates.folderOnly';
 
@@ -71,11 +73,29 @@ export class DuplicateGroupComponent {
     );
     private readonly count = computed(() => this.group().count - this.removedPaths().size);
     protected readonly hidden = computed(() => this.count() - this.files().length);
-    protected readonly countText = computed(() => plural(this.count(), 'copy', 'copies'));
-    protected readonly sizeText = computed(
-        () => `${formatSize(this.group().size)} each · ${formatSize(this.group().size * (this.count() - 1))} extra`,
+    protected readonly countText = computed(() =>
+        icu($localize`{count, plural, one {# copy} other {# copies}}`, { count: this.count() }),
     );
-    protected readonly hiddenText = computed(() => plural(this.hidden(), 'more file', 'more files'));
+    protected readonly sizeText = computed(() => {
+        const each = formatSize(this.group().size);
+        const extra = formatSize(this.group().size * (this.count() - 1));
+        return $localize`${each}:size: each · ${extra}:extra: extra`;
+    });
+    protected readonly hiddenText = computed(() => moreFiles(this.hidden()));
+    protected readonly removeTitle = computed(() =>
+        this.permanent()
+            ? $localize`Delete this copy for good, keeping another one (asks first).`
+            : $localize`Move this copy to the trash, keeping another one (asks first).`,
+    );
+    protected readonly confirmTitle = computed(() =>
+        this.permanent()
+            ? $localize`Delete this file from the disk now. It can't be put back.`
+            : $localize`Move this file to the trash now. It can be put back from there.`,
+    );
+
+    protected confirmLabel(file: LibraryItem): string {
+        return $localize`Remove “${file.name}:name:”`;
+    }
 
     protected othersOf(file: LibraryItem): LibraryItem[] {
         return this.files().filter((other) => other.path !== file.path);
@@ -141,12 +161,12 @@ export class DuplicateGroupComponent {
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'settings-panel', role: 'tabpanel' },
     template: `
-        <p class="settings-intro">Files of the index with the same size and the same fingerprint, the biggest first.
-        Only indexed files are compared: scan a folder to include its latest files.</p>
+        <p class="settings-intro" i18n>Files of the index with the same size and the same fingerprint, the biggest
+        first. Only indexed files are compared: scan a folder to include its latest files.</p>
         @if (folder()) {
             <label class="check tracking-scope">
                 <input type="checkbox" [checked]="folderOnly()" (change)="setFolderOnly(checkedOf($event))">
-                <span>Only in “{{ folder() }}”</span>
+                <span i18n>Only in “{{ folder() }}”</span>
             </label>
         }
         <sfe-status-box [state]="status().state" [text]="status().text" [detail]="status().detail" />
@@ -170,11 +190,13 @@ export class DuplicateGroupComponent {
         <button
             type="button"
             class="button"
-            title="Show the next page"
+            title="Show the next groups."
+            i18n-title
             [hidden]="!hasMore()"
             [sfeBusy]="loadingMore()"
             [disabled]="loadingMore()"
             (click)="more()"
+            i18n
         >Load more</button>
     `,
 })
@@ -199,33 +221,7 @@ export class DuplicatesPanelComponent {
     private next: string | null = null;
     private generation = 0;
 
-    protected readonly status = computed(() => {
-        const failure = this.failure();
-        if (failure) return { state: 'unavailable', text: `Could not look for duplicates: ${failure}`, detail: '' };
-        const result = this.first();
-        const summary = result?.summary;
-        if (!result || !summary) return { state: null, text: '…', detail: '' };
-        const where = result.path ? `in “${result.path}”` : 'in the library';
-        return {
-            state: summary.groups ? 'found' : 'idle',
-            text: summary.groups
-                ? `${plural(summary.groups, 'group')} of identical ` +
-                  `files ${where}: ${formatSize(summary.wastedBytes)} could be freed`
-                : `No duplicates ${where}.`,
-            detail: joinParts([
-                summary.groups ? `${plural(summary.files, 'file')} in all` : null,
-                result.minimumSize > 0 ? `files under ${formatSize(result.minimumSize)} are left out` : null,
-                summary.unfingerprinted
-                    ? `${plural(summary.unfingerprinted, 'indexed file')} without a fingerprint can't be ` +
-                      `compared${result.fingerprinting ? ' until they are scanned again' : ''}`
-                    : null,
-                !result.fingerprinting
-                    ? "scans don't fingerprint files (Scanning › Indexing › Fingerprint files): " +
-                      'new files are not compared'
-                    : null,
-            ]),
-        };
-    });
+    protected readonly status = computed(() => duplicatesStatus(this.first(), this.failure()));
     /** For the tab. */
     readonly badge = computed(() =>
         this.first()?.summary?.groups ? this.first()!.summary!.groups.toLocaleString() : '',

@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { Api } from '../core/api.service';
-import { formatDate, formatElapsed, formatTime, joinParts, plural } from '../core/format';
+import { formatElapsed, formatTime, joinParts } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { TrickplayActivity } from './trickplay.models';
+import { lastCheck, passCounts } from './trickplay-texts';
+import { moreVideos } from '../tracking/tracking-texts';
 import { ToastService } from '../core/toast.service';
 import { visibleInterval } from '../core/visible-interval';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
@@ -23,6 +26,8 @@ interface Row {
 }
 
 interface Section {
+    /** Stable, for tracking (the title changes with the language). */
+    key: 'working' | 'waiting' | 'finished';
     title: string;
     rows: Row[];
     total: number;
@@ -59,24 +64,28 @@ export class TrickplayActivityComponent {
 
     protected readonly stateText = computed(() => {
         const error = this.error();
-        if (error) return `Could not read the activity: ${error}`;
+        if (error) return $localize`Could not read the activity: ${error}:reason:`;
         const status = this.activity()?.status;
         if (!status) return '…';
         const left = status.current.length + status.queued + status.pending;
         switch (status.state) {
             case 'disabled':
-                return 'Turned off: tick “Create trickplay” in the Settings tab and save.';
+                return $localize`Turned off: tick “Create trickplay” in the Settings tab and save.`;
             case 'unavailable':
-                return (
-                    "ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) " +
-                    "in the server's configuration file."
-                );
+                return $localize`ffmpeg can't be found: set its path (Thumbnails:FfmpegPath) in the server's \
+configuration file.`;
             case 'running':
                 return status.discovering
-                    ? 'Looking for videos without trickplay…'
-                    : `Creating trickplay: ${plural(left, 'video')} left`;
+                    ? $localize`Looking for videos without trickplay…`
+                    : icu(
+                          $localize`{left, plural, one {Creating trickplay: # video left.} \
+other {Creating trickplay: # videos left.}}`,
+                          {
+                              left,
+                          },
+                      );
             default:
-                return status.lastPassFinished ? 'Up to date.' : 'Waiting.';
+                return status.lastPassFinished ? $localize`Up to date.` : $localize`Waiting.`;
         }
     });
     /** While the pass still looks for videos the total isn't known: the bar sweeps instead. */
@@ -92,14 +101,7 @@ export class TrickplayActivityComponent {
     });
     protected readonly counts = computed(() => {
         const status = this.activity()?.status;
-        return status
-            ? joinParts([
-                  plural(status.checked, 'video') + ' checked',
-                  plural(status.generated, 'created', 'created'),
-                  status.failed ? plural(status.failed, 'failed', 'failed') : null,
-                  status.lastPassFinished ? `last complete check ${formatDate(status.lastPassFinished)}` : null,
-              ])
-            : '';
+        return status ? joinParts([...passCounts(status), lastCheck(status)]) : '';
     });
     protected readonly cannotCheck = computed(() => {
         const state = this.activity()?.status.state;
@@ -111,24 +113,27 @@ export class TrickplayActivityComponent {
         const { status } = activity;
         return [
             {
-                title: 'Working on',
+                key: 'working',
+                title: $localize`:videos whose trickplay is being made:Working on`,
                 rows: activity.running.map((r) =>
                     row(r.path, 'running', formatElapsed((Date.now() - Date.parse(r.started)) / 1000)),
                 ),
                 total: activity.running.length,
-                empty: 'Nothing right now.',
+                empty: $localize`No video is being processed right now.`,
             },
             {
-                title: 'Waiting',
+                key: 'waiting',
+                title: $localize`:videos waiting for their trickplay:Waiting`,
                 rows: [
-                    ...activity.queued.map((path) => row(path, 'pending', 'opened in the player')),
+                    ...activity.queued.map((path) => row(path, 'pending', $localize`opened in the player`)),
                     ...activity.pending.map((path) => row(path, 'pending', null)),
                 ],
                 total: status.queued + status.pending,
-                empty: status.discovering ? 'Looking for videos…' : 'No video is waiting.',
+                empty: status.discovering ? $localize`Looking for videos…` : $localize`No video is waiting.`,
             },
             {
-                title: 'Recently finished',
+                key: 'finished',
+                title: $localize`Recently finished`,
                 rows: activity.recent.map((r) =>
                     row(
                         r.path,
@@ -138,7 +143,7 @@ export class TrickplayActivityComponent {
                     ),
                 ),
                 total: activity.recent.length,
-                empty: 'No video processed since the server started.',
+                empty: $localize`No video has been processed since the server started.`,
             },
         ];
     });
@@ -149,7 +154,7 @@ export class TrickplayActivityComponent {
     }
 
     protected more(section: Section): string {
-        return plural(section.total - section.rows.length, 'more video', 'more videos');
+        return moreVideos(section.total - section.rows.length);
     }
 
     protected async check(): Promise<void> {

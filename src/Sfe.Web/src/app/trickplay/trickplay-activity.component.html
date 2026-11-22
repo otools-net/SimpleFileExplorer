@@ -12,14 +12,16 @@
         <button
             type="button"
             class="button small"
-            title="Go over the trickplay folders now for videos without trickplay"
+            title="Go over the trickplay folders now for videos without trickplay."
+            i18n-title
             [sfeBusy]="checking()"
             [disabled]="checking() || cannotCheck()"
             (click)="check()"
+            i18n
         >Look for new videos now</button>
     </div>
 </div>
-@for (section of sections(); track section.title) {
+@for (section of sections(); track section.key) {
     <section class="trickplay-section">
         <header><h3>{{ section.title }}</h3><span class="trickplay-count">{{ section.total ? section.total.toLocaleString() : '' }}</span></header>
         <ul class="trickplay-list">
@@ -45,7 +47,7 @@
                 </li>
             }
             @if (section.total > section.rows.length) {
-                <li class="trickplay-more">and {{ more(section) }}</li>
+                <li class="trickplay-more">{{ more(section) }}</li>
             }
         </ul>
         <p class="muted" [hidden]="section.total > 0">{{ section.empty }}</p>

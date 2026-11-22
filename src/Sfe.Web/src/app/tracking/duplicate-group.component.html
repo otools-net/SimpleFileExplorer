@@ -10,20 +10,31 @@
                     <button
                         type="button"
                         class="button small danger"
-                        [title]="permanent() ? 'Delete this copy for good, keeping another one (asks first)' : 'Move this copy to the trash, keeping another one (asks first)'"
+                        [title]="removeTitle()"
                         (click)="confirm(file)"
+                        i18n
                     >Remove</button>
                 </span>
             }
             @if (confirming() === file.path) {
                 @let others = othersOf(file);
-                <div class="tracking-confirm" role="group" [attr.aria-label]="'Remove ' + file.name">
+                <div class="tracking-confirm" role="group" [attr.aria-label]="confirmLabel(file)">
                     <span>
-                        {{ permanent() ? 'Delete this file for good' : 'Move this file to the trash' }}{{ file.tags?.length ? ' and add its tags to ' : ' and keep ' }}
+                        @if (permanent()) {
+                            <ng-container i18n>Delete this file for good? </ng-container>
+                        } @else {
+                            <ng-container i18n>Move this file to the trash? </ng-container>
+                        }
+                        @if (file.tags?.length) {
+                            <ng-container i18n>Its tags go to the copy kept: </ng-container>
+                        } @else {
+                            <ng-container i18n>Copy kept: </ng-container>
+                        }
                         @if (others.length > 1) {
                             <select
                                 class="tracking-keep"
                                 aria-label="Copy to keep"
+                                i18n-aria-label
                                 (change)="keep.set(valueOf($event))"
                             >
                                 @for (other of others; track other.path) {
@@ -35,23 +46,31 @@
                             </select>
                         } @else {
                             <strong>{{ others[0].path }}</strong>
-                        }?
+                        }
                     </span>
                     <span class="tracking-actions">
                         <button
                             type="button"
                             class="button small"
-                            title="Keep the file"
+                            title="Keep this file."
+                            i18n-title
                             (click)="confirming.set(null)"
+                            i18n
                         >Cancel</button>
                         <button
                             type="button"
                             class="button small danger"
-                            [title]="permanent() ? 'Delete this file from the disk now' : 'Move this file to the trash now (it can be put back)'"
+                            [title]="confirmTitle()"
                             [sfeBusy]="removing()"
                             [disabled]="removing()"
                             (click)="remove(file)"
-                        >{{ permanent() ? 'Delete this copy' : 'Move to the trash' }}</button>
+                        >
+                            @if (permanent()) {
+                                <ng-container i18n>Delete this copy</ng-container>
+                            } @else {
+                                <ng-container i18n>Move to trash</ng-container>
+                            }
+                        </button>
                     </span>
                 </div>
             }
@@ -59,5 +78,5 @@
     }
 </ul>
 @if (hidden() > 0) {
-    <p class="tracking-more">and {{ hiddenText() }}</p>
+    <p class="tracking-more">{{ hiddenText() }}</p>
 }

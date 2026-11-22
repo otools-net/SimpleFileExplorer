@@ -39,12 +39,12 @@ import { TagChipComponent } from '../tags/tag-chip.component';
                 [href]="urls()!.file(file().path)"
                 target="_blank"
                 rel="noopener"
-                [title]="'Open ' + file().path"
+                title="Open “{{ file().path }}”." i18n-title
             >{{ file().name }}</a>
             <button
                 type="button"
                 class="tracking-folder"
-                title="Show this folder"
+                title="Show the folder this file is in." i18n-title
                 (click)="openFolder.emit(file().directory ?? '')"
             >
                 <svg sfeIcon="folder"></svg>{{ file().directory || config.config()?.rootName }}
@@ -93,24 +93,24 @@ export class TrackingFileComponent {
         const entries: MenuEntry[] = [
             {
                 id: 'newTab',
-                label: 'Open in new tab',
+                label: $localize`Open in new tab`,
                 icon: 'external',
-                title: `Open ${file.name} in a tab of its own`,
+                title: $localize`Open “${file.name}:name:” in a tab of its own.`,
                 href: this.actions.fileUrl(file),
                 newTab: true,
             },
             {
                 id: 'openFolder',
-                label: 'Open containing folder',
+                label: $localize`Open containing folder`,
                 icon: 'folder',
-                title: `List ${folderName}`,
+                title: $localize`Show the folder “${folderName}:folder:”.`,
                 run: () => this.openFolder.emit(folder),
             },
             {
                 id: 'folderNewTab',
-                label: 'Open containing folder in new tab',
+                label: $localize`Open containing folder in new tab`,
                 icon: 'external',
-                title: `List ${folderName} in a tab of its own`,
+                title: $localize`Open the folder “${folderName}:folder:” in a tab of its own.`,
                 href: this.store.pageUrl(this.store.libraryParams(folder)),
                 newTab: true,
             },
@@ -118,17 +118,17 @@ export class TrackingFileComponent {
         if (this.config.can(Rights.download))
             entries.push({
                 id: 'download',
-                label: 'Download',
+                label: $localize`Download`,
                 icon: 'download',
-                title: 'Save this file to this device',
+                title: $localize`Save this file to this device.`,
                 href: this.urls()!.download(file.path),
             });
         if (this.copyPaths.enabled())
             entries.push({
                 id: 'copyPath',
-                label: 'Copy full path',
+                label: $localize`Copy full path`,
                 icon: 'copy',
-                title: 'Copy where it is on the server',
+                title: $localize`Copy where it is on the server.`,
                 run: () => void this.copyPaths.copy(file.path),
             });
         return entries;

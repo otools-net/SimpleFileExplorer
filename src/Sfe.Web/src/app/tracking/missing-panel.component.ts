@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
-import { formatDate, formatSize, plural } from '../core/format';
+import { icu } from '../core/i18n/icu';
 import { MissingFileInfo } from './tracking.models';
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
 import { TagChipComponent } from '../tags/tag-chip.component';
 import { StatusBoxComponent, TrackingFileComponent } from './tracking-parts';
+import { missingStatus, missingWas } from './tracking-texts';
 
 /**
  * Tagged files scans no longer find: relink them to one of their candidates or another file, or forget them.
@@ -39,29 +40,11 @@ export class MissingPanelComponent {
     private next: number | null = null;
     private generation = 0;
 
-    protected readonly status = computed(() => {
-        const failure = this.failure();
-        if (failure) return { state: 'unavailable', text: `Could not read the missing files: ${failure}`, detail: '' };
-        const total = this.total();
-        return {
-            state: !this.enabled() ? 'unavailable' : total ? 'found' : 'idle',
-            text: total ? `${plural(total, 'tagged file')} missing` : 'No tagged file is missing.',
-            detail: this.enabled()
-                ? 'Relinking runs after every scan; “Relink now” runs it again, for instance after scanning by hand.'
-                : 'Keeping the tags of moved files is turned off (see the Settings tab): ' +
-                  'files no longer found lose their tags.',
-        };
-    });
+    protected readonly status = computed(() => missingStatus(this.total(), this.enabled(), this.failure()));
     /** For the tab. */
     readonly badge = computed(() => (this.total() ? this.total().toLocaleString() : ''));
 
-    protected was(item: MissingFileInfo): string {
-        const slash = item.path.lastIndexOf('/');
-        return (
-            `Was in ${slash > 0 ? item.path.slice(0, slash) : 'the library root'} · ${formatSize(item.size)} · ` +
-            `missing since ${formatDate(item.missingSince)}`
-        );
-    }
+    protected readonly was = missingWas;
 
     async load({ append = false } = {}): Promise<void> {
         const current = append ? this.generation : ++this.generation;
@@ -143,8 +126,12 @@ export class MissingPanelComponent {
             if (result.relinked) this.changed.emit();
             this.toasts.show(
                 result.relinked
-                    ? `${plural(result.relinked, 'file')} relinked; ${plural(result.remaining, 'file')} still missing.`
-                    : 'No missing file has a single likely new place.',
+                    ? icu(
+                          $localize`{relinked, plural, one {# file relinked;} other {# files relinked;}} \
+{remaining, plural, one {# file still missing.} other {# files still missing.}}`,
+                          { relinked: result.relinked, remaining: result.remaining },
+                      )
+                    : $localize`No missing file has a single likely new place.`,
             );
         } catch (error) {
             this.toasts.error(`Could not relink: ${(error as Error).message}`);
@@ -153,7 +140,12 @@ export class MissingPanelComponent {
     }
 
     protected async forgetAll(): Promise<void> {
-        if (!confirm(`Forget all ${plural(this.total(), 'missing file')} and their tags?`)) return;
+        const question = icu(
+            $localize`{count, plural, one {Forget the missing file and its tags?} \
+other {Forget all # missing files and their tags?}}`,
+            { count: this.total() },
+        );
+        if (!confirm(question)) return;
         try {
             await whileBusy(this.forgettingAll, () => this.api.forgetMissingFiles());
         } catch (error) {
