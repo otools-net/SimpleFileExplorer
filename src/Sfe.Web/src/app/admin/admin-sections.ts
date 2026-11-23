@@ -172,8 +172,8 @@ from them.`,
             ),
             settingsPage(
                 'indexing',
-                $localize`What scans read from files (fingerprints, resolutions, durations), and how many folders \
-they read at once.`,
+                $localize`What scans read from files (fingerprints, resolutions, durations), how many folders \
+they read at once, and folders indexed as they are opened.`,
                 $localize`Indexing`,
                 'indexing',
             ),

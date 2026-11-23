@@ -94,6 +94,7 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'fileTypes.text',
     'scan.computeHashes',
     'scan.readResolution',
+    'scan.indexWhenListed',
     'thumbnails.enabled',
     'thumbnails.animatedHover',
     'thumbnails.excludedFolders',

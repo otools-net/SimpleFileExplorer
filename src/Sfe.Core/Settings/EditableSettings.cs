@@ -77,6 +77,7 @@ public sealed class EditableSettings
                 Parallelism = options.Scan.Parallelism,
                 ComputeHashes = options.Scan.ComputeHashes,
                 ReadResolution = options.Scan.ReadResolution,
+                IndexWhenListed = options.Scan.IndexWhenListed,
             },
             FileTypes = new()
             {
@@ -203,6 +204,7 @@ public sealed class EditableSettings
         options.Scan.Parallelism = Scan.Parallelism;
         options.Scan.ComputeHashes = Scan.ComputeHashes;
         options.Scan.ReadResolution = Scan.ReadResolution;
+        options.Scan.IndexWhenListed = Scan.IndexWhenListed;
         options.FileTypes.Images = [.. FileTypes.Images];
         options.FileTypes.Videos = [.. FileTypes.Videos];
         options.FileTypes.Audio = [.. FileTypes.Audio];

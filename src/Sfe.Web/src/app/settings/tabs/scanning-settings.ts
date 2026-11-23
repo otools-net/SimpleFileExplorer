@@ -124,6 +124,21 @@ ffmpeg, which makes scanning new ones slower.`,
             ],
         },
         {
+            title: $localize`As you browse`,
+            fields: [
+                {
+                    key: 'scan.indexWhenListed',
+                    label: $localize`Index folders as they are opened`,
+                    type: 'checkbox',
+                    hint: $localize`Indexes a folder in the background when someone opens it, that folder only, at \
+most once every 10 minutes.`,
+                    help: $localize`New files then show their tags, resolutions and durations, and searches find \
+them, without waiting for the next scan. The folders inside it are left to scans. Excluded folders are not \
+indexed.`,
+                },
+            ],
+        },
+        {
             title: $localize`Performance`,
             fields: [
                 {

@@ -162,13 +162,13 @@ public static class LibraryEndpoints
     public const string LibraryRootMissingType = ProblemTypes.LibraryRootMissing;
 
     private static async Task<Results<Ok<DirectoryListing>, NotFound, ProblemHttpResult>> Browse(
-        TagService tags,
-        FolderDefaultTags defaultTags,
+        [AsParameters] BrowseIndex index,
         [AsParameters] LibraryRequest library,
         [AsParameters] BrowseQuery query,
         CancellationToken cancellationToken
     )
     {
+        var (tags, defaultTags, indexing) = index;
         var (browser, paths, current, _, options, loggerFactory, _) = library;
         var (path, offset, limit, sort, desc) = query;
         // Parsed by hand: enum binding of query values is case-sensitive and the client sends "size", "name"...
@@ -216,6 +216,9 @@ public static class LibraryEndpoints
                 .LogWarning(ex, "Cannot read the tags and resolutions of {Path}", path);
         }
 
+        // Scan as you go: after the first page, in the background; the listings are told when the index changed.
+        if (offset <= 0)
+            indexing.Listed(listing.Path);
         return TypedResults.Ok(listing);
     }
 

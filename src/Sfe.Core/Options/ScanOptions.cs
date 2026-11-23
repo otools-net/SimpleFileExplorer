@@ -28,4 +28,10 @@ public sealed class ScanOptions
     /// (and videos and audio indexed before durations were read) are read by the next scan.
     /// </summary>
     public bool ReadResolution { get; set; } = true;
+
+    /// <summary>
+    /// Scan as you go: a library folder someone lists is indexed in the background, that folder only (not the folders
+    /// inside it), at most once every 10 minutes (<see cref="Indexing.ListingIndexer"/>).
+    /// </summary>
+    public bool IndexWhenListed { get; set; } = true;
 }

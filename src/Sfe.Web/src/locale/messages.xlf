@@ -4754,12 +4754,12 @@ Space “Holiday photos”
         <source>File types</source>
       </segment>
     </unit>
-    <unit id="117119628106210292">
+    <unit id="2640945706484147387">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:175</note>
       </notes>
       <segment>
-        <source>What scans read from files (fingerprints, resolutions, durations), and how many folders they read at once.</source>
+        <source>What scans read from files (fingerprints, resolutions, durations), how many folders they read at once, and folders indexed as they are opened.</source>
       </segment>
     </unit>
     <unit id="4973087105311508591">
@@ -16081,12 +16081,12 @@ Space “Holiday photos”
         <source>Already skipped: it is in Administration › Scanning › What to scan › Excluded folders.</source>
       </segment>
     </unit>
-    <unit id="6270673827662049448">
+    <unit id="8755455212782032283">
       <notes>
-        <note category="location">src/app/library/scan/remove-from-index.dialog.html:32,33</note>
+        <note category="location">src/app/library/scan/remove-from-index.dialog.html:32,34</note>
       </notes>
       <segment>
-        <source>Adds it to Administration › Scanning › What to scan › Excluded folders, so that scans of the folders above it leave it out. Without it, the next scan of a parent folder indexes it again.</source>
+        <source>Adds it to Administration › Scanning › What to scan › Excluded folders, so that scans of the folders above it leave it out. Without it, opening the folder or the next scan of a parent folder indexes it again.</source>
       </segment>
     </unit>
     <unit id="4535813184025517904">
@@ -21325,7 +21325,7 @@ The search index is updated in the background. This can take a while on large fo
       <notes>
         <note category="location">src/app/settings/tabs/preview-settings.ts:82</note>
         <note category="location">src/app/settings/tabs/preview-settings.ts:215</note>
-        <note category="location">src/app/settings/tabs/scanning-settings.ts:127</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:142</note>
       </notes>
       <segment>
         <source>Performance</source>
@@ -21796,9 +21796,41 @@ The search index is updated in the background. This can take a while on large fo
         <source>Files already in the index are read by the next scan. Videos and audio need ffmpeg, which makes scanning new ones slower.</source>
       </segment>
     </unit>
-    <unit id="4970291337868616362">
+    <unit id="7386629403104859708">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:127</note>
+      </notes>
+      <segment>
+        <source>As you browse</source>
+      </segment>
+    </unit>
+    <unit id="6107317355118571826">
       <notes>
         <note category="location">src/app/settings/tabs/scanning-settings.ts:131</note>
+      </notes>
+      <segment>
+        <source>Index folders as they are opened</source>
+      </segment>
+    </unit>
+    <unit id="3206094873876400609">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:133</note>
+      </notes>
+      <segment>
+        <source>Indexes a folder in the background when someone opens it, that folder only, at most once every 10 minutes.</source>
+      </segment>
+    </unit>
+    <unit id="3199003407077416001">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:135</note>
+      </notes>
+      <segment>
+        <source>New files then show their tags, resolutions and durations, and searches find them, without waiting for the next scan. The folders inside it are left to scans. Excluded folders are not indexed.</source>
+      </segment>
+    </unit>
+    <unit id="4970291337868616362">
+      <notes>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:146</note>
       </notes>
       <segment>
         <source>Folders scanned at once</source>
@@ -21806,7 +21838,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6793851123496188877">
       <notes>
-        <note category="location">src/app/settings/tabs/scanning-settings.ts:135</note>
+        <note category="location">src/app/settings/tabs/scanning-settings.ts:150</note>
       </notes>
       <segment>
         <source>Higher is faster on SSDs and fast network drives; lower is gentler on spinning disks.</source>

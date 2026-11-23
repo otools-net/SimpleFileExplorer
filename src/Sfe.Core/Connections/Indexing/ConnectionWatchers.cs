@@ -74,7 +74,9 @@ public sealed class ConnectionWatchers(
         }
     }
 
-    /// <summary>Reads the connection's changes now and tells the watched folders they touched (the loop's step).</summary>
+    /// <summary>
+    /// Reads the connection's changes now and tells the watched folders they touched (the loop's step).
+    /// </summary>
     public async Task ReadChangesAsync(int connectionId, CancellationToken cancellationToken)
     {
         ConnectionFollowResult? result;

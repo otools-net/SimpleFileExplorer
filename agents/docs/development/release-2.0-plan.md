@@ -353,7 +353,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     the watched folders touched (parents of the changes, 1,000 at most), filtered as SFE's own; `RemoteListings`
     forgotten. SFE's own changes come back once (harmless refresh). Client names `{ path, connection }`. No
     screenshot (nothing visible). Lines over 120 characters left by 3.5a fixed; `api.service.ts` baseline 788 → 789.
-- [ ] **3.6 Scan as you go for library folders** (IDEA-008, M). Connections already sync when opened. For library
+- [x] **3.6 Scan as you go for library folders** (IDEA-008, M). Done 2026-11-23: `ListingIndexer` (per library)
+  queues the folder of a browse's first page (after the page is built), at most once per 10 minutes, one folder at a
+  time, `IndexAsync(recursive: false)`; `ScanCoordinator.TryBeginFolderIndex` keeps it off folders a scan or an
+  operation works on (a scan waits for it); `Invalidate` only when the index changed; no relink pass (left to scans);
+  library setting `scan.indexWhenListed` (on; off in `TestLibrary`). The indexer now removes rows by name and folder
+  (a file renamed meanwhile kept). Remove from index's hint and docs say opening undoes it (`remove-from-index.png`
+  not retaken: a few words of a hint). Screenshot `admin-scanning-indexing.png` retaken. Readability baselines
+  raised by the added lines: `LibraryEndpoints.cs` 576 → 579, `DirectoryIndexer.cs` 712 → 713 (`Browse`'s index
+  services in `BrowseIndex`). Was: Connections already sync when opened. For library
   folders: after a listing's first page, index **that folder only** (not recursive) in the background, at most
   once per 10 minutes per folder, never blocking the listing nor colliding with `ScanCoordinator`; removed tagged
   files go through `MissingFileRecorder` as scans do; marks refreshed through the change feed (3.5 finds the
@@ -494,8 +502,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-23):** phases 1 and 2 done, 3.1–3.5 (administration, deep folder, mode matrix and badge,
-  used and free space, changes made outside SFE in library and connection folders). Next: **3.6** (scan as you go).
+- **Last session (2026-11-23):** phases 1–3 done (3.6 scan as you go last). Next: **4.1** (merge folders on a clash).
+  The session before it got stuck; nothing was left running but an idle Docker Desktop (stopped).
   Step 4.6 (read-only or writable shown) was added to the plan by the owner on 2026-11-23.
 - Don't run `npm test` and `dotnet test` at the same time: the client build rewrites `wwwroot` under the server's
   build ("No file exists for the asset").

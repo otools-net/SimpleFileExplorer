@@ -49,7 +49,20 @@ programs write. A media extension can't be one of them.
 |---|---|---|
 | **Fingerprint files** | on | Reads a fingerprint of each file (its first megabyte) for [duplicates](duplicates-and-moves.md) and [moved files](duplicates-and-moves.md#moved-files) (`Sfe:Scan:ComputeHashes`) |
 | **Read resolutions and durations** | on | Photos from their first bytes (JPEG, PNG, GIF, BMP, WebP; other formats through ffmpeg), videos and audio through ffmpeg (`Sfe:Scan:ReadResolution`) |
+| **Index folders as they are opened** | on | A folder someone opens is indexed in the background, that folder only (not the folders inside it), at most once every 10 minutes; see below (`Sfe:Scan:IndexWhenListed`) |
 | **Folders scanned at once** | 4 | A server setting (`Sfe:Scan:Parallelism`) |
 
 Reading durations makes the first scan of many videos or songs slower. Files indexed before it was on are read by the
 next scan; without ffmpeg, videos and audio are read once it is set up.
+
+### Folders indexed as they are opened
+
+With **Index folders as they are opened** on, opening a folder is enough for its new files to get their tags,
+resolutions and durations and to be found by searches: the server indexes that folder in the background (the listing
+never waits for it) and the open listings refresh when the index changed. Files gone from the folder leave the index as
+a scan would do it: tagged ones are kept as [moved files](duplicates-and-moves.md#moved-files). It is done for a folder
+at most once every 10 minutes, never while a scan or a file operation works there, and never in
+[excluded folders](#excluded-folders). The folders inside it, and finding moved files again, are left to scans.
+
+A folder taken out of the index with **Remove from index…** comes back the next time someone opens it, unless it is
+also excluded from scans.

@@ -141,6 +141,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<FolderDefaultTags>();
         services.AddSingleton<DirectoryIndexer>();
         services.AddSingleton<ScanCoordinator>();
+        services.AddSingleton<ListingIndexer>();
     }
 
     /// <summary>

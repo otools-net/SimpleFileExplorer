@@ -94,6 +94,8 @@ public sealed class TestLibrary : IDisposable
             ["Sfe:Security:KeysDirectory"] = Path.Combine(BasePath, "keys"),
             // The daily log files, when a test turns them on (Sfe:Logs:WriteFiles).
             ["Sfe:Logs:Directory"] = LogsPath,
+            // Scan as you go would index the folders tests list behind their backs: the tests of it turn it on.
+            ["Sfe:Scan:IndexWhenListed"] = "false",
         };
 
     public void Dispose()

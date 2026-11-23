@@ -462,10 +462,11 @@ public sealed class DirectoryIndexer(
         await db.SaveChangesAsync(cancellationToken);
         db.ChangeTracker.Clear();
 
-        var removed = indexed.Values.Where(f => !seen.Contains(f.FullName)).Select(f => f.Id).ToList();
+        // By the names read, in this folder: a file renamed or moved meanwhile (its row follows it) is not removed.
+        var removed = indexed.Values.Where(f => !seen.Contains(f.FullName)).Select(f => f.FullName).ToList();
         foreach (var batch in removed.Chunk(SaveBatchSize))
         {
-            var files = db.Files.Where(f => batch.Contains(f.Id));
+            var files = db.Files.Where(f => f.DirectoryId == directoryId && batch.Contains(f.FullName));
             progress.AddRemoved(
                 await MissingFileRecorder.DeleteAsync(
                     db,

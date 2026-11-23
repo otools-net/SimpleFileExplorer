@@ -21,6 +21,14 @@ Folders and files skipped by scans, and what scans read, are set in
 [Administration › Scanning](../administration/scanning.md). Scans can also run at set times
 ([Background tasks › Schedules](../administration/background-tasks.md#schedules)).
 
+## Folders you open
+
+Opening a folder also brings that folder's index up to date in the background, without its sub-folders: new files
+get their tags, resolutions and durations and are found by searches without waiting for a scan, and the listing
+refreshes by itself when something changed. It happens at most once every 10 minutes for a folder, never in excluded
+folders, and an administrator can turn it off
+([Scanning › Indexing](../administration/scanning.md#folders-indexed-as-they-are-opened)).
+
 ## Excluded folders
 
 An administrator (right `index.exclude`) can keep folders out of scans, trickplay or thumbnails, each on its own, for
@@ -58,9 +66,10 @@ the index. Not possible while a scan runs.
 ![Removing a folder from the index](../images/remove-from-index.png)
 
 - It says first how many folders, files and tagged files that is.
-- The files stay on the disk and browsing still shows them; search no longer finds them.
+- The files stay on the disk and browsing still shows them; search no longer finds them. Opening the folder again
+  indexes it again ([Folders you open](#folders-you-open)), unless it is skipped in scans.
 - Tagged files are kept with the [moved files](../administration/duplicates-and-moves.md#moved-files) (unless relinking
   is off), so scanning the folder again gives their tags back.
 - **Skip this folder in future scans** (ticked by default) adds it to **Excluded folders**
   ([Scanning › What to scan](../administration/scanning.md#what-to-scan)), so a scan of a folder above it leaves it out;
-  without it, the next such scan indexes it again.
+  without it, the next such scan, or opening the folder, indexes it again.

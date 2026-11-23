@@ -40,6 +40,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public List<string> IgnoredFiles { get; set; }
 #endif
+        /// <summary>The indexWhenListed property</summary>
+        public bool? IndexWhenListed { get; set; }
         /// <summary>The parallelism property</summary>
         public int? Parallelism { get; set; }
         /// <summary>The readResolution property</summary>
@@ -73,6 +75,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "excludedFolders", n => { ExcludedFolders = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "ignoredDirectories", n => { IgnoredDirectories = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "ignoredFiles", n => { IgnoredFiles = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
+                { "indexWhenListed", n => { IndexWhenListed = n.GetBoolValue(); } },
                 { "parallelism", n => { Parallelism = n.GetIntValue(); } },
                 { "readResolution", n => { ReadResolution = n.GetBoolValue(); } },
             };
@@ -88,6 +91,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteCollectionOfPrimitiveValues<string>("excludedFolders", ExcludedFolders);
             writer.WriteCollectionOfPrimitiveValues<string>("ignoredDirectories", IgnoredDirectories);
             writer.WriteCollectionOfPrimitiveValues<string>("ignoredFiles", IgnoredFiles);
+            writer.WriteBoolValue("indexWhenListed", IndexWhenListed);
             writer.WriteIntValue("parallelism", Parallelism);
             writer.WriteBoolValue("readResolution", ReadResolution);
             writer.WriteAdditionalData(AdditionalData);

@@ -7,6 +7,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Folders indexed as they are opened**: opening a library folder brings that folder's index up to date in the
+  background (not the folders inside it), so new files get their tags, resolutions and durations and are found by
+  searches without waiting for a scan, and the listing refreshes by itself when something changed. At most once every
+  10 minutes for a folder, never while a scan or a file operation works there, never in excluded folders. On by
+  default; **Index folders as they are opened** (Scanning › Indexing, `Sfe:Scan:IndexWhenListed`) turns it off. A
+  folder taken out of the index comes back when opened unless it is also skipped in scans.
 - **Changes made outside SFE shown live**: the folder you are viewing is listed again a moment later when another
   program changes it on the disk (a file saved, renamed or deleted, someone else's change on a network share), as it
   already was for changes made through SFE. Only the folders open in a browser are followed; network folders outside

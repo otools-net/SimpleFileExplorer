@@ -15849,6 +15849,9 @@
           },
           "readResolution": {
             "type": "boolean"
+          },
+          "indexWhenListed": {
+            "type": "boolean"
           }
         }
       },

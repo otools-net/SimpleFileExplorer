@@ -36,6 +36,7 @@ public sealed class ScanSettings
     public int Parallelism { get; set; }
     public bool ComputeHashes { get; set; }
     public bool ReadResolution { get; set; }
+    public bool IndexWhenListed { get; set; }
 }
 
 public sealed class FileTypeSettings

@@ -156,7 +156,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [search-sort](agents/docs/features/search-sort.md) | sorts, keyset cursors, match count | `FileSearchService` |
 | [search-explain](agents/docs/features/search-explain.md) | live wording of the query | `library/search-explain/` |
 | [search-history](agents/docs/features/search-history.md) | last searches per browser | `search-history.service.ts` |
-| [indexing](agents/docs/features/indexing.md) | scans, removing folders from the index | `Core/Indexing/` |
+| [indexing](agents/docs/features/indexing.md) | scans, removing folders from the index, scan as you go (a folder listed is indexed in the background) | `Core/Indexing/`, `ListingIndexer` |
 | [resolution](agents/docs/features/resolution.md) | width/height, HR/LR marks, `w:`/`h:`/`r:` | `MediaDimensions`, `Core/Search/` |
 | [duration](agents/docs/features/duration.md) | durations, badges, `d:` | `MediaDimensions`, `DirectoryIndexer` |
 | [folder-exclusions](agents/docs/features/folder-exclusions.md) | folders kept out of scans (index frozen), trickplay, thumbnails: lists, right `index.exclude`, chip, dialog | `FolderExclusions`, `ScanEndpoints`, `folder-exclusions.dialog.ts` |

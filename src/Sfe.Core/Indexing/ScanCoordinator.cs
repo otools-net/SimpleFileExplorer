@@ -243,6 +243,28 @@ public sealed class ScanCoordinator(
         }
     }
 
+    /// <summary>
+    /// Begins indexing the folder <paramref name="fullPath"/> outside a scan (<see cref="ListingIndexer"/>), as an
+    /// operation: refused (null) while a scan or a file operation works on it or near it; a scan starting meanwhile
+    /// waits for it to end.
+    /// </summary>
+    public IDisposable? TryBeginFolderIndex(string fullPath)
+    {
+        lock (_gate)
+        {
+            if (
+                (_state == ScanState.Running && _fullPath is { } scanned && Overlaps(fullPath, scanned))
+                || _operations.Any(path => Overlaps(path, fullPath))
+            )
+            {
+                return null;
+            }
+
+            _operations.Add(fullPath);
+            return new Operation(this, [fullPath]);
+        }
+    }
+
     private void EndOperation(string[] fullPaths)
     {
         TaskCompletionSource? ended;
