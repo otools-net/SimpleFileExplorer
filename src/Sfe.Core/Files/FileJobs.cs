@@ -11,8 +11,6 @@ using Otools.Net.Sfe.Core.Paths;
 using Otools.Net.Sfe.Core.Search;
 using Otools.Net.Sfe.Core.Tagging;
 using Otools.Net.Sfe.Core.Tasks;
-using Otools.Net.Sfe.Core.Thumbnails;
-using Otools.Net.Sfe.Core.Trickplay;
 
 namespace Otools.Net.Sfe.Core.Files;
 
@@ -27,12 +25,10 @@ namespace Otools.Net.Sfe.Core.Files;
 public sealed class FileJobs(
     IDbContextFactory<SfeDbContext> dbFactory,
     LibraryPaths paths,
-    WorkFolder work,
     DirectoryIndexer indexer,
     LibraryBrowser browser,
     TagService tags,
-    ThumbnailService thumbnails,
-    TrickplayService trickplay,
+    LibraryCopies copies,
     ScanCoordinator scans,
     PathMoves moves,
     LibraryClashes clashes,
@@ -396,9 +392,9 @@ public sealed class FileJobs(
         {
             _partials.Writes(job, PartialItems.Create(partial, isFolder), Path.GetFileName(destination), needed);
             if (isFolder)
-                await CopyFolderAsync(job, source, sourcePath, partial, skipped, token);
+                await copies.FolderAsync(job, source, sourcePath, partial, skipped, token);
             else
-                await CopyFileAsync(job, source, partial, token);
+                await LibraryCopies.FileAsync(job, source, partial, token);
             destination = PartialItems.Place(partial, destination, isFolder);
             destinationPath = Join(Parent(destinationPath), Path.GetFileName(destination));
         }
@@ -416,7 +412,7 @@ public sealed class FileJobs(
         // The copies: indexed (a file now, a folder by a scan), with previews and, when asked, the originals' tags.
         try
         {
-            await AfterCopyAsync(job, source, destination, isFolder, copiedFolders, destinationPath, token);
+            await copies.AfterAsync(job, source, destination, isFolder, copiedFolders, destinationPath, token);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -447,160 +443,6 @@ public sealed class FileJobs(
     /// " and N more" when a list of <paramref name="count"/> names shows only <paramref name="shown"/>.
     /// </summary>
     private static string More(int count, int shown) => count > shown ? $" and {count - shown} more" : string.Empty;
-
-    private async Task CopyFolderAsync(
-        JobRun job,
-        string source,
-        string sourcePath,
-        string destination,
-        List<string> skipped,
-        CancellationToken token
-    )
-    {
-        Directory.CreateDirectory(destination);
-        foreach (
-            var entry in new DirectoryInfo(source).EnumerateFileSystemInfos(
-                "*",
-                new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = true }
-            )
-        )
-        {
-            token.ThrowIfCancellationRequested();
-            var entryPath = Join(sourcePath, entry.Name);
-            // Links are never followed (nor made, which needs a privilege on Windows); work folders never copied.
-            if (entry.LinkTarget is not null || work.Contains(entry.FullName))
-            {
-                skipped.Add(entryPath);
-                continue;
-            }
-            if (entry is DirectoryInfo)
-            {
-                // A folder the person may not see (or whose files they may not open) is left out.
-                if (!await job.Access.MayAsync(entryPath, Rights.ViewFiles))
-                {
-                    skipped.Add(entryPath);
-                    continue;
-                }
-                await CopyFolderAsync(
-                    job,
-                    entry.FullName,
-                    entryPath,
-                    Path.Combine(destination, entry.Name),
-                    skipped,
-                    token
-                );
-            }
-            else
-            {
-                await CopyFileAsync(job, entry.FullName, Path.Combine(destination, entry.Name), token);
-            }
-        }
-    }
-
-    private static async Task CopyFileAsync(JobRun job, string source, string destination, CancellationToken token)
-    {
-        await using var input = new FileStream(
-            source,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            CopyBuffer,
-            FileOptions.Asynchronous | FileOptions.SequentialScan
-        );
-        try
-        {
-            await using var output = new FileStream(
-                destination,
-                FileMode.Create,
-                FileAccess.Write,
-                FileShare.None,
-                CopyBuffer,
-                FileOptions.Asynchronous
-            );
-            var buffer = new byte[CopyBuffer];
-            int read;
-            while ((read = await input.ReadAsync(buffer, token)) > 0)
-            {
-                await output.WriteAsync(buffer.AsMemory(0, read), token);
-                job.AddBytes(read);
-            }
-        }
-        catch when (File.Exists(destination))
-        {
-            File.Delete(destination);
-            throw;
-        }
-        File.SetLastWriteTimeUtc(destination, File.GetLastWriteTimeUtc(source));
-    }
-
-    private async Task AfterCopyAsync(
-        JobRun job,
-        string source,
-        string destination,
-        bool isFolder,
-        List<string> copiedFolders,
-        string destinationPath,
-        CancellationToken token
-    )
-    {
-        browser.Invalidate(Path.GetDirectoryName(destination)!);
-        await using var db = await dbFactory.CreateDbContextAsync(token);
-        // Previews and tags come from the originals' index rows (at most what was indexed).
-        var originals = await db
-            .Files.AsNoTracking()
-            .Where(SearchPredicateBuilder.InTree<FileEntry>(f => f.FullName, source))
-            .Select(f => new { f.Id, f.FullName })
-            .ToListAsync(token);
-        foreach (var original in originals)
-            CopyCache(original.FullName, destination + original.FullName[source.Length..]);
-
-        if (job.Request.KeepTags)
-        {
-            var ids = originals.Select(o => o.Id).ToList();
-            var tagged = (
-                await db
-                    .FileTags.AsNoTracking()
-                    .Where(l => ids.Contains(l.FileId))
-                    .Select(l => new { l.FileId, l.TagId })
-                    .ToListAsync(token)
-            )
-                .GroupBy(l => l.FileId)
-                .ToDictionary(
-                    g => destination + originals.First(o => o.Id == g.Key).FullName[source.Length..],
-                    g => g.Select(l => l.TagId).ToList(),
-                    LibraryPaths.PathComparer
-                );
-            if (tagged.Count > 0)
-            {
-                var copies = await indexer.IndexFilesAsync([.. tagged.Keys], token);
-                // Indexed, the copies may have the default tags of their folder already.
-                var copyIds = copies.Values.ToList();
-                var existing = (
-                    await db
-                        .FileTags.AsNoTracking()
-                        .Where(l => copyIds.Contains(l.FileId))
-                        .Select(l => new { l.FileId, l.TagId })
-                        .ToListAsync(token)
-                )
-                    .Select(l => (l.FileId, l.TagId))
-                    .ToHashSet();
-                foreach (var (file, tagIds) in tagged)
-                {
-                    if (copies.TryGetValue(file, out var fileId))
-                    {
-                        foreach (var tagId in tagIds.Where(t => !existing.Contains((fileId, t))))
-                            db.FileTags.Add(new FileTag { FileId = fileId, TagId = tagId });
-                    }
-                }
-                await db.SaveChangesAsync(token);
-            }
-        }
-
-        if (isFolder)
-            copiedFolders.Add(destinationPath);
-        else
-            await indexer.IndexFilesAsync([destination], token);
-    }
 
     /// <summary>
     /// Extracts the archive <paramref name="path"/> (its entries chosen, or all) into a partial folder of the target,
@@ -1038,35 +880,6 @@ public sealed class FileJobs(
 
         var stem = Path.GetFileNameWithoutExtension(name);
         return stem.Length > 0 ? stem : name;
-    }
-
-    /// <summary>
-    /// The thumbnail and trickplay of a copy are those of its original (same content, same modification time).
-    /// </summary>
-    private void CopyCache(string original, string copy)
-    {
-        try
-        {
-            var thumbnail = thumbnails.GetCachePath(original);
-            if (File.Exists(thumbnail))
-            {
-                var target = thumbnails.GetCachePath(copy);
-                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                File.Copy(thumbnail, target, overwrite: true);
-            }
-            var frames = trickplay.GetCacheFolder(original);
-            if (Directory.Exists(frames))
-            {
-                var target = trickplay.GetCacheFolder(copy);
-                Directory.CreateDirectory(target);
-                foreach (var file in Directory.EnumerateFiles(frames))
-                    File.Copy(file, Path.Combine(target, Path.GetFileName(file)), overwrite: true);
-            }
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            logger.LogDebug(ex, "Could not copy the cached previews of {File}", original);
-        }
     }
 
     private async Task<string?> TooLongForTheIndexAsync(string full, int growth, CancellationToken token)

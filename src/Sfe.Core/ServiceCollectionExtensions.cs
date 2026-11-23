@@ -175,6 +175,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<JobBoard>();
         services.AddSingleton<ItemsBeingWritten>();
         services.AddSingleton<LibraryClashes>();
+        services.AddSingleton<LibraryCopies>();
         services.AddSingleton<FileJobs>();
         services.AddSingleton<Transfers.LibraryTransfers>();
         services.AddSingleton<Transfers.LibraryTransferTags>();
