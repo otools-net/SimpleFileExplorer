@@ -3,14 +3,15 @@ import { Api, API_BASE } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { SystemInfo } from './admin.models';
 import { Rights } from '../core/rights';
+import { modeName, modeSummary } from '../core/server-modes';
 import { IconComponent } from '../shared/icon.component';
 import { InstallationSectionComponent } from './installation-section.component';
 
 /**
- * "System" on the administration page. About (`tab` = `about`): the server's version, the library's folder and ffmpeg
- * (`server.settings`) and the API reference. Installation (`installation`): the library folder, network and ffmpeg,
- * behind the setup code (`server.settings`). Maintenance (`maintenance`): backups (`server.backup`). (The videos the
- * server converts are in Playback › Video streams.)
+ * "System" on the administration page. About (`tab` = `about`): the server's version and mode, the library's folder
+ * and ffmpeg (`server.settings`) and the API reference. Installation (`installation`): the library folder, network
+ * and ffmpeg, behind the setup code (`server.settings`). Maintenance (`maintenance`): backups (`server.backup`). (The
+ * videos the server converts are in Playback › Video streams.)
  */
 @Component({
     selector: 'sfe-system-section',
@@ -26,6 +27,11 @@ export class SystemSectionComponent {
     protected readonly canBackup = computed(() => this.configService.can(Rights.backup));
     /** The backup zip, downloaded by a link. */
     protected readonly backupUrl = `${API_BASE}system/backup`;
+    /** The server's mode (Local / External) and what it means, for everyone who sees About. */
+    protected readonly mode = computed(() => {
+        const mode = this.config()?.mode;
+        return mode ? { id: mode, name: modeName(mode), summary: modeSummary(mode) } : null;
+    });
 
     /** The sub-page: `about`, `installation` or `maintenance`. */
     readonly tab = input('about');

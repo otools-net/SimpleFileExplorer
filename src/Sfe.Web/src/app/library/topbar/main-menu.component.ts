@@ -4,6 +4,7 @@ import { visibleSections } from '../../admin/admin-sections';
 import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { Rights } from '../../core/rights';
+import { modeName, modeSummary } from '../../core/server-modes';
 import { ToastService } from '../../core/toast.service';
 import { IconComponent } from '../../shared/icon.component';
 import { ChangeFeed } from '../change-feed.service';
@@ -15,9 +16,10 @@ import { Popovers } from './popovers.service';
 /**
  * The ⋮ menu: who is signed in, scanning the folder browsed or taking it out of the index, the other spaces of the
  * account, full screen, the administration page (settings, tags, duplicates, background tasks, people...), signing
- * out. Each entry shows only with its right. While keep alive pings the library folder, a dot on the button says how it
- * goes: green, or a yellow ! when the folder doesn't answer (and a line in the menu, a link for `settings.keepAlive`).
- * The yellow ! also shows, for everyone, while the server doesn't answer (`ChangeFeed.serverLost`), with its own line.
+ * out, the version and the server's mode. Each entry shows only with its right. While keep alive pings the library
+ * folder, a dot on the button says how it goes: green, or a yellow ! when the folder doesn't answer (and a line in
+ * the menu, a link for `settings.keepAlive`). The yellow ! also shows, for everyone, while the server doesn't answer
+ * (`ChangeFeed.serverLost`), with its own line.
  */
 @Component({
     selector: 'sfe-main-menu',
@@ -105,6 +107,11 @@ export class MainMenuComponent {
         return config?.commit
             ? $localize`Version ${config.version}:version:, commit ${config.commit}:commit:`
             : $localize`Version ${config?.version}:version:`;
+    });
+    /** The server's mode (Local / External) after the version, what it means in its hint. */
+    protected readonly mode = computed(() => {
+        const mode = this.config()?.mode;
+        return mode ? { id: mode, name: modeName(mode), summary: modeSummary(mode) } : null;
     });
 
     protected readonly startScan = () => this.scan.start();

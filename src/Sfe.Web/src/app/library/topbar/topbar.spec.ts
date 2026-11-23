@@ -348,9 +348,23 @@ describe('MainMenuComponent', () => {
     it('shows the version, with the commit when known', async () => {
         await create({ version: '1.2.3', commit: 'abc1234' });
 
-        const version = element.querySelector<HTMLElement>('.menu-version')!;
+        const version = element.querySelector<HTMLElement>('.menu-version > span')!;
         expect(version.textContent).toBe('SFE 1.2.3');
         expect(version.title).toBe('Version 1.2.3, commit abc1234');
+        expect(element.querySelector('.mode-badge')).toBeNull();
+    });
+
+    it("shows the server's mode after the version, what it means in its hint", async () => {
+        await create({ version: '1.2.3', mode: 'local' });
+
+        const badge = element.querySelector<HTMLElement>('.menu-version .mode-badge')!;
+        expect(badge.textContent).toBe('Local');
+        expect(badge.dataset['mode']).toBe('local');
+        expect(badge.title).toContain('only administrators sign in');
+
+        TestBed.resetTestingModule();
+        await create({ mode: 'external' });
+        expect(element.querySelector('.mode-badge')!.textContent).toBe('External');
     });
 
     it('disables the scan while one runs', async () => {

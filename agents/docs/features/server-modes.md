@@ -49,6 +49,20 @@ tests), `ServerModeTests`, `account.spec.ts`. The Docker image (External): [dock
 - **Fast sign-in** (`FastSignIn.IssueAsync`/`RedeemAsync`) is Local only; the setup page offers it only while the
   installation is not External. The browser still opens at start on an External portable server (harmless).
 
+## Feature × mode matrix, badge, greyed settings (release 2.0 step 3.3)
+
+- **The matrix's source of truth** is the user docs' table,
+  [what each mode allows](../../../docs/administration/system.md#what-each-mode-allows): a limit added or changed
+  updates it (and no new limit without the owner). This note says where each line is enforced (sections above).
+- The client names a mode with `core/server-modes.ts` (`modeName`, `modeSummary`, `onlyInModeNote`), from
+  `api/config`'s `mode` (always sent; absent only in old test fakes: then nothing shows). The ⋮ menu shows a
+  `.mode-badge` after the version (the summary as its hint), System › About a **Mode** line.
+- A setting only one mode uses has `onlyIn` in its schema field (`SettingField`): `SettingsForm.fieldLocked` greys it
+  out on a server in the other mode, `lockNote` says "Only in Local mode: …". Client-side only: the server already
+  ignores it there (`FastSignIn` checks `ServerModes.IsLocal`), and its saved value is kept for a return. Today only
+  `fastSignIn`. Visitors were already greyed by `anonymousGuestsAllowed`, the paths by the installation form's locks.
+- No file action of the item menus depends on the mode, so 2.9's greyed menu entries have no mode reason yet.
+
 ## Decisions kept from the epic (1.76.0–1.79.0)
 
 - Mode in the configuration (`Sfe:Mode`), not a database row, not build-time, not inferred from `Urls` or a proxy.

@@ -1910,8 +1910,8 @@
         <note category="location">src/app/access/space-editor.component.html:24,25</note>
         <note category="location">src/app/account/installation-form.component.html:50,51</note>
         <note category="location">src/app/admin/keep-alive-status.component.html:31,32</note>
-        <note category="location">src/app/admin/system-section.component.html:35</note>
-        <note category="location">src/app/admin/system-section.component.html:58</note>
+        <note category="location">src/app/admin/system-section.component.html:43</note>
+        <note category="location">src/app/admin/system-section.component.html:66</note>
       </notes>
       <segment>
         <source>Library folder</source>
@@ -2964,6 +2964,7 @@ Space “Holiday photos”
     <unit id="2906587845957718064">
       <notes>
         <note category="location">src/app/account/installation-form.component.html:18</note>
+        <note category="location">src/app/core/server-modes.ts:11</note>
       </notes>
       <segment>
         <source>Local</source>
@@ -2980,6 +2981,7 @@ Space “Holiday photos”
     <unit id="6736404413477208257">
       <notes>
         <note category="location">src/app/account/installation-form.component.html:31</note>
+        <note category="location">src/app/core/server-modes.ts:11</note>
       </notes>
       <segment>
         <source>External</source>
@@ -3086,7 +3088,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/account/installation-form.component.html:122</note>
         <note category="location">src/app/admin/admin-page.component.html:63</note>
-        <note category="location">src/app/admin/system-section.component.html:41</note>
+        <note category="location">src/app/admin/system-section.component.html:49</note>
       </notes>
       <segment>
         <source>Found</source>
@@ -3095,7 +3097,7 @@ Space “Holiday photos”
     <unit id="3268095459835706851">
       <notes>
         <note category="location">src/app/account/installation-form.component.html:125,126</note>
-        <note category="location">src/app/admin/system-section.component.html:44,45</note>
+        <note category="location">src/app/admin/system-section.component.html:52,53</note>
       </notes>
       <segment>
         <source>version <ph id="0" equiv="INTERPOLATION" disp="{{ view.ffmpegVersion }}"/></source>
@@ -3104,7 +3106,7 @@ Space “Holiday photos”
     <unit id="6595008830732269870">
       <notes>
         <note category="location">src/app/account/installation-form.component.html:128</note>
-        <note category="location">src/app/admin/system-section.component.html:48</note>
+        <note category="location">src/app/admin/system-section.component.html:56</note>
       </notes>
       <segment>
         <source>Not found</source>
@@ -4830,7 +4832,7 @@ Space “Holiday photos”
     <unit id="3237669241623156165">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:213</note>
-        <note category="location">src/app/settings/tabs/system-settings.ts:94</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:95</note>
       </notes>
       <segment>
         <source>Keep alive</source>
@@ -5311,17 +5313,17 @@ Space “Holiday photos”
         <source>About</source>
       </segment>
     </unit>
-    <unit id="3535282279183818597">
+    <unit id="3939383637667321112">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:431</note>
       </notes>
       <segment>
-        <source>The server&apos;s version, its library folder, the ffmpeg it found, and its API reference.</source>
+        <source>The server&apos;s version and mode, its library folder, the ffmpeg it found, and its API reference.</source>
       </segment>
     </unit>
     <unit id="7419787782755641631">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:437</note>
+        <note category="location">src/app/admin/admin-sections.ts:438</note>
         <note category="location">src/app/admin/installation-section.component.html:3,4</note>
       </notes>
       <segment>
@@ -5330,7 +5332,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3148007398244530942">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:438</note>
+        <note category="location">src/app/admin/admin-sections.ts:439</note>
       </notes>
       <segment>
         <source>The first space&apos;s library folder, who can open SFE, and ffmpeg, behind the setup code.</source>
@@ -5338,7 +5340,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7906550301772724948">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:443</note>
+        <note category="location">src/app/admin/admin-sections.ts:444</note>
       </notes>
       <segment>
         <source>What SFE does when it starts on this computer.</source>
@@ -5346,7 +5348,7 @@ Space “Holiday photos”
     </unit>
     <unit id="744533273062091875">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:444</note>
+        <note category="location">src/app/admin/admin-sections.ts:445</note>
         <note category="location">src/app/settings/tabs/system-settings.ts:64</note>
       </notes>
       <segment>
@@ -5355,7 +5357,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3465942650835858981">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:449</note>
+        <note category="location">src/app/admin/admin-sections.ts:450</note>
       </notes>
       <segment>
         <source>Maintenance</source>
@@ -5363,7 +5365,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8705453912255442572">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:450</note>
+        <note category="location">src/app/admin/admin-sections.ts:451</note>
       </notes>
       <segment>
         <source>A backup of the databases and configuration files.</source>
@@ -5635,9 +5637,18 @@ Space “Holiday photos”
         <source>Commit</source>
       </segment>
     </unit>
+    <unit id="1713271461473302108">
+      <notes>
+        <note category="location">src/app/admin/system-section.component.html:36,37</note>
+        <note category="description">the server&apos;s mode, Local or External</note>
+      </notes>
+      <segment>
+        <source>Mode</source>
+      </segment>
+    </unit>
     <unit id="7955287665086887432">
       <notes>
-        <note category="location">src/app/admin/system-section.component.html:50,52</note>
+        <note category="location">src/app/admin/system-section.component.html:58,60</note>
       </notes>
       <segment>
         <source> Looked for <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;"><ph id="1" equiv="INTERPOLATION" disp="{{ info.ffmpeg.configured }}"/></pc>. Without it, there are no video thumbnails, trickplay, video resolutions and durations, or converted videos. Pick its folder in System › Installation. </source>
@@ -5645,7 +5656,7 @@ Space “Holiday photos”
     </unit>
     <unit id="836302299174689560">
       <notes>
-        <note category="location">src/app/admin/system-section.component.html:58,59</note>
+        <note category="location">src/app/admin/system-section.component.html:66,67</note>
       </notes>
       <segment>
         <source>Could not read it: <ph id="0" equiv="INTERPOLATION" disp="{{ infoError() }}"/></source>
@@ -5653,7 +5664,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4638721191486861150">
       <notes>
-        <note category="location">src/app/admin/system-section.component.html:67,68</note>
+        <note category="location">src/app/admin/system-section.component.html:75,76</note>
       </notes>
       <segment>
         <source>The documentation of the server&apos;s API, in a new tab</source>
@@ -5661,7 +5672,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2700336898947656205">
       <notes>
-        <note category="location">src/app/admin/system-section.component.html:69</note>
+        <note category="location">src/app/admin/system-section.component.html:77</note>
       </notes>
       <segment>
         <source>API reference</source>
@@ -6268,7 +6279,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/connections/connections-section.component.html:61,63</note>
         <note category="location">src/app/connections/connections-section.component.html:123,124</note>
-        <note category="location">src/app/settings/tabs/system-settings.ts:108</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:109</note>
         <note category="location">src/app/tasks/tasks-section.component.ts:49</note>
         <note category="location">src/app/tasks/tasks.ts:203</note>
         <note category="description">the connection is turned off</note>
@@ -6793,6 +6804,38 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>TB</source>
+      </segment>
+    </unit>
+    <unit id="7179987531661271926">
+      <notes>
+        <note category="location">src/app/core/server-modes.ts:17</note>
+      </notes>
+      <segment>
+        <source>Local mode: only this computer opens SFE, only administrators sign in, and there are no visitors.</source>
+      </segment>
+    </unit>
+    <unit id="3577343836306885041">
+      <notes>
+        <note category="location">src/app/core/server-modes.ts:18</note>
+      </notes>
+      <segment>
+        <source>External mode: other devices open SFE, every account signs in, and the library folder and ffmpeg come from the server&apos;s configuration.</source>
+      </segment>
+    </unit>
+    <unit id="7377448032764791022">
+      <notes>
+        <note category="location">src/app/core/server-modes.ts:25</note>
+      </notes>
+      <segment>
+        <source>Only in Local mode: this server is in External mode.</source>
+      </segment>
+    </unit>
+    <unit id="2958504281386611855">
+      <notes>
+        <note category="location">src/app/core/server-modes.ts:26</note>
+      </notes>
+      <segment>
+        <source>Only in External mode: this server is in Local mode.</source>
       </segment>
     </unit>
     <unit id="5891064527381218201">
@@ -17348,7 +17391,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8038549977004386948">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:73</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:75</note>
       </notes>
       <segment>
         <source>Network folder not answering</source>
@@ -17356,7 +17399,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4880366220057855644">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:73</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:75</note>
       </notes>
       <segment>
         <source>Network folder answering</source>
@@ -17364,7 +17407,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6580335002142664714">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:78</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:80</note>
       </notes>
       <segment>
         <source>Scanning, administration, your account and more. The server isn&apos;t answering.</source>
@@ -17372,7 +17415,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1795336273073681165">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:80</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:82</note>
       </notes>
       <segment>
         <source>Scanning, administration, your account and more. The network folder isn&apos;t answering.</source>
@@ -17380,7 +17423,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7120700138984782826">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:82</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:84</note>
       </notes>
       <segment>
         <source>Scanning, administration, your account and more. The network folder is answering.</source>
@@ -17388,7 +17431,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7606552201934391683">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:83</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:85</note>
       </notes>
       <segment>
         <source>Scanning, administration, your account and more.</source>
@@ -17396,7 +17439,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="9073837285264700749">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:87</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:89</note>
       </notes>
       <segment>
         <source>More (server not answering)</source>
@@ -17404,7 +17447,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5199580876731394972">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:89</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:91</note>
       </notes>
       <segment>
         <source>More (network folder not answering)</source>
@@ -17412,7 +17455,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5937251202465808296">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:90</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:92</note>
       </notes>
       <segment>
         <source>More</source>
@@ -17420,8 +17463,8 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5841525798799437277">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:94</note>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:99</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:96</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:101</note>
       </notes>
       <segment>
         <source>A scan is in progress.</source>
@@ -17429,7 +17472,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6945611625735267266">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:95</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:97</note>
       </notes>
       <segment>
         <source>Bring the index of this folder and its sub-folders up to date, for search (asks first).</source>
@@ -17437,7 +17480,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1871527591521751416">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:100,101</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:102,103</note>
       </notes>
       <segment>
         <source>Take this folder and its sub-folders out of the index; the files stay on the disk (asks first).</source>
@@ -17445,7 +17488,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1104712005000603856">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:106</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:108</note>
       </notes>
       <segment>
         <source>Version <ph id="0" equiv="version" disp="config.version"/>, commit <ph id="1" equiv="commit" disp="config.commit"/></source>
@@ -17453,7 +17496,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2512296993220019688">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:107</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:109</note>
       </notes>
       <segment>
         <source>Version <ph id="0" equiv="version" disp="config?.version"/></source>
@@ -17461,7 +17504,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8116680209439535893">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:127</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:134</note>
       </notes>
       <segment>
         <source>Could not sign out: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -17469,7 +17512,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8138985905765663489">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:144</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:151</note>
       </notes>
       <segment>
         <source>Could not switch to another space: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -19141,7 +19184,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1395493186609386132">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:267</note>
+        <note category="location">src/app/settings/settings-form.service.ts:276</note>
       </notes>
       <segment>
         <source>Set by the server&apos;s configuration: it can&apos;t be changed here.</source>
@@ -19149,7 +19192,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3512545929449324465">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:269</note>
+        <note category="location">src/app/settings/settings-form.service.ts:278</note>
       </notes>
       <segment>
         <source>Locked by the server&apos;s settings.</source>
@@ -19157,7 +19200,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2715345408293244387">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:271</note>
+        <note category="location">src/app/settings/settings-form.service.ts:280</note>
       </notes>
       <segment>
         <source>Locked by the space&apos;s settings.</source>
@@ -19165,7 +19208,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6818824027193058857">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:275</note>
+        <note category="location">src/app/settings/settings-form.service.ts:284</note>
       </notes>
       <segment>
         <source>A setting of the whole server: server administrators change it in the server&apos;s settings.</source>
@@ -19173,7 +19216,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1103851981245316362">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:276</note>
+        <note category="location">src/app/settings/settings-form.service.ts:285</note>
       </notes>
       <segment>
         <source>Set in each space&apos;s own settings.</source>
@@ -19181,7 +19224,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5021897056852458039">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:277</note>
+        <note category="location">src/app/settings/settings-form.service.ts:286</note>
       </notes>
       <segment>
         <source>You don&apos;t have the right to change the settings of this section.</source>
@@ -19189,7 +19232,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7669041811842935059">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:421</note>
+        <note category="location">src/app/settings/settings-form.service.ts:430</note>
       </notes>
       <segment>
         <source>Could not save the settings: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -19197,7 +19240,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4044950704486439850">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:428</note>
+        <note category="location">src/app/settings/settings-form.service.ts:437</note>
       </notes>
       <segment>
         <source>Your settings saved.</source>
@@ -19205,7 +19248,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2037812837109831482">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:428</note>
+        <note category="location">src/app/settings/settings-form.service.ts:437</note>
       </notes>
       <segment>
         <source>Settings saved.</source>
@@ -19213,7 +19256,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6343326352488497628">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:463</note>
+        <note category="location">src/app/settings/settings-form.service.ts:472</note>
       </notes>
       <segment>
         <source>Could not reset the settings: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -19221,7 +19264,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6312825859196923294">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:471,472</note>
+        <note category="location">src/app/settings/settings-form.service.ts:480,481</note>
       </notes>
       <segment>
         <source>Forget the searched and viewed tags? The sidebar&apos;s “Last searched” and “Last viewed” lists start empty. This cannot be undone.</source>
@@ -19229,7 +19272,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="9071182601135285772">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:479</note>
+        <note category="location">src/app/settings/settings-form.service.ts:488</note>
       </notes>
       <segment>
         <source>Tag history cleared.</source>
@@ -19237,7 +19280,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7898088019118519948">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:481</note>
+        <note category="location">src/app/settings/settings-form.service.ts:490</note>
       </notes>
       <segment>
         <source>Could not clear the tag history: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -19245,7 +19288,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7655031372812103662">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:487</note>
+        <note category="location">src/app/settings/settings-form.service.ts:496</note>
       </notes>
       <segment>
         <source>Forget the searches made in this browser? The search box stops suggesting them.</source>
@@ -19253,7 +19296,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1316637874229988771">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:490</note>
+        <note category="location">src/app/settings/settings-form.service.ts:499</note>
       </notes>
       <segment>
         <source>Search history cleared.</source>
@@ -19261,7 +19304,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="9218316787880943229">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:498</note>
+        <note category="location">src/app/settings/settings-form.service.ts:507</note>
       </notes>
       <segment>
         <source>Could not reload the settings: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -19269,7 +19312,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7192178365851802274">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:567</note>
+        <note category="location">src/app/settings/settings-form.service.ts:576</note>
       </notes>
       <segment>
         <source>Some settings need fixing (see the marked sections).</source>
@@ -19277,7 +19320,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3670837598205437602">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:568</note>
+        <note category="location">src/app/settings/settings-form.service.ts:577</note>
       </notes>
       <segment>
         <source>Could not save the settings.</source>
@@ -19285,7 +19328,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3843003486998520193">
       <notes>
-        <note category="location">src/app/settings/settings-form.service.ts:579</note>
+        <note category="location">src/app/settings/settings-form.service.ts:588</note>
       </notes>
       <segment>
         <source>Enter a whole number.</source>
@@ -20894,7 +20937,7 @@ The search index is updated in the background. This can take a while on large fo
     <unit id="9212449559226155586">
       <notes>
         <note category="location">src/app/settings/tabs/playback-settings.ts:145</note>
-        <note category="location">src/app/settings/tabs/system-settings.ts:110</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:111</note>
         <note category="description">convert videos</note>
       </notes>
       <segment>
@@ -21179,7 +21222,7 @@ The search index is updated in the background. This can take a while on large fo
     <unit id="9148780350725341802">
       <notes>
         <note category="location">src/app/settings/tabs/preview-settings.ts:95</note>
-        <note category="location">src/app/settings/tabs/system-settings.ts:127</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:128</note>
       </notes>
       <segment>
         <source>Time limit (seconds)</source>
@@ -21771,7 +21814,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4110943892398414802">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:82</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:83</note>
       </notes>
       <segment>
         <source>The browser opened at start signs the server&apos;s administrator in without a password. Only for SFE used on this computer alone.</source>
@@ -21779,7 +21822,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1332127336011480401">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:84,85</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:85,86</note>
       </notes>
       <segment>
         <source>It uses a link that works once, for a minute, from this computer only, and only while the server has a single administrator. Anyone who can start SFE here gets in as the administrator.</source>
@@ -21787,7 +21830,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5548779864362722387">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:95</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:96</note>
       </notes>
       <segment>
         <source>A file server drops the connection to a share nobody used for a while (Windows file servers after 15 minutes, many NAS sooner), and the drive may be lost with it. Keep alive looks at the library folder every few minutes, a single read of its first item, so the connection never goes idle. It can&apos;t reconnect a drive already lost.</source>
@@ -21795,7 +21838,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4838560589606228091">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:101</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:102</note>
       </notes>
       <segment>
         <source>Pings</source>
@@ -21803,7 +21846,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1043834392777912632">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:105</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:106</note>
       </notes>
       <segment>
         <source>Keep the library folder alive</source>
@@ -21811,7 +21854,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="563656999691832315">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:109</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:110</note>
       </notes>
       <segment>
         <source>When it is on a network share</source>
@@ -21819,7 +21862,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8020052780292613089">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:112</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:113</note>
       </notes>
       <segment>
         <source>“When it is on a network share”: a \\server\share folder, a mapped network drive, or a CIFS, NFS or SSHFS mount, also through a link.</source>
@@ -21827,7 +21870,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7185734676352095327">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:114</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:115</note>
       </notes>
       <segment>
         <source>“Always” also pings a folder that SFE can&apos;t tell is on the network.</source>
@@ -21835,7 +21878,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5550931144803607074">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:118</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:119</note>
       </notes>
       <segment>
         <source>Seconds between pings</source>
@@ -21843,7 +21886,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5414171598051227032">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:122</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:123</note>
       </notes>
       <segment>
         <source>Shorter than the time the file server waits before dropping an idle connection (240: every 4 minutes).</source>
@@ -21851,7 +21894,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="922078259752165001">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:131</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:132</note>
       </notes>
       <segment>
         <source>A ping taking longer counts as failed; the next one waits until it ends.</source>
@@ -21859,7 +21902,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6481783564765923319">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:135</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:136</note>
       </notes>
       <segment>
         <source>How the library folder is pinged</source>
@@ -21867,7 +21910,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8111199747899550199">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:138</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:139</note>
       </notes>
       <segment>
         <source>Read the folder</source>
@@ -21875,7 +21918,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7667841609189785289">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:139</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:140</note>
       </notes>
       <segment>
         <source>Write and delete a small file</source>
@@ -21883,7 +21926,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="84901254689594634">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:141</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:142</note>
       </notes>
       <segment>
         <source>Reading is enough for most file servers; writing always reaches the server.</source>
@@ -21891,7 +21934,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="589808418617126103">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:142,143</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:143,144</note>
       </notes>
       <segment>
         <source>The computer may answer a read from its own cache without asking the server. Writing creates and deletes a small file in SFE&apos;s work folder (.sfe/keep-alive at the top of the library). When the work folder is on the server (File management), the folder is read instead. More folders are always read.</source>
@@ -21899,7 +21942,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2112821466846566879">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:148</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:149</note>
       </notes>
       <segment>
         <source>More folders</source>
@@ -21907,7 +21950,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7642931110034087315">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:151</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:152</note>
       </notes>
       <segment>
         <source>Folders kept alive too, for those reached through a link to another share: paths from the top of the library, one per line.</source>
@@ -21915,7 +21958,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2440247240114751525">
       <notes>
-        <note category="location">src/app/settings/tabs/system-settings.ts:153</note>
+        <note category="location">src/app/settings/tabs/system-settings.ts:154</note>
       </notes>
       <segment>
         <source>“When it is on a network share” looks at each one on its own.</source>

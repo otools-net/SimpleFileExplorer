@@ -428,7 +428,8 @@ and backups.`,
             page(
                 'about',
                 $localize`About`,
-                $localize`The server's version, its library folder, the ffmpeg it found, and its API reference.`,
+                $localize`The server's version and mode, its library folder, the ffmpeg it found, and its API \
+reference.`,
                 Rights.serverSettings,
                 Rights.apiDocs,
             ),

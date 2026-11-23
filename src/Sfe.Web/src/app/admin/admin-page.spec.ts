@@ -615,6 +615,16 @@ describe('SystemSectionComponent', () => {
         expect(element.querySelector('a[href="api/v1/system/backup"]')).toBeNull();
     });
 
+    it("says the server's mode and what it means", async () => {
+        await setUp({ mode: 'external', rights: [Rights.apiDocs] });
+        await open('/admin?section=system');
+
+        const mode = element.querySelector<HTMLElement>('.system-mode')!;
+        expect(mode.dataset['mode']).toBe('external');
+        expect(mode.querySelector('.mode-badge')!.textContent).toBe('External');
+        expect(mode.textContent).toContain('other devices open SFE');
+    });
+
     it('offers a backup of the databases and configuration files to those with the right', async () => {
         await setUp();
         await open('/admin?section=system&page=maintenance');
@@ -1034,6 +1044,25 @@ describe('AdminPageComponent by rights and levels', () => {
             expect(levelTab('tenant').getAttribute('aria-selected')).toBe('true');
             expect(seek().value).toBe('12');
         });
+    });
+
+    it('greys out a setting only the other mode uses, saying why', async () => {
+        await setUp({ mode: 'external' });
+        api.settings.mockResolvedValue(view('server', {}));
+        await open('/admin?section=system&page=startup');
+
+        const fast = element.querySelector<HTMLInputElement>('#setting-fastSignIn')!;
+        expect(fast.disabled).toBe(true);
+        expect(fast.closest('.setting-check')!.querySelector('.setting-lock-note')!.textContent).toContain(
+            'Only in Local mode: this server is in External mode.',
+        );
+        expect(element.querySelector<HTMLInputElement>('#setting-openBrowser')!.disabled).toBe(false);
+
+        TestBed.resetTestingModule();
+        await setUp({ mode: 'local' });
+        api.settings.mockResolvedValue(view('server', {}));
+        await open('/admin?section=system&page=startup');
+        expect(element.querySelector<HTMLInputElement>('#setting-fastSignIn')!.disabled).toBe(false);
     });
 
     it('says why a setting cannot change at this level, and locks those it may', async () => {

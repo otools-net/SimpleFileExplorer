@@ -166,5 +166,10 @@
             (click)="popovers.close()"
         ><svg sfeIcon="user"></svg><ng-container i18n>Sign in</ng-container></a>
     }
-    <p class="menu-version" role="none" translate="no" [title]="versionTitle()">SFE {{ config()?.version }}</p>
+    <p class="menu-version" role="none">
+        <span translate="no" [title]="versionTitle()">SFE {{ config()?.version }}</span>
+        @if (mode(); as mode) {
+            <span class="mode-badge" [attr.data-mode]="mode.id" [title]="mode.summary">{{ mode.name }}</span>
+        }
+    </p>
 </div>

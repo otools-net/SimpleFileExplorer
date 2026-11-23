@@ -188,6 +188,20 @@
     font-size: 11px;
     font-variant-numeric: tabular-nums;
 }
+/* The server's mode (Local / External): after the version in the ⋮ menu, and in System › About. */
+.mode-badge {
+    display: inline-block;
+    margin-inline-start: 6px;
+    padding: 0 6px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 16px;
+    cursor: help;
+}
+.system-facts .mode-badge {
+    margin-inline: 0 8px;
+}
 .menu-account {
     display: flex;
     align-items: center;

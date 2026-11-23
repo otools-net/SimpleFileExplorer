@@ -31,6 +31,14 @@
                 <div><dt i18n>Commit</dt><dd><code>{{ commit }}</code></dd></div>
             }
             <div><dt i18n>Library</dt><dd>{{ config()?.rootName }}</dd></div>
+            @if (mode(); as mode) {
+                <div>
+                    <dt i18n="the server's mode, Local or External">Mode</dt>
+                    <dd class="system-mode" [attr.data-mode]="mode.id">
+                        <span class="mode-badge">{{ mode.name }}</span>{{ mode.summary }}
+                    </dd>
+                </div>
+            }
             @if (info(); as info) {
                 <div><dt i18n>Library folder</dt><dd><code class="system-root">{{ info.root }}</code></dd></div>
                 <div>

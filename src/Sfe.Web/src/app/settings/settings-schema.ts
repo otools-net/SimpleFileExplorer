@@ -7,6 +7,7 @@
  */
 
 import { CONNECTION_SETTINGS } from '../connections/connection-settings';
+import type { ServerMode } from '../core/access.models';
 import { TOKEN_SETTINGS } from '../tokens/token-settings';
 import { APPEARANCE_SETTINGS } from './tabs/appearance-settings';
 import { BROWSING_SETTINGS, SEARCH_SETTINGS } from './tabs/browsing-settings';
@@ -30,6 +31,8 @@ interface FieldBase {
     hint: string;
     help?: string;
     placeholder?: string;
+    /** Used only in this mode: greyed out, with why, on a server in the other one. */
+    onlyIn?: ServerMode;
 }
 
 export type SettingField = FieldBase &

@@ -5,6 +5,7 @@ import { SettingLevel, SettingState, SettingsView } from '../core/setting.models
 import { SettingChanges } from './settings.models';
 import { readPreference, writePreference } from '../core/preferences';
 import { Rights, SETTINGS_RIGHTS } from '../core/rights';
+import { onlyInModeNote } from '../core/server-modes';
 import { ThemeService } from '../core/theme.service';
 import { ToastService } from '../core/toast.service';
 import { SearchHistory } from '../library/search-history.service';
@@ -254,12 +255,20 @@ export class SettingsForm {
 
     /** A setting this level cannot change: shown, disabled, with why (`lockNote`). */
     fieldLocked(field: SettingField): boolean {
+        if (this.otherMode(field)) return true;
         const state = this.state(field.type === 'preset' ? field.fills.url : field.key);
         return state !== undefined && !state.editable;
     }
 
+    /** A setting only the other mode uses (`onlyIn`): the server ignores it in this one. */
+    private otherMode(field: SettingField): boolean {
+        const mode = this.config.config()?.mode;
+        return !!field.onlyIn && !!mode && mode !== field.onlyIn;
+    }
+
     /** Why a setting cannot change at this level; null when it can. */
     lockNote(field: SettingField): string | null {
+        if (this.otherMode(field)) return onlyInModeNote(field.onlyIn!);
         const state = this.state(field.type === 'preset' ? field.fills.url : field.key);
         if (!state || state.editable) return null;
         switch (state.lockedBy) {

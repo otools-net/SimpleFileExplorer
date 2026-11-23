@@ -79,6 +79,7 @@ the AppImage on Linux). A service never opens a browser. Both settings are the w
                     key: 'fastSignIn',
                     label: $localize`Sign the administrator in at once`,
                     type: 'checkbox',
+                    onlyIn: 'local',
                     hint: $localize`The browser opened at start signs the server's administrator in without a \
 password. Only for SFE used on this computer alone.`,
                     help: $localize`It uses a link that works once, for a minute, from this computer only, and only \

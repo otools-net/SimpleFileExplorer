@@ -308,10 +308,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   sees path-only parents today and clicks through them. On entering the library root, follow path-only folders with
   a single branch down to the first usable one (`access.pathOnly`, server-side so it costs one call). Breadcrumbs:
   path-only parents shown greyed, not clickable. Several branches: the root keeps listing the path-only branches.
-- [ ] **3.3 Feature × mode matrix and mode badge** (IDEA-023, S–M). Modes are Local (this computer, administrators,
-  no visitors) and External (`Sfe:Mode`, [server-modes](../features/server-modes.md)); limits exist and are
-  enforced server-side but are spread out. Write the matrix in docs/ and the note (source of truth), show the mode
-  in the ⋮ menu / About, grey out with a reason (2.9) what the mode blocks. No new limit without the owner.
+- [x] **3.3 Feature × mode matrix and mode badge** (IDEA-023, S–M). Done 2026-11-23: the matrix is a table in
+  `docs/administration/system.md#what-each-mode-allows` (source of truth; the note says where each line is enforced);
+  `core/server-modes.ts` names the mode; a `.mode-badge` after the version in the ⋮ menu (summary as hint), a
+  **Mode** line in System › About; `SettingField.onlyIn` greys a setting out in the other mode with "Only in Local
+  mode: …" (only `fastSignIn`: visitors and paths were already greyed; no item-menu action depends on the mode). No
+  server change, no new limit. Screenshots `main-menu.png`, `admin-system.png` retaken. Was: Modes are Local (this
+  computer, administrators, no visitors) and External (`Sfe:Mode`, [server-modes](../features/server-modes.md));
+  limits exist and are enforced server-side but are spread out. Write the matrix in docs/ and the note (source of
+  truth), show the mode in the ⋮ menu / About, grey out with a reason (2.9) what the mode blocks.
 - [ ] **3.4 Used and free space** (IDEA-020, S–M). Free space is read (`LibraryDisk`, uploads, jobs) and Dropbox
   reports space (`IRemoteStorage.SpaceAsync`, capability `FreeSpace`) but nothing shows it. Routes: the library's
   drive (no root path leaked to space administrators) and each connection; a bar "X used of Y, Z free" in the
@@ -437,8 +442,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-23):** phases 1 and 2 done, 3.1 (shallower administration) and 3.2 (deep single folder).
-  Next: **3.3** (feature × mode matrix); steps of phase 3 may be taken in any order except 3.6 after 3.5, and 3.3 uses 2.9's greyed entries.
+- **Last session (2026-11-23):** phases 1 and 2 done, 3.1–3.3 (administration, deep folder, mode matrix and badge).
+  Next: **3.4** (used and free space); steps of phase 3 may be taken in any order except 3.6 after 3.5.
 - `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd
   C:/workspace/…` first.
 - The docs-screenshots scene for `operations-panel.png` is `files` (it calls `operations()` at its end), not

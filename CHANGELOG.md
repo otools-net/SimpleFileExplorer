@@ -7,6 +7,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **The server's mode shown**: the ⋮ menu shows Local or External after the version (what it means in its hint), and
+  Administration › System › About has a **Mode** line. The user guide has a table of what each mode allows
+  (Administration › System). **Sign the administrator in at once** (Start-up) is greyed out on an External server,
+  which doesn't use it, saying why.
 - **A folder deep down opens directly**: someone whose folder rules let them see one folder only, deep in the library
   (the folders above only lead there, one way), starts in it; the folders above show greyed in the path, not as links,
   and the parent folder button and Backspace stop there. Where the folders above lead several ways, they list them as
