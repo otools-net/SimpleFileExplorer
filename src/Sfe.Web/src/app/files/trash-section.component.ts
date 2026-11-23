@@ -3,7 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { isFileConflict } from '../core/models';
-import { TrashItem } from './file.models';
+import { TrashItem, TrashSize } from './file.models';
 import {
     describeTrashed,
     emptyQuestion,
@@ -16,6 +16,7 @@ import {
     restoredText,
     restoreHint,
     trashIntro,
+    trashSizeText,
 } from './trash-texts';
 import { parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
@@ -46,6 +47,8 @@ export class TrashSectionComponent implements OnInit {
     protected readonly items = signal<TrashItem[]>([]);
     protected readonly next = signal<number | null>(null);
     protected readonly retention = signal<number | null>(null);
+    /** What the whole trash holds; null when the session doesn't see all of it. */
+    private readonly size = signal<TrashSize | null>(null);
     protected readonly loading = signal(true);
     protected readonly loadingMore = signal(false);
     protected readonly emptying = signal(false);
@@ -56,6 +59,10 @@ export class TrashSectionComponent implements OnInit {
     protected readonly canPurge = computed(() => this.config.can(Rights.deletePermanently));
     protected readonly rootName = computed(() => this.config.config()?.rootName ?? $localize`The library`);
     protected readonly intro = computed(() => trashIntro(this.retention()));
+    protected readonly sizeText = computed(() => {
+        const size = this.size();
+        return size && this.items().length ? trashSizeText(size) : null;
+    });
     protected readonly restoreHint = restoreHint();
     protected readonly purgeHint = purgeHint();
 
@@ -70,6 +77,7 @@ export class TrashSectionComponent implements OnInit {
             this.items.set(page.items);
             this.next.set(page.hasMore ? page.next : null);
             this.retention.set(page.retentionDays);
+            this.size.set(page.size ?? null);
         } catch (error) {
             this.toasts.error($localize`Could not read the trash: ${(error as Error).message}:reason:`);
         } finally {
@@ -185,11 +193,19 @@ export class TrashSectionComponent implements OnInit {
             await this.load();
         } catch (error) {
             this.toasts.error($localize`Could not empty the trash: ${(error as Error).message}:reason:`);
-
         }
     }
 
+    /** An entry restored or deleted for good leaves the list and the trash's total. */
     private remove(id: number): void {
+        const gone = this.items().find((item) => item.id === id);
         this.items.update((items) => items.filter((item) => item.id !== id));
+        const size = this.size();
+        if (gone && size)
+            this.size.set(
+                gone.size === null
+                    ? { ...size, unknown: Math.max(0, size.unknown - 1) }
+                    : { ...size, bytes: Math.max(0, size.bytes - gone.size) },
+            );
     }
 }

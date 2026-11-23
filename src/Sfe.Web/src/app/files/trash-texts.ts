@@ -1,6 +1,6 @@
 import { formatDate, formatSize, joinParts } from '../core/format';
 import { icu } from '../core/i18n/icu';
-import { TrashItem } from './file.models';
+import { TrashItem, TrashSize } from './file.models';
 
 /**
  * The sentences of Administration › File management › Trash, as whole messages marked for translation
@@ -31,6 +31,17 @@ other {Each is deleted for good # days after it was deleted.}}`,
                   { days: retentionDays },
               );
     return `${listed} ${keeps}`;
+}
+
+/** What the whole trash holds, as the index knew its entries when they were deleted. */
+export function trashSizeText(size: TrashSize): string {
+    const bytes = formatSize(size.bytes);
+    if (!size.unknown) return $localize`The trash holds ${bytes}:size:.`;
+    return icu(
+        $localize`The trash holds ${bytes}:size:, not counting {count, plural, one {# item} other {# items}} whose \
+size isn't known.`,
+        { count: size.unknown },
+    );
 }
 
 /** "3 files · 2 KB · Deleted 22 Nov 2026 by Sam.": what an entry holds, then when and by whom. */
@@ -67,9 +78,7 @@ export function openFolderInTabHint(folder: string): string {
 
 /** The toast after Restore: the item back where it was, or under another name (`path`) when its name was taken. */
 export function restoredText(name: string, path: string | null): string {
-    return path
-        ? $localize`“${name}:name:” restored as “${path}:path:”.`
-        : $localize`“${name}:name:” restored.`;
+    return path ? $localize`“${name}:name:” restored as “${path}:path:”.` : $localize`“${name}:name:” restored.`;
 }
 
 /** Restore refused or failed, with the reason when there is one. */

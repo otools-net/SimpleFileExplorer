@@ -13,6 +13,10 @@ good). A file saved over in the [text editor](../user-guide/editing-text.md) lea
 space's access. Server administrators see everything. A right click on an item opens its menu: Restore, Delete
 for good, and the folder it was deleted from (also in a new tab).
 
+Those who see the whole trash (server administrators, and those who manage the space's accounts when no folder rule
+limits them) read at the top what it holds in all ("The trash holds 12 GB."), from the sizes the index knew when the
+items were deleted; items deleted before they were indexed are counted apart.
+
 ![Administration › File management › Trash](../images/admin-files-trash.png)
 
 ## Uploads

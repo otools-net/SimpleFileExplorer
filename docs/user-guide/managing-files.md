@@ -143,7 +143,7 @@ tags of its files and a folder's access rules (its folder is made again if it is
 that is taken there); a restored folder is scanned again. **Delete** and **Empty the trash** delete for good (right
 `files.deletePermanently`).
 
-![The Trash link of the sidebar, with two items in the trash](../images/sidebar-trash.png)
+![The bottom of the sidebar: the space used and free, and the Trash link with two items in the trash](../images/sidebar-trash.png)
 
 ![The trash](../images/admin-files-trash.png)
 

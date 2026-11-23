@@ -317,7 +317,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   computer, administrators, no visitors) and External (`Sfe:Mode`, [server-modes](../features/server-modes.md));
   limits exist and are enforced server-side but are spread out. Write the matrix in docs/ and the note (source of
   truth), show the mode in the ⋮ menu / About, grey out with a reason (2.9) what the mode blocks.
-- [ ] **3.4 Used and free space** (IDEA-020, S–M). Free space is read (`LibraryDisk`, uploads, jobs) and Dropbox
+- [x] **3.4 Used and free space** (IDEA-020, S–M). Done 2026-11-23: `GET api/storage` (`library.browse`; the
+  library's disk by `DiskSpace`: `GetDiskFreeSpaceEx` on Windows — shares too —, `statvfs` of the folder elsewhere;
+  numbers only, 5-second wait) and `GET api/connections/{id}/storage` (`SpaceAsync` when the capability says so),
+  both kept two minutes (`StorageUsageCache`); `StorageBarComponent` in the sidebar's footer, read on a place change
+  and every 5 minutes while shown, orange ≥ 85 %, red ≥ 95 %, "Free space not reported"; the trash's first page gains
+  `size` (`SUM`, for those who see the whole trash), shown on the trash page. Glossary: **disk**. `Sfe.Client` leaves
+  the routes to `Raw` (6.1). Note [storage-usage](../features/storage-usage.md); screenshots `sidebar-trash.png`,
+  `admin-files-trash.png`. Readability baselines raised by the added lines: `FileEndpoints.cs` 841 → 850, `Trash.cs`
+  885 → 894, `api.service.ts` 788 → 794. Was: Free space is read (`LibraryDisk`, uploads, jobs) and Dropbox
   reports space (`IRemoteStorage.SpaceAsync`, capability `FreeSpace`) but nothing shows it. Routes: the library's
   drive (no root path leaked to space administrators) and each connection; a bar "X used of Y, Z free" in the
   sidebar (library and connection place), orange past 85 %, red past 95 %; "not reported" when the provider can't.
@@ -442,8 +450,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-23):** phases 1 and 2 done, 3.1–3.3 (administration, deep folder, mode matrix and badge).
-  Next: **3.4** (used and free space); steps of phase 3 may be taken in any order except 3.6 after 3.5.
+- **Last session (2026-11-23):** phases 1 and 2 done, 3.1–3.4 (administration, deep folder, mode matrix and badge,
+  used and free space). Next: **3.5** (changes made outside SFE shown live), then 3.6.
+- Don't run `npm test` and `dotnet test` at the same time: the client build rewrites `wwwroot` under the server's
+  build ("No file exists for the asset").
 - `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd
   C:/workspace/…` first.
 - The docs-screenshots scene for `operations-panel.png` is `files` (it calls `operations()` at its end), not

@@ -1,4 +1,7 @@
 <p class="settings-intro">{{ intro() }}</p>
+@if (sizeText(); as sizeText) {
+    <p class="settings-intro trash-size">{{ sizeText }}</p>
+}
 @if (canPurge()) {
     <div class="settings-action">
         <button

@@ -101,6 +101,12 @@ and ↓ buttons on each link: that is how links are moved on a phone, where page
 opens its files in the same listing ([browsing a connection](../administration/connections.md#browsing-a-connection)).
 Quick links keep the library's folders and files only.
 
+**Space used and free.** At the bottom of the sidebar, a bar shows how full the storage of what is listed is: the disk
+holding the library, or the account of the connection you are in ("120 GB used of 500 GB, 380 GB free"). It turns
+orange from 85 % used and red from 95 %; its hint gives the share used. A connection whose storage service doesn't tell
+shows "Free space not reported", and one telling only what is used shows no bar. The numbers are read again every few
+minutes while the page is open.
+
 ## Folder pictures
 
 ![Folder cards at the top of the library](../images/library-root.png)

@@ -361,6 +361,15 @@ public sealed class Trash(
         return new TrashCount(Math.Min(count, CountCap), count > CountCap);
     }
 
+    /// <summary>What every entry holds, added up by the database: two queries, whatever the trash's length.</summary>
+    public async Task<TrashSize> SizeAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var bytes = await db.TrashEntries.SumAsync(t => t.Size ?? 0, cancellationToken);
+        var unknown = await db.TrashEntries.CountAsync(t => t.Size == null, cancellationToken);
+        return new TrashSize(bytes, unknown);
+    }
+
     public async Task<TrashItem?> FindAsync(int id, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);

@@ -7,6 +7,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Space used and free**: a bar at the bottom of the sidebar shows how full the disk holding the library is, or the
+  account of the connection you are in ("120 GB used of 500 GB, 380 GB free"), orange from 85 % used and red from
+  95 %; "Free space not reported" when a storage service doesn't tell. The trash page says what the whole trash holds
+  to those who see all of it. New routes `GET api/v1/storage` and `GET api/v1/connections/{id}/storage` (read at
+  most every two minutes); the trash's first page gains `size`.
 - **The server's mode shown**: the ⋮ menu shows Local or External after the version (what it means in its hint), and
   Administration › System › About has a **Mode** line. The user guide has a table of what each mode allows
   (Administration › System). **Sign the administrator in at once** (Start-up) is greyed out on an External server,

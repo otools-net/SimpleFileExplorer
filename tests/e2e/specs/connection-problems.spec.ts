@@ -28,7 +28,8 @@ async function connectionToSignInAgain(page: Page): Promise<void> {
     await page.route('**/api/v1/connections', (route) =>
         route.fulfill({ json: { usable: [usable], managed: [], groups: [], libraries: [] } }),
     );
-    await page.route('**/api/v1/connections/3/browse?*', (route) =>
+    // The listing and the sidebar's storage bar: both refused as the server would.
+    await page.route(/\/api\/v1\/connections\/3\/(browse\?|storage$)/, (route) =>
         route.fulfill({
             status: 409,
             contentType: 'application/problem+json',
@@ -43,8 +44,8 @@ async function connectionToSignInAgain(page: Page): Promise<void> {
 }
 
 test.describe('@reported a connection to sign in to again', () => {
-    // The browser logs the 409 the test answers on purpose.
-    test.use({ allowedErrors: /\/api\/v1\/connections\/3\/browse/ });
+    // The browser logs the 409s the test answers on purpose.
+    test.use({ allowedErrors: /\/api\/v1\/connections\/3\/(browse|storage)/ });
 
     test('its listing says so and leads to the connections page, not to a broken page', async ({ page }) => {
         await connectionToSignInAgain(page);

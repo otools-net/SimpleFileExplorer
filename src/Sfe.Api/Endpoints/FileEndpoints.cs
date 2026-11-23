@@ -200,7 +200,11 @@ public static class FileEndpoints
             .FolderScoped("lists what the caller deleted, and what was deleted where the caller may delete")
             .WithName("ListTrash")
             .WithSummary("The space's trash, newest first.")
-            .WithDescription("Pages of at most 200; `before` is the `next` of the previous page.");
+            .WithDescription(
+                "Pages of at most 200; `before` is the `next` of the previous page. The first page gives `size`, "
+                    + "what the whole trash holds, to those who see all of it (server administrators, and those who "
+                    + "manage the space's accounts without folder rules); null otherwise."
+            );
         trash
             .MapGet("/count", CountTrash)
             .RequireRight(Rights.DeleteFiles, Rights.DeletePermanently)
@@ -294,9 +298,10 @@ public static class FileEndpoints
     {
         var (trash, paths, _, _, current) = services;
         var state = await current.GetAsync();
-        return TypedResults.Ok(
-            await trash.ListAsync(before, limit, item => SeesInTrash(state, paths, item), cancellationToken)
-        );
+        var page = await trash.ListAsync(before, limit, item => SeesInTrash(state, paths, item), cancellationToken);
+        if (before is null && SeesWholeTrash(state))
+            page = page with { Size = await trash.SizeAsync(cancellationToken) };
+        return TypedResults.Ok(page);
     }
 
     private static async Task<Ok<TrashCount>> CountTrash(
@@ -601,6 +606,10 @@ public static class FileEndpoints
     /// restore) may have been hidden from people who may delete in its parent: only those who manage the space's access
     /// see it.
     /// </summary>
+    /// <summary>Every entry passes <see cref="SeesInTrash"/>: its total tells nothing of what is hidden.</summary>
+    private static bool SeesWholeTrash(AccessState state) =>
+        state.Access.IsServerAdmin || (state.Access.FolderPolicy.IsUnrestricted && state.Has(Rights.ManageMembers));
+
     private static bool SeesInTrash(AccessState state, LibraryPaths paths, TrashItem item) =>
         state.Access.IsServerAdmin
         || (state.User is { } user && item.DeletedById == user.Id)

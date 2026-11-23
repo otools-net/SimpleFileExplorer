@@ -32,6 +32,7 @@ import {
 import { ArchiveAnswer, TextFile, TextPart, TextToSave } from '../formats/format.models';
 import {
     TrashCount,
+    StorageUsage,
     ExcludedFolder,
     ExclusionKind,
     FolderCover,
@@ -407,6 +408,11 @@ export class Api {
     /** The trash, newest first (`before`: the `next` of the previous page); how many items of it the session sees. */
     trash = (before: number | null = null) => this.get<TrashPage>('files/trash', { before });
     trashCount = () => this.get<TrashCount>('files/trash/count');
+    /** The space used and free on the disk holding the library, or in a connection's account (`id`). */
+    storage = (id: number | null) =>
+        id === null
+            ? this.get<StorageUsage>('storage')
+            : this.getOrRefused<StorageUsage>(`connections/${id}/storage`, {});
     /** Puts an item of the trash back. Resolves with the conflict (409: a scan runs there...). */
     restoreFromTrash = (id: number) => this.post<FileOperationResult>(`files/trash/${id}/restore`);
     purgeFromTrash = (id: number) => this.delete<void>(`files/trash/${id}`);

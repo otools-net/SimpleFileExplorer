@@ -38,6 +38,17 @@ export interface ExcludedFolder {
     exists: boolean;
 }
 
+/**
+ * The space used and free on the disk holding the library, or in a connection's account (`api/storage`); numbers
+ * null when not `reported`, `total` and `free` also when a provider gives only what is used.
+ */
+export interface StorageUsage {
+    reported: boolean;
+    used: number | null;
+    total: number | null;
+    free: number | null;
+}
+
 /** How many files and folders of the trash the session sees, counted up to 99 (`more` above). */
 export interface TrashCount {
     count: number;

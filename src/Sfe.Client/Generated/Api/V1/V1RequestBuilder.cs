@@ -24,6 +24,7 @@ using Otools.Net.Sfe.Client.Generated.Api.V1.Session;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Settings;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Setup;
 using Otools.Net.Sfe.Client.Generated.Api.V1.SimilarVideos;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Storage;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Streaming;
 using Otools.Net.Sfe.Client.Generated.Api.V1.System;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Tags;
@@ -152,6 +153,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.SimilarVideos.SimilarVideosRequestBuilder SimilarVideos
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.SimilarVideos.SimilarVideosRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The storage property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Storage.StorageRequestBuilder Storage
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Storage.StorageRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The streaming property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Streaming.StreamingRequestBuilder Streaming

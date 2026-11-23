@@ -267,6 +267,20 @@ public sealed class TrashRouteTests
     }
 
     [TestMethod]
+    public async Task TheTrashsSizeIsGivenOnlyToThoseWhoSeeAllOfIt()
+    {
+        await DeleteAsync(_alice, ["ChildDir/AFile1.txt"]);
+        await DeleteAsync(_admin, ["ChildDir/AFile2", "Media/photo.jpg", "SpecialDir"]);
+
+        var admin = await ListAsync(_admin);
+        var alice = await ListAsync(_alice);
+
+        var expected = new TrashSize(admin.Items.Sum(i => i.Size ?? 0), admin.Items.Count(i => i.Size is null));
+        Assert.AreEqual(expected, admin.Size);
+        Assert.IsNull(alice.Size, "Alice doesn't see the hidden folder: its size isn't hers to add up");
+    }
+
+    [TestMethod]
     public async Task EmptyingTakesWhatTheCallerMayDeleteForGood()
     {
         await DeleteAsync(_admin, ["ChildDir/AFile1.txt", "Media/photo.jpg", "SpecialDir"]);

@@ -139,6 +139,14 @@ export interface TrashPage {
     next: number | null;
     /** Days in the trash before the purge; 0 = until emptied. */
     retentionDays: number;
+    /** What the whole trash holds: on the first page, for those who see all of it. */
+    size?: TrashSize | null;
+}
+
+/** The sizes the index knew of the trash's entries, and how many it didn't know. */
+export interface TrashSize {
+    bytes: number;
+    unknown: number;
 }
 
 /** What the index knows below a folder, among what the session sees. */

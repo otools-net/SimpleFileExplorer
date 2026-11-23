@@ -85,6 +85,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 );
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<LegacyPathLog>();
+builder.Services.AddSingleton<StorageUsageCache>();
 
 // The document carries the application version, each route's rights and the problem type words (ApiDocument).
 builder.Services.AddOpenApi(ApiDocument.Configure);
@@ -160,6 +161,7 @@ api.MapTransferEndpoints();
 api.MapUploadEndpoints();
 api.MapArchiveEndpoints();
 api.MapPropertyEndpoints();
+api.MapStorageEndpoints();
 api.MapTextEndpoints();
 api.MapEpubEndpoints();
 api.MapExploreEndpoints();

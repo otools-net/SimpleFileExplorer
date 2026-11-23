@@ -14,6 +14,7 @@ import { ChangeFeed } from '../change-feed.service';
 import { Dialogs } from '../dialogs.service';
 import { QuickLinksComponent } from '../quick-links/quick-links.component';
 import { ConnectionLinksComponent } from './connection-links.component';
+import { StorageBarComponent } from './storage-bar.component';
 import { ListingStore } from '../listing.store';
 import { tagQuery } from '../../tags/tags';
 import { SidebarService } from './sidebar.service';
@@ -50,7 +51,8 @@ const SECTIONS: Section[] = [
 
 /**
  * Collapsible sidebar: the user's quick links, then the tags: most used tags, last searched tags, tags of the last
- * viewed files and random others, each list folding under its heading; at the bottom, Manage tags and the trash.
+ * viewed files and random others, each list folding under its heading; at the bottom, the space used and free
+ * (`StorageBarComponent`), Manage tags and the trash.
  */
 @Component({
     selector: 'sfe-sidebar',
@@ -59,6 +61,7 @@ const SECTIONS: Section[] = [
         TagChipComponent,
         QuickLinksComponent,
         ConnectionLinksComponent,
+        StorageBarComponent,
         ContextMenuDirective,
         RouterLink,
     ],

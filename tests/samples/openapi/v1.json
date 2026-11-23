@@ -2860,6 +2860,72 @@
         ]
       }
     },
+    "/api/v1/storage": {
+      "get": {
+        "tags": [
+          "Library"
+        ],
+        "summary": "The space used and free on the drive holding the library's folder.",
+        "description": "`used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the provider\ndoesn't tell. A provider may give `used` without `total` (no limit known). Read again at most every two\nminutes.",
+        "operationId": "GetLibraryStorage",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageUsage"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "library.browse"
+          ]
+        ]
+      }
+    },
+    "/api/v1/connections/{id}/storage": {
+      "get": {
+        "tags": [
+          "Connections"
+        ],
+        "summary": "The space used and free in a connection's account, as its provider reports it.",
+        "description": "`used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the provider\ndoesn't tell. A provider may give `used` without `total` (no limit known). Read again at most every two\nminutes.",
+        "operationId": "GetConnectionStorage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageUsage"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "connections.use"
+          ]
+        ]
+      }
+    },
     "/api/v1/files/epub/{book}/{entry}": {
       "get": {
         "tags": [
@@ -5464,7 +5530,7 @@
           "Files"
         ],
         "summary": "The space's trash, newest first.",
-        "description": "Pages of at most 200; `before` is the `next` of the previous page.",
+        "description": "Pages of at most 200; `before` is the `next` of the previous page. The first page gives `size`, what the whole trash holds, to those who see all of it (server administrators, and those who manage the space's accounts without folder rules); null otherwise.",
         "operationId": "ListTrash",
         "parameters": [
           {
@@ -16897,6 +16963,47 @@
           }
         }
       },
+      "StorageUsage": {
+        "required": [
+          "reported",
+          "used",
+          "total",
+          "free"
+        ],
+        "type": "object",
+        "properties": {
+          "reported": {
+            "type": "boolean"
+          },
+          "used": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "free": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
       "StreamActivity": {
         "required": [
           "id",
@@ -18552,6 +18659,16 @@
               "string"
             ],
             "format": "int32"
+          },
+          "size": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TrashSize"
+              }
+            ]
           }
         }
       },
@@ -18559,6 +18676,31 @@
         "type": "object",
         "properties": {
           "retentionDays": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "TrashSize": {
+        "required": [
+          "bytes",
+          "unknown"
+        ],
+        "type": "object",
+        "properties": {
+          "bytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "unknown": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",

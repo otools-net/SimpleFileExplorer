@@ -71,7 +71,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Trash
             return await RequestAdapter.SendAsync<global::Otools.Net.Sfe.Client.Generated.Models.EmptiedTrash>(requestInfo, global::Otools.Net.Sfe.Client.Generated.Models.EmptiedTrash.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Pages of at most 200; `before` is the `next` of the previous page.
+        /// Pages of at most 200; `before` is the `next` of the previous page. The first page gives `size`, what the whole trash holds, to those who see all of it (server administrators, and those who manage the space&apos;s accounts without folder rules); null otherwise.
         /// </summary>
         /// <returns>A <see cref="global::Otools.Net.Sfe.Client.Generated.Models.TrashPage"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -108,7 +108,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Trash
             return requestInfo;
         }
         /// <summary>
-        /// Pages of at most 200; `before` is the `next` of the previous page.
+        /// Pages of at most 200; `before` is the `next` of the previous page. The first page gives `size`, what the whole trash holds, to those who see all of it (server administrators, and those who manage the space&apos;s accounts without folder rules); null otherwise.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -136,7 +136,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Trash
             return new global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Trash.TrashRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// Pages of at most 200; `before` is the `next` of the previous page.
+        /// Pages of at most 200; `before` is the `next` of the previous page. The first page gives `size`, what the whole trash holds, to those who see all of it (server administrators, and those who manage the space&apos;s accounts without folder rules); null otherwise.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class TrashRequestBuilderGetQueryParameters 

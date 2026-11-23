@@ -138,6 +138,7 @@ public sealed class FacadeCoverageTests
         ["GET /connections/{id}/file-tags/scope"] = "SfeConnectionTags.GetScopeTagsAsync",
         ["POST /connections/{id}/file-tags/scope"] = "SfeConnectionTags.ChangeScopeAsync",
         ["GET /connections/{id}/folders"] = "Raw: folders to put a rule on (administration of a library)",
+        ["GET /connections/{id}/storage"] = "Raw: the space used and free (the web page's sidebar bar)",
     };
 
     [TestMethod]

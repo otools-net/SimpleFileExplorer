@@ -28,6 +28,14 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public int? Next { get; set; }
         /// <summary>The retentionDays property</summary>
         public int? RetentionDays { get; set; }
+        /// <summary>The size property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::Otools.Net.Sfe.Client.Generated.Models.TrashSize? Size { get; set; }
+#nullable restore
+#else
+        public global::Otools.Net.Sfe.Client.Generated.Models.TrashSize Size { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::Otools.Net.Sfe.Client.Generated.Models.TrashPage"/> and sets the default values.
         /// </summary>
@@ -57,6 +65,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "items", n => { Items = n.GetCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TrashItem>(global::Otools.Net.Sfe.Client.Generated.Models.TrashItem.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "next", n => { Next = n.GetIntValue(); } },
                 { "retentionDays", n => { RetentionDays = n.GetIntValue(); } },
+                { "size", n => { Size = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.TrashSize>(global::Otools.Net.Sfe.Client.Generated.Models.TrashSize.CreateFromDiscriminatorValue); } },
             };
         }
         /// <summary>
@@ -70,6 +79,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TrashItem>("items", Items);
             writer.WriteIntValue("next", Next);
             writer.WriteIntValue("retentionDays", RetentionDays);
+            writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.TrashSize>("size", Size);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

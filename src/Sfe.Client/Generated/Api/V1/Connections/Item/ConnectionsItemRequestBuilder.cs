@@ -14,6 +14,7 @@ using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.IndexNamespace;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Libraries;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Reauthorize;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Search;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Storage;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Streaming;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Thumbnails;
 using Otools.Net.Sfe.Client.Generated.Models;
@@ -84,6 +85,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Search.SearchRequestBuilder Search
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Search.SearchRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The storage property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Storage.StorageRequestBuilder Storage
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Storage.StorageRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The streaming property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Streaming.StreamingRequestBuilder Streaming

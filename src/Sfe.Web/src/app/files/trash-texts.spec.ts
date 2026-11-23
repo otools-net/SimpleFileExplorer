@@ -1,4 +1,4 @@
-import { describeTrashed, openFolderHint, purgedText, trashIntro } from './trash-texts';
+import { describeTrashed, openFolderHint, purgedText, trashIntro, trashSizeText } from './trash-texts';
 
 describe('trash texts', () => {
     it('says how long the trash keeps things', () => {
@@ -22,6 +22,13 @@ describe('trash texts', () => {
         expect(describeTrashed(entry as never)).toMatch(/^3 files · 2 KB · Deleted .+ by Sam\.$/);
         expect(describeTrashed({ ...entry, deletedBy: null, previousVersion: true } as never)).toMatch(
             /· Saved over [^·]+\.$/,
+        );
+    });
+
+    it('says what the whole trash holds, and how many sizes it does not know', () => {
+        expect(trashSizeText({ bytes: 2048, unknown: 0 })).toBe('The trash holds 2 KB.');
+        expect(trashSizeText({ bytes: 2048, unknown: 1 })).toBe(
+            "The trash holds 2 KB, not counting 1 item whose size isn't known.",
         );
     });
 

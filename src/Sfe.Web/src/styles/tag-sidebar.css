@@ -123,6 +123,42 @@
     gap: 6px;
     margin-top: auto;
 }
+/* The space used and free: a thin bar, orange when nearly full, red when full; the numbers under it. */
+.storage-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+.storage-bar[hidden] {
+    display: none;
+}
+.storage-meter {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: var(--surface-3);
+}
+.storage-meter > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--text-muted);
+}
+.storage-bar.nearly-full .storage-meter > span {
+    background: var(--accent);
+}
+.storage-bar.full .storage-meter > span {
+    background: var(--danger);
+}
+.storage-bar.full .storage-line {
+    color: var(--danger);
+}
+
 .sidebar-footer .icon {
     width: 16px;
     height: 16px;

@@ -70,6 +70,7 @@ Use the term on the left; the words on the right are not used in texts (code nam
 |---|---|---|
 | **space** | One library with its own groups, accounts, tags, settings and connections; a server holds one or more. Used wherever access, settings or administration is meant ("this space's settings", connection level "space") | tenant |
 | **library** | The files a space shows: its folder on the server and everything under it. "Open the library", "the library's folders" | root, share, drive |
+| **disk** | The storage the library's folder is on, when its space is meant ("The disk holding the library is 76% full.") | drive, volume, partition |
 | **folder** | A folder, in the library or in a connection | directory (except **sign-in directory**, below) |
 | **item** | A file or a folder, when a text means either | entry (except archive entries, below), object, node |
 | **connection** | An outside storage (Dropbox…) reached through SFE; its levels are shown as **Only me**, **This space**, **The server** (`connection.models.ts`; code names `account`, `library`, `server`) | remote, provider (provider = the kind: "Dropbox", for administrators only), cloud |
