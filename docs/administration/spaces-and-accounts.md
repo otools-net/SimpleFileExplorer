@@ -12,25 +12,30 @@ A **space** is one library with its own groups and accounts. Each space holds:
 Server administrators (right `server.tenants`) see every space; a space's administrators (right `tenant.members`) see
 their own.
 
+Its sub-pages: **Spaces**, **Accounts**, **Groups**, **Folder access**, **Visitors**, **Access tokens** and **Token
+settings**. Groups, Folder access and Visitors are about one space: the one you are browsing, or (server
+administrators) the one picked in **Space** at the top, which the other sub-pages keep. Accounts lists every account
+until a space is picked there. Each one is in the overview of the administration, so any of them is three clicks from
+the library: ⋮, **Administration**, then the sub-page (on phones, the section first).
+
 ## Spaces
 
 ![Spaces](../images/admin-access-spaces.png)
 
 Each card shows a space's folder, groups, accounts and whether visitors may come in; **You are here** marks the one you
-are browsing. **Open** shows its page:
+are browsing. **Open** shows its page (a space's administrators get their own space's page at once):
 
 ![A space's page](../images/admin-access-space.png)
 
-| Part | |
-|---|---|
-| **Library** | The space's folder. Everyone below sees these files, each with the rights of their groups |
-| **Groups** | **New group**, and **Edit** / **Delete** for each |
-| **Accounts** | The accounts in a group of this space: **New account** (in its Users group to start with), put an account of another space in this one too, **Edit**, **Remove** (from this space) or **Delete** |
-| **Visitors without an account** | **Let visitors browse … without an account** |
-| **Folder access** | Rules on folders: what a group, or one account, may do in a folder and below it ([below](#folder-access)) |
-| **Edit space** | Rename it, disable it, switch rights off in it (server administrators) |
+Its **Library** is the space's folder: its accounts see these files, each with the rights of their groups. The cards
+below open the **Groups**, **Accounts**, **Folder access** and **Visitors** sub-pages about this space. **Edit space**
+renames it, disables it or switches rights off in it (server administrators).
 
 ### Groups
+
+**Groups** lists the space's groups: **New group**, and **Edit** / **Delete** for each.
+
+![Groups](../images/admin-access-groups.png)
 
 ![Editing a group](../images/group-editor.png)
 
@@ -51,7 +56,9 @@ name and can't be deleted.
 
 ### Visitors
 
-When **Let visitors browse … without an account** is ticked, anyone who reaches the server can browse the space without
+![Visitors](../images/admin-access-visitors.png)
+
+**Visitors** has a single choice. When **Let visitors browse … without an account** is ticked, anyone who reaches the server can browse the space without
 signing in: the sign-in page offers a button for each such space. They get the rights of the **Guests** group, and never
 a right that changes something. For someone who should sign in but only look, make a *guest account* instead. The
 configuration can forbid visitors everywhere (`Sfe:Security:AnonymousGuests=false`).
@@ -63,6 +70,10 @@ again once the server is External; the accounts page says so while it is Local.
 ### Folder access
 
 ![Folder access](../images/folder-access.png)
+
+**Folder access** lists the space's folder rules. **Folder access…** in the menu of a folder (right-click it, or the
+folder you are in) opens this page with a new rule started on that folder; it is there for those who manage the space,
+on the library's folders (a connection's folder rules are on its own page).
 
 Without rules, every group's rights apply in every folder of the space. A **rule** narrows that for one folder and
 everything below it, for a group (Guests included: visitors without an account) or for one account:
@@ -121,7 +132,11 @@ The first space is the configuration's (`Sfe:Root`, `ConnectionStrings:Sfe`): it
 ![Accounts](../images/admin-access-accounts.png)
 
 Everyone who can sign in to the server, with the spaces each one sees and their groups there (server administrators;
-a space's administrators see the accounts of their space). **Find an account** filters the list; badges mark server
+a space's administrators see the accounts of their space).
+
+With a space picked in **Space**, server administrators get that space's accounts instead (those in one of its
+groups): **New account** (in its Users group to start with), **Add an existing account…** (an account of another space,
+put in this one's Users group), **Edit**, **Remove** (from this space; the account stays) or **Delete**. **Find an account** filters the list; badges mark server
 administrators, guest accounts, disabled and locked accounts, and accounts from a directory.
 
 ![Editing an account](../images/account-editor.png)

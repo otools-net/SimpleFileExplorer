@@ -60,6 +60,8 @@ export class FolderAccessComponent {
     readonly groups = input.required<RuleGroup[]>();
     /** The space's accounts. */
     readonly members = input.required<RuleMember[]>();
+    /** A folder to start a rule on, as the page opens (a folder's "Folder access…"); null for none. */
+    readonly folder = input<string | null>(null);
 
     protected readonly rules = signal<FolderRuleView[]>([]);
     protected readonly draft = signal<{ path: string; principal: PrincipalKey; level: FolderLevel } | null>(null);
@@ -93,6 +95,10 @@ export class FolderAccessComponent {
             this.rulesSource();
             untracked(() => void this.load());
         });
+        effect(() => {
+            const folder = this.folder();
+            if (folder !== null) untracked(() => this.startNew(folder));
+        });
     }
 
     async load(): Promise<void> {
@@ -103,7 +109,8 @@ export class FolderAccessComponent {
         }
     }
 
-    protected startNew(): void {
+    /** Opens the form for a new rule, its folder picker on `path`. */
+    protected startNew(path = ''): void {
         const first = this.groups().find((group) => group.builtIn === 'users') ?? this.groups()[0];
         this.repointing.set(null);
         this.problem.set(null);
@@ -112,7 +119,7 @@ export class FolderAccessComponent {
             principal: first ? `g${first.id}` : `u${this.members()[0]?.id ?? 0}`,
             level: 'hidden',
         });
-        void this.browse('');
+        void this.browse(path);
     }
 
     protected startRepoint(path: string): void {

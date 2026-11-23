@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { ConfigService } from '../core/config.service';
 import { CopyPathService } from '../core/copy-path.service';
 import { Rights } from '../core/rights';
@@ -8,9 +9,9 @@ import { QuickLinksService } from '../library/quick-links/quick-links.service';
 import { ItemCommand, ItemCommandId, ItemMenuEntry, ItemScope, namesOf, refused } from './item-scope';
 
 /**
- * The commands about listed items rather than their content (Tags…, quick links, Scans and previews…, Copy full path,
- * Properties), for `ItemCommands`. Quick links, copying paths and the scans of a folder are hidden when the session
- * has none (an account's own, a server setting, an administrator's right), not greyed out.
+ * The commands about listed items rather than their content (Tags…, quick links, Scans and previews…, Folder access…,
+ * Copy full path, Properties), for `ItemCommands`. Quick links, copying paths, the scans and the rules of a folder are
+ * hidden when the session has none (an account's own, a server setting, an administrator's right), not greyed out.
  */
 @Injectable({ providedIn: 'root' })
 export class OrganisingCommands {
@@ -19,11 +20,13 @@ export class OrganisingCommands {
     private readonly quickLinks = inject(QuickLinksService);
     private readonly copyPaths = inject(CopyPathService);
     private readonly config = inject(ConfigService);
+    private readonly router = inject(Router);
 
     readonly commands: Partial<Record<ItemCommandId, ItemCommand>> = {
         tags: (scope) => this.tags(scope),
         quickLink: (scope) => this.quickLink(scope),
         exclusions: (scope) => this.exclusions(scope),
+        folderAccess: (scope) => this.folderAccess(scope),
         copyPath: (scope) => this.copyPath(scope),
         properties: (scope) => this.properties(scope),
     };
@@ -111,6 +114,28 @@ export class OrganisingCommands {
             title: $localize`Keep this folder out of scans, trickplay or thumbnails, \
 for everyone using this space.`,
             run: () => this.dialogs.folderExclusions()?.open(item.path, item.excluded),
+        };
+    }
+
+    /** The folder rules of a library folder (Administration › Spaces & accounts), for those who manage them. */
+    private folderAccess({ item, targets }: ItemScope): ItemMenuEntry | null {
+        const applies =
+            targets.length === 1 &&
+            item.kind === 'directory' &&
+            this.config.place() === null &&
+            this.config.can(Rights.manageMembers);
+        if (!applies) return null;
+        return {
+            id: 'folderAccess',
+            label: $localize`Folder access…`,
+            icon: 'lock',
+            title: $localize`Choose who may see “${item.name}:name:” and change its files: its folder rules, \
+in the administration.`,
+            run: () =>
+                void this.router.navigate(['/admin'], {
+                    queryParams: { section: 'access', page: 'folders', folder: item.path },
+                    state: { sfeFromLibrary: true },
+                }),
         };
     }
 

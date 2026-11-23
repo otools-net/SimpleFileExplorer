@@ -1,36 +1,45 @@
-@if (error(); as error) {
-    <p class="form-error" i18n>Could not load the space: {{ error }}</p>
-} @else if (!loaded()) {
-    <div class="tag-loading"><span class="spinner"></span></div>
-} @else {
-    <section class="access-card" aria-labelledby="space-library">
-        <header class="access-card-head help-row">
-            <svg sfeIcon="folder"></svg>
-            <h3 id="space-library" i18n>Library</h3>
-            <sfe-help about="The library" i18n-about>
-                <p i18n>The folder of the server whose files this space shows, with everything below it. Its index,
-                    tags, settings, duplicates and background tasks belong to this space alone: tags set here aren't
-                    seen in another space.</p>
-                <p i18n>The folder is chosen when the space is created and can't change afterwards.</p>
-            </sfe-help>
-        </header>
-        @if (space().root; as root) {
-            <p class="access-path access-library">{{ root }}</p>
-        } @else {
-            <p class="access-library">{{ config.config()?.rootName }}</p>
-        }
-        <p class="field-hint" i18n>Everyone below sees these files, each with the rights of their groups.</p>
-    </section>
+<section class="access-card" aria-labelledby="space-library">
+    <header class="access-card-head help-row">
+        <svg sfeIcon="folder"></svg>
+        <h3 id="space-library" i18n>Library</h3>
+        <sfe-help about="The library" i18n-about>
+            <p i18n>The folder of the server whose files this space shows, with everything below it. Its index,
+                tags, settings, duplicates and background tasks belong to this space alone: tags set here aren't
+                seen in another space.</p>
+            <p i18n>The folder is chosen when the space is created and can't change afterwards.</p>
+        </sfe-help>
+    </header>
+    @if (space().root; as root) {
+        <p class="access-path access-library">{{ root }}</p>
+    } @else {
+        <p class="access-library">{{ config.config()?.rootName }}</p>
+    }
+    <p class="field-hint" i18n>The space's accounts see these files, each with the rights of their groups.</p>
+</section>
 
-    <sfe-space-groups
-        [space]="space()"
-        [groups]="groups()"
-        [candidates]="candidates()"
-        [catalog]="catalog()"
-        (changed)="load()"
-    />
-    <sfe-space-members [space]="space()" [groups]="groups()" [users]="users()" (changed)="load()" />
-    <sfe-space-visitors [space]="space()" (changed)="changed.emit($event)" />
-
-    <sfe-folder-access [space]="tenantParam()" [groups]="groups()" [members]="members()" />
-}
+<ul class="space-cards" aria-label="The space's access" i18n-aria-label>
+    @for (link of links; track link.page) {
+        <li>
+            <a
+                class="space-card"
+                routerLink="/admin"
+                [queryParams]="paramsOf(link.page)"
+                [state]="state"
+                replaceUrl
+                [title]="link.title"
+            >
+                <span class="space-card-title"><svg [sfeIcon]="link.icon"></svg><strong>{{ link.name }}</strong></span>
+                <span class="space-card-line">
+                    @if (link.page !== 'visitors') {
+                        {{ link.line }}
+                    } @else if (space().guestAccess) {
+                        <ng-container i18n>Visitors are let in, with the rights of the Guests group.</ng-container>
+                    } @else {
+                        <ng-container i18n>Only the space's accounts may open it.</ng-container>
+                    }
+                </span>
+                <span class="space-card-open"><span i18n>Open</span><svg sfeIcon="right"></svg></span>
+            </a>
+        </li>
+    }
+</ul>

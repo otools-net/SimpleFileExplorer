@@ -143,16 +143,6 @@ export class SpacesPageComponent implements OnInit {
         if (created) this.openSpace(space.id);
     }
 
-    protected onChanged(space: SpaceView): void {
-        if (this.serverWide())
-            this.spaces.update((spaces) =>
-                spaces.map((existing) =>
-                    existing.id === space.id ? { ...existing, guestAccess: space.guestAccess } : existing,
-                ),
-            );
-        else this.own.set(space);
-    }
-
     protected async remove(space: TenantDetails): Promise<void> {
         if (
             !confirm(

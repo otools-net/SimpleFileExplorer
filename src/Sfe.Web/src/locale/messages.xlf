@@ -236,7 +236,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:113,114</note>
         <note category="location">src/app/access/accounts-page.component.html:81,82</note>
-        <note category="location">src/app/access/space-members.component.html:68,69</note>
+        <note category="location">src/app/access/space-members.component.html:70,71</note>
       </notes>
       <segment>
         <source>Guest account</source>
@@ -254,7 +254,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:129</note>
         <note category="location">src/app/access/accounts-page.component.html:73,74</note>
-        <note category="location">src/app/access/space-members.component.html:60,61</note>
+        <note category="location">src/app/access/space-members.component.html:62,63</note>
       </notes>
       <segment>
         <source>Server administrator</source>
@@ -427,7 +427,7 @@
         <note category="location">src/app/access/account-editor.component.html:237</note>
         <note category="location">src/app/access/accounts-page.component.html:96,97</note>
         <note category="location">src/app/access/space-editor.component.html:115</note>
-        <note category="location">src/app/access/space-members.component.html:76,77</note>
+        <note category="location">src/app/access/space-members.component.html:78,79</note>
         <note category="location">src/app/access/spaces-page.component.html:38,39</note>
         <note category="location">src/app/access/spaces-page.component.html:96,97</note>
       </notes>
@@ -541,7 +541,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.ts:85</note>
         <note category="location">src/app/access/accounts-page.component.html:36,37</note>
-        <note category="location">src/app/access/space-members.component.html:39,40</note>
+        <note category="location">src/app/access/space-members.component.html:41,42</note>
       </notes>
       <segment>
         <source>New account</source>
@@ -632,9 +632,10 @@
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:11</note>
         <note category="location">src/app/access/folder-access.component.html:93</note>
+        <note category="location">src/app/access/space-detail.component.ts:31</note>
         <note category="location">src/app/access/space-members.component.html:5</note>
         <note category="location">src/app/access/spaces-page.component.ts:51,52</note>
-        <note category="location">src/app/admin/admin-sections.ts:333</note>
+        <note category="location">src/app/admin/admin-sections.ts:328</note>
       </notes>
       <segment>
         <source>Accounts</source>
@@ -708,7 +709,7 @@
     <unit id="405379116562311857">
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:78,79</note>
-        <note category="location">src/app/access/space-members.component.html:65,66</note>
+        <note category="location">src/app/access/space-members.component.html:67,68</note>
       </notes>
       <segment>
         <source>Can only look, whatever its groups allow</source>
@@ -725,7 +726,7 @@
     <unit id="266311019229326648">
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:93,94</note>
-        <note category="location">src/app/access/space-members.component.html:73,74</note>
+        <note category="location">src/app/access/space-members.component.html:75,76</note>
       </notes>
       <segment>
         <source>This account can&apos;t sign in</source>
@@ -799,7 +800,7 @@
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:144,145</note>
         <note category="location">src/app/access/space-groups.component.html:78,79</note>
-        <note category="location">src/app/access/space-members.component.html:98,99</note>
+        <note category="location">src/app/access/space-members.component.html:100,101</note>
         <note category="location">src/app/files/opening-commands.ts:123</note>
         <note category="location">src/app/formats/text/text-edit.component.html:10,12</note>
         <note category="location">src/app/tasks/tasks-section.component.html:199</note>
@@ -811,7 +812,7 @@
     <unit id="4814285799071780083">
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:153</note>
-        <note category="location">src/app/access/space-members.component.html:109</note>
+        <note category="location">src/app/access/space-members.component.html:111</note>
         <note category="location">src/app/connections/connections-section.component.html:220,221</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:125,126</note>
         <note category="location">src/app/tracking/duplicate-group.component.html:16,17</note>
@@ -824,7 +825,7 @@
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:155</note>
         <note category="location">src/app/access/space-groups.component.html:87,88</note>
-        <note category="location">src/app/access/space-members.component.html:107</note>
+        <note category="location">src/app/access/space-members.component.html:109</note>
         <note category="location">src/app/access/spaces-page.component.html:59,60</note>
         <note category="location">src/app/files/delete.dialog.ts:62</note>
         <note category="location">src/app/library/selection-bar.component.html:72,73</note>
@@ -947,6 +948,8 @@
       <notes>
         <note category="location">src/app/access/folder-access.component.html:4</note>
         <note category="location">src/app/access/folder-access.component.html:5</note>
+        <note category="location">src/app/access/space-detail.component.ts:38</note>
+        <note category="location">src/app/admin/admin-sections.ts:341</note>
       </notes>
       <segment>
         <source>Folder access</source>
@@ -1086,9 +1089,11 @@
     <unit id="5944812089887969249">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:79</note>
+        <note category="location">src/app/access/space-detail.component.ts:24</note>
         <note category="location">src/app/access/space-groups.component.html:4</note>
         <note category="location">src/app/access/space-groups.component.html:5</note>
         <note category="location">src/app/access/spaces-page.component.ts:49,50</note>
+        <note category="location">src/app/admin/admin-sections.ts:335</note>
       </notes>
       <segment>
         <source>Groups</source>
@@ -1129,7 +1134,7 @@
     <unit id="7174692693389987018">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:138</note>
-        <note category="location">src/app/access/folder-access.component.ts:77</note>
+        <note category="location">src/app/access/folder-access.component.ts:79</note>
       </notes>
       <segment>
         <source>Set the rule</source>
@@ -1314,7 +1319,7 @@
     </unit>
     <unit id="8446208738228670776">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:76</note>
+        <note category="location">src/app/access/folder-access.component.ts:78</note>
       </notes>
       <segment>
         <source>Move the rules of the folder that is gone to this one</source>
@@ -1322,7 +1327,7 @@
     </unit>
     <unit id="7460999178838220632">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:102</note>
+        <note category="location">src/app/access/folder-access.component.ts:108</note>
       </notes>
       <segment>
         <source>Could not load the folder rules: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -1330,7 +1335,7 @@
     </unit>
     <unit id="6495811023259178469">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:141</note>
+        <note category="location">src/app/access/folder-access.component.ts:148</note>
         <note category="location">src/app/access/space-editor.component.ts:106</note>
         <note category="location">src/app/account/installation-form.component.ts:77</note>
       </notes>
@@ -1340,7 +1345,7 @@
     </unit>
     <unit id="3798029821709249924">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:155</note>
+        <note category="location">src/app/access/folder-access.component.ts:162</note>
       </notes>
       <segment>
         <source>The rules of <ph id="0" equiv="from" disp="this.named(from)"/> now apply to <ph id="1" equiv="to" disp="this.named(draft.path)"/>.</source>
@@ -1348,7 +1353,7 @@
     </unit>
     <unit id="7196451864977072773">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:167</note>
+        <note category="location">src/app/access/folder-access.component.ts:174</note>
       </notes>
       <segment>
         <source>Rule set on <ph id="0" equiv="folder" disp="this.named(draft.path)"/>.</source>
@@ -1356,7 +1361,7 @@
     </unit>
     <unit id="3738647824286040467">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:181</note>
+        <note category="location">src/app/access/folder-access.component.ts:188</note>
       </notes>
       <segment>
         <source>“<ph id="0" equiv="name" disp="rule.name"/>” follows the folder above again at <ph id="1" equiv="folder" disp="folder"/>.</source>
@@ -1364,7 +1369,7 @@
     </unit>
     <unit id="980653266017985726">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:182</note>
+        <note category="location">src/app/access/folder-access.component.ts:189</note>
       </notes>
       <segment>
         <source>Rule changed for “<ph id="0" equiv="name" disp="rule.name"/>” at <ph id="1" equiv="folder" disp="folder"/>.</source>
@@ -1372,7 +1377,7 @@
     </unit>
     <unit id="4493088896104402967">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:199</note>
+        <note category="location">src/app/access/folder-access.component.ts:206</note>
       </notes>
       <segment>
         <source>Could not find who has access to <ph id="0" equiv="folder" disp="folder"/>: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -1380,7 +1385,7 @@
     </unit>
     <unit id="1733708630052525345">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:204</note>
+        <note category="location">src/app/access/folder-access.component.ts:211</note>
       </notes>
       <segment>
         <source>Level of <ph id="0" equiv="name" disp="name"/> at <ph id="1" equiv="folder" disp="path || this.rootName()"/></source>
@@ -1388,7 +1393,7 @@
     </unit>
     <unit id="2807800733729323332">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:208</note>
+        <note category="location">src/app/access/folder-access.component.ts:215</note>
       </notes>
       <segment>
         <source>Yes</source>
@@ -1396,7 +1401,7 @@
     </unit>
     <unit id="3542042671420335679">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:208</note>
+        <note category="location">src/app/access/folder-access.component.ts:215</note>
       </notes>
       <segment>
         <source>No</source>
@@ -1404,7 +1409,7 @@
     </unit>
     <unit id="5426474758678480564">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:213</note>
+        <note category="location">src/app/access/folder-access.component.ts:220</note>
         <note category="description">a folder quoted in a sentence</note>
       </notes>
       <segment>
@@ -1413,7 +1418,7 @@
     </unit>
     <unit id="2982988752598348849">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:224</note>
+        <note category="location">src/app/access/folder-access.component.ts:231</note>
       </notes>
       <segment>
         <source>Could not change the rule: <ph id="0" equiv="reason" disp="reason"/></source>
@@ -1720,17 +1725,9 @@
         <source>Group “<ph id="0" equiv="name" disp="group.name"/>” saved.</source>
       </segment>
     </unit>
-    <unit id="8662647886782350905">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:2,3</note>
-      </notes>
-      <segment>
-        <source>Could not load the space: <ph id="0" equiv="INTERPOLATION" disp="{{ error }}"/></source>
-      </segment>
-    </unit>
     <unit id="7385160636957089888">
       <notes>
-        <note category="location">src/app/access/space-detail.component.html:9,10</note>
+        <note category="location">src/app/access/space-detail.component.html:4,5</note>
         <note category="location">src/app/admin/admin-sections.ts:27</note>
         <note category="location">src/app/admin/system-section.component.html:33</note>
       </notes>
@@ -1740,7 +1737,7 @@
     </unit>
     <unit id="8347622337729956542">
       <notes>
-        <note category="location">src/app/access/space-detail.component.html:10</note>
+        <note category="location">src/app/access/space-detail.component.html:5</note>
         <note category="location">src/app/files/properties.dialog.ts:82</note>
         <note category="location">src/app/files/trash-section.component.ts:57</note>
         <note category="location">src/app/library/scan/remove-from-index.dialog.ts:103</note>
@@ -1751,7 +1748,7 @@
     </unit>
     <unit id="1152320849857484335">
       <notes>
-        <note category="location">src/app/access/space-detail.component.html:11,13</note>
+        <note category="location">src/app/access/space-detail.component.html:6,8</note>
       </notes>
       <segment>
         <source>The folder of the server whose files this space shows, with everything below it. Its index, tags, settings, duplicates and background tasks belong to this space alone: tags set here aren&apos;t seen in another space.</source>
@@ -1759,18 +1756,129 @@
     </unit>
     <unit id="6721733098158719717">
       <notes>
-        <note category="location">src/app/access/space-detail.component.html:14,15</note>
+        <note category="location">src/app/access/space-detail.component.html:9,10</note>
       </notes>
       <segment>
         <source>The folder is chosen when the space is created and can&apos;t change afterwards.</source>
       </segment>
     </unit>
-    <unit id="5566464011576311548">
+    <unit id="1777655403407649694">
       <notes>
-        <note category="location">src/app/access/space-detail.component.html:22,23</note>
+        <note category="location">src/app/access/space-detail.component.html:17,18</note>
       </notes>
       <segment>
-        <source>Everyone below sees these files, each with the rights of their groups.</source>
+        <source>The space&apos;s accounts see these files, each with the rights of their groups.</source>
+      </segment>
+    </unit>
+    <unit id="5926215791715719829">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.html:20</note>
+      </notes>
+      <segment>
+        <source>The space&apos;s access</source>
+      </segment>
+    </unit>
+    <unit id="3215452653185047141">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.html:36</note>
+      </notes>
+      <segment>
+        <source>Visitors are let in, with the rights of the Guests group.</source>
+      </segment>
+    </unit>
+    <unit id="4903138559478674189">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.html:38</note>
+      </notes>
+      <segment>
+        <source>Only the space&apos;s accounts may open it.</source>
+      </segment>
+    </unit>
+    <unit id="7593555694782789615">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.html:41</note>
+        <note category="location">src/app/access/spaces-page.component.html:111</note>
+        <note category="location">src/app/files/file-transfers.ts:394</note>
+        <note category="location">src/app/files/file-transfers.ts:442</note>
+        <note category="location">src/app/files/opening-commands.ts:43</note>
+        <note category="location">src/app/files/opening-commands.ts:52</note>
+        <note category="location">src/app/formats/archive/archive-texts.ts:78</note>
+        <note category="location">src/app/formats/archive/archive-view.component.html:142,143</note>
+        <note category="location">src/app/formats/json/json-texts.ts:25</note>
+        <note category="location">src/app/formats/pdf/pdf-view.component.html:188,191</note>
+        <note category="location">src/app/library/folder-menu.ts:156</note>
+        <note category="location">src/app/menus/context-menu.ts:305</note>
+      </notes>
+      <segment>
+        <source>Open</source>
+      </segment>
+    </unit>
+    <unit id="3741198235211676500">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.ts:25</note>
+        <note category="location">src/app/access/spaces-page.component.ts:50</note>
+      </notes>
+      <segment>
+        <source>Sets of rights: what their members may do in the space.</source>
+      </segment>
+    </unit>
+    <unit id="8155385718481256414">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.ts:26</note>
+      </notes>
+      <segment>
+        <source>Open the groups of this space.</source>
+      </segment>
+    </unit>
+    <unit id="1639256427595228468">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.ts:32</note>
+        <note category="location">src/app/access/spaces-page.component.ts:52</note>
+      </notes>
+      <segment>
+        <source>People who sign in, each in one or more of the space&apos;s groups.</source>
+      </segment>
+    </unit>
+    <unit id="5720395120783973531">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.ts:33</note>
+      </notes>
+      <segment>
+        <source>Open the accounts of this space.</source>
+      </segment>
+    </unit>
+    <unit id="7689779718593009017">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.ts:39</note>
+      </notes>
+      <segment>
+        <source>Folders hidden from a group or an account, or only read there.</source>
+      </segment>
+    </unit>
+    <unit id="8453477433064817323">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.ts:40</note>
+      </notes>
+      <segment>
+        <source>Open the folder rules of this space.</source>
+      </segment>
+    </unit>
+    <unit id="2940211510142561457">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.ts:45</note>
+        <note category="location">src/app/access/spaces-page.component.ts:53,54</note>
+        <note category="location">src/app/admin/admin-sections.ts:347</note>
+      </notes>
+      <segment>
+        <source>Visitors</source>
+      </segment>
+    </unit>
+    <unit id="4276619686749021621">
+      <notes>
+        <note category="location">src/app/access/space-detail.component.ts:47</note>
+      </notes>
+      <segment>
+        <source>Choose whether people without an account may browse this space.</source>
       </segment>
     </unit>
     <unit id="4932690213846965624">
@@ -2238,7 +2346,7 @@
     </unit>
     <unit id="7330800004808152934">
       <notes>
-        <note category="location">src/app/access/space-members.component.html:35,36</note>
+        <note category="location">src/app/access/space-members.component.html:37,38</note>
       </notes>
       <segment>
         <source>Create an account in <ph id="0" equiv="INTERPOLATION" disp="{{ space().name }}"/> (in its Users group to start with)</source>
@@ -2246,7 +2354,7 @@
     </unit>
     <unit id="6893529068206671358">
       <notes>
-        <note category="location">src/app/access/space-members.component.html:57,58</note>
+        <note category="location">src/app/access/space-members.component.html:59,60</note>
       </notes>
       <segment>
         <source>Has every right in every space</source>
@@ -2254,7 +2362,7 @@
     </unit>
     <unit id="5298460638839413457">
       <notes>
-        <note category="location">src/app/access/space-members.component.html:84,85</note>
+        <note category="location">src/app/access/space-members.component.html:86,87</note>
       </notes>
       <segment>
         <source>last signed in <ph id="0" equiv="INTERPOLATION" disp="{{ formatDate(user.lastSignIn) }}"/></source>
@@ -2262,7 +2370,7 @@
     </unit>
     <unit id="6110929851889942962">
       <notes>
-        <note category="location">src/app/access/space-members.component.html:86</note>
+        <note category="location">src/app/access/space-members.component.html:88</note>
       </notes>
       <segment>
         <source>never signed in</source>
@@ -2270,7 +2378,7 @@
     </unit>
     <unit id="481902693996222223">
       <notes>
-        <note category="location">src/app/access/space-members.component.html:94,95</note>
+        <note category="location">src/app/access/space-members.component.html:96,97</note>
       </notes>
       <segment>
         <source>Change <ph id="0" equiv="INTERPOLATION" disp="{{ user.userName }}"/> and its groups here</source>
@@ -2278,7 +2386,7 @@
     </unit>
     <unit id="916032722245743792">
       <notes>
-        <note category="location">src/app/access/space-members.component.html:116,117</note>
+        <note category="location">src/app/access/space-members.component.html:118,119</note>
       </notes>
       <segment>
         <source>No accounts in this space yet. Create one, and it will be able to sign in and see these files.</source>
@@ -2356,6 +2464,41 @@
         <source>Could not add “<ph id="0" equiv="name" disp="user.userName"/>” to “<ph id="1" equiv="space" disp="this.space().name"/>”: <ph id="2" equiv="reason" disp="reason"/></source>
       </segment>
     </unit>
+    <unit id="8946906119075338535">
+      <notes>
+        <note category="location">src/app/access/space-part.component.html:4,5</note>
+        <note category="location">src/app/logs/logs-section.component.html:70,71</note>
+        <note category="location">src/app/tokens/token-create.component.html:68,69</note>
+      </notes>
+      <segment>
+        <source>Space</source>
+      </segment>
+    </unit>
+    <unit id="7408005708821204061">
+      <notes>
+        <note category="location">src/app/access/space-part.component.html:6,7</note>
+      </notes>
+      <segment>
+        <source>Show this page for another space</source>
+      </segment>
+    </unit>
+    <unit id="519628265585455614">
+      <notes>
+        <note category="location">src/app/access/space-part.component.html:11,12</note>
+        <note category="location">src/app/tokens/token-parts.ts:39</note>
+      </notes>
+      <segment>
+        <source>Every space</source>
+      </segment>
+    </unit>
+    <unit id="8662647886782350905">
+      <notes>
+        <note category="location">src/app/access/space-part.component.html:23,24</note>
+      </notes>
+      <segment>
+        <source>Could not load the space: <ph id="0" equiv="INTERPOLATION" disp="{{ error }}"/></source>
+      </segment>
+    </unit>
     <unit id="9176796378416724294">
       <notes>
         <note category="location">src/app/access/space-visitors.component.html:4,5</note>
@@ -2405,12 +2548,12 @@
         <source>Open: anyone who can reach the server sees these files. Visitors may do what the Guests group allows.</source>
       </segment>
     </unit>
-    <unit id="7284407019137020934">
+    <unit id="1909105878585513582">
       <notes>
         <note category="location">src/app/access/space-visitors.component.html:29,30</note>
       </notes>
       <segment>
-        <source>Closed: only the accounts above can open this space. Visitors may do what the Guests group allows.</source>
+        <source>Closed: only the space&apos;s accounts can open it. Visitors would do what the Guests group allows.</source>
       </segment>
     </unit>
     <unit id="6177743348624170027">
@@ -2566,24 +2709,6 @@
         <source>No visitors</source>
       </segment>
     </unit>
-    <unit id="7593555694782789615">
-      <notes>
-        <note category="location">src/app/access/spaces-page.component.html:111</note>
-        <note category="location">src/app/files/file-transfers.ts:394</note>
-        <note category="location">src/app/files/file-transfers.ts:442</note>
-        <note category="location">src/app/files/opening-commands.ts:43</note>
-        <note category="location">src/app/files/opening-commands.ts:52</note>
-        <note category="location">src/app/formats/archive/archive-texts.ts:78</note>
-        <note category="location">src/app/formats/archive/archive-view.component.html:142,143</note>
-        <note category="location">src/app/formats/json/json-texts.ts:25</note>
-        <note category="location">src/app/formats/pdf/pdf-view.component.html:188,191</note>
-        <note category="location">src/app/library/folder-menu.ts:156</note>
-        <note category="location">src/app/menus/context-menu.ts:305</note>
-      </notes>
-      <segment>
-        <source>Open</source>
-      </segment>
-    </unit>
     <unit id="2012867539585346632">
       <notes>
         <note category="location">src/app/access/spaces-page.component.ts:24,25</note>
@@ -2660,30 +2785,6 @@ Space “Holiday photos”
         <source>One folder of the server, with its files, index, tags and settings.</source>
       </segment>
     </unit>
-    <unit id="3741198235211676500">
-      <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:50</note>
-      </notes>
-      <segment>
-        <source>Sets of rights: what their members may do in the space.</source>
-      </segment>
-    </unit>
-    <unit id="1639256427595228468">
-      <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:52</note>
-      </notes>
-      <segment>
-        <source>People who sign in, each in one or more of the space&apos;s groups.</source>
-      </segment>
-    </unit>
-    <unit id="2940211510142561457">
-      <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:53,54</note>
-      </notes>
-      <segment>
-        <source>Visitors</source>
-      </segment>
-    </unit>
     <unit id="8369508087903057640">
       <notes>
         <note category="location">src/app/access/spaces-page.component.ts:54,55</note>
@@ -2694,7 +2795,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7686949027819324127">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:159,161</note>
+        <note category="location">src/app/access/spaces-page.component.ts:149,151</note>
       </notes>
       <segment>
         <source>Delete the space “<ph id="0" equiv="name" disp="space.name"/>”? Its groups and settings go, and its accounts lose access to it (the accounts themselves stay). The index of its library and its caches stay on the server&apos;s disk. This cannot be undone.</source>
@@ -2702,7 +2803,7 @@ Space “Holiday photos”
     </unit>
     <unit id="480459652821798344">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:167</note>
+        <note category="location">src/app/access/spaces-page.component.ts:157</note>
       </notes>
       <segment>
         <source>Space “<ph id="0" equiv="name" disp="space.name"/>” deleted.</source>
@@ -2710,7 +2811,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7699134136824287878">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:173</note>
+        <note category="location">src/app/access/spaces-page.component.ts:163</note>
       </notes>
       <segment>
         <source>Could not delete the space “<ph id="0" equiv="name" disp="space.name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -3921,7 +4022,7 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-page.component.html:157,158</note>
         <note category="location">src/app/admin/admin-page.component.html:220,221</note>
         <note category="location">src/app/admin/admin-page.component.html:229,230</note>
-        <note category="location">src/app/admin/admin-page.component.ts:259</note>
+        <note category="location">src/app/admin/admin-page.component.ts:260</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:142</note>
       </notes>
       <segment>
@@ -4068,7 +4169,7 @@ Space “Holiday photos”
     <unit id="3857924785932255369">
       <notes>
         <note category="location">src/app/admin/admin-page.component.html:330</note>
-        <note category="location">src/app/admin/admin-page.component.ts:75</note>
+        <note category="location">src/app/admin/admin-page.component.ts:76</note>
         <note category="location">src/app/core/connection.models.ts:133</note>
       </notes>
       <segment>
@@ -4086,7 +4187,7 @@ Space “Holiday photos”
     <unit id="5552665062432999263">
       <notes>
         <note category="location">src/app/admin/admin-page.component.html:349</note>
-        <note category="location">src/app/admin/admin-page.component.ts:76</note>
+        <note category="location">src/app/admin/admin-page.component.ts:77</note>
       </notes>
       <segment>
         <source>Whole server</source>
@@ -4146,7 +4247,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4576117176436794057">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:191</note>
+        <note category="location">src/app/admin/admin-page.component.ts:192</note>
       </notes>
       <segment>
         <source>Back to the sections</source>
@@ -4154,7 +4255,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7236929489494486140">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:191</note>
+        <note category="location">src/app/admin/admin-page.component.ts:192</note>
       </notes>
       <segment>
         <source>Back to the library</source>
@@ -4162,7 +4263,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3968962107389212895">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:207</note>
+        <note category="location">src/app/admin/admin-page.component.ts:208</note>
       </notes>
       <segment>
         <source>The first {limit, number} of {count, number} found: add words to narrow them down.</source>
@@ -4170,7 +4271,7 @@ Space “Holiday photos”
     </unit>
     <unit id="9077841280946532318">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:211</note>
+        <note category="location">src/app/admin/admin-page.component.ts:212</note>
       </notes>
       <segment>
         <source>{count, plural, =0 {Nothing found} one {# found} other {# found}}</source>
@@ -4178,7 +4279,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5853220976119511648">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:216</note>
+        <note category="location">src/app/admin/admin-page.component.ts:217</note>
       </notes>
       <segment>
         <source>Open <ph id="0" equiv="place" disp="where"/></source>
@@ -4186,7 +4287,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6073458638608131210">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:217</note>
+        <note category="location">src/app/admin/admin-page.component.ts:218</note>
       </notes>
       <segment>
         <source>Open <ph id="0" equiv="place" disp="where"/> at this setting</source>
@@ -4194,7 +4295,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5556628535331352229">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:226</note>
+        <note category="location">src/app/admin/admin-page.component.ts:227</note>
       </notes>
       <segment>
         <source>Not saved yet: <ph id="0" equiv="pages" disp="changed.join(&apos;, &apos;)"/>; also in <ph id="1" equiv="levels" disp="others.join(&apos;, &apos;)"/></source>
@@ -4202,7 +4303,7 @@ Space “Holiday photos”
     </unit>
     <unit id="9044466139427444392">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:227</note>
+        <note category="location">src/app/admin/admin-page.component.ts:228</note>
       </notes>
       <segment>
         <source>Not saved yet: <ph id="0" equiv="pages" disp="changed.join(&apos;, &apos;)"/></source>
@@ -4210,7 +4311,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2353952272869974278">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:228</note>
+        <note category="location">src/app/admin/admin-page.component.ts:229</note>
       </notes>
       <segment>
         <source>Not saved yet in <ph id="0" equiv="levels" disp="others.join(&apos;, &apos;)"/></source>
@@ -4218,7 +4319,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8087235969397973279">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:232</note>
+        <note category="location">src/app/admin/admin-page.component.ts:233</note>
       </notes>
       <segment>
         <source>This space has settings of its own</source>
@@ -4226,7 +4327,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3856601031694131542">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:233</note>
+        <note category="location">src/app/admin/admin-page.component.ts:234</note>
       </notes>
       <segment>
         <source>Following the server&apos;s settings</source>
@@ -4234,7 +4335,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7530901117333047547">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:234</note>
+        <note category="location">src/app/admin/admin-page.component.ts:235</note>
       </notes>
       <segment>
         <source>Using saved settings</source>
@@ -4242,7 +4343,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5433172809500112054">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:234</note>
+        <note category="location">src/app/admin/admin-page.component.ts:235</note>
       </notes>
       <segment>
         <source>Using the server&apos;s configuration</source>
@@ -4250,7 +4351,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1464515136037050555">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:239</note>
+        <note category="location">src/app/admin/admin-page.component.ts:240</note>
       </notes>
       <segment>
         <source>Undo the changes not saved yet, on every page of both tabs</source>
@@ -4258,7 +4359,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6774866820039145160">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:240</note>
+        <note category="location">src/app/admin/admin-page.component.ts:241</note>
       </notes>
       <segment>
         <source>Undo the changes not saved yet, on every page</source>
@@ -4266,7 +4367,7 @@ Space “Holiday photos”
     </unit>
     <unit id="410830363757343395">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:244</note>
+        <note category="location">src/app/admin/admin-page.component.ts:245</note>
       </notes>
       <segment>
         <source>Nothing saved yet</source>
@@ -4274,7 +4375,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5828595803093106490">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:246</note>
+        <note category="location">src/app/admin/admin-page.component.ts:247</note>
       </notes>
       <segment>
         <source>Forget the space&apos;s own settings and use the server&apos;s again (asks first)</source>
@@ -4282,7 +4383,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6421739913374575258">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:247</note>
+        <note category="location">src/app/admin/admin-page.component.ts:248</note>
       </notes>
       <segment>
         <source>Forget the saved settings and go back to the server&apos;s configuration (asks first)</source>
@@ -4290,7 +4391,7 @@ Space “Holiday photos”
     </unit>
     <unit id="598239863654032311">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:251</note>
+        <note category="location">src/app/admin/admin-page.component.ts:252</note>
       </notes>
       <segment>
         <source>Save and apply the settings changed in both tabs: the whole server&apos;s, then this space&apos;s</source>
@@ -4298,7 +4399,7 @@ Space “Holiday photos”
     </unit>
     <unit id="336490905177668092">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:253</note>
+        <note category="location">src/app/admin/admin-page.component.ts:254</note>
       </notes>
       <segment>
         <source>Save and apply the settings of every page, for everyone using this space</source>
@@ -4306,7 +4407,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3477804007741549894">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:254</note>
+        <note category="location">src/app/admin/admin-page.component.ts:255</note>
       </notes>
       <segment>
         <source>Save and apply the settings of every page, for everyone using this server</source>
@@ -4314,7 +4415,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2123805987941487613">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:262</note>
+        <note category="location">src/app/admin/admin-page.component.ts:263</note>
       </notes>
       <segment>
         <source>Administration – SFE</source>
@@ -4322,7 +4423,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4721602624937320440">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:266</note>
+        <note category="location">src/app/admin/admin-page.component.ts:267</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="page" disp="this.subpage().title"/> – <ph id="1" equiv="section" disp="section.title"/> – Administration – SFE</source>
@@ -4330,7 +4431,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7714903196521167137">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:267</note>
+        <note category="location">src/app/admin/admin-page.component.ts:268</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="section" disp="section.title"/> – Administration – SFE</source>
@@ -4338,7 +4439,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6647749126777119100">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:329</note>
+        <note category="location">src/app/admin/admin-page.component.ts:330</note>
       </notes>
       <segment>
         <source>Leave without saving? The settings you changed are lost.</source>
@@ -4429,8 +4530,8 @@ Space “Holiday photos”
     <unit id="2557623954339695776">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:83</note>
-        <note category="location">src/app/admin/admin-sections.ts:345</note>
-        <note category="location">src/app/admin/admin-sections.ts:352</note>
+        <note category="location">src/app/admin/admin-sections.ts:358</note>
+        <note category="location">src/app/admin/admin-sections.ts:365</note>
         <note category="location">src/app/connections/connection-settings.ts:10</note>
         <note category="location">src/app/library/sidebar/connection-links.component.ts:25</note>
       </notes>
@@ -4788,7 +4889,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5194865723601669076">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:240</note>
+        <note category="location">src/app/admin/admin-sections.ts:238</note>
       </notes>
       <segment>
         <source>All tags</source>
@@ -4796,7 +4897,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8720606184016040178">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:241</note>
+        <note category="location">src/app/admin/admin-sections.ts:238</note>
       </notes>
       <segment>
         <source>Create, edit and delete the space&apos;s tags.</source>
@@ -4804,7 +4905,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7449073064598000206">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:244</note>
+        <note category="location">src/app/admin/admin-sections.ts:239</note>
       </notes>
       <segment>
         <source>How many tags the sidebar shows, and the history of the tags given.</source>
@@ -4812,7 +4913,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3414857355250876097">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:250</note>
+        <note category="location">src/app/admin/admin-sections.ts:245</note>
         <note category="location">src/app/settings/tabs/library-settings.ts:9</note>
       </notes>
       <segment>
@@ -4821,7 +4922,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6398476499333338651">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:252</note>
+        <note category="location">src/app/admin/admin-sections.ts:247</note>
       </notes>
       <segment>
         <source>Identical files, similar videos, and tagged files that were moved or renamed.</source>
@@ -4829,7 +4930,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3587873128318078848">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:256</note>
+        <note category="location">src/app/admin/admin-sections.ts:251</note>
         <note category="location">src/app/settings/tabs/library-settings.ts:14</note>
       </notes>
       <segment>
@@ -4838,7 +4939,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7882849162220749183">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:257</note>
+        <note category="location">src/app/admin/admin-sections.ts:252</note>
       </notes>
       <segment>
         <source>Groups of identical files, and removing the extra copies.</source>
@@ -4846,7 +4947,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8714539619500735356">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:262</note>
+        <note category="location">src/app/admin/admin-sections.ts:257</note>
         <note category="location">src/app/settings/tabs/library-settings.ts:48</note>
         <note category="location">src/app/tasks/tasks.ts:14</note>
       </notes>
@@ -4856,7 +4957,7 @@ Space “Holiday photos”
     </unit>
     <unit id="810952790643026862">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:263</note>
+        <note category="location">src/app/admin/admin-sections.ts:258</note>
       </notes>
       <segment>
         <source>Videos showing the same pictures as other files: another resolution, quality or format, or trimmed.</source>
@@ -4864,7 +4965,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8792115987582122005">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:269</note>
+        <note category="location">src/app/admin/admin-sections.ts:264</note>
       </notes>
       <segment>
         <source>Moved files</source>
@@ -4872,7 +4973,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6687028346999576316">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:270</note>
+        <note category="location">src/app/admin/admin-sections.ts:265</note>
       </notes>
       <segment>
         <source>Tagged files that are no longer where they were, and where they went.</source>
@@ -4880,7 +4981,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8724943327882103372">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:275</note>
+        <note category="location">src/app/admin/admin-sections.ts:270</note>
       </notes>
       <segment>
         <source>The smallest duplicates, how alike similar videos must be, and how moved files keep their tags.</source>
@@ -4888,7 +4989,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6907161397537530258">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:283</note>
+        <note category="location">src/app/admin/admin-sections.ts:278</note>
         <note category="location">src/app/library/scan/exclusions-section.component.ts:20</note>
         <note category="location">src/app/settings/tabs/preview-settings.ts:13</note>
         <note category="location">src/app/tasks/tasks.ts:15</note>
@@ -4899,7 +5000,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8611217001439566979">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:285</note>
+        <note category="location">src/app/admin/admin-sections.ts:280</note>
       </notes>
       <segment>
         <source>The thumbnails of photos and videos in the listings and the viewer.</source>
@@ -4907,7 +5008,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8414932350776289558">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:291</note>
+        <note category="location">src/app/admin/admin-sections.ts:286</note>
         <note category="location">src/app/library/scan/exclusions-section.component.ts:17</note>
         <note category="location">src/app/settings/tabs/preview-settings.ts:109</note>
         <note category="location">src/app/tasks/tasks.ts:13</note>
@@ -4918,7 +5019,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1923887870753195881">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:293</note>
+        <note category="location">src/app/admin/admin-sections.ts:288</note>
       </notes>
       <segment>
         <source>Frames along each video, shown above the player&apos;s seek bar and when the pointer is over a video.</source>
@@ -4926,7 +5027,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5306473977542913614">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:298</note>
+        <note category="location">src/app/admin/admin-sections.ts:293</note>
       </notes>
       <segment>
         <source>Activity</source>
@@ -4934,7 +5035,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6443611490933727190">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:299</note>
+        <note category="location">src/app/admin/admin-sections.ts:294</note>
       </notes>
       <segment>
         <source>What the trickplay task is working on, what is waiting, and what it did last.</source>
@@ -4942,7 +5043,7 @@ Space “Holiday photos”
     </unit>
     <unit id="742254974842465624">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:304</note>
+        <note category="location">src/app/admin/admin-sections.ts:299</note>
       </notes>
       <segment>
         <source>Which videos get trickplay, its frames, and how much of the server it uses.</source>
@@ -4950,7 +5051,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7172558586224768124">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:311</note>
+        <note category="location">src/app/admin/admin-sections.ts:306</note>
         <note category="location">src/app/editor/image-editor.dialog.html:4,5</note>
         <note category="location">src/app/settings/tabs/files-settings.ts:9</note>
       </notes>
@@ -4960,7 +5061,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1481402924938113573">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:313</note>
+        <note category="location">src/app/admin/admin-sections.ts:308</note>
       </notes>
       <segment>
         <source>Where the pictures edited in the viewer are saved, and their quality.</source>
@@ -4968,7 +5069,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5039837485095030727">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:319</note>
+        <note category="location">src/app/admin/admin-sections.ts:314</note>
       </notes>
       <segment>
         <source>Spaces &amp; accounts</source>
@@ -4976,7 +5077,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7169552009858531231">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:321</note>
+        <note category="location">src/app/admin/admin-sections.ts:316</note>
       </notes>
       <segment>
         <source>Who can sign in, which spaces they see, and what they may do in each. A space is one library with its own groups and accounts.</source>
@@ -4984,31 +5085,55 @@ Space “Holiday photos”
     </unit>
     <unit id="660809762116764762">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:326</note>
+        <note category="location">src/app/admin/admin-sections.ts:321</note>
       </notes>
       <segment>
         <source>Spaces</source>
       </segment>
     </unit>
-    <unit id="9221518691925790453">
+    <unit id="8707013908014975896">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:327</note>
+        <note category="location">src/app/admin/admin-sections.ts:322</note>
       </notes>
       <segment>
-        <source>Each space&apos;s library, groups, accounts and visitors.</source>
+        <source>Each space&apos;s library, and the way to its groups, accounts, folder rules and visitors.</source>
       </segment>
     </unit>
     <unit id="7384320684082850891">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:334</note>
+        <note category="location">src/app/admin/admin-sections.ts:329</note>
       </notes>
       <segment>
         <source>Everyone who can sign in, with the spaces each one sees and their groups there.</source>
       </segment>
     </unit>
+    <unit id="338321956468987154">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:336</note>
+      </notes>
+      <segment>
+        <source>The groups of a space, each a set of rights: what its members may do there.</source>
+      </segment>
+    </unit>
+    <unit id="4451069484559663506">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:342</note>
+      </notes>
+      <segment>
+        <source>What a group or one account may do in a folder: hidden, read only, or read and write.</source>
+      </segment>
+    </unit>
+    <unit id="1190635544647595167">
+      <notes>
+        <note category="location">src/app/admin/admin-sections.ts:348</note>
+      </notes>
+      <segment>
+        <source>Whether people without an account may browse a space, with the rights of its Guests group.</source>
+      </segment>
+    </unit>
     <unit id="1819621373596655639">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:347</note>
+        <note category="location">src/app/admin/admin-sections.ts:360</note>
       </notes>
       <segment>
         <source>Storage outside the libraries (Dropbox): whether the server may connect to it, and how.</source>
@@ -5016,7 +5141,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4509181762723196018">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:353</note>
+        <note category="location">src/app/admin/admin-sections.ts:366</note>
       </notes>
       <segment>
         <source>The space&apos;s and the server&apos;s connections, and who uses them.</source>
@@ -5024,7 +5149,7 @@ Space “Holiday photos”
     </unit>
     <unit id="730703184011067892">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:359</note>
+        <note category="location">src/app/admin/admin-sections.ts:372</note>
       </notes>
       <segment>
         <source>Dropbox</source>
@@ -5032,7 +5157,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7557862381908026336">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:360</note>
+        <note category="location">src/app/admin/admin-sections.ts:373</note>
       </notes>
       <segment>
         <source>The app this server signs in to Dropbox through.</source>
@@ -5040,7 +5165,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3426490015982424811">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:363</note>
+        <note category="location">src/app/admin/admin-sections.ts:376</note>
       </notes>
       <segment>
         <source>Which kinds and levels of connections this server allows.</source>
@@ -5048,7 +5173,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3015544348988736098">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:369</note>
+        <note category="location">src/app/admin/admin-sections.ts:382</note>
       </notes>
       <segment>
         <source>Background tasks</source>
@@ -5056,7 +5181,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5089793497105466619">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:371</note>
+        <note category="location">src/app/admin/admin-sections.ts:384</note>
       </notes>
       <segment>
         <source>What is running now, when each task runs next, the schedules that start them, and their logs.</source>
@@ -5064,7 +5189,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6904866445262015585">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:376</note>
+        <note category="location">src/app/admin/admin-sections.ts:389</note>
         <note category="location">src/app/settings/tabs/system-settings.ts:9</note>
       </notes>
       <segment>
@@ -5073,7 +5198,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1667315428606567828">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:377</note>
+        <note category="location">src/app/admin/admin-sections.ts:390</note>
       </notes>
       <segment>
         <source>What is running now and when each task runs next; start or cancel them.</source>
@@ -5081,7 +5206,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7988633056301568717">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:382</note>
+        <note category="location">src/app/admin/admin-sections.ts:395</note>
       </notes>
       <segment>
         <source>Schedules</source>
@@ -5089,7 +5214,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2627367526746377728">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:383</note>
+        <note category="location">src/app/admin/admin-sections.ts:396</note>
       </notes>
       <segment>
         <source>When the tasks start by themselves.</source>
@@ -5097,7 +5222,7 @@ Space “Holiday photos”
     </unit>
     <unit id="186236568870281953">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:388</note>
+        <note category="location">src/app/admin/admin-sections.ts:399</note>
         <note category="location">src/app/settings/tabs/library-settings.ts:116</note>
         <note category="location">src/app/settings/tabs/system-settings.ts:14</note>
       </notes>
@@ -5107,7 +5232,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2076847359280339117">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:389</note>
+        <note category="location">src/app/admin/admin-sections.ts:399</note>
       </notes>
       <segment>
         <source>The tasks&apos; past runs, with their logs.</source>
@@ -5115,7 +5240,7 @@ Space “Holiday photos”
     </unit>
     <unit id="659847165899982536">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:392</note>
+        <note category="location">src/app/admin/admin-sections.ts:400</note>
       </notes>
       <segment>
         <source>How long runs and their logs are kept.</source>
@@ -5123,7 +5248,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4804785061014590286">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:398</note>
+        <note category="location">src/app/admin/admin-sections.ts:406</note>
         <note category="location">src/app/settings/tabs/system-settings.ts:32</note>
       </notes>
       <segment>
@@ -5132,7 +5257,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6374694221782748275">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:400</note>
+        <note category="location">src/app/admin/admin-sections.ts:408</note>
       </notes>
       <segment>
         <source>The messages, warnings and errors the server logged, searchable by text, date and severity, and how long they are kept.</source>
@@ -5140,7 +5265,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1980504865097627824">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:405</note>
+        <note category="location">src/app/admin/admin-sections.ts:413</note>
       </notes>
       <segment>
         <source>Log</source>
@@ -5148,7 +5273,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7996783602753923716">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:406</note>
+        <note category="location">src/app/admin/admin-sections.ts:414</note>
       </notes>
       <segment>
         <source>The messages, warnings and errors the server logged, searchable by text, date and severity.</source>
@@ -5156,7 +5281,7 @@ Space “Holiday photos”
     </unit>
     <unit id="667099567228161735">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:409</note>
+        <note category="location">src/app/admin/admin-sections.ts:417</note>
       </notes>
       <segment>
         <source>How long the log is kept, and whether it&apos;s also saved to files.</source>
@@ -5164,7 +5289,7 @@ Space “Holiday photos”
     </unit>
     <unit id="29832309535656200">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:415</note>
+        <note category="location">src/app/admin/admin-sections.ts:423</note>
       </notes>
       <segment>
         <source>System</source>
@@ -5172,7 +5297,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3081024595317466043">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:417</note>
+        <note category="location">src/app/admin/admin-sections.ts:425</note>
       </notes>
       <segment>
         <source>The server&apos;s version, library folder and ffmpeg, what it does when it starts, its API and backups.</source>
@@ -5180,7 +5305,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1726363342938046830">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:422</note>
+        <note category="location">src/app/admin/admin-sections.ts:430</note>
       </notes>
       <segment>
         <source>About</source>
@@ -5188,7 +5313,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3535282279183818597">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:423</note>
+        <note category="location">src/app/admin/admin-sections.ts:431</note>
       </notes>
       <segment>
         <source>The server&apos;s version, its library folder, the ffmpeg it found, and its API reference.</source>
@@ -5196,7 +5321,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7419787782755641631">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:429</note>
+        <note category="location">src/app/admin/admin-sections.ts:437</note>
         <note category="location">src/app/admin/installation-section.component.html:3,4</note>
       </notes>
       <segment>
@@ -5205,7 +5330,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3148007398244530942">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:430</note>
+        <note category="location">src/app/admin/admin-sections.ts:438</note>
       </notes>
       <segment>
         <source>The first space&apos;s library folder, who can open SFE, and ffmpeg, behind the setup code.</source>
@@ -5213,7 +5338,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7906550301772724948">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:435</note>
+        <note category="location">src/app/admin/admin-sections.ts:443</note>
       </notes>
       <segment>
         <source>What SFE does when it starts on this computer.</source>
@@ -5221,7 +5346,7 @@ Space “Holiday photos”
     </unit>
     <unit id="744533273062091875">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:436</note>
+        <note category="location">src/app/admin/admin-sections.ts:444</note>
         <note category="location">src/app/settings/tabs/system-settings.ts:64</note>
       </notes>
       <segment>
@@ -5230,7 +5355,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3465942650835858981">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:441</note>
+        <note category="location">src/app/admin/admin-sections.ts:449</note>
       </notes>
       <segment>
         <source>Maintenance</source>
@@ -5238,7 +5363,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8705453912255442572">
       <notes>
-        <note category="location">src/app/admin/admin-sections.ts:442</note>
+        <note category="location">src/app/admin/admin-sections.ts:450</note>
       </notes>
       <segment>
         <source>A backup of the databases and configuration files.</source>
@@ -9098,7 +9223,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3732296122988145060">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:43</note>
+        <note category="location">src/app/files/organising-commands.ts:46</note>
       </notes>
       <segment>
         <source>Tag its files…</source>
@@ -9106,8 +9231,8 @@ Space “Holiday photos”
     </unit>
     <unit id="7735912362070060981">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:43</note>
-        <note category="location">src/app/files/organising-commands.ts:62</note>
+        <note category="location">src/app/files/organising-commands.ts:46</note>
+        <note category="location">src/app/files/organising-commands.ts:65</note>
       </notes>
       <segment>
         <source>Tags…</source>
@@ -9115,7 +9240,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2262907023411473169">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:46</note>
+        <note category="location">src/app/files/organising-commands.ts:49</note>
       </notes>
       <segment>
         <source>Add or remove tags on all the files of this folder (asks first).</source>
@@ -9123,7 +9248,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8469266716983346359">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:47</note>
+        <note category="location">src/app/files/organising-commands.ts:50</note>
         <note category="location">src/app/library/items/item-parts.ts:130</note>
       </notes>
       <segment>
@@ -9132,7 +9257,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2571039696049191049">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:66</note>
+        <note category="location">src/app/files/organising-commands.ts:69</note>
       </notes>
       <segment>
         <source>Add or remove tags on the selected files (the selected folders are left out).</source>
@@ -9140,7 +9265,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8759474433034893648">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:67</note>
+        <note category="location">src/app/files/organising-commands.ts:70</note>
       </notes>
       <segment>
         <source>Add or remove tags on the selected files.</source>
@@ -9148,8 +9273,8 @@ Space “Holiday photos”
     </unit>
     <unit id="6770258597457401656">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:81</note>
-        <note category="location">src/app/files/organising-commands.ts:89</note>
+        <note category="location">src/app/files/organising-commands.ts:84</note>
+        <note category="location">src/app/files/organising-commands.ts:92</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
       </notes>
       <segment>
@@ -9158,7 +9283,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6221291632365224698">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:83</note>
+        <note category="location">src/app/files/organising-commands.ts:86</note>
       </notes>
       <segment>
         <source>Add the selected items to your quick links (or drag them onto the sidebar).</source>
@@ -9166,7 +9291,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7011082534772609140">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:89</note>
+        <note category="location">src/app/files/organising-commands.ts:92</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:228</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
       </notes>
@@ -9176,7 +9301,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8753241111446069199">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:92</note>
+        <note category="location">src/app/files/organising-commands.ts:95</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:270</note>
       </notes>
       <segment>
@@ -9185,7 +9310,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3323091261970520456">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:93</note>
+        <note category="location">src/app/files/organising-commands.ts:96</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:271</note>
       </notes>
       <segment>
@@ -9194,7 +9319,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8834275305700439126">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:109</note>
+        <note category="location">src/app/files/organising-commands.ts:112</note>
         <note category="location">src/app/library/folder-menu.ts:287</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:120</note>
       </notes>
@@ -9204,7 +9329,7 @@ Space “Holiday photos”
     </unit>
     <unit id="672346442080462723">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:111,112</note>
+        <note category="location">src/app/files/organising-commands.ts:114,115</note>
         <note category="location">src/app/library/folder-menu.ts:289,290</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:116,117</note>
       </notes>
@@ -9212,9 +9337,25 @@ Space “Holiday photos”
         <source>Keep this folder out of scans, trickplay or thumbnails, for everyone using this space.</source>
       </segment>
     </unit>
+    <unit id="995324173596329544">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:130</note>
+      </notes>
+      <segment>
+        <source>Folder access…</source>
+      </segment>
+    </unit>
+    <unit id="5961215801940873068">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:132,133</note>
+      </notes>
+      <segment>
+        <source>Choose who may see “<ph id="0" equiv="name" disp="item.name"/>” and change its files: its folder rules, in the administration.</source>
+      </segment>
+    </unit>
     <unit id="7096568485547149103">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:121</note>
+        <note category="location">src/app/files/organising-commands.ts:146</note>
         <note category="location">src/app/files/properties.dialog.html:173,174</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:192</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:278</note>
@@ -9227,7 +9368,7 @@ Space “Holiday photos”
     </unit>
     <unit id="878836548429609124">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:125</note>
+        <note category="location">src/app/files/organising-commands.ts:150</note>
       </notes>
       <segment>
         <source>Copy where this folder is on the server.</source>
@@ -9235,7 +9376,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2296265600394386378">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:126</note>
+        <note category="location">src/app/files/organising-commands.ts:151</note>
         <note category="location">src/app/files/properties.dialog.html:169,170</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:194</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:280</note>
@@ -9248,7 +9389,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8721861281513890587">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:135</note>
+        <note category="location">src/app/files/organising-commands.ts:160</note>
         <note category="location">src/app/files/properties.dialog.html:3,4</note>
         <note category="location">src/app/library/folder-menu.ts:358</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:200</note>
@@ -9259,7 +9400,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2762563923238266996">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:140</note>
+        <note category="location">src/app/files/organising-commands.ts:165</note>
       </notes>
       <segment>
         <source>Show its dates and what it holds (Alt+Enter).</source>
@@ -9267,7 +9408,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2658182095314133227">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:141</note>
+        <note category="location">src/app/files/organising-commands.ts:166</note>
       </notes>
       <segment>
         <source>Show its size, its dates, what the index knows of it and its checksum (Alt+Enter).</source>
@@ -18096,15 +18237,6 @@ The search index is updated in the background. This can take a while on large fo
         <source>Show the entries up to the end of this day</source>
       </segment>
     </unit>
-    <unit id="8946906119075338535">
-      <notes>
-        <note category="location">src/app/logs/logs-section.component.html:70,71</note>
-        <note category="location">src/app/tokens/token-create.component.html:68,69</note>
-      </notes>
-      <segment>
-        <source>Space</source>
-      </segment>
-    </unit>
     <unit id="4481473960712109274">
       <notes>
         <note category="location">src/app/logs/logs-section.component.html:72,73</note>
@@ -24464,14 +24596,6 @@ The search index is updated in the background. This can take a while on large fo
       </notes>
       <segment>
         <source>1 year</source>
-      </segment>
-    </unit>
-    <unit id="519628265585455614">
-      <notes>
-        <note category="location">src/app/tokens/token-parts.ts:39</note>
-      </notes>
-      <segment>
-        <source>Every space</source>
       </segment>
     </unit>
     <unit id="302496457334125957">

@@ -18,6 +18,12 @@ Code: `src/app/admin/` (`AdminPageComponent`, `admin-sections.ts`, `leave-admin-
   sub-page keep the section's.
 - Moving a sub-page: add `'oldSection/oldPage'` to `ADMIN_MOVED` (an effect replaces the URL) and never remove an
   entry: bookmarks and history keep old addresses. Video streams moved from System to Playback this way.
+- Spaces & accounts: **Spaces** lists the spaces (server administrators), `space=` opens one's page
+  (`SpaceDetailComponent`: its library and links to its parts); **Groups**, **Accounts**, **Folder access** and
+  **Visitors** are `SpacePartComponent` about one space: `space=` or the session's own, a **Space** picker for server
+  administrators (Accounts without `space=` is every account: `AccountsPageComponent`). `pageParams` keeps
+  `space` between the section's sub-pages (sidebar, chips), drops it elsewhere. Any sub-page is three clicks from the
+  library on computers (⋮, Administration, its link on the overview); phones add the section's page (chips).
 - Only the active sub-page is rendered, so sections poll from their constructor and stop on destroy.
 - Breadcrumbs (`.admin-crumbs` in `.admin-head`: Administration › group › section › sub-page) link with `stayState()`
   (keeps `sfeFromList`); on phones the group is hidden by CSS and Administration is a button running `back()`.

@@ -25,7 +25,9 @@
             >
                 <option value="" selected i18n>Add an existing account…</option>
                 @for (user of outsiders(); track user.id) {
-                    <option [value]="user.id">{{ user.displayName ? user.displayName + ' (' + user.userName + ')' : user.userName }}</option>
+                    <option [value]="user.id">{{
+                        user.displayName ? user.displayName + ' (' + user.userName + ')' : user.userName
+                    }}</option>
                 }
             </select>
         }

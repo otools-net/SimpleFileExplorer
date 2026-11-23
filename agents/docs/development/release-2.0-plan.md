@@ -286,7 +286,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 ### Phase 3: getting around
 
-- [ ] **3.1 Shallower administration** (IDEA-002, S–M). Tabs, per-page URLs, phone chips and the admin search
+- [x] **3.1 Shallower administration** (IDEA-002, S–M). Done 2026-11-23: a refactoring first split the space page's
+  cards into `SpaceGroupsComponent`, `SpaceMembersComponent`, `SpaceVisitorsComponent` (fixtures in
+  `src/testing/access.ts`); Spaces & accounts gained **Groups**, **Folder access**, **Visitors** sub-pages
+  (`SpacePartComponent`: `space=` or the session's space, a **Space** picker for server administrators); Accounts with
+  `space=` is that space's members card, without it every account as before; a space's page is its library and four
+  links; `pageParams` keeps `space` between the section's sub-pages. Nothing moved (no `ADMIN_MOVED` entry: old
+  `space=` addresses open the space's page). The admin search finds the sub-pages with no extra work. **Folder access…**
+  (`OrganisingCommands`, item, folder and folder-link menus; `tenant.members`, library only) opens
+  `page=folders&folder=` with a rule started there. Computers: 3 clicks (⋮, Administration, overview link); phones 4
+  (the section list, then chips). Was: Tabs, per-page URLs, phone chips and the admin search
   already exist; the depth is in the space page (groups, accounts, folder access are cards behind the space list:
   4–5 clicks). Give Groups, Accounts, Visitors and Folder access their own sub-pages (`admin?section=&page=&space=`),
   index them in `admin-search.ts`, add "Folder access…" to a folder's menu for administrators. Target: any admin
@@ -424,8 +433,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-23):** phase 1 and phase 2 done (2.9 last). Next: **3.1** (shallower administration);
-  steps of phase 3 may be taken in any order except 3.6 after 3.5, and 3.3 uses 2.9's greyed entries.
+- **Last session (2026-11-23):** phases 1 and 2 done, and 3.1 (shallower administration). Next: **3.2** (deep single
+  folder); steps of phase 3 may be taken in any order except 3.6 after 3.5, and 3.3 uses 2.9's greyed entries.
 - `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd
   C:/workspace/…` first.
 - The docs-screenshots scene for `operations-panel.png` is `files` (it calls `operations()` at its end), not
@@ -462,6 +471,10 @@ Where the work stands, for a session that picks it up. Update it at the end of e
     (`[...line].length`; `awk length` counts bytes, and `“ ”` are 3).
   - Edit scripts (`rep(old, new)` over a file) are safest written to the scratchpad with the Write tool and run with
     `node <file>`: a long quoted heredoc failed in the Bash tool ("unexpected EOF while looking for matching `'`").
+  - `npx prettier --write` on a whole folder (`src/app/files/*.ts`) reformats files the step didn't touch: name the
+    files, or `git checkout` the others after.
+  - `/tmp` in a Bash command is not `/tmp` for `node -e` (it reads `C:	mp`): pass such paths as arguments, or use
+    `$TEMP`.
   - Templates are not Prettier-formatted: never run `prettier --write` on an `.html` (it re-indents everything).
   - The first `dotnet test` after a client build (`npm test` builds too) fails on a stale `wwwroot` chunk ("No file
     exists for the asset"): run it again, the second build succeeds.

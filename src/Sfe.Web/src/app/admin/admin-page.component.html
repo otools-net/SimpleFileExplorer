@@ -125,7 +125,7 @@
                                             <li>
                                                 <a
                                                     routerLink="/admin"
-                                                    [queryParams]="{ section: item.id, page: page.id === item.subpages[0].id ? null : page.id }"
+                                                    [queryParams]="pageParams(item, page.id)"
                                                     [state]="linkState()"
                                                     replaceUrl
                                                     [attr.aria-current]="page.id === subpage().id ? 'page' : null"
@@ -187,7 +187,7 @@
                                                     <li>
                                                         <a
                                                             routerLink="/admin"
-                                                            [queryParams]="{ section: item.id, page: page.id === item.subpages[0].id ? null : page.id }"
+                                                            [queryParams]="pageParams(item, page.id)"
                                                             [state]="historyState"
                                                             replaceUrl
                                                             [title]="page.description ?? ''"

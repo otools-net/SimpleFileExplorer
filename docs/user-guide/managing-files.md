@@ -32,6 +32,7 @@ apart by a line, in the order of a desktop file browser:
 | **Tags…** / **Tag its files…** | | The tags of a file (or of the files selected); adding tags to every file of a folder ([Tags](tags.md)) |
 | **Add to quick links** / **Remove from quick links** | | Keeps it (or the selection) in your [quick links](browsing.md#quick-links), in the sidebar |
 | **Scans and previews…** | | A folder kept out of scans, trickplay or thumbnails ([Scanning](scanning.md)), for administrators |
+| **Folder access…** | | A library folder's [folder rules](../administration/spaces-and-accounts.md#folder-access): who may see it and change its files, a new rule started on it; for those who manage the space |
 | **Archive ▸** | | **Extract to “name”**, **Extract each here**, **Extract…** for archives ([Archives](archives.md#extracting)) and **Compress…** ([below](#compress-into-a-zip)); **Compress…** alone for anything else |
 | **Download** / **Download as zip** | | Saves the file to your device; a folder, or several items selected, as one zip ([below](#download-several-files-or-a-folder)) |
 | **Copy full path** | | Where it is on the server, when [copying paths](browsing.md#copying-full-paths) is on |

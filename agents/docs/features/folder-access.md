@@ -1,7 +1,7 @@
 # Folder access
 
 Status: built (1.51–1.54): right kinds ([right-kinds.md](right-kinds.md)), rules, evaluation, moves, enforcement on
-every route, management API and the space page's **Folder access** card. What file management must still do with it:
+every route, management API and the **Folder access** sub-page of Spaces & accounts. What file management must still do with it:
 [file-operations.md](../development/file-operations.md). Code: `Core/Access/FolderPolicy.cs` (`FolderPolicy`,
 `FolderPrincipal`, `FolderAccess`, `PathFilter`, `PathFilterQueries.WhereVisible`), `FolderRuleService.cs`
 (`FolderRuleMove`), `RightsEvaluator` (`EffectiveAccess.Folders`/`At`/`FilterFor`), `Data/Entities/Access/FolderRule.cs`,
@@ -127,11 +127,14 @@ deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per 
   restricted subjects only; `ListingStore.can(right, item?)` narrows `config.can` with it (the tag button, folder
   tagging, the location bar, the selection bar, the viewer's tags/download/edit). Searches carry none: the server
   refuses there. Children are matched by name, then ignoring case (the rule's spelling can differ on Windows).
-- The card (`sfe-folder-access`, last on the space page so the cards before keep their order for the specs): rules
-  grouped by folder, a level per rule (`Inherit (remove)` deletes it), **New rule** with the unfiltered picker,
+- The card (`sfe-folder-access`, alone on Administration › Spaces & accounts › Folder access, `SpacePartComponent`
+  with the space picked): rules grouped by folder, a level per rule (`Inherit (remove)` deletes it), **New rule** with the unfiltered picker,
   **Who has access** (`folder-access`: accounts and visitors with `sees` / `changesFiles`, computed with
   `RightsEvaluator` per account), **Re-point…** for folders not found.
-- Not built: an "Access…" item on a folder's menu in the listing (the card's report covers it).
+- **Folder access…** in a library folder's menu (`OrganisingCommands.folderAccess`, also the folder menu and folder
+  links; hidden without `tenant.members` or on a connection's folder) opens
+  `admin?section=access&page=folders&folder=<path>`: the card's `folder` input starts a new rule with the picker on
+  that folder. The picker's `space` change drops `folder`.
 - The planned design (kept for reference):
 
 - Right `tenant.members` (same power as editing group rights); server administrators any space; space

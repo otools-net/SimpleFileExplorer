@@ -280,188 +280,32 @@ describe('SpacesPageComponent', () => {
         expect(cards[1].textContent).toContain('Visitors let in');
     });
 
-    it('opens another space with its groups, accounts and visitors, asking about it by id', async () => {
+    it('opens another space: its library, and links to its groups, accounts, folder rules and visitors', async () => {
         serverSpaces();
-        api.groups.mockResolvedValue([
-            ...work,
-            group(23, 'Kids', { tenantId: WORK.id, rights: [Rights.browse], memberIds: [3] }),
-        ]);
         await create(SpacesPageComponent);
 
         await openSpace('Work');
 
         expect(TestBed.inject(Router).url).toContain(`space=${WORK.id}`);
-        expect(api.groups).toHaveBeenCalledWith(false, WORK.id);
-        expect(api.rights).toHaveBeenCalledWith(WORK.id);
         expect(element.querySelector('.space-title h3')!.textContent).toBe('Work');
-        const [groups, accounts] = [...element.querySelectorAll<HTMLElement>('.access-card')].slice(1, 3);
-        expect([...groups.querySelectorAll('.access-row strong')].map((name) => name.textContent)).toEqual([
-            'Administrators',
-            'Users',
-            'Guests',
-            'Kids',
+        expect(element.querySelector('.access-library')!.textContent).toContain('D:\\Media\\Work');
+        const links = [...element.querySelectorAll<HTMLAnchorElement>('.space-detail a.space-card')];
+        expect(links.map((link) => link.querySelector('strong')!.textContent)).toEqual([
+            'Groups',
+            'Accounts',
+            'Folder access',
+            'Visitors',
         ]);
-        expect(groups.textContent).toContain('used for visitors without an account');
-        // one line each, the parts kept apart by their separators
-        const details = [...groups.querySelectorAll('.access-row-detail')].map((detail) =>
-            detail.textContent!.replace(/\s+/g, ' ').trim(),
+        expect(links.map((link) => new URL(link.href).search)).toEqual(
+            ['groups', 'accounts', 'folders', 'visitors'].map((page) => `?section=access&page=${page}&space=2`),
         );
-        expect(details[3]).toBe('1 right · 1 account');
-        expect(groups.querySelectorAll('.access-row-detail > *').length).toBe(4);
-        expect([...accounts.querySelectorAll('.access-row strong')].map((name) => name.textContent)).toEqual([
-            'anna',
-            'tom',
-        ]);
-        expect(accounts.textContent).toContain('Also in another space');
-        expect([...accounts.querySelectorAll('select option')].map((option) => option.textContent)).toEqual([
-            'Add an existing account…',
-            'dave',
-        ]);
-        expect(
-            [...element.querySelectorAll<HTMLElement>('.access-card')][3].querySelector<HTMLInputElement>(
-                'input[type=checkbox]',
-            )!.checked,
-        ).toBe(true);
+        expect(links[3].textContent).toContain('Visitors are let in');
+        expect(api.groups).not.toHaveBeenCalled();
 
         buttonNamed(element, 'All spaces')!.click();
         await settle();
         expect(element.querySelectorAll('.space-card')).toHaveLength(2);
     });
-
-    it('takes an account out of the space, and adds an existing one to its Users group', async () => {
-        serverSpaces();
-        api.groups.mockResolvedValue(work);
-        api.updateUser.mockResolvedValue(anna);
-        vi.spyOn(window, 'confirm').mockReturnValue(true);
-        await create(SpacesPageComponent);
-        await openSpace('Work');
-
-        const accounts = [...element.querySelectorAll<HTMLElement>('.access-card')][2];
-        buttonNamed(accounts.querySelector('.access-row')!, 'Remove')!.click();
-        await settle();
-        expect(api.updateUser).toHaveBeenLastCalledWith(
-            2,
-            expect.objectContaining({ userName: 'anna', password: null, groupIds: [10] }),
-        );
-
-        choose('.access-add-existing', '5');
-        await settle();
-        expect(api.updateUser).toHaveBeenLastCalledWith(
-            5,
-            expect.objectContaining({ userName: 'dave', groupIds: [11, 21] }),
-        );
-    });
-
-    it('lets visitors into another space through the space itself', async () => {
-        serverSpaces();
-        api.groups.mockResolvedValue(library);
-        api.updateTenant.mockResolvedValue(space(LIBRARY.id, 'Library', { guestAccess: true }));
-        api.setGuestAccess.mockResolvedValue({
-            id: LIBRARY.id,
-            name: 'Library',
-            guestAccess: true,
-            anonymousGuestsAllowed: true,
-            disabledRights: [],
-        });
-        await create(SpacesPageComponent);
-
-        await openSpace('Library');
-        const visitors = [...element.querySelectorAll<HTMLElement>('.access-card')][3];
-        expect(visitors.querySelector('.field-hint')!.textContent!.replace(/\s+/g, ' ')).toContain(
-            'can open this space. Visitors may do',
-        );
-        visitors.querySelector<HTMLInputElement>('input[type=checkbox]')!.click();
-        await settle();
-        expect(api.setGuestAccess).toHaveBeenCalledWith(true);
-
-        buttonNamed(element, 'All spaces')!.click();
-        await settle();
-        expect(element.querySelector('.space-card')!.textContent).toContain('Visitors let in');
-
-        api.groups.mockResolvedValue(work);
-        await openSpace('Work');
-        [...element.querySelectorAll<HTMLElement>('.access-card')][3]
-            .querySelector<HTMLInputElement>('input[type=checkbox]')!
-            .click();
-        await settle();
-        expect(api.updateTenant).toHaveBeenCalledWith(WORK.id, {
-            name: 'Work',
-            guestAccess: false,
-            disabled: false,
-            disabledRights: null,
-        });
-    });
-
-    it('never offers visitors the rights that change something, and creates groups in the space shown', async () => {
-        serverSpaces();
-        api.groups.mockResolvedValue(work.map((g) => (g.builtIn === 'guests' ? { ...g, rights: [Rights.browse] } : g)));
-        api.createGroup.mockResolvedValue(group(24, 'Kids', { tenantId: WORK.id }));
-        await create(SpacesPageComponent);
-        await openSpace('Work');
-
-        const groups = [...element.querySelectorAll<HTMLElement>('.access-card')][1];
-        buttonNamed([...groups.querySelectorAll<HTMLElement>('.access-row')][2], 'Edit')!.click();
-        await settle();
-        expect(element.textContent).not.toContain(Rights.manageTenants);
-        expect(checkbox('.access-choices.rights label', Rights.browse).checked).toBe(true);
-        expect(checkbox('.access-choices.rights label', Rights.manageTags).disabled).toBe(true);
-        expect(checkbox('.access-choices.rights label', Rights.manageTags).closest('label')!.textContent).toContain(
-            'can never have this right',
-        );
-        expect(checkbox('.access-choices.rights label', Rights.download).closest('label')!.textContent).toContain(
-            'Switched off for the whole server',
-        );
-        expect(element.querySelector<HTMLInputElement>('#group-name')!.disabled).toBe(true);
-        expect(element.querySelector('.access-choices.members')).toBeNull();
-        buttonNamed(element, 'Cancel')!.click();
-        await settle();
-
-        buttonNamed(element, 'New group')!.click();
-        await settle();
-        type('#group-name', 'Kids');
-        buttonNamed(element, 'Guests')!.click();
-        await settle();
-        checkbox('.access-choices.members label', 'tom').click();
-        await settle();
-        buttonNamed(element, 'Create')!.click();
-        await settle();
-
-        expect(api.createGroup).toHaveBeenCalledWith(
-            { name: 'Kids', externalName: null, rights: [Rights.browse, Rights.download], memberIds: [3] },
-            WORK.id,
-        );
-    });
-
-    it(
-        'marks the rights that change things, those that change files the most, ' + 'after those that only look',
-        async () => {
-            serverSpaces();
-            api.groups.mockResolvedValue(work);
-            await create(SpacesPageComponent);
-            await openSpace('Work');
-
-            buttonNamed(element, 'New group')!.click();
-            await settle();
-            const library = [...element.querySelectorAll<HTMLElement>('.access-choices.rights')].find(
-                (area) => area.querySelector('legend')!.textContent === 'Library',
-            )!;
-            const titles = [...library.querySelectorAll('.right-title')].map((title) =>
-                title.firstChild!.textContent!.trim(),
-            );
-            const marks = (id: string) =>
-                checkbox('.access-choices.rights label', id, library).closest('label')!.querySelector('.right-mark');
-
-            expect(titles).toEqual([Rights.browse, Rights.download, Rights.editImages]);
-            expect(marks(Rights.browse)).toBeNull();
-            expect(marks(Rights.editImages)!.textContent).toBe('Changes files');
-            expect(marks(Rights.editImages)!.classList).toContain('danger');
-            expect(
-                checkbox('.access-choices.rights label', Rights.manageTags)
-                    .closest('label')!
-                    .querySelector('.right-mark')!.textContent,
-            ).toBe('Changes things');
-        },
-    );
 
     it('switches off at once the rights that change files, or every right that changes something', async () => {
         serverSpaces();
@@ -541,22 +385,15 @@ describe('SpacesPageComponent', () => {
             anonymousGuestsAllowed: false,
             disabledRights: [],
         });
-        api.groups.mockResolvedValue(library);
-        api.users.mockResolvedValue([dave]);
-        api.rights.mockResolvedValue(catalog);
         await create(SpacesPageComponent, limitedConfig([Rights.browse, Rights.manageMembers]));
         await settle();
 
         expect(api.tenants).not.toHaveBeenCalled();
-        expect(api.groups).toHaveBeenCalledWith(false, null);
-        expect(api.users).toHaveBeenCalledWith(false, null);
         expect(element.querySelector('.space-title h3')!.textContent).toBe('Library');
         expect(buttonNamed(element, 'All spaces')).toBeUndefined();
         expect(buttonNamed(element, 'Edit space')).toBeUndefined();
-        expect(element.querySelector('.access-add-existing')).toBeNull();
-        const visitors = [...element.querySelectorAll<HTMLElement>('.access-card')][3];
-        expect(visitors.querySelector<HTMLInputElement>('input[type=checkbox]')!.disabled).toBe(true);
-        expect(visitors.textContent).toContain('Sfe:Security:AnonymousGuests');
+        const visitors = [...element.querySelectorAll<HTMLElement>('a.space-card')][3];
+        expect(visitors.textContent).toContain("Only the space's accounts may open it.");
     });
 });
 

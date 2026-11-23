@@ -47,6 +47,7 @@ import { AccessSectionComponent } from '../access/access-section.component';
 import { ADMIN_SEARCH_LIMIT, AdminSearchResult, markWords, searchAdmin, searchWords } from './admin-search';
 import {
     ADMIN_SECTIONS,
+    AdminSection,
     AdminSubpage,
     findSection,
     findSubpage,
@@ -243,8 +244,8 @@ export class AdminPageComponent implements OnInit {
         !this.form.customized()
             ? $localize`Nothing saved yet`
             : this.form.states() && this.form.level() === 'tenant'
-            ? $localize`Forget the space's own settings and use the server's again (asks first)`
-            : $localize`Forget the saved settings and go back to the server's configuration (asks first)`,
+              ? $localize`Forget the space's own settings and use the server's again (asks first)`
+              : $localize`Forget the saved settings and go back to the server's configuration (asks first)`,
     );
     protected readonly saveHint = computed(() =>
         this.form.changedLevels().size > 1
@@ -424,12 +425,20 @@ export class AdminPageComponent implements OnInit {
     }
 
     protected go(section: string, page?: string): Promise<boolean> {
-        const target = findSection(section, this.sections());
         return this.router.navigate(['/admin'], {
-            queryParams: { section: target.id, page: page && page !== target.subpages[0].id ? page : null },
+            queryParams: this.pageParams(findSection(section, this.sections()), page),
             replaceUrl: true,
             state: this.stayState(),
         });
+    }
+
+    /**
+     * The address of a sub-page (none for the section's first one). The space a sub-page of Spaces & accounts is about
+     * stays from one to the other.
+     */
+    protected pageParams(section: AdminSection, page?: string) {
+        const space = section.id === 'access' && this.section().id === 'access' ? this.params().get('space') : null;
+        return { section: section.id, page: page && page !== section.subpages[0].id ? page : null, space };
     }
 
     /** The history state of an entry replacing this one: it still returns where this one did. */

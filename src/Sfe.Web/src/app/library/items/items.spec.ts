@@ -812,7 +812,7 @@ describe('Context menus of listed items', () => {
                 .open()
                 ?.target.entries()
                 .map((entry) => entry.id),
-        ).toEqual(['open', 'newTab', 'quickLink']);
+        ).toEqual(['open', 'newTab', 'quickLink', 'folderAccess']);
     });
 
     it("opens a tag's menu on its chip, not the file's", async () => {

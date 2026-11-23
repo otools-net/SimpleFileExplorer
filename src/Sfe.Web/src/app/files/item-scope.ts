@@ -29,6 +29,7 @@ export type ItemCommandId =
     | 'tags'
     | 'quickLink'
     | 'exclusions'
+    | 'folderAccess'
     | 'extractBeside'
     | 'extractEach'
     | 'extract'

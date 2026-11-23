@@ -1,0 +1,52 @@
+@if (serverWide() && (spaces().length > 1 || part() === 'accounts')) {
+    <div class="access-actions">
+        <label class="space-pick">
+            <span i18n>Space</span>
+            <select
+                title="Show this page for another space"
+                i18n-title
+                (change)="pick(valueOf($event))"
+            >
+                @if (part() === 'accounts') {
+                    <option value="" [selected]="picked() === ''" i18n>Every space</option>
+                }
+                @for (space of spaces(); track space.id) {
+                    <option [value]="space.id" [selected]="picked() === '' + space.id">{{ space.name }}</option>
+                }
+            </select>
+        </label>
+    </div>
+}
+@if (everyAccount()) {
+    <sfe-accounts-page />
+} @else if (error(); as error) {
+    <p class="form-error" i18n>Could not load the space: {{ error }}</p>
+} @else if (!loaded() || !selected()) {
+    <div class="tag-loading"><span class="spinner"></span></div>
+} @else if (selected(); as space) {
+    @switch (part()) {
+        @case ('groups') {
+            <sfe-space-groups
+                [space]="space"
+                [groups]="groups()"
+                [candidates]="candidates()"
+                [catalog]="catalog()"
+                (changed)="load()"
+            />
+        }
+        @case ('accounts') {
+            <sfe-space-members [space]="space" [groups]="groups()" [users]="users()" (changed)="load()" />
+        }
+        @case ('folders') {
+            <sfe-folder-access
+                [space]="tenantParam()"
+                [groups]="groups()"
+                [members]="members()"
+                [folder]="folder()"
+            />
+        }
+        @default {
+            <sfe-space-visitors [space]="space" (changed)="onChanged($event)" />
+        }
+    }
+}

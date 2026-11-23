@@ -73,6 +73,7 @@ describe('FolderMenu', () => {
             'tags',
             'exclusions',
             'quickLink',
+            'folderAccess',
             'properties',
         ]);
         expect(groups()).toEqual(['view', 'new', 'clipboard', 'organise', 'properties']);
@@ -123,7 +124,7 @@ describe('FolderMenu', () => {
         const link = (id: string) => entries().find((e) => e.id === id)!;
 
         expect(target).toMatchObject({ kind: 'folderLink', key: 'folderLink:Media/Trips', name: 'Trips' });
-        expect(entries().map((e) => e.id)).toEqual(['open', 'newTab', 'quickLink', 'properties']);
+        expect(entries().map((e) => e.id)).toEqual(['open', 'newTab', 'quickLink', 'folderAccess', 'properties']);
         link('open').run!();
         expect(navigate).toHaveBeenCalledWith(['/'], {
             queryParams: { path: 'Media/Trips', q: null, sort: null, desc: null },

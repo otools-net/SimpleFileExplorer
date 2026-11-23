@@ -131,7 +131,7 @@ describe('Quick links', () => {
 
         rightClick(rows()[0]);
         expect(menu.open()!.target.kind).toBe('folderLink');
-        expect(ids()).toEqual(['open', 'newTab', 'moveDown', 'remove']);
+        expect(ids()).toEqual(['open', 'newTab', 'folderAccess', 'moveDown', 'remove']);
         entry('moveDown').run!();
         expect(move).toHaveBeenCalledWith('Media', 2);
 
@@ -352,7 +352,6 @@ describe('Quick links', () => {
 
             expect(error).toHaveBeenCalledWith(
                 'Could not add to the quick links: Quick links hold at most 100 folders and files: remove some first.',
-
             );
         });
     });

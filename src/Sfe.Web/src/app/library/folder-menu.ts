@@ -339,13 +339,13 @@ for everyone using this space.`,
         return entries;
     }
 
-    /** What a folder shares with listed items (`ItemCommands`): its quick link, Copy full path. */
+    /** What a folder shares with listed items (`ItemCommands`): its quick link, Folder access…, Copy full path. */
     private shared(path: string): MenuEntry[] {
         const item = this.folderItem(path);
         const scope = { item, targets: [item] };
-        return (['quickLink', 'copyPath'] as const).flatMap((id) => {
+        return (['quickLink', 'folderAccess', 'copyPath'] as const).flatMap((id) => {
             const entry = this.commands.entry(id, scope);
-            return entry ? [{ ...entry, group: id === 'quickLink' ? 'organise' : 'save' }] : [];
+            return entry ? [{ ...entry, group: id === 'copyPath' ? 'save' : 'organise' }] : [];
         });
     }
 

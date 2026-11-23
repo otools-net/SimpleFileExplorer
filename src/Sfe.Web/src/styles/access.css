@@ -162,6 +162,13 @@ sfe-help {
     height: 16px;
     margin-right: 4px;
 }
+/* The space a sub-page of Spaces & accounts is about (server administrators). */
+.space-pick {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
 .access-filter {
     flex: 1 1 200px;
     max-width: 320px;
@@ -198,6 +205,7 @@ sfe-help {
     color: inherit;
     font: inherit;
     text-align: left;
+    text-decoration: none;
     cursor: pointer;
 }
 .space-card:hover,

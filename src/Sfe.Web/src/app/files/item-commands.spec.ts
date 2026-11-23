@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { ConfigService } from '../core/config.service';
 import { entryOf, greyedIds, usableIds } from '../../testing/menus';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
@@ -114,5 +116,27 @@ describe('ItemCommands', () => {
         expect(commands.entry('quickLink', scope)!.label).toBe('Add to quick links');
         expect(commands.entry('download', scope)!.label).toBe('Download as zip');
         expect(commands.entry('extractEach', scope)).toBeNull();
+    });
+
+    it("opens a library folder's rules in the administration, for those who manage them", async () => {
+        const menu = await setUp();
+        const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+        const entry = entryOf(menu.entries(folder), 'folderAccess');
+        expect(entry).toMatchObject({ label: 'Folder access…', group: 'organise' });
+        expect(menu.entries(photo).some((candidate) => candidate.id === 'folderAccess')).toBe(false);
+
+        entry.run!();
+        expect(navigate).toHaveBeenCalledWith(['/admin'], {
+            queryParams: { section: 'access', page: 'folders', folder: 'Media/Holidays' },
+            state: { sfeFromLibrary: true },
+        });
+
+        TestBed.inject(ConfigService).place.set({ id: 3 } as never);
+        expect(menu.entries(folder).some((candidate) => candidate.id === 'folderAccess')).toBe(false);
+    });
+
+    it('leaves Folder access… out without the right to manage the space', async () => {
+        const menu = await setUp(limitedConfig([Rights.browse, Rights.viewFiles], archives));
+        expect(menu.entries(folder).some((entry) => entry.id === 'folderAccess')).toBe(false);
     });
 });

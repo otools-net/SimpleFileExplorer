@@ -635,29 +635,21 @@ const scenes = {
         await sleep(1500);
         await mask(b);
         await b.shot(OUT + 'admin-access-space.png');
-        await b.eval(`document.querySelector('sfe-folder-access').scrollIntoView({ block: 'start' }); 1`);
-        await sleep(400);
-        await b.clickTitle('Show who may see and change Documents');
-        await sleep(800);
-        // the page only grows long enough once the report is open
-        await b.eval(`document.querySelector('sfe-folder-access').scrollIntoView({ block: 'start' }); 1`);
-        await sleep(400);
-        await mask(b);
-        await b.shot(OUT + 'folder-access.png');
-        await b.eval(`document.querySelector('.space-title, h3').scrollIntoView({ block: 'start' }); 1`);
-        await sleep(300);
-        await b.clickTitle('Change what Users may do');
-        await sleep(800);
-        await b.shot(OUT + 'group-editor.png');
-        await b.key('Escape', 'Escape', 27);
-        await sleep(600);
-        await b.clickTitle('Change sam');
-        await b.shot(OUT + 'account-editor.png');
-        await b.key('Escape', 'Escape', 27);
-        await sleep(600);
         await b.clickTitle('Rename the space');
         await mask(b);
         await b.shot(OUT + 'space-editor.png');
+        await b.open(admin('access', 'folders'), 2000);
+        await b.clickTitle('Show who may see and change Documents');
+        await sleep(800);
+        await mask(b);
+        await b.shot(OUT + 'folder-access.png');
+        await b.open(admin('access', 'groups'), 2000);
+        await b.clickTitle('Change what Users may do');
+        await sleep(800);
+        await b.shot(OUT + 'group-editor.png');
+        await b.open(admin('access', 'accounts'), 2000);
+        await b.clickTitle('Change sam');
+        await b.shot(OUT + 'account-editor.png');
         await b.open(admin('access', 'spaces'));
         await b.clickTitle('Create a space on a folder');
         await sleep(1200);
@@ -913,7 +905,7 @@ const scenes = {
             ['tags', 'list'], ['tags', 'settings'],
             ['tracking', 'duplicates'], ['tracking', 'similar'], ['tracking', 'missing'], ['tracking', 'settings'], ['keepAlive', 'settings'],
             ['thumbnails'], ['trickplay', 'activity'], ['trickplay', 'settings'], ['editor'],
-            ['access', 'spaces'], ['access', 'accounts'],
+            ['access', 'spaces'], ['access', 'accounts'], ['access', 'groups'], ['access', 'visitors'],
             ['tasks', 'tasks'], ['tasks', 'settings'],
             ['system'], ['system', 'maintenance'], ['account', 'preferences'], ['account', 'password'],
         ];

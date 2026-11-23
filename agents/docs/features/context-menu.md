@@ -75,17 +75,17 @@ reasons in `item-command-texts.ts`), `library/selection-bar.component.ts`,
 - **Item actions live in one registry**, `ItemCommands`: `entry(id, scope)` (`ItemScope`: the item clicked and the
   targets, the selection when the item is in it) and `menu(scope)`, laid out by `LAYOUT` in the order of Windows
   Explorer: open (Open, Open in new tab, Open containing folder, **Open as ▸**) → edit (Edit, Crop…) → clipboard (Cut,
-  Copy, Paste into) → organise (Rename…, Move to…, Copy to…, Tags…, quick link, Scans and previews…) → **Archive ▸**
+  Copy, Paste into) → organise (Rename…, Move to…, Copy to…, Tags…, quick link, Scans and previews…, Folder access…) → **Archive ▸**
   (Extract to “…”, Extract each here, Extract…, Compress…) → save (Download, Copy full path) → Delete… → Properties.
   A submenu with one entry left is shown flat (a picture: Compress… alone; a `.dat`: Open as text alone).
 - The item menu (`ItemMenu.entries`), the selection bar (its buttons and its "⋯" entries: `actions`, `more`) and the
-  folder menu (quick link, Copy full path of a folder, through `FolderMenu.shared`) take their entries from it: one
+  folder menu (quick link, Folder access…, Copy full path of a folder, through `FolderMenu.shared`) take their entries from it: one
   label, hint and run per action. A new action on listed items is a command there, never a copy in a component.
 - A command returns **null where it doesn't apply** (the kind of item, how many are selected, a server without the
   editor or the dialog, searching): hidden. **What the rights don't allow** is returned greyed out (`refused()`:
   `disabled`, the hint replaced by the reason, `refusedText`), shown under the label on touch screens
   (`.item-menu-reason`, `@media (hover: none)`). Hidden, not greyed: quick links (not an account's), Copy full path
-  (a setting), Scans and previews… (an administrator's right), Properties (no browse right).
+  (a setting), Scans and previews… and Folder access… (an administrator's right), Properties (no browse right).
 - The selection bar shows only what the selection may use (no greyed buttons: little room); Tags only with files.
 - Test helpers `src/testing/menus.ts`: `usableIds`, `greyedIds`, `entryOf` (submenus opened in place).
 - Tools clicking an extraction open `[data-entry="archive"]` first (docs-screenshots `archive`, visual-check
@@ -96,7 +96,7 @@ reasons in `item-command-texts.ts`), `library/selection-bar.component.ts`,
 | Where | Target | Entries |
 |---|---|---|
 | File tile / row, folder card | `file` / `folder` (`ItemMenu.target`) | `ItemCommands.menu` (groups above); none of the Open ones for a selection of several |
-| Listing background, counts, buttons of the page | `background` (`FolderMenu.target`) | Folder: Refresh, Open in new tab · New folder, New file, Upload files / a folder · Paste, Select all · Tags of this folder, Scans and previews, quick link · Copy full path · Properties. Search: Search again, Open in new tab · Select all · Tag the results, Search in · Copy link |
+| Listing background, counts, buttons of the page | `background` (`FolderMenu.target`) | Folder: Refresh, Open in new tab · New folder, New file, Upload files / a folder · Paste, Select all · Tags of this folder, Scans and previews, quick link, Folder access… · Copy full path · Properties. Search: Search again, Open in new tab · Select all · Tag the results, Search in · Copy link |
 | Breadcrumbs, up / previous / next, a search result's folder | `folderLink` (`FolderMenu.linkTarget`) | Open, Open in new tab · Paste into · quick link · Copy full path · Properties |
 | Quick link | `folderLink` / `fileLink` | Its folder's entries (or Show in its folder, Open in new tab, Copy full path, Properties), then Move up / down, Remove; only those when it's not found any more |
 | Recent search | `historyEntry` | Search, Open in new tab, Remove from the history |

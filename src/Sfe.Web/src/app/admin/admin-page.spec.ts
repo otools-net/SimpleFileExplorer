@@ -228,6 +228,20 @@ describe('AdminPageComponent', () => {
         expect(back).toHaveBeenCalled();
     });
 
+    it('keeps the space from one sub-page of Spaces & accounts to the other, not elsewhere', async () => {
+        await open('/admin?section=access&page=groups&space=2');
+        expect(heading()).toBe('Groups');
+        expect(element.querySelector('sfe-space-part')).not.toBeNull();
+
+        const search = (name: string) => new URL(subItem(name).href).search;
+        expect(search('Visitors')).toBe('?section=access&page=visitors&space=2');
+        expect(search('Spaces')).toBe('?section=access&space=2');
+        expect(new URL(navItem('Logs').href).search).toBe('?section=logs');
+
+        await open('/admin?section=access&page=folders');
+        expect(search('Accounts')).toBe('?section=access&page=accounts');
+    });
+
     it('follows the sections and sub-pages in its breadcrumbs, which lead back up', async () => {
         await open('/admin?section=account', { sfeFromLibrary: true });
         expect(crumbs()).toEqual(['Administration', 'Account', 'My account', 'Settings']);

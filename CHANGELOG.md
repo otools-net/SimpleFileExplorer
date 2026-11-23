@@ -172,9 +172,16 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   how much of the connection the index holds (`Coverage`); `sfe.Connections[id].Tags` reads, adds and removes tags on
   its files, or on every file of a folder or search (`SfeTagScope`); `GetIndexAsync` and `SyncIndexAsync` tell where
   its index stands and sync it now; `connection-not-indexed` is `ConnectionProblem.NotIndexed`.
+- **Folder access… in a folder's menu**: for those who manage the space, a library folder's menu (and the menu of the
+  folder you are in) opens its folder rules in the administration, with a new rule started on that folder.
 
 ### Changed
 
+- **Shallower administration of spaces**: **Groups**, **Folder access** and **Visitors** are sub-pages of
+  Administration › Spaces & accounts, next to **Spaces** and **Accounts**, each about the space you are browsing or,
+  for server administrators, the one picked in **Space** at the top (kept from one sub-page to the other); Accounts
+  with a space picked lists that space's accounts. Every page is three clicks from the library (⋮, Administration,
+  its link). A space's page shows its library and opens these sub-pages; old addresses still open it.
 - **Menus in groups, as in a desktop file browser**: a file's or folder's menu now reads Open (Open in new tab, Open
   containing folder, **Open as ▸**), Edit and Crop…, Cut / Copy / Paste, Rename…, Move to…, Copy to…, Tags…, quick
   link, **Archive ▸** (Extract…, Compress…), Download and Copy full path, Delete…, Properties, with a line between
