@@ -39,7 +39,7 @@ fingerprints (Scanning › Indexing › Fingerprint files).`,
                     hint: $localize`Adds a Remove button to each copy: the file goes to the trash and its tags are \
 added to a copy you keep.`,
                     help: $localize`The two files are compared byte for byte first, so an identical copy always \
-stays. Only groups with the right “Delete duplicates” can remove copies; with “Always delete permanently” (File \
+stays. Only groups with the right “Remove duplicates” can remove copies; with “Always delete permanently” (File \
 management), they are deleted for good.`,
                 },
             ],

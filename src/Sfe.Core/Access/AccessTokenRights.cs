@@ -18,8 +18,8 @@ internal static class AccessTokenRights
         Space(
             Rights.OwnTokens,
             "Account",
-            "Access tokens",
-            "Make tokens that let programs use the API as one's own account, with its rights or fewer; see and "
+            "Make access tokens",
+            "Make tokens that let programs use the API as your account, with its rights or fewer, and see and "
                 + "revoke them."
         ),
         Space(

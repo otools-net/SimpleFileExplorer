@@ -253,7 +253,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     functions with specs; `CANVAS_REFUSED` marked. Readability baselines raised by the added lines:
     `image-editor.dialog.ts` 445 → 449, `file-transfers.ts` 467 → 469, `item-menu.ts` 530 → 534, `listing.store.ts`
     622 → 626, `viewer.component.ts` 824 → 827.
-  - [ ] **2.8b rights' names and descriptions** (`RightCatalog` and the other right lists; keys unchanged).
+  - [x] **2.8b rights' names and descriptions** (`RightCatalog` and the other right lists; keys unchanged).
+    Done 2026-11-23: names start with a verb ("Move to trash and restore", "Remove duplicates", "Change … settings",
+    "Manage spaces"), descriptions are sentences in the second person; `ConnectionRights` and `AccessTokenRights`
+    too; the docs' rights tables and the client's texts naming a right follow ("Remove duplicates").
   - [ ] **2.8c problem details and other server texts users see** (checked against the glossary and style; strings
     the client or tests compare and problem `type` words unchanged).
   Steps 2.7b–2.8c were done by subagents in parallel (one per folder; the coordinator wrote the shared files:

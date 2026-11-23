@@ -39,7 +39,7 @@ Each space has three built-in groups, and any groups you add:
 | Group | Rights by default |
 |---|---|
 | **Administrators** | Every right of the space: everything but the server's own settings |
-| **Users** | Everyday use: browse, view, download, external player, edit pictures, tag files, own preferences and password |
+| **Users** | Everyday use: browse, view, download, external player, edit pictures, tag files, own settings and password |
 | **Guests** | Browse, view and see tags; what visitors without an account may do |
 
 A group's page lists every right by area with what it allows, those that only look first; **Changes things** marks a
@@ -109,7 +109,7 @@ whether visitors may come in. The space starts with the three built-in groups an
 - **Disabled**: nobody can open it and its background tasks stop. Its index, tags, groups and settings are kept.
 - **Rights switched off in this space**: a right ticked here is taken from everyone in this space, whatever their groups
   say; only server administrators can tick it, the space's own administrators can't give it back. Example: tick
-  *Delete duplicates* on a space whose files must never be deleted from the web page. **Files read-only** ticks every
+  *Remove duplicates* on a space whose files must never be deleted from the web page. **Files read-only** ticks every
   right marked *Changes files* (people can still tag and use the space); **Read-only** ticks every right that changes
   something (marked *Changes things* too), so the space can only be looked at.
 - **Delete** forgets its groups and settings but leaves its index and caches on the disk.

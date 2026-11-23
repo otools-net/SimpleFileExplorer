@@ -28,7 +28,7 @@ Each right is of one of two kinds (column **Kind**):
 | `files.extract` | [extract archives](../user-guide/archives.md#extracting) into folders one may change (needs `files.view` and `files.download` at the archive) | Write (files) | no | none |
 | `files.createFiles` | [create empty files](../user-guide/managing-files.md#new-file), [save a copy of a text file](../user-guide/editing-text.md) | Write (files) | no | none |
 | `files.upload` | [upload files and folders](../user-guide/managing-files.md#upload) from one's computer into folders one may change | Write (files) | no | none |
-| `files.delete` | [delete to the trash](../user-guide/managing-files.md#delete), restore from it; with `files.createFiles`, [save over a text file](../user-guide/editing-text.md#who-may-save) | Write (files) | no | none |
+| `files.delete` | [move to the trash](../user-guide/managing-files.md#delete), restore from it; with `files.createFiles`, [save over a text file](../user-guide/editing-text.md#who-may-save) | Write (files) | no | none |
 | `files.deletePermanently` | delete for good (Shift+Delete), empty the [trash](../administration/file-management.md#trash) | Write (files) | no | none |
 | `tags.view` | see tags, the tag sidebar | Read | yes | all |
 | `tags.assign` | tag files, folders and searches | Write | no | Administrators, Users |
@@ -45,7 +45,7 @@ Each right is of one of two kinds (column **Kind**):
 | `logs.view` | the [log](../administration/logs.md) of the space (server administrators: of the whole server) | Read | no | Administrators |
 | `settings.interface`, `.playback`, `.scanning`, `.tags`, `.tracking`, `.thumbnails`, `.trickplay`, `.tasks`, `.logs`, `.editor`, `.files`, `.keepAlive` | the space's settings, by section ([keep alive](../administration/keep-alive.md): also its status and Ping now) | Write | no | Administrators |
 | `tenant.members` | the space's accounts, groups and visitors | Write | no | Administrators |
-| `account.preferences`, `account.password` | own preferences and password | Write | no | Administrators, Users |
+| `account.preferences`, `account.password` | own settings and password | Write | no | Administrators, Users |
 | `account.quickLinks` | own [quick links](../user-guide/browsing.md#quick-links) in the sidebar | Write | no | Administrators, Users |
 | `account.tokens` | own personal access tokens, for programs calling the [API](api.md) as the account | Write | no | Administrators |
 | `access.tokens` | the access tokens of the space's accounts: see and revoke them | Write | no | Administrators |

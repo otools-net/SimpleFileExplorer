@@ -31,7 +31,7 @@ public static class RightCatalog
             Readable,
             "Library",
             "Browse and search",
-            "List the folders, search the index, see the scan's progress."
+            "List folders, search the index and see how a scan is going."
         ),
         Tenant(
             Rights.ViewFiles,
@@ -41,9 +41,9 @@ public static class RightCatalog
             Readable,
             "Library",
             "View and play files",
-            "Open pictures, play videos and audio, see thumbnails and trickplay."
+            "Open pictures, play videos and audio, and see thumbnails and previews along the timeline."
         ),
-        Tenant(Rights.Download, true, Members, R, Readable, "Library", "Download files", "Save a file to the device."),
+        Tenant(Rights.Download, true, Members, R, Readable, "Library", "Download files", "Save files to your device."),
         Tenant(
             Rights.ExternalPlayer,
             true,
@@ -52,7 +52,7 @@ public static class RightCatalog
             Readable,
             "Library",
             "Open in an external player",
-            "Get a link to a file that works without signing in, for a while, in an app such as VLC."
+            "Get a link that opens a file in an app such as VLC without signing in, for a limited time."
         ),
         Tenant(
             Rights.CopyPaths,
@@ -72,8 +72,8 @@ public static class RightCatalog
             Writable,
             "Library",
             "Edit pictures",
-            "Crop pictures and save the result as a new file in the folder for edited pictures; "
-                + "originals are never changed.",
+            "Edit pictures and save the result as a new file, or over the original where you may also replace "
+                + "files.",
             since: 1
         ),
         Tenant(
@@ -84,8 +84,8 @@ public static class RightCatalog
             Readable,
             "Library",
             "Play videos converted by the server",
-            "Play videos the browser can't play as they are, converted by ffmpeg on the server while they play (it "
-                + "keeps the server's processor busy).",
+            "Play videos the browser can't play as they are: the server converts them with ffmpeg while they play, "
+                + "which keeps its processor busy.",
             since: 2
         ),
         // File management: nobody gets these by upgrade or by default.
@@ -108,7 +108,7 @@ public static class RightCatalog
             Writable,
             "File management",
             "Rename",
-            "Rename files and folders (the tags, folder access and quick links of a folder follow it).",
+            "Rename files and folders. A folder's tags, folder rules and quick links follow it.",
             since: 5
         ),
         Tenant(
@@ -118,9 +118,9 @@ public static class RightCatalog
             W,
             Writable,
             "File management",
-            "Delete to the trash",
-            "Delete files and folders to the space's trash, and restore what one deleted (or what is in folders one "
-                + "may change).",
+            "Move to trash and restore",
+            "Move files and folders to the space's trash, and restore what you deleted or what is in folders you may "
+                + "change.",
             since: 6
         ),
         Tenant(
@@ -131,7 +131,7 @@ public static class RightCatalog
             Writable,
             "File management",
             "Delete permanently",
-            "Delete files and folders for good, skipping the trash, and empty the trash.",
+            "Delete files and folders for good, without the trash, and empty the trash.",
             since: 6
         ),
         Tenant(
@@ -142,7 +142,7 @@ public static class RightCatalog
             Writable,
             "File management",
             "Move",
-            "Move files and folders to other folders (their tags, folder access and quick links follow them).",
+            "Move files and folders to other folders. Their tags, folder rules and quick links follow them.",
             since: 7
         ),
         Tenant(
@@ -153,7 +153,7 @@ public static class RightCatalog
             Writable,
             "File management",
             "Copy",
-            "Copy files and folders into folders one may change (only what one may see is copied).",
+            "Copy files and folders into folders you may change. Only what you may see is copied.",
             since: 7
         ),
         Tenant(
@@ -164,7 +164,7 @@ public static class RightCatalog
             Writable,
             "File management",
             "Upload",
-            "Upload files and folders from one's computer into folders one may change.",
+            "Upload files and folders from your device into folders you may change.",
             since: 8
         ),
         Tenant(
@@ -175,7 +175,7 @@ public static class RightCatalog
             Writable,
             "File management",
             "Create files",
-            "Create new empty files in the library.",
+            "Create new empty files in the library, and save copies of text files.",
             since: 9
         ),
         Tenant(
@@ -186,7 +186,7 @@ public static class RightCatalog
             Writable,
             "File management",
             "Extract archives",
-            "Extract zip, 7z, rar and tar archives (all of one, or the entries chosen) into folders one may change.",
+            "Extract zip, 7z, rar and tar archives, whole or only some entries, into folders you may change.",
             since: 13
         ),
         Tenant(
@@ -197,8 +197,8 @@ public static class RightCatalog
             Writable,
             "File management",
             "Compress",
-            "Compress files and folders one may download into a zip (with a password if wanted) "
-                + "saved in a folder one may change.",
+            "Compress files and folders you may download into a zip, with a password if you want one, saved in a "
+                + "folder you may change.",
             since: 14
         ),
         Tenant(
@@ -219,7 +219,7 @@ public static class RightCatalog
             Readable,
             "Tags",
             "Tag files",
-            "Add tags to files and remove them, also to whole folders and searches."
+            "Add tags to files and remove them, also on whole folders and searches."
         ),
         Tenant(
             Rights.ManageTags,
@@ -229,7 +229,7 @@ public static class RightCatalog
             null,
             "Tags",
             "Manage tags",
-            "Create, rename, color and delete tags; clear the tag history."
+            "Create, rename, colour and delete tags, and clear the tag history."
         ),
         Tenant(
             Rights.FolderDefaultTags,
@@ -238,9 +238,9 @@ public static class RightCatalog
             W,
             Readable,
             "Tags",
-            "Set default tags of folders",
-            "Give folders tags that every file put into them (or into their sub-folders) gets: scanned, created, "
-                + "uploaded, copied or moved there.",
+            "Set folders' default tags",
+            "Give folders tags that every file put into them or their sub-folders gets, whether it is scanned, "
+                + "created, uploaded, copied or moved there.",
             since: 12
         ),
         Tenant(
@@ -271,8 +271,8 @@ public static class RightCatalog
             Readable,
             "Index",
             "Exclude folders",
-            "Keep folders out of scans, trickplay or thumbnails, for the whole space (what is already indexed or made "
-                + "stays).",
+            "Keep folders out of scans, trickplay or thumbnails for the whole space. What is already indexed or made "
+                + "stays.",
             since: 10
         ),
         Tenant(
@@ -283,7 +283,7 @@ public static class RightCatalog
             Readable,
             "Duplicates & moves",
             "See duplicates",
-            "List identical files."
+            "List files with the same content."
         ),
         Tenant(
             Rights.RemoveDuplicates,
@@ -292,8 +292,8 @@ public static class RightCatalog
             W,
             Writable,
             "Duplicates & moves",
-            "Delete duplicates",
-            "Delete a copy of a file from the disk (its tags go to the copy kept)."
+            "Remove duplicates",
+            "Remove a copy of a duplicate file, to the trash unless set otherwise. Its tags go to the copy kept."
         ),
         Tenant(
             Rights.SimilarVideos,
@@ -302,8 +302,8 @@ public static class RightCatalog
             R,
             Readable,
             "Duplicates & moves",
-            "Similar videos",
-            "Compare videos and list the similar ones."
+            "Find similar videos",
+            "Compare videos and list those that look alike."
         ),
         Tenant(
             Rights.MissingFiles,
@@ -312,8 +312,8 @@ public static class RightCatalog
             W,
             Readable,
             "Duplicates & moves",
-            "Moved files",
-            "List tagged files no longer found, relink and forget them."
+            "Find moved files",
+            "List tagged files that are no longer found, and relink or forget them."
         ),
         Tenant(
             Rights.ManageTrickplay,
@@ -322,8 +322,8 @@ public static class RightCatalog
             W,
             null,
             "Media",
-            "Trickplay activity",
-            "See and start the trickplay generation."
+            "Manage trickplay",
+            "See the trickplay activity and start making trickplay."
         ),
         Tenant(
             Rights.ViewTasks,
@@ -333,7 +333,7 @@ public static class RightCatalog
             null,
             "Background tasks",
             "See background tasks",
-            "See what runs, when tasks run next, and their history and logs."
+            "See what is running, when tasks run next, and their history and logs."
         ),
         Tenant(
             Rights.RunTasks,
@@ -353,7 +353,7 @@ public static class RightCatalog
             null,
             "Background tasks",
             "Schedule background tasks",
-            "Create, change and delete schedules; clear the history."
+            "Create, change and delete schedules, and clear the task history."
         ),
         Tenant(
             Rights.ViewLogs,
@@ -362,7 +362,7 @@ public static class RightCatalog
             R,
             null,
             "Logs",
-            "See the logs",
+            "Read the logs",
             "Read and search the warnings, errors and messages the server logged for the space (server administrators "
                 + "see those of the whole server).",
             since: 4
@@ -374,8 +374,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Interface settings",
-            "Appearance, browsing and search settings of the space."
+            "Change interface settings",
+            "Change the space's appearance, browsing and search settings."
         ),
         Tenant(
             Rights.PlaybackSettings,
@@ -384,8 +384,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Playback settings",
-            "The video player and the external player of the space."
+            "Change playback settings",
+            "Change how the space's video player and external player work."
         ),
         Tenant(
             Rights.ScanningSettings,
@@ -394,8 +394,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Scanning settings",
-            "What scans leave out, file types, what scans read."
+            "Change scanning settings",
+            "Change what scans leave out, the file types they know and what they read in files."
         ),
         Tenant(
             Rights.TagSettings,
@@ -404,8 +404,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Tag settings",
-            "The tag sidebar and its history."
+            "Change tag settings",
+            "Change the tag sidebar and its history."
         ),
         Tenant(
             Rights.TrackingSettings,
@@ -414,8 +414,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Duplicates & moves settings",
-            "Duplicates, moved files and similar videos."
+            "Change duplicates & moves settings",
+            "Change how duplicates, moved files and similar videos are found."
         ),
         Tenant(
             Rights.ThumbnailSettings,
@@ -424,8 +424,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Thumbnail settings",
-            "Thumbnails of photos and videos."
+            "Change thumbnail settings",
+            "Change how thumbnails of pictures and videos are made."
         ),
         Tenant(
             Rights.TrickplaySettings,
@@ -434,8 +434,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Trickplay settings",
-            "Which videos get trickplay and how."
+            "Change trickplay settings",
+            "Change which videos get trickplay, and how it is made."
         ),
         Tenant(
             Rights.TaskSettings,
@@ -444,8 +444,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Background task settings",
-            "How long task logs are kept."
+            "Change background task settings",
+            "Change how long task logs are kept."
         ),
         Tenant(
             Rights.EditorSettings,
@@ -454,8 +454,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Picture editor settings",
-            "Where edited pictures are saved, and their quality.",
+            "Change picture editor settings",
+            "Change where edited pictures are saved, and their quality.",
             since: 1
         ),
         Tenant(
@@ -465,8 +465,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "File management settings",
-            "Which names new files and folders may have, and where the work files go.",
+            "Change file management settings",
+            "Change which names new files and folders may have, and where the work files go.",
             since: 5
         ),
         Tenant(
@@ -476,8 +476,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Keep alive settings",
-            "Whether the library's folder is kept alive on its file server, how often, and what the last pings found.",
+            "Change keep-alive settings",
+            "Choose if and how often the library's folder is kept alive on its file server, and see the last pings.",
             since: 11
         ),
         Tenant(
@@ -487,8 +487,8 @@ public static class RightCatalog
             W,
             null,
             "Settings",
-            "Log settings",
-            "How long the logs are kept, and whether they are also written to files (both set for the whole server).",
+            "Change log settings",
+            "Change how long logs are kept and whether they are also written to files, for the whole server.",
             since: 4
         ),
         Tenant(
@@ -499,8 +499,8 @@ public static class RightCatalog
             null,
             "Access",
             "Manage the space's accounts and groups",
-            "Create accounts in the space, put them in its groups, choose what each group may do, "
-                + "open the space to visitors."
+            "Create accounts in the space, put them in its groups, choose what each group may do and open the "
+                + "space to visitors."
         ),
         Tenant(
             Rights.OwnPreferences,
@@ -509,8 +509,8 @@ public static class RightCatalog
             W,
             null,
             "Account",
-            "Own preferences",
-            "Keep one's own theme, page sizes and player preferences on the server."
+            "Keep your own settings",
+            "Keep your own theme, page sizes and player settings on the server."
         ),
         Tenant(
             Rights.OwnPassword,
@@ -519,8 +519,8 @@ public static class RightCatalog
             W,
             null,
             "Account",
-            "Change own password",
-            "Change the password of one's own local account."
+            "Change your password",
+            "Change the password of your local account."
         ),
         Tenant(
             Rights.QuickLinks,
@@ -529,7 +529,7 @@ public static class RightCatalog
             W,
             Readable,
             "Account",
-            "Quick links",
+            "Keep quick links",
             "Keep folders and files at hand in the sidebar's quick links.",
             since: 3
         ),
@@ -540,31 +540,31 @@ public static class RightCatalog
             R,
             null,
             "Server",
-            "API documentation",
+            "Read the API documentation",
             "Open the API's documentation and try its routes."
         ),
         Server(
             Rights.ServerSettings,
             W,
-            "Server settings",
-            "Settings of the whole server and the defaults of every space."
+            "Change server settings",
+            "Change the settings of the whole server and the defaults of every space."
         ),
         Server(
             Rights.ManageTenants,
             W,
-            "Spaces",
+            "Manage spaces",
             "Create, change and delete spaces, and manage the accounts and groups of every space."
         ),
         Server(
             Rights.ManageUsers,
             W,
-            "All accounts",
-            "Create, change and delete every account, put it in any space, make server administrators."
+            "Manage all accounts",
+            "Create, change and delete any account, put it in any space and make server administrators."
         ),
         Server(
             Rights.ViewStreams,
             R,
-            "Video streams",
+            "See video streams",
             "See the videos the server converts while they play, in every space, and who watches them."
         ),
         .. ConnectionRights.All,
@@ -572,9 +572,9 @@ public static class RightCatalog
         Server(
             Rights.Backup,
             R,
-            "Back up",
-            "Download a backup of the databases and configuration files (it holds password hashes and connection "
-                + "strings)."
+            "Download backups",
+            "Download a backup of the databases and configuration files. It holds password hashes and connection "
+                + "strings."
         ),
     ];
 

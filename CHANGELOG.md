@@ -287,6 +287,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   "Connection added.", "“x.jpg” is in the trash. “b/x.jpg” is kept."), errors as "Could not … : reason." naming
   what failed ("Could not forget “a.jpg”: …"), and questions that say what will happen ("Which file gets the tags
   of “a.jpg”? Type its path from the top of the library."). Their texts are ready for translation.
+- **Rights renamed and described in full sentences**: each right's name says what it lets one do (**Move to trash
+  and restore**, **Remove duplicates**, **Find similar videos**, **Read the logs**, **Change server settings**,
+  **Manage spaces**, **Download backups**, **Make access tokens**, **Connect your own storage**…) and its
+  description is a sentence ("Edit pictures and save the result as a new file, or over the original where you may
+  also replace files."). Their keys (`files.delete`, `duplicates.delete`…) are unchanged, so groups, tokens and
+  programs keep working.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

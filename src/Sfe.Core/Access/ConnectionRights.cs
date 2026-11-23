@@ -22,20 +22,20 @@ internal static class ConnectionRights
             Rights.UseConnections,
             RightKind.Read,
             "Use connections",
-            "See and open the connections to other storage (Dropbox…) one is allowed to use."
+            "See and open the connections to other storage (Dropbox…) you may use."
         ),
         Space(
             Rights.OwnConnections,
             RightKind.Write,
-            "Connect own storage",
-            "Connect storage of one's own, private to the account: nobody else sees its files."
+            "Connect your own storage",
+            "Connect storage of your own, private to your account: nobody else sees its files."
         ),
         Space(
             Rights.LibraryConnections,
             RightKind.Write,
             "Manage the space's connections",
-            "Connect storage for the space, choose which of its groups use it and the server's connections, "
-                + "remove the connections of its accounts."
+            "Connect storage for the space, choose which of its groups use it and which of the server's connections "
+                + "it offers, and remove its accounts' connections."
         ),
         new(
             Rights.ServerConnections,
@@ -43,7 +43,7 @@ internal static class ConnectionRights
             false,
             [],
             "Server",
-            "Connections of the server",
+            "Manage the server's connections",
             "Connect storage for the whole server and offer it to spaces; see and remove every connection.",
             Kind: RightKind.Write
         ),
