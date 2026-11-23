@@ -9,6 +9,7 @@ import { ChangeFeed } from '../../library/change-feed.service';
 import { FILE_VIEW_HOST } from '../formats';
 import { TextEditor } from './codemirror';
 import { FILE_SOURCE } from '../file-source';
+import { textEditTexts } from './text-texts';
 
 /**
  * What stops a save, shown as a bar over the text: the file changed elsewhere, its encoding can't hold the text, or the
@@ -152,7 +153,7 @@ export class TextSession {
 
     /** Back to reading; unsaved changes are given up (when the person agrees). */
     stopEdit(): void {
-        if (this.dirty() && !confirm('Give up your changes to this file?')) return;
+        if (this.dirty() && !confirm($localize`Give up your changes to this file?`)) return;
         if (this.dirty()) this.editor?.replace(this.file()!.text);
         this.dirty.set(false);
         this.problem.set(null);
@@ -182,7 +183,10 @@ export class TextSession {
         if (!file || !this.editor || !this.item || this.saving()) return;
         if (!this.canSave()) {
             if (this.access()?.saveCopy) this.openCopy();
-            else this.toasts.show('You may not save over this file: download your text instead.', { error: true });
+            else
+                this.toasts.error(
+                    $localize`You don't have the right to save over this file. Download your text instead.`,
+                );
             return;
         }
         const text = this.toSave();
@@ -190,7 +194,7 @@ export class TextSession {
         try {
             const result = await this.api.saveText(this.item.path, text, this.session, force ? '*' : file.version);
             if (!isSaved(result)) {
-                this.toasts.error(result.detail ?? 'It could not be saved.');
+                this.toasts.error(textEditTexts.saveFailed(result.detail ?? null));
                 return;
             }
             this.file.set({
@@ -206,14 +210,12 @@ export class TextSession {
             this.editor.markSaved();
             this.dirty.set(this.editor.dirty);
             this.problem.set(null);
-            this.toasts.show(result.trashId ? 'Saved. The version before is in the trash.' : 'Saved.', {
-                timeout: 3000,
-            });
+            this.toasts.show(textEditTexts.saved(!!result.trashId), { timeout: 3000 });
         } catch (error) {
             if (error instanceof ApiError && error.status === 412) this.problem.set({ kind: 'changed' });
             else if (error instanceof ApiError && error.status === 422)
                 this.problem.set({ kind: 'not-encodable', message: error.message });
-            else this.toasts.error(`It could not be saved: ${(error as Error).message}`);
+            else this.toasts.error(textEditTexts.saveFailed((error as Error).message));
         } finally {
             this.saving.set(false);
         }
@@ -242,7 +244,7 @@ export class TextSession {
             this.revision.update((value) => value + 1);
             return true;
         } catch (error) {
-            this.toasts.error(`It could not be read again: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not read the file again: ${(error as Error).message}:reason:`);
             return false;
         }
     }
@@ -252,7 +254,8 @@ export class TextSession {
      * save then writes it back in that encoding. Changes not saved are given up (asked first).
      */
     async reopen(encoding: string | null): Promise<void> {
-        if (this.dirty() && !confirm('Read the file again in another encoding? Your changes are given up.')) return;
+        const question = $localize`Read the file again in another encoding? Your changes will be given up.`;
+        if (this.dirty() && !confirm(question)) return;
         const previous = this.readEncoding();
         this.readEncoding.set(encoding);
         if (!(await this.reload())) this.readEncoding.set(previous);
@@ -307,20 +310,20 @@ export class TextSession {
         try {
             const result = await this.api.saveTextCopy(parentPath(item.path), name.trim(), text);
             if (isFileConflict(result)) {
-                this.problem.set({ kind: 'copy', error: result.detail ?? 'It could not be saved.' });
+                this.problem.set({ kind: 'copy', error: result.detail ?? textEditTexts.copyFailed(null) });
                 return;
             }
             // Its changes are in the copy now: this file may be left without asking.
             this.discarded = true;
             this.problem.set(null);
-            this.toasts.show(`Saved as “${result.name}”.`, { timeout: 4000 });
+            this.toasts.show($localize`Saved as “${result.name}:name:”.`, { timeout: 4000 });
             if (this.host.open) this.host.open(result, { edit: true });
             else location.assign(`${this.config.urls()!.view(result.path)}&edit=1`);
         } catch (error) {
             const message =
                 error instanceof ApiError && error.status === 422
                     ? error.message
-                    : `It could not be saved: ${(error as Error).message}`;
+                    : textEditTexts.copyFailed((error as Error).message);
             this.problem.set({ kind: 'copy', error: message });
         } finally {
             this.saving.set(false);

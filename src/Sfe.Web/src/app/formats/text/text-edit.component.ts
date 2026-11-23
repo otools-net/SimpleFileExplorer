@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { IconComponent } from '../../shared/icon.component';
 import { TextSession } from './text-session';
+import { textEditTexts } from './text-texts';
 
 /**
  * The editing buttons of a text view's toolbar (agents/docs/features/text-editor.md): Edit, then Save (when the rights
@@ -15,6 +16,7 @@ import { TextSession } from './text-session';
 })
 export class TextEditActionsComponent {
     protected readonly session = inject(TextSession);
+    protected readonly texts = textEditTexts;
 }
 
 /**

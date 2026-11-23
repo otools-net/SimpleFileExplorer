@@ -13,6 +13,7 @@ import {
     WIDTHS,
 } from './reading';
 import { ReadingService } from './reading.service';
+import { readingTexts } from './reading-texts';
 
 /**
  * The "Aa" panel of a text view: font, size, line height, width, margins, wrapping, line numbers and the reader's
@@ -27,7 +28,7 @@ import { ReadingService } from './reading.service';
     host: {
         class: 'reading-panel',
         role: 'dialog',
-        'aria-label': 'Reading settings',
+        '[attr.aria-label]': 'texts.panel()',
         '(keydown.escape)': 'onEscape($event)',
         '(document:pointerdown)': 'onDocumentPointerDown($event)',
     },
@@ -42,6 +43,7 @@ export class ReadingPanelComponent {
     private readonly element: HTMLElement = inject(ElementRef).nativeElement;
     private readonly toasts = inject(ToastService);
     protected readonly saving = signal(false);
+    protected readonly texts = readingTexts;
 
     protected readonly fonts = READER_FONTS;
     protected readonly sizes = FONT_SIZES;
@@ -61,9 +63,11 @@ export class ReadingPanelComponent {
     protected async saveDefaults(): Promise<void> {
         try {
             await whileBusy(this.saving, () => this.reading.saveAsDefaults());
-            this.toasts.show('Saved as your default: every browser you sign in from starts from these settings.');
+            this.toasts.show(
+                $localize`Saved as your default. Every browser you sign in from starts with these settings.`,
+            );
         } catch (error) {
-            this.toasts.error(`Could not save them: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not save your reading settings: ${(error as Error).message}:reason:`);
         }
     }
 

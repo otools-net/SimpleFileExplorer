@@ -27,7 +27,7 @@ them runs. **Edit** changes them: see [Editing text files](editing-text.md).
 |---|---|---|
 | Wrap long lines | | Long lines continue on the next line instead of going off the side. Off, the text scrolls sideways to their end (drag it with a finger on a phone), and a fade at the right edge shows a line goes on |
 | Line numbers | | Shows or hides the numbers at the left |
-| Find (magnifier) | Ctrl+F | Finds a word in the text: **next**, **previous**, **all**, match case, regular expression, whole word |
+| Find (magnifier) | Ctrl+F | Finds a word in the text: **Next**, **Previous**, **All**, Match case, Regular expression, Whole words |
 | Go to line | Ctrl+Alt+G | Jumps to a line number (`42`), or a line and column (`42:7`) |
 | | F3, Ctrl+G / Shift+F3, Shift+Ctrl+G | Next / previous match of the word found |
 | Follow | | Shows what is added to the end of the file as it grows, every two seconds (a log being written); click again to stop |
@@ -146,8 +146,9 @@ the one before it has ended shows its time in red, and the bar at the bottom cou
   other marks (`Film.en.forced.srt` → `Film.en.forced`, `Film.en`, then `Film`, with any video extension).
 - Double-click a cue (or Enter) to see it in the source. A file that isn't valid says on which line.
 - **Cues** / **Source** / **Split**, as for Markdown.
-- While editing, **Shift times** moves every cue by the seconds typed (`2.5` later, `-2.5` earlier), for subtitles
-  out of sync with their video. Only the times change, written as they were; Ctrl+Z undoes it.
+- While editing, **Shift times** (or Enter in the box beside it) moves every cue by the seconds typed (`2.5` later,
+  `-2.5` earlier), for subtitles out of sync with their video. Only the times change, written as they were; Ctrl+Z
+  undoes it.
 
 SubStation subtitles (`.ass`, `.ssa`) open as text.
 

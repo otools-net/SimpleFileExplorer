@@ -276,6 +276,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   largest first."); the CSV status bar reads "4 rows × 3 columns · comma separated" and the separator list's hints
   "Read the cells as separated by semicolons."; a broken CSV file says "Record 2: A quoted cell isn't closed." in the
   app's own words; an empty table says "This file has no rows.". Their texts are ready for translation.
+- **Text viewer, text editor and reading settings reworded**: their buttons' hints are full sentences with the key
+  that does them ("Go to a line by its number (Ctrl+Alt+G)."); **Follow**, **Wrap long lines** and the parts of a
+  large file say what they show; the find panel's words are in sentence case (**Next**, **Previous**, **All**,
+  **Whole words**); a file that can't be shown says why ("This file is not text, so it can't be shown here.",
+  "You don't have the right to open this file."); a save that fails reads "Could not save the file: …"; the fonts
+  and reading colours say what they are ("Show brown text on warm paper."). Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

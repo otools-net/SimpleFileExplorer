@@ -1,40 +1,51 @@
-<div class="text-toolbar" role="toolbar" aria-label="Text" sfeOverflowRow="Text">
+<div
+    class="text-toolbar"
+    role="toolbar"
+    aria-label="Text"
+    i18n-aria-label="the text view's toolbar"
+    sfeOverflowRow="Text"
+    i18n-sfeOverflowRow="the text view's toolbar"
+>
     @if (state() === 'ready' && !part()) {
         <sfe-text-edit-actions [sfeOverflowItem]="null" overflowStay />
     }
     @if (part(); as shown) {
-        <div class="text-parts" role="group" aria-label="Parts of the file" [sfeOverflowItem]="more.parts">
+        <div class="text-parts" role="group" [attr.aria-label]="texts.parts()" [sfeOverflowItem]="more.parts">
             <button
                 type="button"
                 class="text-action"
                 data-part="start"
-                title="The start of the file"
+                [title]="texts.startHint()"
                 [disabled]="shown.offset === 0 || loadingPart()"
                 (click)="openPart(0)"
+                i18n="the first part of a large file"
             >Start</button>
             <button
                 type="button"
                 class="text-action"
                 data-part="previous"
-                title="The part before"
+                [title]="texts.earlierHint()"
                 [disabled]="shown.offset === 0 || loadingPart()"
                 (click)="previousPart()"
+                i18n="the part of a large file before the one shown"
             >‹ Earlier</button>
             <button
                 type="button"
                 class="text-action"
                 data-part="next"
-                title="The part after"
+                [title]="texts.laterHint()"
                 [disabled]="shown.end >= shown.size || loadingPart()"
                 (click)="openPart(shown.end)"
+                i18n="the part of a large file after the one shown"
             >Later ›</button>
             <button
                 type="button"
                 class="text-action"
                 data-part="end"
-                title="The end of the file"
+                [title]="texts.endHint()"
                 [disabled]="shown.end >= shown.size || loadingPart()"
                 (click)="openPart(-1)"
+                i18n="the last part of a large file"
             >End</button>
         </div>
     }
@@ -46,9 +57,9 @@
             [sfeOverflowItem]="more.follow"
             [class.active]="following()"
             [attr.aria-pressed]="following()"
-            title="Show what is added to the end of the file as it grows (a log being written)"
+            [title]="texts.followHint()"
             (click)="toggleFollow()"
-        ><svg sfeIcon="down"></svg> Follow</button>
+        ><svg sfeIcon="down"></svg> <span i18n="keep showing the end of a file as it grows">Follow</span></button>
     }
     <button
         type="button"
@@ -56,8 +67,8 @@
         [sfeOverflowItem]="more.wrap"
         [class.active]="own().wrap"
         [attr.aria-pressed]="own().wrap"
-        title="Wrap long lines"
-        aria-label="Wrap long lines"
+        [title]="texts.wrapHint()"
+        [attr.aria-label]="texts.wrap()"
         (click)="toggle('wrap')"
     ><svg sfeIcon="wrap"></svg></button>
     <button
@@ -66,16 +77,18 @@
         [sfeOverflowItem]="more.lineNumbers"
         [class.active]="own().lineNumbers"
         [attr.aria-pressed]="own().lineNumbers"
-        title="Line numbers"
+        [title]="more.lineNumbers().title"
         aria-label="Line numbers"
+        i18n-aria-label
         (click)="toggle('lineNumbers')"
     ><svg sfeIcon="line-numbers"></svg></button>
     <button
         type="button"
         class="icon-button"
         [sfeOverflowItem]="more.find"
-        title="Find (Ctrl+F)"
+        [title]="texts.findHint()"
         aria-label="Find"
+        i18n-aria-label="find words in the text"
         [disabled]="state() !== 'ready'"
         (click)="editor?.find()"
     ><svg sfeIcon="search"></svg></button>
@@ -83,8 +96,8 @@
         type="button"
         class="icon-button"
         [sfeOverflowItem]="more.goToLine"
-        title="Go to line (Ctrl+Alt+G)"
-        aria-label="Go to line"
+        [title]="texts.goToLineHint()"
+        [attr.aria-label]="texts.goToLine()"
         [disabled]="state() !== 'ready'"
         (click)="editor?.goToLine()"
     ><svg sfeIcon="goto-line"></svg></button>
@@ -95,10 +108,11 @@
         [sfeOverflowItem]="more.reading"
         [class.active]="panelOpen()"
         [attr.aria-expanded]="panelOpen()"
-        title="Reading settings: font, size, width, colours"
+        [title]="more.reading().title"
         aria-label="Reading settings"
+        i18n-aria-label
         (click)="panelOpen.set(!panelOpen())"
-    >Aa</button>
+    ><span translate="no">Aa</span></button>
     <button class="icon-button" sfeOverflowMore></button>
 </div>
 @if (panelOpen()) {
@@ -107,13 +121,13 @@
 <sfe-text-edit-bar />
 @switch (state()) {
     @case ('loading') {
-        <p class="text-message">Loading…</p>
+        <p class="text-message" i18n>Loading…</p>
     }
     @case ('failed') {
         <div class="text-message">
             <p>{{ message() }}</p>
             @if (downloadUrl(); as url) {
-                <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> Download</a></p>
+                <p><a class="button" [href]="url"><svg sfeIcon="download"></svg> <span i18n>Download</span></a></p>
             }
         </div>
     }
@@ -122,7 +136,7 @@
 @if (state() === 'ready') {
     <footer class="text-status" aria-live="polite">
         <span class="text-status-details">
-            <span>{{ language() ?? 'Plain text' }}</span>
+            <span>{{ language() ?? texts.plainText() }}</span>
             @if (part(); as shown) {
                 <span>{{ encodingName(shown.encoding) }}</span>
                 <span data-part-range>{{ partRange() }}</span>
@@ -131,8 +145,10 @@
                     <select
                         class="text-status-select"
                         data-save-encoding
-                        title="The encoding the file is saved in"
+                        title="Choose the encoding the file is saved in."
+                        i18n-title
                         aria-label="Save in encoding"
+                        i18n-aria-label
                         (change)="session.encoding.set(valueOf($event))"
                     >
                         @for (encoding of saveEncodings; track encoding) {
@@ -145,8 +161,10 @@
                     <select
                         class="text-status-select"
                         data-save-line-ending
-                        title="The line endings the file is saved with"
+                        title="Choose the line endings the file is saved with."
+                        i18n-title
                         aria-label="Save with line endings"
+                        i18n-aria-label
                         (change)="session.lineEnding.set(valueOf($event))"
                     >
                         @for (ending of saveLineEndings; track ending) {
@@ -160,8 +178,10 @@
                     <select
                         class="text-status-select"
                         data-read-encoding
-                        title="Read the file again in another encoding (letters shown wrong)"
+                        title="Read the file again in another encoding, when letters show wrong."
+                        i18n-title
                         aria-label="Reopen with encoding"
+                        i18n-aria-label
                         [disabled]="following()"
                         (change)="session.reopen(valueOf($event))"
                     >
@@ -169,7 +189,7 @@
                             <option
                                 [value]="encoding"
                                 [selected]="encoding === readValue(file.encoding)"
-                            >{{ encoding === 'utf-8' && file.encoding === 'utf-8-bom' ? encodingName('utf-8-bom') : encodingName(encoding) }}</option>
+                            >{{ readName(encoding, file.encoding) }}</option>
                         }
                     </select>
                     <span>{{ lineEndingName(file.lineEnding) }}</span>
@@ -178,8 +198,8 @@
             }
         </span>
         @if (session.dirty()) {
-            <span class="text-edited" data-edited>Edited</span>
+            <span class="text-edited" data-edited i18n="the text has changes not saved">Edited</span>
         }
-        <span>Ln {{ cursor().line }}, Col {{ cursor().column }}</span>
+        <span i18n="where the cursor is, line and column, shortened">Ln {{ cursor().line }}, Col {{ cursor().column }}</span>
     </footer>
 }

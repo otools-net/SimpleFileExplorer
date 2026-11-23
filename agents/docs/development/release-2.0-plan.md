@@ -212,7 +212,13 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     "Picture editor"; format labels and the document toolbars' shared entries marked; `sfe-help`'s name and hint
     from code; `virtual-rows.ts` counted a comment as a template (reworded). Toasts and confirms left for 2.8.
     Screenshots `image-editor*.png` retaken (scene `viewer`). Viewer readability baseline 823 → 824 (an import).
-  - [ ] **2.7b text viewer and editor, reading settings** (`formats/text/`, `formats/reading/`; ~81, much code).
+  - [x] **2.7b text viewer and editor, reading settings** (`formats/text/`, `formats/reading/`; ~81, much code).
+    Done 2026-11-23: 4 templates at 0 unmarked texts (81 gone); sentences in `text-texts.ts` (toolbar names and
+    hints, the part range, encoding and line-ending names — codes such as "UTF-8" stay as they are —, failures by
+    status, save toasts, CodeMirror's own panel words through `EditorState.phrases`, the editor's label) and
+    `reading-texts.ts` (widths as ICU, margins, sizes), pure functions with specs; fonts and reader themes marked in
+    `reading.ts`; line numbers through `lineNumbersEntry` (`toolbar-entries.ts`); this area's toasts and confirms
+    marked here rather than in 2.8a (same files); "Aa" in `translate="no"`; the docs' find words follow CodeMirror's.
   - [x] **2.7c JSON and CSV** (`formats/json/`, `formats/csv/`; ~51). Done 2026-11-22: 2 templates at 0 unmarked
     texts (51 gone); sentences in `json-texts.ts` (modes, Format / Open all / Close all, the filter's matches, keys
     and items, Show … more, the parse problem with "(and # more)", jsonc-parser reasons by code instead of the

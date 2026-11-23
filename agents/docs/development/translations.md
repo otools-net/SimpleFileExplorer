@@ -130,3 +130,5 @@ in expressions (`[title]="'Close'"`), `svg`, `style`, `script`.
   a range picks the latest and fails on the peer dependency).
 - `ng extract-i18n` builds the client in memory (~20 s); it doesn't touch `wwwroot`.
 - The unit-test builder takes the build's `polyfills`: `$localize` exists in specs without importing it.
+- A library's own words (CodeMirror's find and go-to-line panels) are given through its own hook when it has one:
+  `EditorState.phrases.of(editorPhrases())` (`formats/text/text-texts.ts`), keyed by the library's English phrase.

@@ -25,10 +25,11 @@ import { ReadingPanelComponent } from '../reading/reading-panel.component';
 import { ReadingService } from '../reading/reading.service';
 import { TextEditor } from './codemirror';
 import { readPosition, writePosition } from './positions';
-import { ENCODINGS, LINE_ENDINGS, textFailure } from './text-document';
+import { encodingName, lineEndingName, textFailure } from './text-document';
 import { TextEditActionsComponent, TextEditBarComponent } from './text-edit.component';
 import { TextSession } from './text-session';
-import { findEntry, readingEntry } from '../toolbar-entries';
+import { findEntry, lineNumbersEntry, readingEntry } from '../toolbar-entries';
+import { textViewTexts } from './text-texts';
 import { FILE_SOURCE } from '../file-source';
 
 /** The encodings a file can be read with (Reopen with encoding), and those it can be saved in. */
@@ -108,47 +109,49 @@ export class TextViewComponent {
     protected readonly loadingPart = signal(false);
     protected readonly following = signal(false);
     protected editor: TextEditor | null = null;
+    protected readonly texts = textViewTexts;
     /** The toolbar's buttons in its "⋯" menu, when they don't fit (the editing actions stay). */
     protected readonly more = {
         parts: (): MenuEntry => {
             const shown = this.part();
             const first = !shown || shown.offset === 0 || this.loadingPart();
             const last = !shown || shown.end >= shown.size || this.loadingPart();
+            const texts = this.texts;
             return {
                 id: 'parts',
-                label: 'Parts of the file',
+                label: texts.parts(),
                 icon: 'rows',
-                title: 'Another part of the file (too large to be read whole)',
+                title: texts.partsHint(),
                 submenu: () => [
                     {
                         id: 'part-start',
-                        label: 'Start',
+                        label: texts.start(),
                         icon: 'up',
-                        title: 'The start of the file',
+                        title: texts.startHint(),
                         disabled: first,
                         run: () => void this.openPart(0),
                     },
                     {
                         id: 'part-previous',
-                        label: 'Earlier',
+                        label: texts.earlier(),
                         icon: 'left',
-                        title: 'The part before',
+                        title: texts.earlierHint(),
                         disabled: first,
                         run: () => this.previousPart(),
                     },
                     {
                         id: 'part-next',
-                        label: 'Later',
+                        label: texts.later(),
                         icon: 'right',
-                        title: 'The part after',
+                        title: texts.laterHint(),
                         disabled: last,
                         run: () => void this.openPart(shown!.end),
                     },
                     {
                         id: 'part-end',
-                        label: 'End',
+                        label: texts.end(),
                         icon: 'down',
-                        title: 'The end of the file',
+                        title: texts.endHint(),
                         disabled: last,
                         run: () => void this.openPart(-1),
                     },
@@ -157,44 +160,32 @@ export class TextViewComponent {
         },
         follow: (): MenuEntry => ({
             id: 'follow',
-            label: 'Follow',
+            label: this.texts.follow(),
             icon: 'down',
-            title: 'Show what is added to the end of the file as it grows (a log being written)',
+            title: this.texts.followHint(),
             checked: this.following(),
             run: () => this.toggleFollow(),
         }),
         wrap: (): MenuEntry => ({
             id: 'wrap',
-            label: 'Wrap long lines',
+            label: this.texts.wrap(),
             icon: 'wrap',
-            title: 'Wrap long lines',
+            title: this.texts.wrapHint(),
             checked: this.own().wrap,
             run: () => this.toggle('wrap'),
         }),
-        lineNumbers: (): MenuEntry => ({
-            id: 'lineNumbers',
-            label: 'Line numbers',
-            icon: 'line-numbers',
-            title: 'Line numbers',
-            checked: this.own().lineNumbers,
-            run: () => this.toggle('lineNumbers'),
-        }),
-        find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.editor?.find(), 'Find (Ctrl+F)'),
+        lineNumbers: (): MenuEntry => lineNumbersEntry(this.own().lineNumbers, () => this.toggle('lineNumbers')),
+        find: (): MenuEntry => findEntry(this.state() !== 'ready', () => this.editor?.find(), this.texts.findHint()),
         goToLine: (): MenuEntry => ({
             id: 'goToLine',
-            label: 'Go to line',
+            label: this.texts.goToLine(),
             icon: 'goto-line',
             shortcut: 'Ctrl+Alt+G',
-            title: 'Go to line (Ctrl+Alt+G)',
+            title: this.texts.goToLineHint(),
             disabled: this.state() !== 'ready',
             run: () => this.editor?.goToLine(),
         }),
-        reading: (): MenuEntry =>
-            readingEntry(
-                this.panelOpen(),
-                () => this.panelOpen.set(!this.panelOpen()),
-                'Reading settings: font, size, width, colours',
-            ),
+        reading: (): MenuEntry => readingEntry(this.panelOpen(), () => this.panelOpen.set(!this.panelOpen())),
     };
     private cancel: AbortSignal | null = null;
     private followTimer: ReturnType<typeof setTimeout> | undefined;
@@ -216,7 +207,7 @@ export class TextViewComponent {
     );
     protected readonly partRange = computed(() => {
         const part = this.part();
-        return part ? `${formatSize(part.offset)} – ${formatSize(part.end)} of ${formatSize(part.size)}` : '';
+        return part ? this.texts.partRange(part.offset, part.end, part.size) : '';
     });
 
     constructor() {
@@ -414,11 +405,16 @@ export class TextViewComponent {
     }
 
     protected encodingName(encoding: string): string {
-        return ENCODINGS[encoding] ?? encoding;
+        return encodingName(encoding);
     }
 
     protected lineEndingName(ending: string): string {
-        return LINE_ENDINGS[ending] ?? ending;
+        return lineEndingName(ending);
+    }
+
+    /** An encoding to read with: UTF-8 shows as "with BOM" for a file that has the mark. */
+    protected readName(encoding: string, fileEncoding: string): string {
+        return encodingName(encoding === 'utf-8' && fileEncoding === 'utf-8-bom' ? fileEncoding : encoding);
     }
 
     protected readValue(encoding: string): string {

@@ -1,28 +1,25 @@
 import { ApiError } from '../../core/api.service';
 import { formatSize, joinParts } from '../../core/format';
 import { TextFile } from '../format.models';
+import { encodingNames, failureMessage, lineEndingNames, textViewTexts } from './text-texts';
 
-export const ENCODINGS: Readonly<Record<string, string>> = {
-    'utf-8': 'UTF-8',
-    'utf-8-bom': 'UTF-8 with BOM',
-    'utf-16le': 'UTF-16 LE',
-    'utf-16be': 'UTF-16 BE',
-    'windows-1252': 'Windows-1252',
-};
-export const LINE_ENDINGS: Readonly<Record<string, string>> = {
-    lf: 'LF',
-    crlf: 'CRLF',
-    cr: 'CR',
-    mixed: 'Mixed line endings',
-};
+/** The name shown for an encoding ("UTF-8 with BOM"), the code itself when it has none. */
+export function encodingName(encoding: string): string {
+    return encodingNames()[encoding] ?? encoding;
+}
+
+/** The name shown for line endings ("CRLF", "Mixed line endings"). */
+export function lineEndingName(ending: string): string {
+    return lineEndingNames()[ending] ?? ending;
+}
 
 /** The status bar's left part: the language (or format), encoding, line endings and size of a text file. */
 export function textDetails(file: TextFile, language: string | null): string {
     return joinParts(
         [
-            language ?? 'Plain text',
-            ENCODINGS[file.encoding] ?? file.encoding,
-            LINE_ENDINGS[file.lineEnding] ?? file.lineEnding,
+            language ?? textViewTexts.plainText(),
+            encodingName(file.encoding),
+            lineEndingName(file.lineEnding),
             formatSize(file.size),
         ],
         '  ·  ',
@@ -34,15 +31,6 @@ export function textFailure(error: unknown): { message: string; offerDownload: b
     const status = error instanceof ApiError ? error.status : 0;
     return {
         offerDownload: status === 413 || status === 415 || status === 500,
-        message:
-            status === 413
-                ? 'This file is too large to be shown as text (more than 10 MB).'
-                : status === 415
-                  ? 'This file is not text: it can only be downloaded.'
-                  : status === 404
-                    ? 'This file is not there any more.'
-                    : status === 403
-                      ? 'You may not open this file.'
-                      : `It could not be read: ${error instanceof Error ? error.message : String(error)}`,
+        message: failureMessage(status, error instanceof Error ? error.message : String(error)),
     };
 }

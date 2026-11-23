@@ -15,6 +15,7 @@ import {
 } from '@codemirror/view';
 import { classHighlighter } from '@lezer/highlight';
 import { languageFor } from './languages';
+import { editorLabel, editorPhrases } from './text-texts';
 
 /**
  * CodeMirror's parts in the reader's colours: variables of `styles/reader.css` (a theme of CodeMirror's own outranks
@@ -197,7 +198,8 @@ export class TextEditor {
             history(),
             EditorState.tabSize.of(4),
             keymap.of([...searchKeymap, ...historyKeymap, ...defaultKeymap]),
-            EditorView.contentAttributes.of({ 'aria-label': `Content of ${options.name}` }),
+            EditorView.contentAttributes.of({ 'aria-label': editorLabel(options.name) }),
+            EditorState.phrases.of(editorPhrases()),
         ];
         const onChange = options.onChange;
         extensions.push(

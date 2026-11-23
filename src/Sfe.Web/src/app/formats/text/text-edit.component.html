@@ -4,9 +4,10 @@
                 type="button"
                 class="text-action"
                 data-edit
-                title="Change the text (E)"
+                title="Change the text (E)."
+                i18n-title
                 (click)="session.startEdit()"
-            ><svg sfeIcon="edit"></svg> Edit</button>
+            ><svg sfeIcon="edit"></svg> <span i18n="start changing the text">Edit</span></button>
         } @else {
             @if (session.canSave()) {
                 <!-- The same label while saving: a wider "Saving…" made the toolbar (an overflow row) measure itself again in a
@@ -17,30 +18,33 @@
                     data-save
                     [class.saving]="session.saving()"
                     [attr.aria-busy]="session.saving() || null"
-                    [title]="session.saving() ? 'Saving…' : 'Save over the file (Ctrl+S)'"
+                    [title]="texts.saveHint(session.saving())"
                     [disabled]="!session.dirty() || session.saving()"
                     (click)="session.save()"
                 >
-                    <svg sfeIcon="save"></svg> Save</button>
+                    <svg sfeIcon="save"></svg> <span i18n="save over the file">Save</span></button>
             }
             @if (session.access()?.saveCopy) {
                 <button
                     type="button"
                     class="text-action"
                     data-save-copy
-                    title="Save the text as a new file in this folder (Ctrl+Shift+S)"
+                    title="Save the text as a new file in this folder (Ctrl+Shift+S)."
+                    i18n-title
                     [disabled]="session.saving()"
                     (click)="session.openCopy()"
                 >
-                    <svg sfeIcon="copy"></svg> <span class="text-action-label">Save a copy</span></button>
+                    <svg sfeIcon="copy"></svg> <span class="text-action-label" i18n>Save a copy</span></button>
             }
             @if (session.access()?.download) {
                 <button
                     type="button"
                     class="icon-button"
                     data-download-text
-                    title="Download the text as it is now"
+                    title="Download the text as it is now, with your changes."
+                    i18n-title
                     aria-label="Download the text"
+                    i18n-aria-label
                     (click)="session.download()"
                 ><svg sfeIcon="download"></svg></button>
             }
@@ -48,8 +52,9 @@
                 type="button"
                 class="text-action"
                 data-done
-                title="Stop editing"
+                title="Stop editing and go back to reading."
+                i18n-title
                 (click)="session.stopEdit()"
-            ><svg sfeIcon="check"></svg> <span class="text-action-label">Done</span></button>
+            ><svg sfeIcon="check"></svg> <span class="text-action-label" i18n="stop editing">Done</span></button>
         }
     }

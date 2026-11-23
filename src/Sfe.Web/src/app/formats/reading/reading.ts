@@ -38,28 +38,43 @@ export interface ReaderFont {
 }
 
 export const READER_FONTS: readonly ReaderFont[] = [
-    { id: 'literata', label: 'Literata (serif, for reading)', family: '"Literata", Georgia, serif', bundled: true },
+    {
+        id: 'literata',
+        label: $localize`:a font:Literata (serif, made for reading)`,
+        family: '"Literata", Georgia, serif',
+        bundled: true,
+    },
     {
         id: 'atkinson',
-        label: 'Atkinson Hyperlegible (sans-serif, very legible)',
+        label: $localize`:a font:Atkinson Hyperlegible (sans-serif, very legible)`,
         family: '"Atkinson Hyperlegible", system-ui, sans-serif',
         bundled: true,
     },
     {
         id: 'jetbrains-mono',
-        label: 'JetBrains Mono (monospace)',
+        label: $localize`:a font:JetBrains Mono (monospace, for code)`,
         family: '"JetBrains Mono", ui-monospace, monospace',
         bundled: true,
     },
     {
         id: 'system-serif',
-        label: 'Serif of this device',
+        label: $localize`:a font:Serif font of this device`,
         family: '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif',
         bundled: false,
     },
-    { id: 'system-sans', label: 'Sans-serif of this device', family: 'var(--font)', bundled: false },
-    { id: 'system-mono', label: 'Monospace of this device', family: 'var(--mono)', bundled: false },
-    { id: 'custom', label: 'Another font of this device…', family: 'var(--mono)', bundled: false },
+    {
+        id: 'system-sans',
+        label: $localize`:a font:Sans-serif font of this device`,
+        family: 'var(--font)',
+        bundled: false,
+    },
+    {
+        id: 'system-mono',
+        label: $localize`:a font:Monospace font of this device`,
+        family: 'var(--mono)',
+        bundled: false,
+    },
+    { id: 'custom', label: $localize`:a font:Another font of this device…`, family: 'var(--mono)', bundled: false },
 ];
 
 export const FONT_SIZES = { min: 10, max: 32 } as const;
@@ -68,10 +83,14 @@ export const LINE_HEIGHTS: readonly number[] = [1.2, 1.35, 1.5, 1.65, 1.8, 2];
 export const WIDTHS: readonly number[] = [0, 60, 72, 80, 100, 120];
 export const PADDINGS: readonly number[] = [0, 8, 16, 24, 32, 48, 64];
 export const READER_THEMES: readonly { id: ReaderTheme; label: string; title: string }[] = [
-    { id: 'app', label: 'App', title: 'As the app: light or dark with its theme' },
-    { id: 'light', label: 'Light', title: 'Dark text on white' },
-    { id: 'sepia', label: 'Sepia', title: 'Brown text on warm paper' },
-    { id: 'dark', label: 'Dark', title: 'Light text on dark grey' },
+    {
+        id: 'app',
+        label: $localize`:reading colours of the app:App`,
+        title: $localize`Use the app's colours: light or dark, with its theme.`,
+    },
+    { id: 'light', label: $localize`:reading colours:Light`, title: $localize`Show dark text on white.` },
+    { id: 'sepia', label: $localize`:reading colours:Sepia`, title: $localize`Show brown text on warm paper.` },
+    { id: 'dark', label: $localize`:reading colours:Dark`, title: $localize`Show light text on dark grey.` },
 ];
 
 export const DEFAULT_READING: ReadingPreferences = {

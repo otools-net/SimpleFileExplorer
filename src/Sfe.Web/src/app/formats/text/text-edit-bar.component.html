@@ -2,54 +2,80 @@
     @switch (problem.kind) {
         @case ('changed') {
             <div class="text-bar warning" role="alert" data-bar="changed">
-                <span>This file was changed elsewhere since you opened it.</span>
+                <span i18n>This file was changed elsewhere since you opened it.</span>
                 <button
                     type="button"
                     class="button"
-                    title="Read it as it is now: your changes are lost"
+                    title="Read the file as it is now. Your changes are lost."
+                    i18n-title
                     (click)="session.reload()"
+                    i18n="read the file again"
                 >Reload</button>
                 @if (session.canSave()) {
                     <button
                         type="button"
                         class="button"
-                        title="Save your text over the other changes"
+                        title="Save your text over the other changes."
+                        i18n-title
                         (click)="session.save(true)"
+                        i18n="save over the other changes"
                     >Overwrite</button>
                 }
                 @if (session.access()?.saveCopy) {
-                    <button type="button" class="button" (click)="session.openCopy()">Save a copy</button>
+                    <button
+                        type="button"
+                        class="button"
+                        title="Save your text as a new file in this folder, and leave the file as it is."
+                        i18n-title
+                        (click)="session.openCopy()"
+                        i18n
+                    >Save a copy</button>
                 }
-                <button type="button" class="link-button" (click)="session.problem.set(null)">Keep editing</button>
+                <button type="button" class="link-button" (click)="session.problem.set(null)" i18n>Keep editing</button>
             </div>
         }
         @case ('disk') {
             <div class="text-bar warning" role="alert" data-bar="disk">
-                <span>{{ session.dirty() ? 'This file was changed elsewhere: reloading it loses your changes.' : 'This file was changed elsewhere since it was opened.' }}</span>
+                <span>
+                    @if (session.dirty()) {
+                        <ng-container i18n>This file was changed elsewhere. Reloading it loses your changes.</ng-container>
+                    } @else {
+                        <ng-container i18n>This file was changed elsewhere since it was opened.</ng-container>
+                    }
+                </span>
                 <button
                     type="button"
                     class="button"
-                    title="Read it as it is now"
+                    title="Read the file as it is now."
+                    i18n-title
                     (click)="session.reload()"
+                    i18n="read the file again"
                 >Reload</button>
                 <button
                     type="button"
                     class="link-button"
-                    title="Keep the text shown (a save asks again)"
+                    title="Keep the text shown. The next save asks again."
+                    i18n-title
                     (click)="session.ignoreDisk()"
-                >{{ session.editing() ? 'Keep editing' : 'Keep this one' }}</button>
+                >
+                    @if (session.editing()) {
+                        <ng-container i18n>Keep editing</ng-container>
+                    } @else {
+                        <ng-container i18n="keep the text shown, not the changed file">Keep this one</ng-container>
+                    }
+                </button>
             </div>
         }
         @case ('not-encodable') {
             <div class="text-bar warning" role="alert" data-bar="not-encodable">
                 <span>{{ problem.message }}</span>
-                <button type="button" class="button" (click)="session.saveAsUtf8()">Save as UTF-8</button>
-                <button type="button" class="link-button" (click)="session.problem.set(null)">Keep editing</button>
+                <button type="button" class="button" (click)="session.saveAsUtf8()" i18n>Save as UTF-8</button>
+                <button type="button" class="link-button" (click)="session.problem.set(null)" i18n>Keep editing</button>
             </div>
         }
         @case ('copy') {
             <form class="text-bar" data-bar="copy" (submit)="$event.preventDefault(); session.saveCopy()">
-                <label>Save a copy as
+                <label><span i18n="the name of a copy of the text">Save a copy as</span>
                 <input
                     #copyInput
                     type="text"
@@ -64,8 +90,9 @@
                     type="submit"
                     class="button primary"
                     [disabled]="session.saving() || !session.copyName().trim()"
+                    i18n="save the copy"
                 >Save</button>
-                <button type="button" class="link-button" (click)="session.problem.set(null)">Cancel</button>
+                <button type="button" class="link-button" (click)="session.problem.set(null)" i18n>Cancel</button>
                 @if (problem.error) {
                     <span class="text-bar-error" role="alert">{{ problem.error }}</span>
                 }
@@ -74,6 +101,12 @@
     }
 } @else if (session.editing() && !session.canSave()) {
     <div class="text-bar" data-bar="copy-only">
-        <span>{{ session.access()?.saveCopy ? 'You may not save over this file: save a copy of your text, or download it.' : 'You may not save here: download your text to keep it.' }}</span>
+        <span>
+            @if (session.access()?.saveCopy) {
+                <ng-container i18n>You can't save over this file. Save a copy of your text, or download it.</ng-container>
+            } @else {
+                <ng-container i18n>You can't save here. Download your text to keep it.</ng-container>
+            }
+        </span>
     </div>
 }
