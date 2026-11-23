@@ -800,7 +800,7 @@
         <note category="location">src/app/access/accounts-page.component.html:144,145</note>
         <note category="location">src/app/access/space-detail.component.html:102,103</note>
         <note category="location">src/app/access/space-detail.component.html:216,217</note>
-        <note category="location">src/app/files/item-menu.ts:248</note>
+        <note category="location">src/app/files/opening-commands.ts:123</note>
         <note category="location">src/app/formats/text/text-edit.component.html:10,12</note>
         <note category="location">src/app/tasks/tasks-section.component.html:199</note>
       </notes>
@@ -827,7 +827,7 @@
         <note category="location">src/app/access/space-detail.component.html:225</note>
         <note category="location">src/app/access/spaces-page.component.html:59,60</note>
         <note category="location">src/app/files/delete.dialog.ts:62</note>
-        <note category="location">src/app/library/selection-bar.component.html:83,84</note>
+        <note category="location">src/app/library/selection-bar.component.html:72,73</note>
         <note category="location">src/app/tags/tag-editor.dialog.html:128,129</note>
         <note category="location">src/app/tasks/tasks-section.component.html:208</note>
       </notes>
@@ -2571,14 +2571,14 @@
         <note category="location">src/app/access/spaces-page.component.html:111</note>
         <note category="location">src/app/files/file-transfers.ts:394</note>
         <note category="location">src/app/files/file-transfers.ts:442</note>
-        <note category="location">src/app/files/item-menu.ts:454</note>
-        <note category="location">src/app/files/item-menu.ts:473</note>
+        <note category="location">src/app/files/opening-commands.ts:43</note>
+        <note category="location">src/app/files/opening-commands.ts:52</note>
         <note category="location">src/app/formats/archive/archive-texts.ts:78</note>
         <note category="location">src/app/formats/archive/archive-view.component.html:142,143</note>
         <note category="location">src/app/formats/json/json-texts.ts:25</note>
         <note category="location">src/app/formats/pdf/pdf-view.component.html:188,191</note>
-        <note category="location">src/app/library/folder-menu.ts:157</note>
-        <note category="location">src/app/menus/context-menu.ts:303</note>
+        <note category="location">src/app/library/folder-menu.ts:156</note>
+        <note category="location">src/app/menus/context-menu.ts:305</note>
       </notes>
       <segment>
         <source>Open</source>
@@ -3257,7 +3257,7 @@ Space “Holiday photos”
         <note category="location">src/app/account/setup-page.component.html:136,137</note>
         <note category="location">src/app/account/setup-page.component.html:276,277</note>
         <note category="location">src/app/menus/context-menu.html:28,29</note>
-        <note category="location">src/app/menus/context-menu.ts:336</note>
+        <note category="location">src/app/menus/context-menu.ts:338</note>
       </notes>
       <segment>
         <source>Back</source>
@@ -4763,7 +4763,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:234</note>
         <note category="location">src/app/files/properties.dialog.html:70,71</note>
-        <note category="location">src/app/library/selection-bar.component.html:156,157</note>
+        <note category="location">src/app/library/selection-bar.component.html:145,146</note>
         <note category="location">src/app/library/topbar/search-box.component.ts:76</note>
         <note category="location">src/app/library/topbar/search-help.dialog.ts:61</note>
         <note category="location">src/app/library/viewer/viewer.component.html:37</note>
@@ -6192,7 +6192,6 @@ Space “Holiday photos”
         <note category="location">src/app/files/name.dialog.ts:21</note>
         <note category="location">src/app/files/name.dialog.ts:88</note>
         <note category="location">src/app/library/selection-bar.component.html:60,61</note>
-        <note category="location">src/app/library/selection-bar.component.html:71,72</note>
       </notes>
       <segment>
         <source>Rename</source>
@@ -6426,12 +6425,12 @@ Space “Holiday photos”
     <unit id="4323470180912194028">
       <notes>
         <note category="location">src/app/connections/provider-setup.component.html:26,27</note>
-        <note category="location">src/app/files/item-menu.ts:299</note>
         <note category="location">src/app/files/properties.dialog.html:42</note>
         <note category="location">src/app/files/properties.dialog.html:153</note>
+        <note category="location">src/app/files/transfer-commands.ts:69</note>
         <note category="location">src/app/files/transfer.dialog.ts:71</note>
         <note category="location">src/app/files/transfer.dialog.ts:108</note>
-        <note category="location">src/app/library/selection-bar.component.html:107,108</note>
+        <note category="location">src/app/library/selection-bar.component.html:96,97</note>
         <note category="location">src/app/tokens/token-create.component.html:27,28</note>
       </notes>
       <segment>
@@ -7134,6 +7133,126 @@ Space “Holiday photos”
         <source>This browser can&apos;t open this picture for editing.</source>
       </segment>
     </unit>
+    <unit id="443506390754951011">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:43</note>
+      </notes>
+      <segment>
+        <source>Extract to “<ph id="0" equiv="folder" disp="stemOf(item.name)"/>”</source>
+      </segment>
+    </unit>
+    <unit id="2651160455378651016">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:45,46</note>
+      </notes>
+      <segment>
+        <source>Extract it here, in the background, into a new folder named after it (or after the one folder it holds).</source>
+      </segment>
+    </unit>
+    <unit id="2297899351818889020">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:58</note>
+      </notes>
+      <segment>
+        <source>Extract each here</source>
+      </segment>
+    </unit>
+    <unit id="7842161917589532955">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:73</note>
+        <note category="location">src/app/formats/archive/archive-texts.ts:77</note>
+        <note category="location">src/app/formats/archive/archive-view.component.html:89,90</note>
+      </notes>
+      <segment>
+        <source>Extract…</source>
+      </segment>
+    </unit>
+    <unit id="6180799970136279468">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:75</note>
+      </notes>
+      <segment>
+        <source>Extract “<ph id="0" equiv="name" disp="item.name"/>” into a folder picked next, with its password if it has one.</source>
+      </segment>
+    </unit>
+    <unit id="7040132359145528898">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:87</note>
+      </notes>
+      <segment>
+        <source>Compress…</source>
+      </segment>
+    </unit>
+    <unit id="6797660052682918027">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:91</note>
+      </notes>
+      <segment>
+        <source>Put the selected items in a zip file in this folder, with a password if you want one.</source>
+      </segment>
+    </unit>
+    <unit id="1805412889256142673">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:92,93</note>
+      </notes>
+      <segment>
+        <source>Put “<ph id="0" equiv="name" disp="scope.item.name"/>” in a zip file in this folder, with a password if you want one.</source>
+      </segment>
+    </unit>
+    <unit id="7330149553151414466">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:104</note>
+      </notes>
+      <segment>
+        <source>Download as zip</source>
+      </segment>
+    </unit>
+    <unit id="3099741642167775297">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:104</note>
+        <note category="location">src/app/formats/archive/archive-texts.ts:75</note>
+        <note category="location">src/app/formats/epub/epub-view.component.html:78</note>
+        <note category="location">src/app/formats/flash/flash-view.component.html:85</note>
+        <note category="location">src/app/formats/pdf/pdf-view.component.html:196</note>
+        <note category="location">src/app/formats/text/text-view.component.html:130</note>
+        <note category="location">src/app/formats/view-page.component.html:19,20</note>
+        <note category="location">src/app/library/selection-bar.component.html:132,133</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:319</note>
+        <note category="location">src/app/player/player-page.component.html:38</note>
+        <note category="location">src/app/player/player-page.component.ts:88</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:121</note>
+      </notes>
+      <segment>
+        <source>Download</source>
+      </segment>
+    </unit>
+    <unit id="677195242386242259">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:108,109</note>
+      </notes>
+      <segment>
+        <source>Save the selected items to this device, in one zip file (folders with everything in them).</source>
+      </segment>
+    </unit>
+    <unit id="394675028644566224">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:110</note>
+      </notes>
+      <segment>
+        <source>Save this folder and everything in it to this device, as a zip file.</source>
+      </segment>
+    </unit>
+    <unit id="4246527954708249842">
+      <notes>
+        <note category="location">src/app/files/archive-commands.ts:111</note>
+        <note category="location">src/app/formats/view-page.component.html:17,18</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:321</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:123</note>
+      </notes>
+      <segment>
+        <source>Save this file to this device.</source>
+      </segment>
+    </unit>
     <unit id="3052210908898646100">
       <notes>
         <note category="location">src/app/files/batch-rename.dialog.html:2</note>
@@ -7299,7 +7418,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/compress.dialog.html:1</note>
         <note category="location">src/app/files/compress.dialog.html:114,115</note>
-        <note category="location">src/app/library/selection-bar.component.html:131,132</note>
+        <note category="location">src/app/library/selection-bar.component.html:120,121</note>
       </notes>
       <segment>
         <source>Compress</source>
@@ -7592,8 +7711,6 @@ Space “Holiday photos”
     <unit id="6822346304481501479">
       <notes>
         <note category="location">src/app/files/extract.dialog.html:1</note>
-        <note category="location">src/app/library/selection-bar.component.ts:121</note>
-        <note category="location">src/app/library/selection-bar.component.ts:197</note>
       </notes>
       <segment>
         <source>Extract</source>
@@ -7942,7 +8059,7 @@ Space “Holiday photos”
     <unit id="2161917947639624254">
       <notes>
         <note category="location">src/app/files/file-dialog-texts.ts:193</note>
-        <note category="location">src/app/library/selection-bar.component.ts:62</note>
+        <note category="location">src/app/library/selection-bar.component.ts:50</note>
       </notes>
       <segment>
         <source>{count, plural, one {# item selected} other {# items selected}}</source>
@@ -8202,546 +8319,70 @@ Space “Holiday photos”
         <source>Open “<ph id="0" equiv="folder" disp="name"/>”.</source>
       </segment>
     </unit>
+    <unit id="3054489264627617667">
+      <notes>
+        <note category="location">src/app/files/item-command-texts.ts:25</note>
+        <note category="description">what a greyed out action is about</note>
+      </notes>
+      <segment>
+        <source>the selected items</source>
+      </segment>
+    </unit>
+    <unit id="8114658593028052558">
+      <notes>
+        <note category="location">src/app/files/item-command-texts.ts:31</note>
+        <note category="description">the reason a menu entry is greyed out</note>
+      </notes>
+      <segment>
+        <source>{action, select, view {You may not open <ph id="0" equiv="what"/> here.} edit {You may not change <ph id="1" equiv="what"/>.} move {You may not move <ph id="2" equiv="what"/>.} copy {You may not copy <ph id="3" equiv="what"/>.} paste {You may not put anything into <ph id="4" equiv="what"/>.} rename {You may not rename <ph id="5" equiv="what"/>.} tags {You may not change the tags of <ph id="6" equiv="what"/>.} extract {You may not extract <ph id="7" equiv="what"/>.} compress {You may not put <ph id="8" equiv="what"/> in a zip.} download {You may not download <ph id="9" equiv="what"/>.} delete {You may not delete <ph id="10" equiv="what"/>.} other {You may not do this here.}}</source>
+      </segment>
+    </unit>
+    <unit id="7066856889932661187">
+      <notes>
+        <note category="location">src/app/files/item-commands.ts:21</note>
+      </notes>
+      <segment>
+        <source>Open as</source>
+      </segment>
+    </unit>
+    <unit id="3995731242328947294">
+      <notes>
+        <note category="location">src/app/files/item-commands.ts:22</note>
+      </notes>
+      <segment>
+        <source>Open it in the viewer as something else.</source>
+      </segment>
+    </unit>
+    <unit id="1055686627716339120">
+      <notes>
+        <note category="location">src/app/files/item-commands.ts:29</note>
+        <note category="location">src/app/formats/archive/archive-view.component.html:1</note>
+        <note category="location">src/app/formats/archive/archive-view.component.html:2</note>
+        <note category="location">src/app/formats/formats.ts:538</note>
+      </notes>
+      <segment>
+        <source>Archive</source>
+      </segment>
+    </unit>
+    <unit id="150757993892849670">
+      <notes>
+        <note category="location">src/app/files/item-commands.ts:30</note>
+      </notes>
+      <segment>
+        <source>Put it in a zip file, or extract what an archive holds.</source>
+      </segment>
+    </unit>
     <unit id="6201564136619153231">
       <notes>
-        <note category="location">src/app/files/item-menu.ts:110,111</note>
+        <note category="location">src/app/files/item-menu.ts:68,69</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="name" disp="quoted(item.name)"/> is no longer in this folder. It was moved or deleted elsewhere.</source>
       </segment>
     </unit>
-    <unit id="17890349451518760">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:232</note>
-      </notes>
-      <segment>
-        <source>Open as text</source>
-      </segment>
-    </unit>
-    <unit id="6660822419693925255">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:234</note>
-      </notes>
-      <segment>
-        <source>Show its content as text, in the viewer.</source>
-      </segment>
-    </unit>
-    <unit id="6834537788150453430">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:240</note>
-      </notes>
-      <segment>
-        <source>Open as archive</source>
-      </segment>
-    </unit>
-    <unit id="2321734510027559657">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:242</note>
-      </notes>
-      <segment>
-        <source>Show the files and folders inside it, in the viewer.</source>
-      </segment>
-    </unit>
-    <unit id="8420575351340602423">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:250</note>
-      </notes>
-      <segment>
-        <source>Open it in the viewer, ready to be changed.</source>
-      </segment>
-    </unit>
-    <unit id="4401326409179569796">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:256</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:257</note>
-      </notes>
-      <segment>
-        <source>Crop…</source>
-      </segment>
-    </unit>
-    <unit id="2115798594495502321">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:258</note>
-      </notes>
-      <segment>
-        <source>Crop the picture, then save it over the original or as a new file.</source>
-      </segment>
-    </unit>
-    <unit id="516727570287595590">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:265</note>
-        <note category="location">src/app/library/selection-bar.component.ts:152</note>
-        <note category="location">src/app/library/selection-bar.component.ts:160</note>
-      </notes>
-      <segment>
-        <source>Rename…</source>
-      </segment>
-    </unit>
-    <unit id="2456873925031808976">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:269</note>
-        <note category="location">src/app/library/selection-bar.component.ts:82</note>
-      </notes>
-      <segment>
-        <source>Rename the selected items together: find and replace, or numbered names (F2).</source>
-      </segment>
-    </unit>
-    <unit id="4324293089842730911">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:270</note>
-        <note category="location">src/app/library/selection-bar.component.ts:90</note>
-      </notes>
-      <segment>
-        <source>Give “<ph id="0" equiv="name" disp="item.name"/>” another name (F2).</source>
-      </segment>
-    </unit>
-    <unit id="726667894935784085">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:277</note>
-        <note category="location">src/app/library/selection-bar.component.ts:168</note>
-      </notes>
-      <segment>
-        <source>Delete permanently…</source>
-      </segment>
-    </unit>
-    <unit id="770049796319863478">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:277</note>
-        <note category="location">src/app/library/selection-bar.component.ts:168</note>
-      </notes>
-      <segment>
-        <source>Delete…</source>
-      </segment>
-    </unit>
-    <unit id="9033630331438035551">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:281</note>
-      </notes>
-      <segment>
-        <source>Delete “<ph id="0" equiv="name" disp="item.name"/>” for good (Delete).</source>
-      </segment>
-    </unit>
-    <unit id="8194937253559347839">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:282</note>
-      </notes>
-      <segment>
-        <source>Move “<ph id="0" equiv="name" disp="item.name"/>” to the trash (Delete; Shift+Delete deletes it for good).</source>
-      </segment>
-    </unit>
-    <unit id="3804037606764273869">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:290</note>
-      </notes>
-      <segment>
-        <source>Cut</source>
-      </segment>
-    </unit>
-    <unit id="1498459827628830447">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:293</note>
-      </notes>
-      <segment>
-        <source>Keep it, to move it into another folder with Paste (Ctrl+X).</source>
-      </segment>
-    </unit>
-    <unit id="1726359731020608479">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:302</note>
-      </notes>
-      <segment>
-        <source>Keep it, to copy it into another folder with Paste (Ctrl+C).</source>
-      </segment>
-    </unit>
-    <unit id="5057649165443573498">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:309</note>
-        <note category="location">src/app/library/folder-menu.ts:175</note>
-      </notes>
-      <segment>
-        <source>Paste into “<ph id="0" equiv="name" disp="item.name"/>”</source>
-      </segment>
-    </unit>
-    <unit id="7708168891919614066">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:317</note>
-        <note category="location">src/app/library/selection-bar.component.ts:176</note>
-      </notes>
-      <segment>
-        <source>Move to…</source>
-      </segment>
-    </unit>
-    <unit id="8851962247558086841">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:319</note>
-      </notes>
-      <segment>
-        <source>Move it to another folder, picked next.</source>
-      </segment>
-    </unit>
-    <unit id="420452886775036264">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:325</note>
-        <note category="location">src/app/library/selection-bar.component.ts:183</note>
-      </notes>
-      <segment>
-        <source>Copy to…</source>
-      </segment>
-    </unit>
-    <unit id="7095190297217644430">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:327</note>
-      </notes>
-      <segment>
-        <source>Copy it into another folder, picked next.</source>
-      </segment>
-    </unit>
-    <unit id="443506390754951011">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:333</note>
-      </notes>
-      <segment>
-        <source>Extract to “<ph id="0" equiv="folder" disp="stemOf(item.name)"/>”</source>
-      </segment>
-    </unit>
-    <unit id="2651160455378651016">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:335,336</note>
-      </notes>
-      <segment>
-        <source>Extract it here, in the background, into a new folder named after it (or after the one folder it holds).</source>
-      </segment>
-    </unit>
-    <unit id="2297899351818889020">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:347</note>
-      </notes>
-      <segment>
-        <source>Extract each here</source>
-      </segment>
-    </unit>
-    <unit id="7842161917589532955">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:355</note>
-        <note category="location">src/app/formats/archive/archive-texts.ts:77</note>
-        <note category="location">src/app/formats/archive/archive-view.component.html:89,90</note>
-        <note category="location">src/app/library/selection-bar.component.ts:116</note>
-      </notes>
-      <segment>
-        <source>Extract…</source>
-      </segment>
-    </unit>
-    <unit id="2658253441061004495">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:357</note>
-      </notes>
-      <segment>
-        <source>Extract it into a folder picked next, with its password if it has one.</source>
-      </segment>
-    </unit>
-    <unit id="7040132359145528898">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:363</note>
-        <note category="location">src/app/library/selection-bar.component.ts:204</note>
-      </notes>
-      <segment>
-        <source>Compress…</source>
-      </segment>
-    </unit>
-    <unit id="2493655398745299661">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:365</note>
-      </notes>
-      <segment>
-        <source>Put it in a zip file in this folder, with a password if you want one.</source>
-      </segment>
-    </unit>
-    <unit id="7330149553151414466">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:374</note>
-      </notes>
-      <segment>
-        <source>Download as zip</source>
-      </segment>
-    </unit>
-    <unit id="3099741642167775297">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:374</note>
-        <note category="location">src/app/formats/archive/archive-texts.ts:75</note>
-        <note category="location">src/app/formats/epub/epub-view.component.html:78</note>
-        <note category="location">src/app/formats/flash/flash-view.component.html:85</note>
-        <note category="location">src/app/formats/pdf/pdf-view.component.html:196</note>
-        <note category="location">src/app/formats/text/text-view.component.html:130</note>
-        <note category="location">src/app/formats/view-page.component.html:19,20</note>
-        <note category="location">src/app/library/selection-bar.component.html:143,144</note>
-        <note category="location">src/app/library/selection-bar.component.ts:190</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:319</note>
-        <note category="location">src/app/player/player-page.component.html:38</note>
-        <note category="location">src/app/player/player-page.component.ts:88</note>
-        <note category="location">src/app/tracking/tracking-parts.ts:121</note>
-      </notes>
-      <segment>
-        <source>Download</source>
-      </segment>
-    </unit>
-    <unit id="2915584727081113917">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:378</note>
-      </notes>
-      <segment>
-        <source>Save the selected items to this device, in one zip file.</source>
-      </segment>
-    </unit>
-    <unit id="394675028644566224">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:379</note>
-      </notes>
-      <segment>
-        <source>Save this folder and everything in it to this device, as a zip file.</source>
-      </segment>
-    </unit>
-    <unit id="4246527954708249842">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:380</note>
-        <note category="location">src/app/formats/view-page.component.html:17,18</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:321</note>
-        <note category="location">src/app/tracking/tracking-parts.ts:123</note>
-      </notes>
-      <segment>
-        <source>Save this file to this device.</source>
-      </segment>
-    </unit>
-    <unit id="3732296122988145060">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:387</note>
-      </notes>
-      <segment>
-        <source>Tag its files…</source>
-      </segment>
-    </unit>
-    <unit id="7735912362070060981">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:387</note>
-      </notes>
-      <segment>
-        <source>Tags…</source>
-      </segment>
-    </unit>
-    <unit id="2262907023411473169">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:391</note>
-      </notes>
-      <segment>
-        <source>Add or remove tags on all the files of this folder (asks first).</source>
-      </segment>
-    </unit>
-    <unit id="8469266716983346359">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:392</note>
-        <note category="location">src/app/library/items/item-parts.ts:130</note>
-      </notes>
-      <segment>
-        <source>See or change the tags of this file.</source>
-      </segment>
-    </unit>
-    <unit id="7011082534772609140">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:402</note>
-        <note category="location">src/app/library/folder-menu.ts:184</note>
-        <note category="location">src/app/library/folder-menu.ts:344</note>
-        <note category="location">src/app/library/quick-links/quick-links.component.ts:228</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
-      </notes>
-      <segment>
-        <source>Remove from quick links</source>
-      </segment>
-    </unit>
-    <unit id="6770258597457401656">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:402</note>
-        <note category="location">src/app/library/folder-menu.ts:184</note>
-        <note category="location">src/app/library/folder-menu.ts:344</note>
-        <note category="location">src/app/library/selection-bar.component.ts:145</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
-      </notes>
-      <segment>
-        <source>Add to quick links</source>
-      </segment>
-    </unit>
-    <unit id="8753241111446069199">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:405</note>
-        <note category="location">src/app/library/folder-menu.ts:187</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:270</note>
-      </notes>
-      <segment>
-        <source>Take “<ph id="0" equiv="name" disp="item.name"/>” out of your quick links.</source>
-      </segment>
-    </unit>
-    <unit id="3323091261970520456">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:406</note>
-        <note category="location">src/app/library/folder-menu.ts:188</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:271</note>
-      </notes>
-      <segment>
-        <source>Show “<ph id="0" equiv="name" disp="item.name"/>” in your quick links, in the sidebar.</source>
-      </segment>
-    </unit>
-    <unit id="7096568485547149103">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:413</note>
-        <note category="location">src/app/files/properties.dialog.html:173,174</note>
-        <note category="location">src/app/library/folder-menu.ts:195</note>
-        <note category="location">src/app/library/folder-menu.ts:355</note>
-        <note category="location">src/app/library/quick-links/quick-links.component.ts:192</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:278</note>
-        <note category="location">src/app/player/player-page.component.ts:96</note>
-        <note category="location">src/app/tracking/tracking-parts.ts:129</note>
-      </notes>
-      <segment>
-        <source>Copy full path</source>
-      </segment>
-    </unit>
-    <unit id="2296265600394386378">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:415</note>
-        <note category="location">src/app/files/properties.dialog.html:169,170</note>
-        <note category="location">src/app/library/quick-links/quick-links.component.ts:194</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:280</note>
-        <note category="location">src/app/player/player-page.component.ts:98</note>
-        <note category="location">src/app/tracking/tracking-parts.ts:131</note>
-      </notes>
-      <segment>
-        <source>Copy where it is on the server.</source>
-      </segment>
-    </unit>
-    <unit id="8834275305700439126">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:421</note>
-        <note category="location">src/app/library/folder-menu.ts:334</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:120</note>
-      </notes>
-      <segment>
-        <source>Scans and previews…</source>
-      </segment>
-    </unit>
-    <unit id="672346442080462723">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:423,424</note>
-        <note category="location">src/app/library/folder-menu.ts:336,337</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:116,117</note>
-      </notes>
-      <segment>
-        <source>Keep this folder out of scans, trickplay or thumbnails, for everyone using this space.</source>
-      </segment>
-    </unit>
-    <unit id="8721861281513890587">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:430</note>
-        <note category="location">src/app/files/properties.dialog.html:3,4</note>
-        <note category="location">src/app/library/folder-menu.ts:203</note>
-        <note category="location">src/app/library/folder-menu.ts:371</note>
-        <note category="location">src/app/library/quick-links/quick-links.component.ts:200</note>
-      </notes>
-      <segment>
-        <source>Properties</source>
-      </segment>
-    </unit>
-    <unit id="2762563923238266996">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:435</note>
-      </notes>
-      <segment>
-        <source>Show its dates and what it holds (Alt+Enter).</source>
-      </segment>
-    </unit>
-    <unit id="2658182095314133227">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:436</note>
-      </notes>
-      <segment>
-        <source>Show its size, its dates, what the index knows of it and its checksum (Alt+Enter).</source>
-      </segment>
-    </unit>
-    <unit id="8408671376508447504">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:456</note>
-        <note category="location">src/app/formats/view-page.component.ts:45</note>
-        <note category="location">src/app/library/folder-menu.ts:159</note>
-        <note category="location">src/app/library/items/item-parts.ts:163</note>
-      </notes>
-      <segment>
-        <source>Open the folder “<ph id="0" equiv="name" disp="item.name"/>”.</source>
-      </segment>
-    </unit>
-    <unit id="6371588679924903737">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:461</note>
-        <note category="location">src/app/files/item-menu.ts:480</note>
-        <note category="location">src/app/formats/archive/archive-texts.ts:73</note>
-        <note category="location">src/app/library/folder-menu.ts:164</note>
-        <note category="location">src/app/library/folder-menu.ts:246</note>
-        <note category="location">src/app/library/folder-menu.ts:362</note>
-        <note category="location">src/app/library/quick-links/quick-links.component.ts:182</note>
-        <note category="location">src/app/library/topbar/search-box.component.ts:271</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:310</note>
-        <note category="location">src/app/menus/context-menu.ts:310</note>
-        <note category="location">src/app/menus/context-menu.ts:350</note>
-        <note category="location">src/app/tracking/tracking-parts.ts:96</note>
-      </notes>
-      <segment>
-        <source>Open in new tab</source>
-      </segment>
-    </unit>
-    <unit id="9051024192271159774">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:463</note>
-        <note category="location">src/app/library/folder-menu.ts:166</note>
-      </notes>
-      <segment>
-        <source>Open the folder “<ph id="0" equiv="name" disp="item.name"/>” in a tab of its own.</source>
-      </segment>
-    </unit>
-    <unit id="1324581295835062281">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:475</note>
-      </notes>
-      <segment>
-        <source>Show “<ph id="0" equiv="name" disp="item.name"/>” in the viewer.</source>
-      </segment>
-    </unit>
-    <unit id="2216825772739618085">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:482</note>
-        <note category="location">src/app/library/quick-links/quick-links.component.ts:184</note>
-        <note category="location">src/app/library/viewer/viewer.component.ts:312</note>
-        <note category="location">src/app/tracking/tracking-parts.ts:98</note>
-      </notes>
-      <segment>
-        <source>Open “<ph id="0" equiv="name" disp="item.name"/>” in a tab of its own.</source>
-      </segment>
-    </unit>
-    <unit id="2916624982527770012">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:491</note>
-        <note category="location">src/app/tracking/tracking-parts.ts:104</note>
-      </notes>
-      <segment>
-        <source>Open containing folder</source>
-      </segment>
-    </unit>
-    <unit id="8384755943279938845">
-      <notes>
-        <note category="location">src/app/files/item-menu.ts:493</note>
-      </notes>
-      <segment>
-        <source>Open the folder “<ph id="0" equiv="name" disp="item.name"/>” is in, and show it there.</source>
-      </segment>
-    </unit>
     <unit id="5033580705468816227">
       <notes>
-        <note category="location">src/app/files/item-menu.ts:523</note>
+        <note category="location">src/app/files/item-menu.ts:137</note>
       </notes>
       <segment>
         <source>Show more actions (or right-click the item).</source>
@@ -8749,7 +8390,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7144388603380046603">
       <notes>
-        <note category="location">src/app/files/item-menu.ts:524</note>
+        <note category="location">src/app/files/item-menu.ts:138</note>
       </notes>
       <segment>
         <source>More actions for “<ph id="0" equiv="name" disp="this.sfeItemMenu().name"/>”</source>
@@ -8872,6 +8513,136 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Give it back its name <ph id="0" equiv="name" disp="quoted(mode.item.name)"/>.</source>
+      </segment>
+    </unit>
+    <unit id="8408671376508447504">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:45</note>
+        <note category="location">src/app/formats/view-page.component.ts:45</note>
+        <note category="location">src/app/library/folder-menu.ts:158</note>
+        <note category="location">src/app/library/items/item-parts.ts:163</note>
+      </notes>
+      <segment>
+        <source>Open the folder “<ph id="0" equiv="name" disp="item.name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="1324581295835062281">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:54</note>
+      </notes>
+      <segment>
+        <source>Show “<ph id="0" equiv="name" disp="item.name"/>” in the viewer.</source>
+      </segment>
+    </unit>
+    <unit id="6371588679924903737">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:63</note>
+        <note category="location">src/app/formats/archive/archive-texts.ts:73</note>
+        <note category="location">src/app/library/folder-menu.ts:164</note>
+        <note category="location">src/app/library/folder-menu.ts:205</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:182</note>
+        <note category="location">src/app/library/topbar/search-box.component.ts:271</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:310</note>
+        <note category="location">src/app/menus/context-menu.ts:312</note>
+        <note category="location">src/app/menus/context-menu.ts:352</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:96</note>
+      </notes>
+      <segment>
+        <source>Open in new tab</source>
+      </segment>
+    </unit>
+    <unit id="9051024192271159774">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:66</note>
+        <note category="location">src/app/library/folder-menu.ts:166</note>
+      </notes>
+      <segment>
+        <source>Open the folder “<ph id="0" equiv="name" disp="item.name"/>” in a tab of its own.</source>
+      </segment>
+    </unit>
+    <unit id="2216825772739618085">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:67</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:184</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:312</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:98</note>
+      </notes>
+      <segment>
+        <source>Open “<ph id="0" equiv="name" disp="item.name"/>” in a tab of its own.</source>
+      </segment>
+    </unit>
+    <unit id="2916624982527770012">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:79</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:104</note>
+      </notes>
+      <segment>
+        <source>Open containing folder</source>
+      </segment>
+    </unit>
+    <unit id="8384755943279938845">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:81</note>
+      </notes>
+      <segment>
+        <source>Open the folder “<ph id="0" equiv="name" disp="item.name"/>” is in, and show it there.</source>
+      </segment>
+    </unit>
+    <unit id="17890349451518760">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:91</note>
+      </notes>
+      <segment>
+        <source>Open as text</source>
+      </segment>
+    </unit>
+    <unit id="6660822419693925255">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:93</note>
+      </notes>
+      <segment>
+        <source>Show its content as text, in the viewer.</source>
+      </segment>
+    </unit>
+    <unit id="6834537788150453430">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:104</note>
+      </notes>
+      <segment>
+        <source>Open as archive</source>
+      </segment>
+    </unit>
+    <unit id="2321734510027559657">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:106</note>
+      </notes>
+      <segment>
+        <source>Show the files and folders inside it, in the viewer.</source>
+      </segment>
+    </unit>
+    <unit id="8420575351340602423">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:125</note>
+      </notes>
+      <segment>
+        <source>Open it in the viewer, ready to be changed.</source>
+      </segment>
+    </unit>
+    <unit id="4401326409179569796">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:136</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:257</note>
+      </notes>
+      <segment>
+        <source>Crop…</source>
+      </segment>
+    </unit>
+    <unit id="2115798594495502321">
+      <notes>
+        <note category="location">src/app/files/opening-commands.ts:138</note>
+      </notes>
+      <segment>
+        <source>Crop the picture, then save it over the original or as a new file.</source>
       </segment>
     </unit>
     <unit id="1582798184956598054">
@@ -9323,6 +9094,183 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Open <ph id="0" equiv="where" disp="where"/>.</source>
+      </segment>
+    </unit>
+    <unit id="3732296122988145060">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:43</note>
+      </notes>
+      <segment>
+        <source>Tag its files…</source>
+      </segment>
+    </unit>
+    <unit id="7735912362070060981">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:43</note>
+        <note category="location">src/app/files/organising-commands.ts:62</note>
+      </notes>
+      <segment>
+        <source>Tags…</source>
+      </segment>
+    </unit>
+    <unit id="2262907023411473169">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:46</note>
+      </notes>
+      <segment>
+        <source>Add or remove tags on all the files of this folder (asks first).</source>
+      </segment>
+    </unit>
+    <unit id="8469266716983346359">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:47</note>
+        <note category="location">src/app/library/items/item-parts.ts:130</note>
+      </notes>
+      <segment>
+        <source>See or change the tags of this file.</source>
+      </segment>
+    </unit>
+    <unit id="2571039696049191049">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:66</note>
+      </notes>
+      <segment>
+        <source>Add or remove tags on the selected files (the selected folders are left out).</source>
+      </segment>
+    </unit>
+    <unit id="8759474433034893648">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:67</note>
+      </notes>
+      <segment>
+        <source>Add or remove tags on the selected files.</source>
+      </segment>
+    </unit>
+    <unit id="6770258597457401656">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:81</note>
+        <note category="location">src/app/files/organising-commands.ts:89</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
+      </notes>
+      <segment>
+        <source>Add to quick links</source>
+      </segment>
+    </unit>
+    <unit id="6221291632365224698">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:83</note>
+      </notes>
+      <segment>
+        <source>Add the selected items to your quick links (or drag them onto the sidebar).</source>
+      </segment>
+    </unit>
+    <unit id="7011082534772609140">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:89</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:228</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
+      </notes>
+      <segment>
+        <source>Remove from quick links</source>
+      </segment>
+    </unit>
+    <unit id="8753241111446069199">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:92</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:270</note>
+      </notes>
+      <segment>
+        <source>Take “<ph id="0" equiv="name" disp="item.name"/>” out of your quick links.</source>
+      </segment>
+    </unit>
+    <unit id="3323091261970520456">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:93</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:271</note>
+      </notes>
+      <segment>
+        <source>Show “<ph id="0" equiv="name" disp="item.name"/>” in your quick links, in the sidebar.</source>
+      </segment>
+    </unit>
+    <unit id="8834275305700439126">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:109</note>
+        <note category="location">src/app/library/folder-menu.ts:287</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:120</note>
+      </notes>
+      <segment>
+        <source>Scans and previews…</source>
+      </segment>
+    </unit>
+    <unit id="672346442080462723">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:111,112</note>
+        <note category="location">src/app/library/folder-menu.ts:289,290</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:116,117</note>
+      </notes>
+      <segment>
+        <source>Keep this folder out of scans, trickplay or thumbnails, for everyone using this space.</source>
+      </segment>
+    </unit>
+    <unit id="7096568485547149103">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:121</note>
+        <note category="location">src/app/files/properties.dialog.html:173,174</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:192</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:278</note>
+        <note category="location">src/app/player/player-page.component.ts:96</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:129</note>
+      </notes>
+      <segment>
+        <source>Copy full path</source>
+      </segment>
+    </unit>
+    <unit id="878836548429609124">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:125</note>
+      </notes>
+      <segment>
+        <source>Copy where this folder is on the server.</source>
+      </segment>
+    </unit>
+    <unit id="2296265600394386378">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:126</note>
+        <note category="location">src/app/files/properties.dialog.html:169,170</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:194</note>
+        <note category="location">src/app/library/viewer/viewer.component.ts:280</note>
+        <note category="location">src/app/player/player-page.component.ts:98</note>
+        <note category="location">src/app/tracking/tracking-parts.ts:131</note>
+      </notes>
+      <segment>
+        <source>Copy where it is on the server.</source>
+      </segment>
+    </unit>
+    <unit id="8721861281513890587">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:135</note>
+        <note category="location">src/app/files/properties.dialog.html:3,4</note>
+        <note category="location">src/app/library/folder-menu.ts:358</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:200</note>
+      </notes>
+      <segment>
+        <source>Properties</source>
+      </segment>
+    </unit>
+    <unit id="2762563923238266996">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:140</note>
+      </notes>
+      <segment>
+        <source>Show its dates and what it holds (Alt+Enter).</source>
+      </segment>
+    </unit>
+    <unit id="2658182095314133227">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:141</note>
+      </notes>
+      <segment>
+        <source>Show its size, its dates, what the index knows of it and its checksum (Alt+Enter).</source>
       </segment>
     </unit>
     <unit id="5909616277857609581">
@@ -9793,6 +9741,175 @@ Space “Holiday photos”
         <source>Could not start the checksum: <ph id="0" equiv="reason" disp="reason"/></source>
       </segment>
     </unit>
+    <unit id="3804037606764273869">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:54</note>
+      </notes>
+      <segment>
+        <source>Cut</source>
+      </segment>
+    </unit>
+    <unit id="7740676901625495859">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:59</note>
+      </notes>
+      <segment>
+        <source>Keep the selected items, to move them into another folder with Paste (Ctrl+X).</source>
+      </segment>
+    </unit>
+    <unit id="1498459827628830447">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:60</note>
+      </notes>
+      <segment>
+        <source>Keep it, to move it into another folder with Paste (Ctrl+X).</source>
+      </segment>
+    </unit>
+    <unit id="2398640059830429890">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:74</note>
+      </notes>
+      <segment>
+        <source>Keep the selected items, to copy them into another folder with Paste (Ctrl+C).</source>
+      </segment>
+    </unit>
+    <unit id="1726359731020608479">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:75</note>
+      </notes>
+      <segment>
+        <source>Keep it, to copy it into another folder with Paste (Ctrl+C).</source>
+      </segment>
+    </unit>
+    <unit id="5057649165443573498">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:87</note>
+        <note category="location">src/app/library/folder-menu.ts:176</note>
+      </notes>
+      <segment>
+        <source>Paste into “<ph id="0" equiv="name" disp="item.name"/>”</source>
+      </segment>
+    </unit>
+    <unit id="516727570287595590">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:101</note>
+      </notes>
+      <segment>
+        <source>Rename…</source>
+      </segment>
+    </unit>
+    <unit id="2456873925031808976">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:105</note>
+      </notes>
+      <segment>
+        <source>Rename the selected items together: find and replace, or numbered names (F2).</source>
+      </segment>
+    </unit>
+    <unit id="4324293089842730911">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:106</note>
+      </notes>
+      <segment>
+        <source>Give “<ph id="0" equiv="name" disp="scope.item.name"/>” another name (F2).</source>
+      </segment>
+    </unit>
+    <unit id="7708168891919614066">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:116</note>
+      </notes>
+      <segment>
+        <source>Move to…</source>
+      </segment>
+    </unit>
+    <unit id="3149438117375288687">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:120</note>
+      </notes>
+      <segment>
+        <source>Move the selected items to another folder, picked next (or drag them onto a folder).</source>
+      </segment>
+    </unit>
+    <unit id="6617200830672728918">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:121</note>
+      </notes>
+      <segment>
+        <source>Move “<ph id="0" equiv="name" disp="scope.item.name"/>” to another folder, picked next.</source>
+      </segment>
+    </unit>
+    <unit id="420452886775036264">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:130</note>
+      </notes>
+      <segment>
+        <source>Copy to…</source>
+      </segment>
+    </unit>
+    <unit id="2176192534969611518">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:134,135</note>
+      </notes>
+      <segment>
+        <source>Copy the selected items into another folder, picked next (or drag them onto a folder with Ctrl).</source>
+      </segment>
+    </unit>
+    <unit id="5333707160310629239">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:136</note>
+      </notes>
+      <segment>
+        <source>Copy “<ph id="0" equiv="name" disp="scope.item.name"/>” into another folder, picked next.</source>
+      </segment>
+    </unit>
+    <unit id="726667894935784085">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:148</note>
+      </notes>
+      <segment>
+        <source>Delete permanently…</source>
+      </segment>
+    </unit>
+    <unit id="770049796319863478">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:148</note>
+      </notes>
+      <segment>
+        <source>Delete…</source>
+      </segment>
+    </unit>
+    <unit id="1879251826328545206">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:153</note>
+      </notes>
+      <segment>
+        <source>Delete the selected items for good (Delete).</source>
+      </segment>
+    </unit>
+    <unit id="9033630331438035551">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:154</note>
+      </notes>
+      <segment>
+        <source>Delete “<ph id="0" equiv="name" disp="name"/>” for good (Delete).</source>
+      </segment>
+    </unit>
+    <unit id="6510609260769029849">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:156</note>
+      </notes>
+      <segment>
+        <source>Move the selected items to the trash (Delete; Shift+Delete deletes them for good).</source>
+      </segment>
+    </unit>
+    <unit id="8194937253559347839">
+      <notes>
+        <note category="location">src/app/files/transfer-commands.ts:157</note>
+      </notes>
+      <segment>
+        <source>Move “<ph id="0" equiv="name" disp="name"/>” to the trash (Delete; Shift+Delete deletes it for good).</source>
+      </segment>
+    </unit>
     <unit id="3283566092027670697">
       <notes>
         <note category="location">src/app/files/transfer.dialog.html:11,12</note>
@@ -9853,7 +9970,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/transfer.dialog.ts:71</note>
         <note category="location">src/app/files/transfer.dialog.ts:107</note>
-        <note category="location">src/app/library/selection-bar.component.html:95,96</note>
+        <note category="location">src/app/library/selection-bar.component.html:84,85</note>
         <note category="description">dialog title</note>
       </notes>
       <segment>
@@ -10973,16 +11090,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>{here, select, yes {{count, plural, one {# name in this folder holds “<ph id="0" equiv="query"/>”.} other {# names in this folder hold “<ph id="1" equiv="query"/>”.}}} other {{count, plural, one {# name holds “<ph id="2" equiv="query"/>”.} other {# names hold “<ph id="3" equiv="query"/>”.}}}}</source>
-      </segment>
-    </unit>
-    <unit id="1055686627716339120">
-      <notes>
-        <note category="location">src/app/formats/archive/archive-view.component.html:1</note>
-        <note category="location">src/app/formats/archive/archive-view.component.html:2</note>
-        <note category="location">src/app/formats/formats.ts:538</note>
-      </notes>
-      <segment>
-        <source>Archive</source>
       </segment>
     </unit>
     <unit id="6173602138389885480">
@@ -13345,7 +13452,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/formats/text/text-edit-bar.component.html:13,14</note>
         <note category="location">src/app/formats/text/text-edit-bar.component.html:53,54</note>
-        <note category="location">src/app/menus/context-menu.ts:343</note>
+        <note category="location">src/app/menus/context-menu.ts:345</note>
         <note category="description">read the file again</note>
       </notes>
       <segment>
@@ -14284,7 +14391,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2368997771735616018">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:112</note>
+        <note category="location">src/app/library/folder-menu.ts:111</note>
         <note category="location">src/app/tags/scope-tags-texts.ts:39</note>
       </notes>
       <segment>
@@ -14293,7 +14400,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6504857924827993886">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:147</note>
+        <note category="location">src/app/library/folder-menu.ts:146</note>
       </notes>
       <segment>
         <source>Open the folder</source>
@@ -14301,34 +14408,65 @@ Space “Holiday photos”
     </unit>
     <unit id="1335845239451696989">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:147</note>
+        <note category="location">src/app/library/folder-menu.ts:146</note>
       </notes>
       <segment>
         <source>Open the folder in new tab</source>
       </segment>
     </unit>
-    <unit id="878836548429609124">
+    <unit id="3955577853807215207">
       <notes>
         <note category="location">src/app/library/folder-menu.ts:197</note>
-        <note category="location">src/app/library/folder-menu.ts:357</note>
       </notes>
       <segment>
-        <source>Copy where this folder is on the server.</source>
+        <source>Search again</source>
       </segment>
     </unit>
-    <unit id="3764128397748165735">
+    <unit id="1102717806459547726">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:205</note>
-        <note category="location">src/app/library/folder-menu.ts:373</note>
+        <note category="location">src/app/library/folder-menu.ts:197</note>
+        <note category="location">src/app/logs/logs-section.component.html:29</note>
       </notes>
       <segment>
-        <source>Show its dates and what it holds.</source>
+        <source>Refresh</source>
+      </segment>
+    </unit>
+    <unit id="6389987424612884892">
+      <notes>
+        <note category="location">src/app/library/folder-menu.ts:199</note>
+      </notes>
+      <segment>
+        <source>Run this search again.</source>
+      </segment>
+    </unit>
+    <unit id="6778458019726428143">
+      <notes>
+        <note category="location">src/app/library/folder-menu.ts:199</note>
+      </notes>
+      <segment>
+        <source>List this folder again, as it is now.</source>
+      </segment>
+    </unit>
+    <unit id="8850285345908432056">
+      <notes>
+        <note category="location">src/app/library/folder-menu.ts:208</note>
+        <note category="location">src/app/library/topbar/search-box.component.ts:273</note>
+      </notes>
+      <segment>
+        <source>Open this search in a tab of its own.</source>
+      </segment>
+    </unit>
+    <unit id="483796065832816181">
+      <notes>
+        <note category="location">src/app/library/folder-menu.ts:209</note>
+      </notes>
+      <segment>
+        <source>Open this folder in a tab of its own.</source>
       </segment>
     </unit>
     <unit id="1494518490116523821">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:220</note>
-        <note category="location">src/app/library/folder-menu.ts:309</note>
+        <note category="location">src/app/library/folder-menu.ts:222</note>
         <note category="location">src/app/library/selection-bar.component.html:38,39</note>
       </notes>
       <segment>
@@ -14337,15 +14475,23 @@ Space “Holiday photos”
     </unit>
     <unit id="4914511472584220681">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:223</note>
+        <note category="location">src/app/library/folder-menu.ts:226</note>
       </notes>
       <segment>
         <source>Select every result loaded so far (Ctrl+A).</source>
       </segment>
     </unit>
+    <unit id="1882410800718691119">
+      <notes>
+        <note category="location">src/app/library/folder-menu.ts:227</note>
+      </notes>
+      <segment>
+        <source>Select every item loaded so far (Ctrl+A).</source>
+      </segment>
+    </unit>
     <unit id="7006245163565872719">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:229</note>
+        <note category="location">src/app/library/folder-menu.ts:239</note>
       </notes>
       <segment>
         <source>Tag the results…</source>
@@ -14353,41 +14499,16 @@ Space “Holiday photos”
     </unit>
     <unit id="4356314757855843027">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:231</note>
+        <note category="location">src/app/library/folder-menu.ts:241</note>
         <note category="location">src/app/library/location/location.component.ts:159</note>
       </notes>
       <segment>
         <source>Add or remove tags on all the results of this search (asks first).</source>
       </segment>
     </unit>
-    <unit id="3955577853807215207">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:239</note>
-      </notes>
-      <segment>
-        <source>Search again</source>
-      </segment>
-    </unit>
-    <unit id="6389987424612884892">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:241</note>
-      </notes>
-      <segment>
-        <source>Run this search again.</source>
-      </segment>
-    </unit>
-    <unit id="8850285345908432056">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:248</note>
-        <note category="location">src/app/library/topbar/search-box.component.ts:273</note>
-      </notes>
-      <segment>
-        <source>Open this search in a tab of its own.</source>
-      </segment>
-    </unit>
     <unit id="2618101617221155143">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:254</note>
+        <note category="location">src/app/library/folder-menu.ts:250</note>
       </notes>
       <segment>
         <source>Copy link</source>
@@ -14395,15 +14516,39 @@ Space “Holiday photos”
     </unit>
     <unit id="6724454157373577964">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:256</note>
+        <note category="location">src/app/library/folder-menu.ts:252</note>
       </notes>
       <segment>
         <source>Copy the address of this search.</source>
       </segment>
     </unit>
+    <unit id="8890504809170904482">
+      <notes>
+        <note category="location">src/app/library/folder-menu.ts:266</note>
+      </notes>
+      <segment>
+        <source>Paste</source>
+      </segment>
+    </unit>
+    <unit id="138465436799678551">
+      <notes>
+        <note category="location">src/app/library/folder-menu.ts:277</note>
+      </notes>
+      <segment>
+        <source>Tags of this folder…</source>
+      </segment>
+    </unit>
+    <unit id="7357914119283669284">
+      <notes>
+        <note category="location">src/app/library/folder-menu.ts:279,280</note>
+      </notes>
+      <segment>
+        <source>Add or remove tags on all the files of this folder, or set the tags new files get (asks first).</source>
+      </segment>
+    </unit>
     <unit id="4036965784318891593">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:265</note>
+        <note category="location">src/app/library/folder-menu.ts:304</note>
       </notes>
       <segment>
         <source>New folder…</source>
@@ -14411,7 +14556,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4434941750967738192">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:268</note>
+        <note category="location">src/app/library/folder-menu.ts:307</note>
         <note category="location">src/app/library/location/location.component.html:87,88</note>
       </notes>
       <segment>
@@ -14420,7 +14565,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1281261867866819667">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:274</note>
+        <note category="location">src/app/library/folder-menu.ts:314</note>
       </notes>
       <segment>
         <source>New file…</source>
@@ -14428,7 +14573,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2946216077309757238">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:276</note>
+        <note category="location">src/app/library/folder-menu.ts:316</note>
         <note category="location">src/app/library/location/location.component.html:74,75</note>
       </notes>
       <segment>
@@ -14437,7 +14582,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8603245661498689638">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:283</note>
+        <note category="location">src/app/library/folder-menu.ts:324</note>
       </notes>
       <segment>
         <source>Upload files…</source>
@@ -14445,7 +14590,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4336506568523813036">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:285</note>
+        <note category="location">src/app/library/folder-menu.ts:326</note>
       </notes>
       <segment>
         <source>Upload files into this folder (or drop them on the page).</source>
@@ -14453,7 +14598,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8073633114296124789">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:290</note>
+        <note category="location">src/app/library/folder-menu.ts:332</note>
       </notes>
       <segment>
         <source>Upload a folder…</source>
@@ -14461,90 +14606,25 @@ Space “Holiday photos”
     </unit>
     <unit id="7961767932124790903">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:292</note>
+        <note category="location">src/app/library/folder-menu.ts:334</note>
       </notes>
       <segment>
         <source>Upload a folder and everything in it into this folder.</source>
       </segment>
     </unit>
-    <unit id="8890504809170904482">
+    <unit id="3764128397748165735">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:300</note>
+        <note category="location">src/app/library/folder-menu.ts:360</note>
       </notes>
       <segment>
-        <source>Paste</source>
-      </segment>
-    </unit>
-    <unit id="1882410800718691119">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:312</note>
-      </notes>
-      <segment>
-        <source>Select every item loaded so far (Ctrl+A).</source>
-      </segment>
-    </unit>
-    <unit id="1102717806459547726">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:317</note>
-        <note category="location">src/app/logs/logs-section.component.html:29</note>
-      </notes>
-      <segment>
-        <source>Refresh</source>
-      </segment>
-    </unit>
-    <unit id="6778458019726428143">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:319</note>
-      </notes>
-      <segment>
-        <source>List this folder again, as it is now.</source>
-      </segment>
-    </unit>
-    <unit id="138465436799678551">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:325</note>
-      </notes>
-      <segment>
-        <source>Tags of this folder…</source>
-      </segment>
-    </unit>
-    <unit id="7357914119283669284">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:327,328</note>
-      </notes>
-      <segment>
-        <source>Add or remove tags on all the files of this folder, or set the tags new files get (asks first).</source>
-      </segment>
-    </unit>
-    <unit id="159546969123294371">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:347</note>
-      </notes>
-      <segment>
-        <source>Take this folder out of your quick links.</source>
-      </segment>
-    </unit>
-    <unit id="8526994582774027604">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:348</note>
-      </notes>
-      <segment>
-        <source>Show this folder in your quick links, in the sidebar.</source>
-      </segment>
-    </unit>
-    <unit id="483796065832816181">
-      <notes>
-        <note category="location">src/app/library/folder-menu.ts:364</note>
-      </notes>
-      <segment>
-        <source>Open this folder in a tab of its own.</source>
+        <source>Show its dates and what it holds.</source>
       </segment>
     </unit>
     <unit id="7574993740889368937">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:382</note>
+        <note category="location">src/app/library/folder-menu.ts:370</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:351</note>
-        <note category="location">src/app/menus/context-menu.ts:370</note>
+        <note category="location">src/app/menus/context-menu.ts:372</note>
         <note category="location">src/app/player/player-page.component.ts:148</note>
       </notes>
       <segment>
@@ -14553,9 +14633,9 @@ Space “Holiday photos”
     </unit>
     <unit id="6318906429616077378">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:384</note>
+        <note category="location">src/app/library/folder-menu.ts:372</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:353</note>
-        <note category="location">src/app/menus/context-menu.ts:372</note>
+        <note category="location">src/app/menus/context-menu.ts:374</note>
         <note category="location">src/app/player/player-page.component.ts:150</note>
       </notes>
       <segment>
@@ -16744,7 +16824,7 @@ The search index is updated in the background. This can take a while on large fo
     <unit id="8627133593113147800">
       <notes>
         <note category="location">src/app/library/selection-bar.component.html:1</note>
-        <note category="location">src/app/library/selection-bar.component.ts:46</note>
+        <note category="location">src/app/library/selection-bar.component.ts:34</note>
       </notes>
       <segment>
         <source>Selected items</source>
@@ -16768,7 +16848,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7767797550945982685">
       <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:49</note>
+        <note category="location">src/app/library/selection-bar.component.ts:37</note>
       </notes>
       <segment>
         <source>{count, plural, other {# selected}}</source>
@@ -16776,7 +16856,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="642587086679699182">
       <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:55,56</note>
+        <note category="location">src/app/library/selection-bar.component.ts:43,44</note>
       </notes>
       <segment>
         <source>{folders, plural, one {# folder} other {# folders}} and {files, plural, one {# file} other {# files}} selected</source>
@@ -16784,7 +16864,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4538322129810185474">
       <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:60</note>
+        <note category="location">src/app/library/selection-bar.component.ts:48</note>
       </notes>
       <segment>
         <source>{folders, plural, one {# folder selected} other {# folders selected}}</source>
@@ -16792,7 +16872,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7076187970561396005">
       <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:61</note>
+        <note category="location">src/app/library/selection-bar.component.ts:49</note>
       </notes>
       <segment>
         <source>{files, plural, one {# file selected} other {# files selected}}</source>
@@ -16800,7 +16880,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1602889327806226256">
       <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:67,69</note>
+        <note category="location">src/app/library/selection-bar.component.ts:55,57</note>
       </notes>
       <segment>
         <source>{count, plural, one {Select the # item loaded so far (Ctrl+A). Scroll down to load more.} other {Select the # items loaded so far (Ctrl+A). Scroll down to load more.}}</source>
@@ -16808,98 +16888,10 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8465674956584741688">
       <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:72</note>
+        <note category="location">src/app/library/selection-bar.component.ts:60</note>
       </notes>
       <segment>
         <source>Select every file and folder listed (Ctrl+A).</source>
-      </segment>
-    </unit>
-    <unit id="2571039696049191049">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:76</note>
-      </notes>
-      <segment>
-        <source>Add or remove tags on the selected files (the selected folders are left out).</source>
-      </segment>
-    </unit>
-    <unit id="8759474433034893648">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:77</note>
-      </notes>
-      <segment>
-        <source>Add or remove tags on the selected files.</source>
-      </segment>
-    </unit>
-    <unit id="6221291632365224698">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:81</note>
-      </notes>
-      <segment>
-        <source>Add the selected items to your quick links (or drag them onto the sidebar).</source>
-      </segment>
-    </unit>
-    <unit id="4727634162321115144">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:83,84</note>
-      </notes>
-      <segment>
-        <source>Move the selected items to another folder (Ctrl+X, then Ctrl+V there, or drag them onto a folder).</source>
-      </segment>
-    </unit>
-    <unit id="3820277653642975234">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:85,86</note>
-      </notes>
-      <segment>
-        <source>Copy the selected items into another folder (Ctrl+C, then Ctrl+V there, or drag them onto a folder with Ctrl).</source>
-      </segment>
-    </unit>
-    <unit id="4395109065751632364">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:87</note>
-      </notes>
-      <segment>
-        <source>Put the selected items in a zip file in this folder.</source>
-      </segment>
-    </unit>
-    <unit id="6180799970136279468">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:117,118</note>
-      </notes>
-      <segment>
-        <source>Extract “<ph id="0" equiv="name" disp="selected[0].name"/>” into a folder picked next, with its password if it has one.</source>
-      </segment>
-    </unit>
-    <unit id="1879251826328545206">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:129</note>
-      </notes>
-      <segment>
-        <source>Delete the selected items for good (Delete).</source>
-      </segment>
-    </unit>
-    <unit id="6510609260769029849">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:130</note>
-      </notes>
-      <segment>
-        <source>Move the selected items to the trash (Delete; Shift+Delete deletes them for good).</source>
-      </segment>
-    </unit>
-    <unit id="677195242386242259">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:137</note>
-      </notes>
-      <segment>
-        <source>Save the selected items to this device, in one zip file (folders with everything in them).</source>
-      </segment>
-    </unit>
-    <unit id="5355077662582363748">
-      <notes>
-        <note category="location">src/app/library/selection-bar.component.ts:138</note>
-      </notes>
-      <segment>
-        <source>Save the selected file to this device.</source>
       </segment>
     </unit>
     <unit id="1087023933658984616">
@@ -18373,7 +18365,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="968057188453731867">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:305</note>
+        <note category="location">src/app/menus/context-menu.ts:307</note>
       </notes>
       <segment>
         <source>Follow this link.</source>
@@ -18381,7 +18373,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5863774907239740197">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:312</note>
+        <note category="location">src/app/menus/context-menu.ts:314</note>
       </notes>
       <segment>
         <source>Follow this link in a tab of its own.</source>
@@ -18389,7 +18381,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="689595148755320357">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:318</note>
+        <note category="location">src/app/menus/context-menu.ts:320</note>
       </notes>
       <segment>
         <source>Copy link address</source>
@@ -18397,7 +18389,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7999377919751765759">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:320</note>
+        <note category="location">src/app/menus/context-menu.ts:322</note>
       </notes>
       <segment>
         <source>Copy where this link goes.</source>
@@ -18405,7 +18397,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4851155555791726645">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:338</note>
+        <note category="location">src/app/menus/context-menu.ts:340</note>
       </notes>
       <segment>
         <source>Go back to the page before this one.</source>
@@ -18413,7 +18405,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5107127083591690378">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:345</note>
+        <note category="location">src/app/menus/context-menu.ts:347</note>
       </notes>
       <segment>
         <source>Load this page again.</source>
@@ -18421,7 +18413,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4040272296705871077">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:352</note>
+        <note category="location">src/app/menus/context-menu.ts:354</note>
       </notes>
       <segment>
         <source>Open this page in a tab of its own.</source>
@@ -18429,7 +18421,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8771040483576518598">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:358</note>
+        <note category="location">src/app/menus/context-menu.ts:360</note>
       </notes>
       <segment>
         <source>Copy page link</source>
@@ -18437,7 +18429,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1633178379636239338">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:360</note>
+        <note category="location">src/app/menus/context-menu.ts:362</note>
       </notes>
       <segment>
         <source>Copy the address of this page.</source>
@@ -18445,7 +18437,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6892841920438651162">
       <notes>
-        <note category="location">src/app/menus/context-menu.ts:613</note>
+        <note category="location">src/app/menus/context-menu.ts:615</note>
       </notes>
       <segment>
         <source>Actions for “<ph id="0" equiv="name" disp="this.menu.open()?.target.name ?? &apos;&apos;"/>”</source>

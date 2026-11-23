@@ -38,8 +38,10 @@ export interface MenuEntry {
     submenu?: () => MenuEntry[];
     /** An on/off entry (loop, mute): a check mark while on. */
     checked?: boolean;
-    /** Shown greyed out and not run (its title says why), as its button is disabled. */
+    /** Shown greyed out and not run (its title says why, under its label on phones), as its button is disabled. */
     disabled?: boolean;
+    /** Entries of different groups are kept apart by a line (Open…, the clipboard, Delete…, Properties). */
+    group?: string;
 }
 
 /** What a menu is about (see agents/docs/development/context-menu-plan.md for which menu shows where). */

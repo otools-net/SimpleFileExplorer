@@ -28,7 +28,10 @@
                 <span i18n>Back</span>
             </button>
         }
-        @for (entry of entries(); track entry.id) {
+        @for (entry of entries(); track entry.id; let i = $index) {
+            @if (i && entry.group && entry.group !== entries()[i - 1].group) {
+                <div class="item-menu-divider" role="separator"></div>
+            }
             @if (entry.href) {
                 <a
                     role="menuitem"
@@ -59,7 +62,12 @@
                     (click)="run(entry)"
                 >
                     <svg [sfeIcon]="entry.icon"></svg>
-                    <span>{{ entry.label }}</span>
+                    <span>
+                        {{ entry.label }}
+                        @if (entry.disabled) {
+                            <small class="item-menu-reason">{{ entry.title }}</small>
+                        }
+                    </span>
                     @if (entry.shortcut) {
                         <kbd>{{ entry.shortcut }}</kbd>
                     }

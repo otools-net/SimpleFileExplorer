@@ -283,6 +283,47 @@ describe('ContextMenu', () => {
         expect(menu.open()).toBeNull();
     });
 
+    it('keeps groups apart with a line, and greys out an entry with its reason, running nothing', async () => {
+        const remove = vi.fn();
+        const entry = (id: string, group: string, more: Partial<MenuEntry> = {}): MenuEntry => ({
+            id,
+            label: id,
+            icon: 'info',
+            title: `About ${id}`,
+            group,
+            run: vi.fn(),
+            ...more,
+        });
+        menu.showAt(
+            target('groups', [
+                entry('open', 'open'),
+                entry('newTab', 'open'),
+                entry('cut', 'clipboard'),
+                entry('delete', 'delete', { disabled: true, title: 'You may not delete “a.txt”.', run: remove }),
+            ]),
+            at('#inner'),
+        );
+        await settle();
+
+        const box = document.querySelector('.item-menu')!;
+        expect([...box.children].map((child) => child.getAttribute('data-entry') ?? child.className)).toEqual([
+            'item-menu-title',
+            'open',
+            'newTab',
+            'item-menu-divider',
+            'cut',
+            'item-menu-divider',
+            'delete',
+        ]);
+        const greyed = document.querySelector<HTMLButtonElement>('[data-entry="delete"]')!;
+        expect(greyed.getAttribute('aria-disabled')).toBe('true');
+        expect(greyed.title).toBe('You may not delete “a.txt”.');
+        expect(greyed.querySelector('.item-menu-reason')!.textContent).toBe('You may not delete “a.txt”.');
+        greyed.click();
+        expect(remove).not.toHaveBeenCalled();
+        expect(menu.open()).not.toBeNull();
+    });
+
     it('closes on Esc, giving the focus back to what opened it, and its ⋮ button toggles it', async () => {
         const trigger = at('#inner');
         menu.toggle(target('inner'), trigger);

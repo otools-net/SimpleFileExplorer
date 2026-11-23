@@ -81,6 +81,22 @@ a.item-menu-entry {
 .item-menu-entry[aria-disabled='true']:hover {
     background: none;
 }
+/* Why a greyed out entry is: its hint with a mouse, a line under it on phones (no hover there). */
+.item-menu-reason {
+    display: none;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+@media (hover: none) {
+    .item-menu-entry[aria-disabled='true'] .item-menu-reason {
+        display: block;
+    }
+}
+.item-menu-divider {
+    height: 1px;
+    margin: 4px 6px;
+    background: var(--border);
+}
 
 /* Over a tile's picture, where the tag button was: the tag button moves one place left. */
 .tile .item-menu-button {

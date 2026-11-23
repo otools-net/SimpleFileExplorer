@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { entryOf, usableIds } from '../../testing/menus';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { FileJobView } from './file.models';
 import { Rights } from '../core/rights';
@@ -112,17 +113,17 @@ describe('Extracting archives', () => {
         api.fileJobs.mockResolvedValue([job()]);
 
         const entries = menu.entries(zip);
-        expect(entries.map((e) => e.id)).toContain('extractBeside');
-        expect(entries.find((e) => e.id === 'extractBeside')!.label).toBe('Extract to “trip”');
-        expect(menu.entries(photo).map((e) => e.id)).not.toContain('extract');
-        entries.find((e) => e.id === 'extract')!.run();
+        expect(usableIds(entries)).toContain('extractBeside');
+        expect(entryOf(entries, 'extractBeside').label).toBe('Extract to “trip”');
+        expect(usableIds(menu.entries(photo))).not.toContain('extract');
+        entryOf(entries, 'extract').run();
         expect(open).toHaveBeenCalledWith({ path: zip.path, name: zip.name });
-        entries.find((e) => e.id === 'extractBeside')!.run();
+        entryOf(entries, 'extractBeside').run();
         await settle();
         expect(api.startExtract).toHaveBeenCalledWith({ archive: zip.path, target: 'Media', newFolder: true });
 
         await loadConfig(api, limitedConfig([Rights.browse, Rights.viewFiles, Rights.download], archives));
-        expect(menu.entries(zip).map((e) => e.id)).not.toContain('extract');
+        expect(usableIds(menu.entries(zip))).not.toContain('extract');
     });
 
     it('says when it is done, with what came out and a way to open it', async () => {
@@ -242,17 +243,15 @@ describe('Extracting archives', () => {
         const menu = TestBed.inject(ItemMenu);
 
         store.select(zip, true);
-        expect(menu.entries(zip).map((e) => e.id)).not.toContain('extractEach');
+        expect(usableIds(menu.entries(zip))).not.toContain('extractEach');
         store.select(other, true);
-        menu.entries(zip)
-            .find((e) => e.id === 'extractEach')!
-            .run();
+        entryOf(menu.entries(zip), 'extractEach').run();
         await settle();
         expect(api.startExtract).toHaveBeenCalledWith({ archive: zip.path, target: 'Media', newFolder: true });
         expect(api.startExtract).toHaveBeenCalledWith({ archive: other.path, target: 'Media', newFolder: true });
 
         store.select(photo, true);
-        expect(menu.entries(zip).map((e) => e.id)).not.toContain('extractEach');
+        expect(usableIds(menu.entries(zip))).not.toContain('extractEach');
     });
 
     it('offers Extract… in the selection bar for one archive, Extract for several', async () => {
@@ -274,10 +273,10 @@ describe('Extracting archives', () => {
 
         store.select(other, true);
         fixture.detectChanges();
-        expect(buttonNamed(element, 'Extract')!.title).toBe(
+        expect(buttonNamed(element, 'Extract each here')!.title).toBe(
             'Extract the 2 archives here, in the background, each into a new folder named after it.',
         );
-        buttonNamed(element, 'Extract')!.click();
+        buttonNamed(element, 'Extract each here')!.click();
         await settle();
         expect(api.startExtract).toHaveBeenCalledTimes(2);
         expect(store.selection().size).toBe(0);
@@ -285,7 +284,7 @@ describe('Extracting archives', () => {
         store.select(zip, true);
         store.select(photo, true);
         fixture.detectChanges();
-        expect(buttonNamed(element, 'Extract')).toBeUndefined();
+        expect(buttonNamed(element, 'Extract each here')).toBeUndefined();
     });
 });
 

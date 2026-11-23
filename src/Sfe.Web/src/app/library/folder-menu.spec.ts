@@ -57,22 +57,25 @@ afterEach(() => vi.restoreAllMocks());
 describe('FolderMenu', () => {
     const ids = () => menu.entries().map((entry) => entry.id);
     const entry = (id: string) => menu.entries().find((e) => e.id === id)!;
+    /** The groups of the menu, in order: a line between each. */
+    const groups = () => [...new Set(menu.entries().map((e) => e.group))];
 
     it('offers what may be done in the folder listed, by rights', async () => {
         await setUp();
         expect(ids()).toEqual([
+            'refresh',
+            'newTab',
             'newFolder',
             'newFile',
             'upload',
             'uploadFolder',
             'selectAll',
-            'refresh',
             'tags',
             'exclusions',
             'quickLink',
-            'newTab',
             'properties',
         ]);
+        expect(groups()).toEqual(['view', 'new', 'clipboard', 'organise', 'properties']);
 
         entry('newFolder').run!();
         expect(TestBed.inject(Dialogs).name()!.newFolder).toHaveBeenCalledWith('Media');
@@ -86,7 +89,7 @@ describe('FolderMenu', () => {
 
     it('offers little to those who only browse, and Paste once something was kept', async () => {
         await setUp([Rights.browse, Rights.viewFiles]);
-        expect(ids()).toEqual(['selectAll', 'refresh', 'newTab', 'properties']);
+        expect(ids()).toEqual(['refresh', 'newTab', 'selectAll', 'properties']);
 
         TestBed.resetTestingModule();
         await setUp();
@@ -99,7 +102,7 @@ describe('FolderMenu', () => {
 
     it("offers the search's own entries while searching", async () => {
         await setUp(undefined, 'beach');
-        expect(ids()).toEqual(['selectAll', 'tags', 'searchIn', 'refresh', 'newTab', 'copyLink']);
+        expect(ids()).toEqual(['refresh', 'newTab', 'selectAll', 'tags', 'searchIn', 'copyLink']);
         expect(entry('searchIn').submenu!().map((e) => e.id)).toEqual(['folder', 'location']);
         expect(entry('tags').label).toBe('Tag the results…');
         entry('tags').run!();

@@ -22,7 +22,8 @@ Code: `ListingStore` (`selection`, `select`, `selectAll`, `selectedItems`, `sele
 - The bar (`selection-bar.component.ts`) is an overflow row ([overflow-menus](overflow-menus.md)):
   the host `.selection-dock` is a full-width fixed strip (clicks pass through) measured with `overflowIn`, the pill
   `.selection-bar` centred in it; the long count (`.selection-count`) leaves first for the short one, then Download,
-  Copy, Move, Delete, Rename, Quick links go into its "⋯" (`more` entries); Clear, count, Select all, Tags stay. The
+  Copy, Move, Delete, Rename, Quick links go into its "⋯" (`more` entries); Clear, count, Select all, Tags stay. Its
+  buttons and "⋯" entries come from `ItemCommands` ([context-menu](context-menu.md)), only those allowed. The
   count is read out by a `.visually-hidden` live region (the two visible ones are `aria-hidden`).
 - Its buttons are 30 px with a mouse, 36 px on touch screens (`pointer: coarse`, `selection.css`; e2e
   `selection.spec.ts`).

@@ -175,6 +175,14 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Changed
 
+- **Menus in groups, as in a desktop file browser**: a file's or folder's menu now reads Open (Open in new tab, Open
+  containing folder, **Open as ▸**), Edit and Crop…, Cut / Copy / Paste, Rename…, Move to…, Copy to…, Tags…, quick
+  link, **Archive ▸** (Extract…, Compress…), Download and Copy full path, Delete…, Properties, with a line between
+  groups; the folder's own menu is grouped the same way (Refresh first). What your rights don't allow is greyed out
+  instead of missing, its hint saying why ("You may not delete “beach.jpg”."), written under it on phones; what
+  doesn't apply to the item (Crop… on a video) stays hidden. The selection bar's buttons are the same actions: with
+  several items selected, the menu's Tags… tags the files selected and Add to quick links adds them all.
+
 - **Settings explained more plainly**: each setting's line under it says what it does in a sentence or two; longer
   explanations (examples, exceptions) open from a **?** next to the setting's name, and the administration's search
   finds words in them too. Corrected on the way: Allow deleting copies sends copies to the trash (not deleted from

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { entryOf, usableIds } from '../../testing/menus';
 import { ItemProperties, LibraryItem } from '../core/models';
 import { PropertyJob } from './file.models';
 import { Rights } from '../core/rights';
@@ -161,7 +162,7 @@ describe('Properties in the item menu', () => {
         const menu = TestBed.inject(ItemMenu);
 
         expect(menu.hasActions(photo)).toBe(true);
-        expect(menu.entries(photo).map((entry) => entry.id)).toEqual(['newTab', 'properties']);
-        expect(menu.entries(photo)[1].shortcut).toBe('Alt+Enter');
+        expect(usableIds(menu.entries(photo))).toEqual(['newTab', 'properties']);
+        expect(entryOf(menu.entries(photo), 'properties').shortcut).toBe('Alt+Enter');
     });
 });

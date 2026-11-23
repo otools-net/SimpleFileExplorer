@@ -83,9 +83,9 @@ password**, to give it.
 With the right to extract archives (`files.extract`, which no group has until an administrator gives it), an
 archive's files can be written into the library:
 
-- **Extract to “name”** in the archive's menu (right click, or ⋮) extracts all of it beside it, into a new folder named
-  after it (`trip.zip` → `trip`). An archive holding one folder only gives that folder (`trip.zip` holding `trip/`
-  gives `trip`, not `trip/trip`). A name already taken gets a number (`trip (2)`).
+- **Extract to “name”** in the archive's menu (right click, or ⋮), under **Archive ▸**, extracts all of it beside
+  it, into a new folder named after it (`trip.zip` → `trip`). An archive holding one folder only gives that folder
+  (`trip.zip` holding `trip/` gives `trip`, not `trip/trip`). A name already taken gets a number (`trip (2)`).
 - **Extract…** in the same menu picks the folder to extract into (click through the folders, then **Extract here**).
   Untick **Into a new folder** to put what the archive holds straight into the folder, with what is there: a name
   already taken there is asked about as for a [copy](managing-files.md#move-and-copy) (Replace, Skip, Keep both).
@@ -94,8 +94,8 @@ archive's files can be written into the library:
   ![Extract…: the folder, a new folder or not, the password](../images/extract-dialog.png)
 - In the viewer, **Extract…** in the bar extracts the folder shown (the whole archive at its top), and a row's menu
   (right click) extracts that folder or file alone. The password given in the viewer is used: it isn't asked again.
-- With archives selected, the selection bar has **Extract…** for one (the same dialog), and **Extract** for several:
-  each goes into a new folder named after it, beside it (also **Extract each here** in their menu).
+- With archives selected, the selection bar has **Extract…** for one (the same dialog), and **Extract each here** for
+  several: each goes into a new folder named after it, beside it (the same in their menu, under **Archive ▸**).
 
 Extracting runs on the server in the background, in the panel at the bottom right, as moves and copies do: its
 progress, **Cancel**, the questions, then what was extracted. Until it is over, what comes out is written in a hidden

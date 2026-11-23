@@ -36,121 +36,110 @@
     (click)="store.selectAll()"
     i18n
 >Select all</button>
-@if (quickLinks.addable()) {
+@if (actions().quickLink; as entry) {
     <button
         type="button"
         class="button small selection-pin"
-        [sfeOverflowItem]="more.quickLinks"
-        [title]="hints.quickLinks"
-        (click)="pinSelection()"
+        [sfeOverflowItem]="more.quickLink"
+        [title]="entry.title"
+        (click)="entry.run()"
     >
-        <svg sfeIcon="pin"></svg>
+        <svg [sfeIcon]="entry.icon"></svg>
         <span i18n>Quick links</span>
     </button>
 }
-@if (renamable(); as item) {
+@if (actions().rename; as entry) {
     <button
         type="button"
         class="button small selection-rename"
         [sfeOverflowItem]="more.rename"
-        [title]="renameTitle()"
-        (click)="rename(item)"
+        [title]="entry.title"
+        (click)="entry.run()"
     >
-        <svg sfeIcon="edit"></svg>
-        <span i18n>Rename</span>
-    </button>
-} @else if (renamableTogether()) {
-    <button
-        type="button"
-        class="button small selection-rename"
-        [sfeOverflowItem]="more.renameTogether"
-        [title]="hints.renameTogether"
-        (click)="menu.renameSelection()"
-    >
-        <svg sfeIcon="edit"></svg>
+        <svg [sfeIcon]="entry.icon"></svg>
         <span i18n>Rename</span>
     </button>
 }
-@if (deletable()) {
+@if (actions().delete; as entry) {
     <button
         type="button"
         class="button small selection-delete"
         [sfeOverflowItem]="more.delete"
-        [title]="deleteTitle()"
-        (click)="deleteSelection()"
+        [title]="entry.title"
+        (click)="entry.run()"
     >
-        <svg sfeIcon="trash"></svg>
+        <svg [sfeIcon]="entry.icon"></svg>
         <span i18n>Delete</span>
     </button>
 }
-@if (movable()) {
+@if (actions().moveTo; as entry) {
     <button
         type="button"
         class="button small selection-move"
-        [sfeOverflowItem]="more.move"
-        [title]="hints.move"
-        (click)="transfers.pick('move', store.selectedItems())"
+        [sfeOverflowItem]="more.moveTo"
+        [title]="entry.title"
+        (click)="entry.run()"
     >
-        <svg sfeIcon="move"></svg>
+        <svg [sfeIcon]="entry.icon"></svg>
         <span i18n>Move</span>
     </button>
 }
-@if (copyable()) {
+@if (actions().copyTo; as entry) {
     <button
         type="button"
         class="button small selection-copy"
-        [sfeOverflowItem]="more.copy"
-        [title]="hints.copy"
-        (click)="transfers.pick('copy', store.selectedItems())"
+        [sfeOverflowItem]="more.copyTo"
+        [title]="entry.title"
+        (click)="entry.run()"
     >
-        <svg sfeIcon="copy"></svg>
+        <svg [sfeIcon]="entry.icon"></svg>
         <span i18n>Copy</span>
     </button>
 }
-@if (extractable(); as extract) {
+@if (actions().extract; as entry) {
     <button
         type="button"
         class="button small selection-extract"
         [sfeOverflowItem]="more.extract"
-        [title]="extract.title"
-        (click)="extractSelection()"
+        [title]="entry.title"
+        (click)="entry.run()"
     >
-        <svg sfeIcon="extract"></svg>
-        <span>{{ extract.label }}</span>
+        <svg [sfeIcon]="entry.icon"></svg>
+        <span>{{ entry.label }}</span>
     </button>
 }
-@if (compressible()) {
+@if (actions().compress; as entry) {
     <button
         type="button"
         class="button small selection-compress"
         [sfeOverflowItem]="more.compress"
-        [title]="hints.compress"
-        (click)="compressSelection()"
+        [title]="entry.title"
+        (click)="entry.run()"
     >
-        <svg sfeIcon="compress"></svg>
+        <svg [sfeIcon]="entry.icon"></svg>
         <span i18n>Compress</span>
     </button>
 }
-@if (downloadable()) {
+@if (actions().download; as entry) {
     <button
         type="button"
         class="button small selection-download"
         [sfeOverflowItem]="more.download"
-        [title]="downloadTitle()"
-        (click)="downloadSelection()"
+        [title]="entry.title"
+        (click)="entry.run()"
     >
-        <svg sfeIcon="download"></svg>
+        <svg [sfeIcon]="entry.icon"></svg>
         <span i18n>Download</span>
     </button>
 }
-@if (store.can('tags.assign') && files()) {
+@if (actions().tags; as entry) {
     <button
         type="button"
         class="button small primary"
         [sfeOverflowItem]="null"
         overflowStay
-        [title]="tagsTitle()"
-        (click)="tagSelection()"
+        [title]="entry.title"
+        (click)="entry.run()"
     >
         <svg sfeIcon="tag"></svg>
         <span i18n>Tags</span>

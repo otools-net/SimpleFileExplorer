@@ -14,38 +14,47 @@ which members have ([below](#download-several-files-or-a-folder)).
 Right-click a file or folder for its menu, or use its **⋮** button (it shows when the pointer is over the item, and
 always on phones and tablets). With the keyboard, press the **menu key** (or **Shift+F10**) on the item that has the
 focus. On a phone the menu opens at the bottom of the screen, under the item's name, and pressing and holding an item
-**selects** it instead ([On phones](#on-phones)). The menu offers what you may do with that item:
+**selects** it instead ([On phones](#on-phones)). The menu offers what can be done with that item, in groups kept
+apart by a line, in the order of a desktop file browser:
 
 | Entry | Key | |
 |---|---|---|
 | **Open** | | A folder: lists it; a file: shows it in the viewer |
 | **Open in new tab** | | The folder, or the file (its viewer page for text and documents), in a tab of its own |
 | **Open containing folder** | | In search results: lists the folder the item is in, and shows it there |
+| **Open as ▸** | | **Open as text** for files the viewer doesn't show ([Text files](text-files.md#other-files-open-as-text)), **Open as archive** for books, comics and office documents ([Archives](archives.md)); shown alone when only one applies |
 | **Edit** | | Text files: opens it in the viewer, ready to be changed ([Editing text files](editing-text.md)) |
 | **Crop…** | | Pictures: opens it in the [picture editor](picture-editor.md) (right `files.edit`) |
-| **Rename…** | F2 | Gives it another name; several selected: [renamed together](#rename-several-at-once) |
-| **Delete…** | Delete | Moves it to the trash ([below](#delete)); with items selected, all of them |
 | **Cut**, **Copy** | Ctrl+X, Ctrl+C | Keeps it (or the selection) to move or copy with **Paste** ([below](#move-and-copy)) |
 | **Paste into …** | | On a folder, after Cut or Copy: puts what was kept into it |
+| **Rename…** | F2 | Gives it another name; several selected: [renamed together](#rename-several-at-once) |
 | **Move to…**, **Copy to…** | | Moves or copies it (or the selection) into a folder you pick |
+| **Tags…** / **Tag its files…** | | The tags of a file (or of the files selected); adding tags to every file of a folder ([Tags](tags.md)) |
+| **Add to quick links** / **Remove from quick links** | | Keeps it (or the selection) in your [quick links](browsing.md#quick-links), in the sidebar |
+| **Scans and previews…** | | A folder kept out of scans, trickplay or thumbnails ([Scanning](scanning.md)), for administrators |
+| **Archive ▸** | | **Extract to “name”**, **Extract each here**, **Extract…** for archives ([Archives](archives.md#extracting)) and **Compress…** ([below](#compress-into-a-zip)); **Compress…** alone for anything else |
 | **Download** / **Download as zip** | | Saves the file to your device; a folder, or several items selected, as one zip ([below](#download-several-files-or-a-folder)) |
-| **Tags…** / **Tag its files…** | | The tags of a file; adding tags to every file of a folder ([Tags](tags.md)) |
-| **Add to quick links** / **Remove from quick links** | | Keeps it in your [quick links](browsing.md#quick-links), in the sidebar |
 | **Copy full path** | | Where it is on the server, when [copying paths](browsing.md#copying-full-paths) is on |
+| **Delete…** | Delete | Moves it to the trash ([below](#delete)); with items selected, all of them |
 | **Properties** | Alt+Enter | Its size, dates and what SFE knows of it; a folder's size; a file's checksum ([below](#properties)) |
+
+What doesn't apply to the item isn't shown (no **Crop…** on a video, no **Extract…** on a picture). What your rights
+don't let you do here is **greyed out**: its hint says why ("You may not delete “beach.jpg”."), and on a phone the
+reason is written under it.
 
 ![The menu of a folder](../images/item-menu.png)
 
-Arrow keys move through the menu and Esc closes it. With several items selected, the menu of one of them acts on all
-of them (and has no Open entries). Everyone who may browse has the menu, with **Properties** at least.
+Arrow keys move through the menu and Esc closes it; in a submenu (**▸**), **Back** or the Left arrow goes back. With
+several items selected, the menu of one of them acts on all of them (and has no Open entries). Everyone who may browse
+has the menu, with **Properties** at least. The selection bar's buttons are the same actions, with the same hints.
 
 ### Other menus
 
 Right-clicking elsewhere on the page also opens SFE's menu, for what is under the pointer:
 
-- **The page itself** (an empty part of the listing, the counts, the buttons): the folder you are viewing. New
-  folder, New file, Upload, Paste, Select all, Refresh, its tags, quick link, Open in new tab, Properties… In a search:
-  Select all, Tag the results, Search again, Open in new tab and Copy link.
+- **The page itself** (an empty part of the listing, the counts, the buttons): the folder you are viewing. Refresh,
+  Open in new tab, New folder, New file, Upload, Paste, Select all, its tags, quick link, Copy full path,
+  Properties. In a search: Search again, Open in new tab, Select all, Tag the results, Search in, Copy link.
 - **A folder's name in the path** at the top, the **up / previous / next** buttons, and the folder shown under a
   search result: Open, Open in new tab, Paste into, quick link, Copy full path, Properties.
 - **A quick link** in the sidebar: the same for its folder or file, then Move up, Move down and Remove.

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { usableIds } from '../../testing/menus';
 import { ConfigService } from '../core/config.service';
 import { PlaceProperties } from '../core/connection.models';
 import { ItemProperties, LibraryItem } from '../core/models';
@@ -132,6 +133,6 @@ describe("Properties of a connection's items", () => {
         await setUp(true);
         const menu = TestBed.inject(ItemMenu);
 
-        expect(menu.entries(photo).map((entry) => entry.id)).toContain('properties');
+        expect(usableIds(menu.entries(photo))).toContain('properties');
     });
 });

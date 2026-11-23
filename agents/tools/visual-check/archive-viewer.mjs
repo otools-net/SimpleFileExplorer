@@ -202,6 +202,8 @@ try {
             await b.goto(url + '?path=Archives', 1500);
             await until(b, `document.querySelector('[data-path="Archives/Secret.zip"]')`);
             await b.eval(`document.querySelector('[data-path="Archives/Secret.zip"]').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 300, clientY: 300 })); 1`);
+            check(await until(b, `document.querySelector('[data-entry="archive"]')`), "the archive's menu: Archive ▸");
+            await b.eval(`document.querySelector('[data-entry="archive"]').click(); 1`);
             check(await until(b, `document.querySelector('[data-entry="extractBeside"]')?.textContent.includes('Extract to “Secret”')`), "the archive's menu: Extract to “Secret”");
             await b.eval(`document.querySelector('[data-entry="extract"]').click(); 1`);
             check(await until(b, `document.querySelector('[data-extract-password]') && document.querySelector('[data-extract]') && !document.querySelector('[data-extract]').disabled`), "Extract…: the dialog, ready in the archive's folder");

@@ -193,7 +193,7 @@ test.describe('more file operations', () => {
     test('extract a zip beside it', async ({ page, scratch }) => {
         fs.copyFileSync(path.join(library, 'Documents/Mountain trip.zip'), path.join(library, scratch, 'Trip.zip'));
         await openFolder(page, scratch);
-        await fromItemMenuEntry(page, `${scratch}/Trip.zip`, 'extractBeside');
+        await fromItemMenuEntry(page, `${scratch}/Trip.zip`, 'extractBeside', 'archive');
         await expect(item(page, `${scratch}/Trip`)).toBeVisible({ timeout: 20_000 });
     });
 
@@ -231,8 +231,9 @@ test.describe('more file operations', () => {
     });
 });
 
-/** Opens the menu of `path` and taps `entry`, which opens no dialog. */
-async function fromItemMenuEntry(page: Page, path: string, entry: string): Promise<void> {
+/** Opens the menu of `path` and taps `entry` (in the submenu `within` first: "Archive ▸"), which opens no dialog. */
+async function fromItemMenuEntry(page: Page, path: string, entry: string, within?: string): Promise<void> {
     await tapWhenSettled(page, item(page, path).locator('.item-menu-button'));
+    if (within) await page.locator(`${menu} [data-entry="${within}"]`).tap();
     await page.locator(`${menu} [data-entry="${entry}"]`).tap();
 }

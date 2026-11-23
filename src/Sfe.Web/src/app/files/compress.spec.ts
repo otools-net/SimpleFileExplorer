@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { entryOf, usableIds } from '../../testing/menus';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { FileJobView } from './file.models';
 import { Rights } from '../core/rights';
@@ -95,13 +96,11 @@ describe('Compressing', () => {
         store.select(photo, true);
         store.select(notes, true);
 
-        menu.entries(photo)
-            .find((e) => e.id === 'compress')!
-            .run();
+        entryOf(menu.entries(photo), 'compress').run();
         expect(open).toHaveBeenCalledWith([photo, notes]);
 
         await loadConfig(api, limitedConfig([Rights.browse, Rights.viewFiles, Rights.download]));
-        expect(menu.entries(photo).map((e) => e.id)).not.toContain('compress');
+        expect(usableIds(menu.entries(photo))).not.toContain('compress');
     });
 
     it('says the ratio when it is done, and shows the zip in its folder', async () => {

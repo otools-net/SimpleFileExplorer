@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { entryOf } from '../../testing/menus';
 import { TAB_ID } from '../core/api.service';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { FileJobView } from './file.models';
@@ -161,9 +162,7 @@ describe('BatchRenameDialog', () => {
         store.select(b, true);
         expect(menu.renameSelection()).toBe(true);
         expect(open).toHaveBeenCalledWith([a, b]);
-        menu.entries(a)
-            .find((e) => e.id === 'rename')!
-            .run();
+        entryOf(menu.entries(a), 'rename').run();
         expect(open).toHaveBeenCalledTimes(2);
     });
 });

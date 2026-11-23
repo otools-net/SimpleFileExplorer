@@ -323,12 +323,12 @@ export class ViewerComponent {
             });
         // Not what would change or take away the file shown (rename, delete, move): the viewer doesn't follow them.
         const kept = new Set(['copy', 'copyTo', 'properties']);
-        // Their keys are the listing's (Ctrl+C, Alt+Enter), not the viewer's.
+        // Their keys are the listing's (Ctrl+C, Alt+Enter), not the viewer's; its menu has no groups.
         entries.push(
             ...this.itemMenu
                 .entries(item, true)
                 .filter((entry) => kept.has(entry.id))
-                .map((entry) => ({ ...entry, shortcut: undefined })),
+                .map((entry) => ({ ...entry, shortcut: undefined, group: undefined })),
         );
         return entries;
     });

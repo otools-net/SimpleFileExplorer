@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { entryOf, usableIds } from '../../testing/menus';
 import { Router } from '@angular/router';
 import { ApiError } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
@@ -195,7 +196,7 @@ describe('ItemMenu', () => {
         rightClick(event, photo);
 
         expect(menu.hasActions(photo)).toBe(true);
-        expect(menu.entries(photo).map((e) => e.id)).toEqual(['newTab', 'tags', 'properties']);
+        expect(usableIds(menu.entries(photo))).toEqual(['newTab', 'tags', 'properties']);
         expect(event.defaultPrevented).toBe(true);
         expect(TestBed.inject(ContextMenu).open()?.target.item).toBe(photo);
     });
@@ -209,14 +210,14 @@ describe('ItemMenu', () => {
         const notes = item('Media/notes.txt', { kind: 'file' });
         const archive = item('Media/backup.zip', { kind: 'file' });
 
-        expect(menu.entries(photo).map((e) => e.id)).toEqual(['open', 'newTab', 'properties']);
-        menu.entries(photo)[0].run();
+        expect(usableIds(menu.entries(photo))).toEqual(['open', 'newTab', 'properties']);
+        entryOf(menu.entries(photo), 'open').run();
         expect(open).toHaveBeenCalledWith(photo);
-        const newTab = menu.entries(photo)[1];
+        const newTab = entryOf(menu.entries(photo), 'newTab');
         expect(newTab).toMatchObject({ href: links.file(photo.path), newTab: true });
-        expect(menu.entries(notes).find((e) => e.id === 'newTab')!.href).toBe(links.view(notes.path));
+        expect(entryOf(menu.entries(notes), 'newTab').href).toBe(links.view(notes.path));
         // Nothing to show it in: only its own tab.
-        expect(menu.entries(archive).map((e) => e.id)).toEqual(['newTab', 'properties']);
+        expect(usableIds(menu.entries(archive))).toEqual(['newTab', 'properties']);
     });
 
     it('lists a folder, or lists it in a new tab keeping the sort', async () => {
@@ -241,14 +242,14 @@ describe('ItemMenu', () => {
         const menu = TestBed.inject(ItemMenu);
         store.select(photo, true);
         store.select(folder, true);
-        expect(menu.entries(photo).map((e) => e.id)).toEqual(['properties']);
+        expect(usableIds(menu.entries(photo))).toEqual(['properties']);
         store.select(folder, false);
-        expect(menu.entries(photo).map((e) => e.id)).toEqual(['newTab', 'properties']);
+        expect(usableIds(menu.entries(photo))).toEqual(['newTab', 'properties']);
 
         store.route.set({ path: '', q: 'beach', sort: '', desc: false });
         const reveal = vi.spyOn(store, 'reveal').mockImplementation(() => undefined);
         const found = item('Media/beach.jpg', { directory: 'Media' });
-        const entry = menu.entries(found).find((e) => e.id === 'openFolder')!;
+        const entry = entryOf(menu.entries(found), 'openFolder');
         entry.run();
         expect(reveal).toHaveBeenCalledWith('Media/beach.jpg');
     });
@@ -258,7 +259,7 @@ describe('ItemMenu', () => {
         const menu = TestBed.inject(ItemMenu);
         const quickLinks = TestBed.inject(QuickLinksService);
         const toggle = vi.spyOn(quickLinks, 'toggle').mockResolvedValue(true);
-        const entry = () => menu.entries(folder).find((e) => e.id === 'quickLink')!;
+        const entry = () => entryOf(menu.entries(folder), 'quickLink');
 
         expect(entry().label).toBe('Add to quick links');
         entry().run();
@@ -276,21 +277,15 @@ describe('ItemMenu', () => {
         TestBed.inject(Dialogs).viewer.set({ open } as never);
         const archive = item('Media/backup.zip', { kind: 'file' });
 
-        menu.entries(archive)
-            .find((e) => e.id === 'openAsText')!
-            .run();
+        entryOf(menu.entries(archive), 'openAsText').run();
 
         expect(open).toHaveBeenCalledWith(archive, { asText: true });
         expect(menu.entries(item('Media/notes.txt', { kind: 'file' })).map((e) => e.id)).not.toContain('openAsText');
-        expect(menu.entries(photo).map((e) => e.id)).not.toContain('openAsText');
+        expect(usableIds(menu.entries(photo))).not.toContain('openAsText');
         TestBed.resetTestingModule();
         await setUp([Rights.browse]);
         TestBed.inject(Dialogs).viewer.set({ open } as never);
-        expect(
-            TestBed.inject(ItemMenu)
-                .entries(archive)
-                .map((e) => e.id),
-        ).not.toContain('openAsText');
+        expect(usableIds(TestBed.inject(ItemMenu).entries(archive))).not.toContain('openAsText');
     });
 
     it(
@@ -304,16 +299,14 @@ describe('ItemMenu', () => {
                 TestBed.inject(Dialogs).viewer.set({ open } as never);
                 const comic = item('Media/issue 1.cbz', { kind: 'file' });
 
-                menu.entries(comic)
-                    .find((e) => e.id === 'openAsArchive')!
-                    .run();
+                entryOf(menu.entries(comic), 'openAsArchive').run();
 
                 expect(open).toHaveBeenCalledWith(comic, { asArchive: true });
                 expect(
                     menu.entries(item('Media/backup.zip', { kind: 'file' })).map((e) => e.id),
                     'an archive opens as one',
                 ).not.toContain('openAsArchive');
-                expect(menu.entries(photo).map((e) => e.id)).not.toContain('openAsArchive');
+                expect(usableIds(menu.entries(photo))).not.toContain('openAsArchive');
             } finally {
                 setArchives(null);
             }
@@ -329,42 +322,26 @@ describe('ItemMenu', () => {
         TestBed.inject(Dialogs).imageEditor.set({ open: crop } as never);
         const notes = item('Media/notes.txt', { kind: 'file' });
 
-        menu.entries(notes)
-            .find((e) => e.id === 'editText')!
-            .run();
-        menu.entries(photo)
-            .find((e) => e.id === 'editPicture')!
-            .run();
+        entryOf(menu.entries(notes), 'editText').run();
+        entryOf(menu.entries(photo), 'editPicture').run();
 
         expect(open).toHaveBeenCalledWith(notes, { edit: true });
         expect(crop).toHaveBeenCalledWith(photo);
-        expect(menu.entries(photo).map((e) => e.id)).not.toContain('editText');
-        expect(menu.entries(notes).map((e) => e.id)).not.toContain('editPicture');
+        expect(usableIds(menu.entries(photo))).not.toContain('editText');
+        expect(usableIds(menu.entries(notes))).not.toContain('editPicture');
         expect(menu.entries(item('Media/backup.zip', { kind: 'file' })).map((e) => e.id)).not.toContain('editText');
 
         TestBed.resetTestingModule();
         await setUp([Rights.browse, Rights.viewFiles]);
         TestBed.inject(Dialogs).viewer.set({ open } as never);
         TestBed.inject(Dialogs).imageEditor.set({ open: crop } as never);
-        expect(
-            TestBed.inject(ItemMenu)
-                .entries(notes)
-                .map((e) => e.id),
-        ).not.toContain('editText');
-        expect(
-            TestBed.inject(ItemMenu)
-                .entries(photo)
-                .map((e) => e.id),
-        ).not.toContain('editPicture');
+        expect(usableIds(TestBed.inject(ItemMenu).entries(notes))).not.toContain('editText');
+        expect(usableIds(TestBed.inject(ItemMenu).entries(photo))).not.toContain('editPicture');
     });
 
     it('has no quick links entry without the right', async () => {
         await setUp([Rights.browse]);
-        expect(
-            TestBed.inject(ItemMenu)
-                .entries(photo)
-                .map((e) => e.id),
-        ).toEqual(['newTab', 'properties']);
+        expect(usableIds(TestBed.inject(ItemMenu).entries(photo))).toEqual(['newTab', 'properties']);
     });
 
     it('follows the folder rules of the folder listed and of each folder in it', async () => {
@@ -405,15 +382,15 @@ describe('ItemMenu', () => {
         expect(event.defaultPrevented).toBe(true);
         expect([...element.querySelectorAll('[data-entry]')].map((e) => e.getAttribute('data-entry'))).toEqual([
             'newTab',
-            'rename',
-            'delete',
             'cut',
             'copy',
+            'rename',
             'moveTo',
             'copyTo',
-            'download',
             'tags',
             'quickLink',
+            'download',
+            'delete',
             'properties',
         ]);
         expect(document.activeElement?.getAttribute('data-entry')).toBe('newTab');

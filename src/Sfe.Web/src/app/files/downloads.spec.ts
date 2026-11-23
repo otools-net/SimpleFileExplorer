@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { entryOf } from '../../testing/menus';
 import { ApiError } from '../core/api.service';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
@@ -164,10 +165,10 @@ describe('Download in the selection bar and the item menu', () => {
         await setUp();
         const menu = TestBed.inject(ItemMenu);
 
-        expect(menu.entries(folder).find((entry) => entry.id === 'download')!.label).toBe('Download as zip');
-        expect(menu.entries(photo).find((entry) => entry.id === 'download')!.label).toBe('Download');
+        expect(entryOf(menu.entries(folder), 'download').label).toBe('Download as zip');
+        expect(entryOf(menu.entries(photo), 'download').label).toBe('Download');
         store.select(photo, true);
         store.select(clip, true);
-        expect(menu.entries(photo).find((entry) => entry.id === 'download')!.label).toBe('Download as zip');
+        expect(entryOf(menu.entries(photo), 'download').label).toBe('Download as zip');
     });
 });

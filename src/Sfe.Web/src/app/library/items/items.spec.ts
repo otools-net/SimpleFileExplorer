@@ -1,4 +1,5 @@
 import { Type } from '@angular/core';
+import { entryOf } from '../../../testing/menus';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -283,11 +284,11 @@ describe('SelectionBarComponent on a narrow screen', () => {
             bar.gone.slice(1).map(
                 (label) =>
                     ({
-                        'Quick links': 'quickLinks',
+                        'Quick links': 'quickLink',
                         Rename: 'rename',
                         Delete: 'delete',
-                        Move: 'move',
-                        Copy: 'copy',
+                        Move: 'moveTo',
+                        Copy: 'copyTo',
                         Download: 'download',
                     })[label as string],
             ),
@@ -867,11 +868,7 @@ describe('Copied paths', () => {
         expect(tile.classList.contains('copied')).toBe(false);
 
         const menu = TestBed.inject(ItemMenu);
-        const copy = (value: LibraryItem) =>
-            menu
-                .entries(value)
-                .find((entry) => entry.id === 'copyPath')!
-                .run();
+        const copy = (value: LibraryItem) => entryOf(menu.entries(value), 'copyPath').run();
         copy(item('a.jpg'));
         await settle();
         copy(item('Films', { kind: 'directory' }));

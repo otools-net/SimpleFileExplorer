@@ -375,6 +375,9 @@ const scenes = {
         // Extract…: the archive's menu in the listing, then its dialog (into a new folder, beside it).
         await b.open('?path=Documents');
         await menuOf('Documents/Mountain trip.zip');
+        // An archive's extractions are under "Archive ▸".
+        await b.eval(`document.querySelector('[data-entry="archive"]').click(); 1`);
+        await sleep(400);
         await b.eval(`document.querySelector('[data-entry="extract"]').click(); 1`);
         await sleep(1200);
         await b.shot(OUT + 'extract-dialog.png');

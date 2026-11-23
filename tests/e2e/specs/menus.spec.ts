@@ -84,7 +84,10 @@ test.describe('menus', () => {
         expect(box.height, 'no taller than 75 % of the screen').toBeLessThanOrEqual(
             page.viewportSize()!.height * 0.75 + 1,
         );
+        // Grouped as a desktop file browser's: a line before the clipboard, Delete… and Properties at least.
+        expect(await sheet.locator('.item-menu-divider').count()).toBeGreaterThanOrEqual(3);
         const last = sheet.locator('.item-menu-entry').last();
+        await expect(last).toHaveAttribute('data-entry', 'properties');
         await last.scrollIntoViewIfNeeded();
         await expect(last).toBeInViewport();
         await closeMenu(page);

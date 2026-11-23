@@ -1,4 +1,5 @@
 import { Type } from '@angular/core';
+import { usableIds } from '../../../testing/menus';
 import { TestBed } from '@angular/core/testing';
 import { ApiMock, item, loadConfig, mockApi, testProviders } from '../../../testing/fakes';
 import { LibraryItem } from '../../core/models';
@@ -122,7 +123,7 @@ describe('Partial items', () => {
     it('keeps only Delete, Copy full path and Properties in their menus', () => {
         TestBed.inject(Dialogs).viewer.set({ open: vi.fn() } as unknown as ViewerComponent);
         const menu = TestBed.inject(ItemMenu);
-        const ids = (value: LibraryItem) => menu.entries(value).map((entry) => entry.id);
+        const ids = (value: LibraryItem) => usableIds(menu.entries(value));
         const allowed = ['delete', 'copyPath', 'properties'];
 
         for (const value of [partialFile, partialFolder]) {

@@ -9,55 +9,19 @@ import {
     input,
     untracked,
 } from '@angular/core';
-import { Router } from '@angular/router';
-import { ConfigService } from '../core/config.service';
-import { CopyPathService } from '../core/copy-path.service';
 import { ToastService } from '../core/toast.service';
 import { LibraryItem } from '../core/models';
-import { Rights } from '../core/rights';
-import { formatOf, isContainer, isViewable } from '../formats/formats';
-import { ContextMenu, MenuEntry, MenuTarget } from '../menus/context-menu';
+import { ContextMenu, MenuTarget } from '../menus/context-menu';
 import { IconComponent } from '../shared/icon.component';
-import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
-import { ItemActions } from '../library/items/item-actions.service';
-import { QuickLinksService } from '../library/quick-links/quick-links.service';
-import { FileDownloads } from './downloads';
 import { FileActions } from './file-actions';
-import { extractEachTitle, stemOf } from './extract.dialog';
-import { partialEntries } from './partial-files';
-import { FileTransfers, pasteTitle } from './file-transfers';
 import { quoted } from './file-dialog-texts';
+import { ItemCommands } from './item-commands';
+import { ItemMenuEntry } from './item-scope';
+import { OrganisingCommands } from './organising-commands';
+import { TransferCommands } from './transfer-commands';
 
-/** One entry of an item's menu: always an action. */
-export interface ItemMenuEntry extends MenuEntry {
-    id:
-        | 'open'
-        | 'newTab'
-        | 'openFolder'
-        | 'openAsText'
-        | 'openAsArchive'
-        | 'editText'
-        | 'editPicture'
-        | 'rename'
-        | 'delete'
-        | 'cut'
-        | 'copy'
-        | 'paste'
-        | 'moveTo'
-        | 'copyTo'
-        | 'extractBeside'
-        | 'extractEach'
-        | 'extract'
-        | 'compress'
-        | 'download'
-        | 'tags'
-        | 'quickLink'
-        | 'copyPath'
-        | 'exclusions'
-        | 'properties';
-    run: () => void;
-}
+export type { ItemMenuEntry } from './item-scope';
 
 /**
  * The menu of a listed file or folder, as in an OS file browser (shown by `ContextMenu`): opened by a right click
@@ -67,18 +31,12 @@ export interface ItemMenuEntry extends MenuEntry {
 @Injectable({ providedIn: 'root' })
 export class ItemMenu {
     private readonly store = inject(ListingStore);
-    private readonly dialogs = inject(Dialogs);
-    private readonly actions = inject(ItemActions);
-    private readonly copyPaths = inject(CopyPathService);
     private readonly files = inject(FileActions);
-    private readonly transfers = inject(FileTransfers);
-    private readonly downloads = inject(FileDownloads);
-    private readonly config = inject(ConfigService);
-    private readonly quickLinks = inject(QuickLinksService);
-
+    private readonly commands = inject(ItemCommands);
+    private readonly organising = inject(OrganisingCommands);
+    private readonly transferCommands = inject(TransferCommands);
     private readonly menu = inject(ContextMenu);
     private readonly toasts = inject(ToastService);
-    private readonly router = inject(Router);
 
     constructor() {
         // Another listing: the item whose menu is open may not be there any more. The same listing refreshed (the
@@ -127,40 +85,19 @@ It was moved or deleted elsewhere.`,
         };
     }
 
-    /**
-     * Everyone who browses has the menu, for Properties at least (the browser's own menu with Shift). The item's card
-     * only has its tags and ⋮ buttons: quick links and copying the path are here too.
-     */
+    /** Everyone who browses has the menu, for Properties at least (the browser's own menu with Shift). */
     hasActions(item: LibraryItem): boolean {
-        return (
-            this.canSeeProperties() ||
-            this.transfers.canExtract(item) ||
-            this.transfers.canCompress(item) ||
-            this.canOpenAsText(item) ||
-            this.canOpenAsArchive(item) ||
-            this.canEditText(item) ||
-            this.canEditPicture(item) ||
-            this.quickLinks.addable() ||
-            this.copyPaths.enabled() ||
-            this.canRename(item) ||
-            this.files.canDelete(item) ||
-            this.transfers.canMove(item) ||
-            this.transfers.canCopy(item) ||
-            this.canExclude(item)
-        );
+        return this.canSeeProperties() || this.entries(item).length > 0;
     }
 
     /** Properties of what is listed: whoever browses. */
     canSeeProperties(): boolean {
-        return this.config.can(Rights.browse);
+        return this.organising.canSeeProperties();
     }
 
     /** Several items selected that may be renamed: the batch rename opens for them. False when fewer than two. */
     renameSelection(): boolean {
-        const items = this.store.selectedItems().filter((item) => this.canRename(item));
-        if (items.length < 2 || this.store.searching()) return false;
-        this.dialogs.batchRename()?.open(items);
-        return true;
+        return this.transferCommands.renameTogether(this.store.selectedItems());
     }
 
     /** May rename `item`: in the folder listed (its list of names changes) and on the item itself. */
@@ -168,332 +105,9 @@ It was moved or deleted elsewhere.`,
         return this.files.canRename(item);
     }
 
-    /** A file without a viewer of its own may be opened as text (the server refuses what isn't). */
-    /**
-     * A comic book, an EPUB, an office document…: a zip (or rar, 7z, tar) underneath, its files explored in the viewer.
-     */
-    canOpenAsArchive(item: LibraryItem): boolean {
-        return isContainer(item) && this.store.can(Rights.viewFiles, item) && Boolean(this.dialogs.viewer());
-    }
-
-    canOpenAsText(item: LibraryItem): boolean {
-        return (
-            item.kind === 'file' &&
-            !formatOf(item) &&
-            this.store.can(Rights.viewFiles, item) &&
-            Boolean(this.dialogs.viewer())
-        );
-    }
-
-    /**
-     * A text file that something could be done with once changed (save over it, a copy, a download): the server tells
-     * exactly when it is opened (`access`), the viewer then offers what applies.
-     */
-    canEditText(item: LibraryItem): boolean {
-        const format = formatOf(item);
-        return Boolean(
-            format?.edits &&
-            this.dialogs.viewer() &&
-            this.store.can(Rights.viewFiles, item) &&
-            (this.store.can(Rights.createFiles, item) || this.store.can(Rights.download, item)),
-        );
-    }
-
-    /** A picture the editor can crop (the right, and a server with the editor). */
-    canEditPicture(item: LibraryItem): boolean {
-        return (
-            item.kind === 'image' &&
-            this.store.can(Rights.editImages, item) &&
-            Boolean(this.config.config()?.editor) &&
-            Boolean(this.dialogs.imageEditor())
-        );
-    }
-
-    /**
-     * May keep a listed folder out of scans, trickplay or thumbnails (for the whole space): while browsing, where the
-     * listing tells what it is kept out of now.
-     */
-    canExclude(item: LibraryItem): boolean {
-        return (
-            item.kind === 'directory' &&
-            !this.store.searching() &&
-            this.store.can(Rights.excludeFolders, item) &&
-            Boolean(this.dialogs.folderExclusions())
-        );
-    }
-
     /** The entries of `item`'s menu; on the selection when `item` is part of it, unless `single` (the viewer). */
     entries(item: LibraryItem, single = false): ItemMenuEntry[] {
-        const targets = () => (single ? [item] : this.targets(item));
-        const entries: ItemMenuEntry[] = this.openings(item, targets());
-        if (this.canOpenAsText(item))
-            entries.push({
-                id: 'openAsText',
-                label: $localize`Open as text`,
-                icon: 'file',
-                title: $localize`Show its content as text, in the viewer.`,
-                run: () => this.dialogs.viewer()?.open(item, { asText: true }),
-            });
-        if (this.canOpenAsArchive(item))
-            entries.push({
-                id: 'openAsArchive',
-                label: $localize`Open as archive`,
-                icon: 'extract',
-                title: $localize`Show the files and folders inside it, in the viewer.`,
-                run: () => this.dialogs.viewer()?.open(item, { asArchive: true }),
-            });
-        if (this.canEditText(item))
-            entries.push({
-                id: 'editText',
-                label: $localize`Edit`,
-                icon: 'edit',
-                title: $localize`Open it in the viewer, ready to be changed.`,
-                run: () => this.dialogs.viewer()?.open(item, { edit: true }),
-            });
-        if (this.canEditPicture(item))
-            entries.push({
-                id: 'editPicture',
-                label: $localize`Crop…`,
-                icon: 'crop',
-                title: $localize`Crop the picture, then save it over the original or as a new file.`,
-                run: () => void this.dialogs.imageEditor()?.open(item),
-            });
-        if (this.canRename(item)) {
-            const several = targets().filter((target) => this.canRename(target)).length > 1 && !this.store.searching();
-            entries.push({
-                id: 'rename',
-                label: $localize`Rename…`,
-                icon: 'edit',
-                shortcut: 'F2',
-                title: several
-                    ? $localize`Rename the selected items together: find and replace, or numbered names (F2).`
-                    : $localize`Give “${item.name}:name:” another name (F2).`,
-                run: () => (several ? this.renameSelection() : this.dialogs.name()?.rename(item)),
-            });
-        }
-        if (this.files.canDelete(item))
-            entries.push({
-                id: 'delete',
-                label: this.files.alwaysPermanent ? $localize`Delete permanently…` : $localize`Delete…`,
-                icon: 'trash',
-                shortcut: 'Del',
-                title: this.files.alwaysPermanent
-                    ? $localize`Delete “${item.name}:name:” for good (Delete).`
-                    : $localize`Move “${item.name}:name:” to the trash (Delete; Shift+Delete deletes it for good).`,
-                run: () => this.files.delete(targets()),
-            });
-        const canMove = this.transfers.canMove(item);
-        const canCopy = this.transfers.canCopy(item);
-        if (canMove)
-            entries.push({
-                id: 'cut',
-                label: $localize`Cut`,
-                icon: 'cut',
-                shortcut: 'Ctrl+X',
-                title: $localize`Keep it, to move it into another folder with Paste (Ctrl+X).`,
-                run: () => this.transfers.keep('move', targets()),
-            });
-        if (canCopy)
-            entries.push({
-                id: 'copy',
-                label: $localize`Copy`,
-                icon: 'copy',
-                shortcut: 'Ctrl+C',
-                title: $localize`Keep it, to copy it into another folder with Paste (Ctrl+C).`,
-                run: () => this.transfers.keep('copy', targets()),
-            });
-        const clipboard = this.transfers.clipboard();
-        if (clipboard && item.kind === 'directory' && this.transfers.canInto(clipboard.kind, item))
-            entries.push({
-                id: 'paste',
-                label: $localize`Paste into “${item.name}:name:”`,
-                icon: 'paste',
-                title: pasteTitle(clipboard, item.name),
-                run: () => this.transfers.paste(item.path),
-            });
-        if (canMove)
-            entries.push({
-                id: 'moveTo',
-                label: $localize`Move to…`,
-                icon: 'move',
-                title: $localize`Move it to another folder, picked next.`,
-                run: () => this.transfers.pick('move', targets()),
-            });
-        if (canCopy)
-            entries.push({
-                id: 'copyTo',
-                label: $localize`Copy to…`,
-                icon: 'copy',
-                title: $localize`Copy it into another folder, picked next.`,
-                run: () => this.transfers.pick('copy', targets()),
-            });
-        if (targets().length === 1 && this.transfers.canExtractBeside(item))
-            entries.push({
-                id: 'extractBeside',
-                label: $localize`Extract to “${stemOf(item.name)}:folder:”`,
-                icon: 'extract',
-                title: $localize`Extract it here, in the background, into a new folder named after it \
-(or after the one folder it holds).`,
-                run: () =>
-                    void this.transfers.extract({
-                        archive: item.path,
-                        target: this.store.route().path,
-                        newFolder: true,
-                    }),
-            });
-        if (targets().length > 1 && this.transfers.canExtractEach(targets()))
-            entries.push({
-                id: 'extractEach',
-                label: $localize`Extract each here`,
-                icon: 'extract',
-                title: extractEachTitle(targets().length),
-                run: () => void this.transfers.extractEach(targets()),
-            });
-        if (targets().length === 1 && this.transfers.canExtract(item) && this.dialogs.extract())
-            entries.push({
-                id: 'extract',
-                label: $localize`Extract…`,
-                icon: 'extract',
-                title: $localize`Extract it into a folder picked next, with its password if it has one.`,
-                run: () => this.dialogs.extract()?.open({ path: item.path, name: item.name }),
-            });
-        if (this.transfers.canCompress(item) && this.dialogs.compress())
-            entries.push({
-                id: 'compress',
-                label: $localize`Compress…`,
-                icon: 'compress',
-                title: $localize`Put it in a zip file in this folder, with a password if you want one.`,
-                run: () =>
-                    this.dialogs.compress()?.open(targets().filter((target) => this.transfers.canCompress(target))),
-            });
-        if (this.downloads.canDownload(item)) {
-            const selected = targets();
-            const zip = this.downloads.isZip(selected);
-            entries.push({
-                id: 'download',
-                label: zip ? $localize`Download as zip` : $localize`Download`,
-                icon: 'download',
-                title: zip
-                    ? selected.length > 1
-                        ? $localize`Save the selected items to this device, in one zip file.`
-                        : $localize`Save this folder and everything in it to this device, as a zip file.`
-                    : $localize`Save this file to this device.`,
-                run: () => void this.downloads.download(selected),
-            });
-        }
-        if (item.kind === 'directory' ? this.store.can(Rights.assignTags, item) : this.store.can(Rights.viewTags, item))
-            entries.push({
-                id: 'tags',
-                label: item.kind === 'directory' ? $localize`Tag its files…` : $localize`Tags…`,
-                icon: 'tag',
-                title:
-                    item.kind === 'directory'
-                        ? $localize`Add or remove tags on all the files of this folder (asks first).`
-                        : $localize`See or change the tags of this file.`,
-                run: () =>
-                    item.kind === 'directory'
-                        ? this.dialogs.scopeTags()?.open({ path: item.path, recursive: false, query: null })
-                        : this.actions.openTags(item),
-            });
-        if (this.quickLinks.addable()) {
-            const pinned = this.quickLinks.paths().has(item.path);
-            entries.push({
-                id: 'quickLink',
-                label: pinned ? $localize`Remove from quick links` : $localize`Add to quick links`,
-                icon: 'pin',
-                title: pinned
-                    ? $localize`Take “${item.name}:name:” out of your quick links.`
-                    : $localize`Show “${item.name}:name:” in your quick links, in the sidebar.`,
-                run: () => void this.quickLinks.toggle(item.path),
-            });
-        }
-        if (this.copyPaths.enabled())
-            entries.push({
-                id: 'copyPath',
-                label: $localize`Copy full path`,
-                icon: 'copy',
-                title: $localize`Copy where it is on the server.`,
-                run: () => void this.copyPaths.copy(item.path),
-            });
-        if (this.canExclude(item))
-            entries.push({
-                id: 'exclusions',
-                label: $localize`Scans and previews…`,
-                icon: 'scan',
-                title: $localize`Keep this folder out of scans, trickplay or thumbnails, \
-for everyone using this space.`,
-                run: () => this.dialogs.folderExclusions()?.open(item.path, item.excluded),
-            });
-        if (this.canSeeProperties())
-            entries.push({
-                id: 'properties',
-                label: $localize`Properties`,
-                icon: 'info',
-                shortcut: 'Alt+Enter',
-                title:
-                    item.kind === 'directory'
-                        ? $localize`Show its dates and what it holds (Alt+Enter).`
-                        : $localize`Show its size, its dates, what the index knows of it and its checksum (Alt+Enter).`,
-                run: () => void this.dialogs.properties()?.open(item),
-            });
-        return partialEntries(item, entries);
-    }
-
-    /**
-     * Open, Open in new tab (a real link) and, in search results, Open containing folder: not for a selection of
-     * several items (one tab each would be stopped as popups).
-     */
-    private openings(item: LibraryItem, targets: LibraryItem[]): ItemMenuEntry[] {
-        if (targets.length > 1) return [];
-        const entries: ItemMenuEntry[] = [];
-        if (item.kind === 'directory') {
-            const params = this.store.browseParams(item.path);
-            entries.push(
-                {
-                    id: 'open',
-                    label: $localize`Open`,
-                    icon: 'folder',
-                    title: $localize`Open the folder “${item.name}:name:”.`,
-                    run: () => void this.router.navigate(['/'], { queryParams: params }),
-                },
-                {
-                    id: 'newTab',
-                    label: $localize`Open in new tab`,
-                    icon: 'external',
-                    title: $localize`Open the folder “${item.name}:name:” in a tab of its own.`,
-                    href: this.store.pageUrl(params),
-                    newTab: true,
-                    run: () => undefined,
-                },
-            );
-        } else {
-            if (isViewable(item) && this.dialogs.viewer())
-                entries.push({
-                    id: 'open',
-                    label: $localize`Open`,
-                    icon: 'file',
-                    title: $localize`Show “${item.name}:name:” in the viewer.`,
-                    run: () => this.actions.view(item),
-                });
-            entries.push({
-                id: 'newTab',
-                label: $localize`Open in new tab`,
-                icon: 'external',
-                title: $localize`Open “${item.name}:name:” in a tab of its own.`,
-                href: this.actions.fileUrl(item),
-                newTab: true,
-                run: () => this.store.reportView(item),
-            });
-        }
-        if (this.store.searching() && item.directory !== undefined && item.directory !== null)
-            entries.push({
-                id: 'openFolder',
-                label: $localize`Open containing folder`,
-                icon: 'folder-up',
-                title: $localize`Open the folder “${item.name}:name:” is in, and show it there.`,
-                run: () => this.store.reveal(item.path),
-            });
-        return entries;
+        return this.commands.menu({ item, targets: single ? [item] : this.targets(item) });
     }
 
     /** The selection when `item` is part of it (the menu acts on all of it, as in a file browser), else `item`. */

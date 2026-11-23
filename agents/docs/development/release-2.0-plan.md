@@ -266,7 +266,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     expected reasons follow. `messages.xlf` written for 2.7b–2.8c.
   Steps 2.7b–2.8c were done by subagents in parallel (one per folder; the coordinator wrote the shared files:
   `messages.xlf`, `hard-coded-texts.json`, readability baseline, changelog, this plan) and committed one by one.
-- [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
+- [x] **2.9 Menus grouped, one action registry** (IDEA-025, M). Done 2026-11-23: `MenuEntry.group` (a line between
+  groups); `ItemCommands` (`files/item-commands.ts`, commands in four files by area, `ItemScope`) feeds the item
+  menu, the selection bar (buttons and "⋯") and the folder menu (quick link, Copy full path); order as below, **Open
+  as ▸** and **Archive ▸** flat when one entry is left; greyed by rights with the reason in the hint (under the label
+  on touch screens), hidden by type / selection / server / admin right; the bar shows only allowed actions. With
+  several selected the menu's Tags… tags the selection's files, Add to quick links adds all, Rename… batch only
+  outside searches. Folder menu grouped (Refresh first). Note context-menu.md; screenshots `item-menu.png`,
+  `background-menu.png`, `phone-item-menu.png`, `phone-folder-menu.png` retaken. Readability baselines raised by
+  the added lines: `context-menu.ts` 785 → 787, `file-management.css` 543 → 559; `item-menu.ts` (534) now within the
+  limits, `folder-menu.ts` without its long function. Was: today `MenuEntry` has no groups, Delete sits in
   the middle, items that don't apply are hidden, and `selection-bar.component.ts` redefines actions. Add `group`
   (dividers) to `MenuEntry`; one action registry used by the item menu, folder menu and selection bar; order
   Open (Open, new tab, containing folder, **Open as… ▸**) → Edit (Edit, Crop) → Clipboard (Cut, Copy, Paste) →
@@ -415,9 +424,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-23):** phase 1 and steps 2.1 to 2.8c done (see their ticks; 2.4 to 2.8 were split). The
-  session before was cut short with 2.7b, 2.8a and 2.8c half done by subagents and uncommitted; this one finished and
-  committed them one by one. Next: **2.9** (menus grouped, one action registry).
+- **Last session (2026-11-23):** phase 1 and phase 2 done (2.9 last). Next: **3.1** (shallower administration);
+  steps of phase 3 may be taken in any order except 3.6 after 3.5, and 3.3 uses 2.9's greyed entries.
 - `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd
   C:/workspace/…` first.
 - The docs-screenshots scene for `operations-panel.png` is `files` (it calls `operations()` at its end), not
@@ -467,7 +475,8 @@ nuget.org public; one path-agnostic client API; watch open folders (disk and con
 
 Defaults taken (change here if the owner disagrees): UK English; Windows-Explorer-like menu order; admin pages in
 ≤3 clicks; XxHash128; notifications kept in the browser (server events pushed, not stored); undo per tab, 20 steps;
-dashboard fixed columns; home folder never auto-created; scan-as-you-go not recursive, 10 minutes; storage bar
+dashboard fixed columns; home folder never auto-created; menus (2.9): greyed only for the rights of file actions
+(Scans and previews…, quick links, Copy full path hidden instead), the selection bar never greyed; scan-as-you-go not recursive, 10 minutes; storage bar
 thresholds 85/95 %; sync jobs for administrators only.
 
 ## What the check found already done (don't redo)

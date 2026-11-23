@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { entryOf, usableIds } from '../../testing/menus';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { FileJobView } from './file.models';
 import { Rights } from '../core/rights';
@@ -245,29 +246,29 @@ describe('ItemMenu, moves and copies', () => {
     it('offers cut, copy, paste into a folder, move to and copy to by rights', async () => {
         await setUp();
         const menu = TestBed.inject(ItemMenu);
-        expect(menu.entries(photo).map((e) => e.id)).toEqual([
+        expect(usableIds(menu.entries(photo))).toEqual([
             'newTab',
-            'rename',
-            'delete',
             'cut',
             'copy',
+            'rename',
             'moveTo',
             'copyTo',
-            'download',
             'tags',
             'quickLink',
+            'download',
+            'delete',
             'properties',
         ]);
 
         TestBed.inject(FileTransfers).keep('move', [photo]);
-        const paste = menu.entries(folder).find((e) => e.id === 'paste')!;
+        const paste = entryOf(menu.entries(folder), 'paste');
         expect(paste.label).toBe('Paste into “Holidays”');
         const transfer = vi.spyOn(TestBed.inject(FileTransfers), 'transfer').mockResolvedValue();
         paste.run();
         expect(transfer).toHaveBeenCalledWith('move', [photo.path], folder.path, { from: null, to: null });
 
         await loadConfig(api, limitedConfig([Rights.browse, Rights.viewFiles]));
-        expect(menu.entries(photo).map((e) => e.id)).toEqual(['newTab', 'properties']);
+        expect(usableIds(menu.entries(photo))).toEqual(['newTab', 'properties']);
     });
 
     it('opens the picker for the whole selection', async () => {
@@ -277,10 +278,7 @@ describe('ItemMenu, moves and copies', () => {
         store.select(photo, true);
         store.select(clip, true);
 
-        TestBed.inject(ItemMenu)
-            .entries(photo)
-            .find((e) => e.id === 'copyTo')!
-            .run();
+        entryOf(TestBed.inject(ItemMenu).entries(photo), 'copyTo').run();
 
         expect(pick).toHaveBeenCalledWith('copy', [photo, clip]);
     });

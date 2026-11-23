@@ -2,7 +2,10 @@
 
 Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, `MenuEntry`, `[sfeContextMenu]`,
 `useContextMenu`, `sfe-context-menu` in `app.ts`), `files/item-menu.ts` (`ItemMenu`: listed files and folders),
-`library/folder-menu.ts` (`FolderMenu`: the folder listed or the search, folder links),
+`library/folder-menu.ts` (`FolderMenu`: the folder listed or the search, folder links), `files/item-commands.ts`
+(`ItemCommands`: the one registry of item actions, its layout; the commands in `opening-commands.ts`,
+`transfer-commands.ts`, `archive-commands.ts`, `organising-commands.ts`, their types in `item-scope.ts`, greyed
+reasons in `item-command-texts.ts`), `library/selection-bar.component.ts`,
 `library/quick-links/quick-links.component.ts`, `library/topbar/search-box.component.ts` (recent searches). Styles:
 `styles/file-management.css` (`item-menu*`), `styles/phone-sheets.css`. Check in a real browser:
 `agents/tools/visual-check/context-menus.mjs`.
@@ -65,13 +68,36 @@ Code: `src/Sfe.Web/src/app/menus/context-menu.ts` (`ContextMenu`, `MenuTarget`, 
   viewport got shorter and the selection bar jumped; changed 2026-10-29), the backdrop has `touch-action: none` and the sheet
   `overscroll-behavior: contain` instead (`phone-sheets.css`; e2e `reported.spec.ts`).
 
+## Groups, greyed entries, one registry (2.0 step 2.9, 2026-11-23)
+
+- `MenuEntry.group`: a line (`.item-menu-divider`, `role="separator"`) between two entries of different groups;
+  entries without a group (the viewer's, the player's) get none. The viewer strips the item menu's groups.
+- **Item actions live in one registry**, `ItemCommands`: `entry(id, scope)` (`ItemScope`: the item clicked and the
+  targets, the selection when the item is in it) and `menu(scope)`, laid out by `LAYOUT` in the order of Windows
+  Explorer: open (Open, Open in new tab, Open containing folder, **Open as ▸**) → edit (Edit, Crop…) → clipboard (Cut,
+  Copy, Paste into) → organise (Rename…, Move to…, Copy to…, Tags…, quick link, Scans and previews…) → **Archive ▸**
+  (Extract to “…”, Extract each here, Extract…, Compress…) → save (Download, Copy full path) → Delete… → Properties.
+  A submenu with one entry left is shown flat (a picture: Compress… alone; a `.dat`: Open as text alone).
+- The item menu (`ItemMenu.entries`), the selection bar (its buttons and its "⋯" entries: `actions`, `more`) and the
+  folder menu (quick link, Copy full path of a folder, through `FolderMenu.shared`) take their entries from it: one
+  label, hint and run per action. A new action on listed items is a command there, never a copy in a component.
+- A command returns **null where it doesn't apply** (the kind of item, how many are selected, a server without the
+  editor or the dialog, searching): hidden. **What the rights don't allow** is returned greyed out (`refused()`:
+  `disabled`, the hint replaced by the reason, `refusedText`), shown under the label on touch screens
+  (`.item-menu-reason`, `@media (hover: none)`). Hidden, not greyed: quick links (not an account's), Copy full path
+  (a setting), Scans and previews… (an administrator's right), Properties (no browse right).
+- The selection bar shows only what the selection may use (no greyed buttons: little room); Tags only with files.
+- Test helpers `src/testing/menus.ts`: `usableIds`, `greyedIds`, `entryOf` (submenus opened in place).
+- Tools clicking an extraction open `[data-entry="archive"]` first (docs-screenshots `archive`, visual-check
+  `archive-viewer.mjs`, e2e `fromItemMenuEntry(…, 'archive')`).
+
 ## Which menu (built so far)
 
 | Where | Target | Entries |
 |---|---|---|
-| File tile / row, folder card | `file` / `folder` (`ItemMenu.target`) | Open, Open in new tab, Open containing folder (searching), then the file management entries; none of the Open ones for a selection of several |
-| Listing background, counts, buttons of the page | `background` (`FolderMenu.target`) | Folder: New folder, New file, Upload files / a folder, Paste, Select all, Refresh, Tags of this folder, Scans and previews, quick link, Copy full path, Open in new tab, Properties. Search: Select all, Tag the results, Search again, Open in new tab, Copy link |
-| Breadcrumbs, up / previous / next, a search result's folder | `folderLink` (`FolderMenu.linkTarget`) | Open, Open in new tab, Paste into, quick link, Copy full path, Properties |
+| File tile / row, folder card | `file` / `folder` (`ItemMenu.target`) | `ItemCommands.menu` (groups above); none of the Open ones for a selection of several |
+| Listing background, counts, buttons of the page | `background` (`FolderMenu.target`) | Folder: Refresh, Open in new tab · New folder, New file, Upload files / a folder · Paste, Select all · Tags of this folder, Scans and previews, quick link · Copy full path · Properties. Search: Search again, Open in new tab · Select all · Tag the results, Search in · Copy link |
+| Breadcrumbs, up / previous / next, a search result's folder | `folderLink` (`FolderMenu.linkTarget`) | Open, Open in new tab · Paste into · quick link · Copy full path · Properties |
 | Quick link | `folderLink` / `fileLink` | Its folder's entries (or Show in its folder, Open in new tab, Copy full path, Properties), then Move up / down, Remove; only those when it's not found any more |
 | Recent search | `historyEntry` | Search, Open in new tab, Remove from the history |
 | Viewer: its ⋮ (every file), a right click on the stage (pictures and videos only: `stageMenu`; documents and audio keep the browser's menu) | `file` (`viewer:<path>`) | A video: the player's `menuEntries()` (Play, Speed › rates, Loop, Mute, Save this frame, Full screen, Picture in picture); then Actual size / Fit, Crop, quick link, Copy full path, Open in a new window, Copy link at this time, external player, Open in new tab, Download, and the item menu's Copy, Copy to…, Properties (`ItemMenu.entries(item, true)`: the file alone, not the listing's selection; their listing keys left out). Not rename / delete / move: the viewer doesn't follow a file that changes or goes |

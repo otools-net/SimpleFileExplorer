@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { entryOf } from '../../testing/menus';
 import { DirectoryListing, LibraryItem } from '../core/models';
 import { TrashPage } from './file.models';
 import { Rights } from '../core/rights';
@@ -157,11 +158,7 @@ describe('FileActions', () => {
 
             expect(actions.delete([photo], true)).toBe(true);
             expect(open).toHaveBeenLastCalledWith([photo], false);
-            expect(
-                TestBed.inject(ItemMenu)
-                    .entries(photo)
-                    .find((e) => e.id === 'delete')!.label,
-            ).toBe('Delete…');
+            expect(entryOf(TestBed.inject(ItemMenu).entries(photo), 'delete').label).toBe('Delete…');
 
             await loadConfig(
                 api,
@@ -190,10 +187,7 @@ describe('FileActions', () => {
         store.select(photo, true);
         store.select(clip, true);
 
-        TestBed.inject(ItemMenu)
-            .entries(photo)
-            .find((e) => e.id === 'delete')!
-            .run();
+        entryOf(TestBed.inject(ItemMenu).entries(photo), 'delete').run();
 
         expect(open).toHaveBeenCalledWith([photo, clip], false);
     });
