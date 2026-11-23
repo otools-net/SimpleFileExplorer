@@ -9,8 +9,9 @@ import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { HelpComponent } from '../shared/help.component';
 import { IconComponent } from '../shared/icon.component';
-import { SpaceDetailComponent, SpaceView } from './space-detail.component';
+import { SpaceDetailComponent } from './space-detail.component';
 import { SpaceEditorComponent } from './space-editor.component';
+import { spaceView, SpaceView } from './space-view';
 
 /** The model in four tiles, above the spaces: what a space holds. */
 @Component({
@@ -91,7 +92,7 @@ export class SpacesPageComponent implements OnInit {
         if (!this.serverWide()) return this.own();
         const id = Number(this.params().get('space'));
         const space = this.spaces().find((candidate) => candidate.id === id);
-        return space ? this.viewOf(space) : null;
+        return space ? spaceView(space, this.config.tenant()?.id) : null;
     });
 
     ngOnInit(): Promise<void> {
@@ -171,17 +172,5 @@ This cannot be undone.`,
             const reason = (error as Error).message;
             this.toasts.error($localize`Could not delete the space “${space.name}:name:”: ${reason}:reason:`);
         }
-    }
-
-    private viewOf(space: TenantDetails): SpaceView {
-        return {
-            id: space.id,
-            name: space.name,
-            root: space.root,
-            guestAccess: space.guestAccess,
-            isDefault: space.isDefault,
-            disabled: space.disabled,
-            current: space.id === this.config.tenant()?.id,
-        };
     }
 }

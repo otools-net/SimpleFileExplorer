@@ -3,16 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AccountSectionComponent } from '../account/account-section.component';
 import { ApiError } from '../core/api.service';
-import { FolderLevel, SessionInfo } from '../core/access.models';
-import {
-    FolderRuleView,
-    GroupInfo,
-    RightDefinition,
-    RightKind,
-    RightsCatalog,
-    TenantDetails,
-    UserInfo,
-} from './access.models';
+import { SessionInfo } from '../core/access.models';
+import { FolderRuleView } from './access.models';
 import { Rights } from '../core/rights';
 import { HelpComponent } from '../shared/help.component';
 import {
@@ -27,105 +19,13 @@ import {
     settle,
     testProviders,
 } from '../../testing/fakes';
+import { builtIns, catalog, group, member, space, user, WORK } from '../../testing/access';
 import { AccountsPageComponent } from './accounts-page.component';
 import { FolderAccessComponent } from './folder-access.component';
 import { SpacesPageComponent } from './spaces-page.component';
 
 let api: ApiMock;
 let element: HTMLElement;
-
-const WORK = { id: 2, slug: 'work', name: 'Work' };
-
-function user(id: number, userName: string, overrides: Partial<UserInfo> = {}): UserInfo {
-    return {
-        id,
-        userName,
-        displayName: null,
-        source: 'local',
-        kind: 'user',
-        isServerAdmin: false,
-        disabled: false,
-        lockedOut: false,
-        created: '2026-01-01T00:00:00Z',
-        lastSignIn: null,
-        groups: [],
-        ...overrides,
-    };
-}
-
-function group(id: number, name: string, overrides: Partial<GroupInfo> = {}): GroupInfo {
-    return {
-        id,
-        tenantId: LIBRARY.id,
-        name,
-        builtIn: null,
-        externalName: null,
-        rights: [],
-        memberIds: [],
-        ...overrides,
-    };
-}
-
-/** The built-in groups of a space: Administrators `base`, Users `base + 1`, Guests `base + 2`. */
-function builtIns(tenantId: number, base: number): GroupInfo[] {
-    return [
-        group(base, 'Administrators', { tenantId, builtIn: 'administrators' }),
-        group(base + 1, 'Users', { tenantId, builtIn: 'users' }),
-        group(base + 2, 'Guests', { tenantId, builtIn: 'guests' }),
-    ];
-}
-
-function member(groupInfo: GroupInfo) {
-    return { tenantId: groupInfo.tenantId, groupId: groupInfo.id, group: groupInfo.name };
-}
-
-function space(id: number, name: string, overrides: Partial<TenantDetails> = {}): TenantDetails {
-    return {
-        id,
-        slug: name.toLowerCase(),
-        name,
-        guestAccess: false,
-        isDefault: id === LIBRARY.id,
-        disabled: false,
-        root: `D:\\Media\\${name}`,
-        disabledRights: [],
-        members: 0,
-        groups: 3,
-        ...overrides,
-    };
-}
-
-function right(
-    id: string,
-    guestAllowed: boolean,
-    area = 'Library',
-    kind: RightKind = guestAllowed ? 'read' : 'write',
-    atFolder: FolderLevel | null = null,
-): RightDefinition {
-    return {
-        id,
-        scope: 'tenant',
-        guestAllowed,
-        defaultGroups: guestAllowed ? ['administrators', 'users', 'guests'] : ['administrators'],
-        area,
-        title: id,
-        description: `About ${id}`,
-        kind,
-        atFolder,
-    };
-}
-
-const catalog: RightsCatalog = {
-    rights: [
-        right(Rights.editImages, false, 'Library', 'write', 'write'),
-        right(Rights.browse, true, 'Library', 'read', 'read'),
-        right(Rights.manageTags, false, 'Tags'),
-        right(Rights.download, true, 'Library', 'read', 'read'),
-        { ...right(Rights.manageTenants, false, 'Server'), scope: 'server' },
-    ],
-    disabledByServer: [Rights.download],
-    disabledInTenant: [],
-};
 
 async function create<T>(component: Type<T>, config = fakeConfig()): Promise<void> {
     TestBed.configureTestingModule({ providers: testProviders(api) });

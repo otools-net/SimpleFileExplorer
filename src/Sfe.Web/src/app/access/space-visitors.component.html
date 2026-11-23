@@ -1,0 +1,44 @@
+<section class="access-card" aria-labelledby="space-visitors">
+    <header class="access-card-head help-row">
+        <svg sfeIcon="globe"></svg>
+        <h3 id="space-visitors" i18n>Visitors without an account</h3>
+        <sfe-help about="Visitors without an account" i18n-about>
+            <p i18n>Anyone who reaches the server can browse a space open to visitors without signing in: the
+                sign-in page offers a button for each such space. Visitors get the rights of the
+                <strong>Guests</strong> group, and never a right that changes something.</p>
+            <p i18n>For example, open a <em>Holiday photos</em> space so that relatives on your network can look at
+                it, while <em>Family</em> stays private.</p>
+            <p i18n>For someone who should sign in but only look, make a <em>guest account</em> instead (New account
+                › Guest account).</p>
+        </sfe-help>
+    </header>
+    <label class="check">
+        <input
+            type="checkbox"
+            [checked]="space().guestAccess"
+            [disabled]="busy() || !anonymousAllowed()"
+            (change)="setGuestAccess(checkedOf($event))"
+        >
+        <span>
+            <ng-container i18n>Let visitors browse {{ space().name }} without an account</ng-container>
+            <span class="field-hint">
+                @if (space().guestAccess) {
+                    <ng-container i18n>Open: anyone who can reach the server sees these files. Visitors may do
+                        what the Guests group allows.</ng-container>
+                } @else {
+                    <ng-container i18n>Closed: only the accounts above can open this space. Visitors may do what
+                        the Guests group allows.</ng-container>
+                }
+            </span>
+        </span>
+    </label>
+    @if (!anonymousAllowed()) {
+        @if (config.config()?.mode === 'local') {
+            <p class="field-hint" i18n>SFE is in Local mode: only its administrators can open it (Administration ›
+                System › Installation).</p>
+        } @else {
+            <p class="field-hint" i18n>The server's configuration doesn't allow visitors without an account
+                (<code>Sfe:Security:AnonymousGuests</code>).</p>
+        }
+    }
+</section>

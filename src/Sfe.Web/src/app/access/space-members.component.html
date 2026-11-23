@@ -1,0 +1,122 @@
+<section class="access-card" aria-labelledby="space-accounts">
+    <header class="access-card-head help-row">
+        <svg sfeIcon="user"></svg>
+        <h3 id="space-accounts">
+            <span i18n>Accounts</span> <span class="access-count">{{ members().length }}</span>
+        </h3>
+        <sfe-help about="Accounts of a space" i18n-about>
+            <p i18n>The people who sign in to this space: every account in at least one of its groups. An account
+                may be in several spaces, with different groups in each, and switches between them from the ⋮
+                menu.</p>
+            <p i18n>For example, <em>anna</em> is in Administrators here and in Users in the <em>Work</em> space:
+                Anna sees both.</p>
+            @if (serverWide()) {
+                <p i18n>Server administrators open every space, even one where they are in no group; they aren't
+                    listed here then.</p>
+            }
+        </sfe-help>
+        <span class="spacer"></span>
+        @if (outsiders().length) {
+            <select
+                class="access-add-existing"
+                title="Put an account of another space in this one too (in its Users group)"
+                i18n-title
+                (change)="addExisting($event)"
+            >
+                <option value="" selected i18n>Add an existing account…</option>
+                @for (user of outsiders(); track user.id) {
+                    <option [value]="user.id">{{ user.displayName ? user.displayName + ' (' + user.userName + ')' : user.userName }}</option>
+                }
+            </select>
+        }
+        <button
+            type="button"
+            class="button small primary"
+            title="Create an account in {{ space().name }} (in its Users group to start with)"
+            i18n-title
+            (click)="editor().open(null, space().id)"
+        >
+            <svg sfeIcon="plus"></svg><span i18n>New account</span>
+        </button>
+    </header>
+    <ul class="access-list">
+        @for (user of members(); track user.id) {
+            <li class="access-row">
+                <div class="access-row-main">
+                    <strong>{{ user.displayName || user.userName }}</strong>
+                    @if (user.displayName) {
+                        <span class="muted">{{ user.userName }}</span>
+                    }
+                    <span class="access-badges">
+                        @for (name of groupNames(user); track name) {
+                            <span class="access-badge group">{{ name }}</span>
+                        }
+                        @if (user.isServerAdmin) {
+                            <span
+                                class="access-badge accent"
+                                title="Has every right in every space"
+                                i18n-title
+                                i18n
+                            >Server administrator</span>
+                        }
+                        @if (user.kind === 'guest') {
+                            <span
+                                class="access-badge"
+                                title="Can only look, whatever its groups allow"
+                                i18n-title
+                                i18n
+                            >Guest account</span>
+                        }
+                        @if (user.disabled) {
+                            <span
+                                class="access-badge danger"
+                                title="This account can't sign in"
+                                i18n-title
+                                i18n
+                            >Disabled</span>
+                        }
+                    </span>
+                </div>
+                <div class="access-row-detail muted">
+                    <span>
+                        {{ elsewhere(user) }}
+                        @if (user.lastSignIn) {
+                            <ng-container i18n>last signed in {{ formatDate(user.lastSignIn) }}</ng-container>
+                        } @else {
+                            <ng-container i18n>never signed in</ng-container>
+                        }
+                    </span>
+                </div>
+                <div class="access-row-actions">
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Change {{ user.userName }} and its groups here"
+                        i18n-title
+                        (click)="editor().open(user)"
+                        i18n
+                    >Edit</button>
+                    @if (user.id !== config.user()?.id) {
+                        <button
+                            type="button"
+                            class="button small"
+                            [title]="removeTitle(user)"
+                            (click)="remove(user)"
+                        >
+                            @if (deletes(user)) {
+                                <ng-container i18n>Delete</ng-container>
+                            } @else {
+                                <ng-container i18n>Remove</ng-container>
+                            }
+                        </button>
+                    }
+                </div>
+            </li>
+        } @empty {
+            <li class="access-empty muted" i18n>No accounts in this space yet. Create one, and it will be able to
+                sign in and see these files.</li>
+        }
+    </ul>
+</section>
+
+<sfe-account-editor [spaces]="spaceRefs()" [groups]="groups()" [serverWide]="allAccounts()" (saved)="changed.emit()" />

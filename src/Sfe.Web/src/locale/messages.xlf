@@ -236,7 +236,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:113,114</note>
         <note category="location">src/app/access/accounts-page.component.html:81,82</note>
-        <note category="location">src/app/access/space-detail.component.html:186,187</note>
+        <note category="location">src/app/access/space-members.component.html:68,69</note>
       </notes>
       <segment>
         <source>Guest account</source>
@@ -254,7 +254,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:129</note>
         <note category="location">src/app/access/accounts-page.component.html:73,74</note>
-        <note category="location">src/app/access/space-detail.component.html:178,179</note>
+        <note category="location">src/app/access/space-members.component.html:60,61</note>
       </notes>
       <segment>
         <source>Server administrator</source>
@@ -426,8 +426,8 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:237</note>
         <note category="location">src/app/access/accounts-page.component.html:96,97</note>
-        <note category="location">src/app/access/space-detail.component.html:194,195</note>
         <note category="location">src/app/access/space-editor.component.html:115</note>
+        <note category="location">src/app/access/space-members.component.html:76,77</note>
         <note category="location">src/app/access/spaces-page.component.html:38,39</note>
         <note category="location">src/app/access/spaces-page.component.html:96,97</note>
       </notes>
@@ -541,7 +541,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.ts:85</note>
         <note category="location">src/app/access/accounts-page.component.html:36,37</note>
-        <note category="location">src/app/access/space-detail.component.html:157,158</note>
+        <note category="location">src/app/access/space-members.component.html:39,40</note>
       </notes>
       <segment>
         <source>New account</source>
@@ -632,8 +632,8 @@
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:11</note>
         <note category="location">src/app/access/folder-access.component.html:93</note>
-        <note category="location">src/app/access/space-detail.component.html:123</note>
-        <note category="location">src/app/access/spaces-page.component.ts:50,51</note>
+        <note category="location">src/app/access/space-members.component.html:5</note>
+        <note category="location">src/app/access/spaces-page.component.ts:51,52</note>
         <note category="location">src/app/admin/admin-sections.ts:333</note>
       </notes>
       <segment>
@@ -708,7 +708,7 @@
     <unit id="405379116562311857">
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:78,79</note>
-        <note category="location">src/app/access/space-detail.component.html:183,184</note>
+        <note category="location">src/app/access/space-members.component.html:65,66</note>
       </notes>
       <segment>
         <source>Can only look, whatever its groups allow</source>
@@ -725,7 +725,7 @@
     <unit id="266311019229326648">
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:93,94</note>
-        <note category="location">src/app/access/space-detail.component.html:191,192</note>
+        <note category="location">src/app/access/space-members.component.html:73,74</note>
       </notes>
       <segment>
         <source>This account can&apos;t sign in</source>
@@ -798,8 +798,8 @@
     <unit id="7585826646011739428">
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:144,145</note>
-        <note category="location">src/app/access/space-detail.component.html:102,103</note>
-        <note category="location">src/app/access/space-detail.component.html:216,217</note>
+        <note category="location">src/app/access/space-groups.component.html:78,79</note>
+        <note category="location">src/app/access/space-members.component.html:98,99</note>
         <note category="location">src/app/files/opening-commands.ts:123</note>
         <note category="location">src/app/formats/text/text-edit.component.html:10,12</note>
         <note category="location">src/app/tasks/tasks-section.component.html:199</note>
@@ -811,7 +811,7 @@
     <unit id="4814285799071780083">
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:153</note>
-        <note category="location">src/app/access/space-detail.component.html:227</note>
+        <note category="location">src/app/access/space-members.component.html:109</note>
         <note category="location">src/app/connections/connections-section.component.html:220,221</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:125,126</note>
         <note category="location">src/app/tracking/duplicate-group.component.html:16,17</note>
@@ -823,8 +823,8 @@
     <unit id="7022070615528435141">
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:155</note>
-        <note category="location">src/app/access/space-detail.component.html:111,112</note>
-        <note category="location">src/app/access/space-detail.component.html:225</note>
+        <note category="location">src/app/access/space-groups.component.html:87,88</note>
+        <note category="location">src/app/access/space-members.component.html:107</note>
         <note category="location">src/app/access/spaces-page.component.html:59,60</note>
         <note category="location">src/app/files/delete.dialog.ts:62</note>
         <note category="location">src/app/library/selection-bar.component.html:72,73</note>
@@ -920,7 +920,7 @@
     <unit id="7357782257284620062">
       <notes>
         <note category="location">src/app/access/accounts-page.component.ts:144</note>
-        <note category="location">src/app/access/space-detail.component.ts:187</note>
+        <note category="location">src/app/access/space-members.component.ts:109</note>
       </notes>
       <segment>
         <source>Account “<ph id="0" equiv="name" disp="user.userName"/>” deleted.</source>
@@ -937,7 +937,7 @@
     <unit id="2565892592367548156">
       <notes>
         <note category="location">src/app/access/accounts-page.component.ts:152</note>
-        <note category="location">src/app/access/space-detail.component.ts:195</note>
+        <note category="location">src/app/access/space-members.component.ts:117</note>
       </notes>
       <segment>
         <source>Could not delete the account “<ph id="0" equiv="name" disp="user.userName"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -1086,9 +1086,9 @@
     <unit id="5944812089887969249">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:79</note>
-        <note category="location">src/app/access/space-detail.component.html:28</note>
-        <note category="location">src/app/access/space-detail.component.html:29</note>
-        <note category="location">src/app/access/spaces-page.component.ts:48,49</note>
+        <note category="location">src/app/access/space-groups.component.html:4</note>
+        <note category="location">src/app/access/space-groups.component.html:5</note>
+        <note category="location">src/app/access/spaces-page.component.ts:49,50</note>
       </notes>
       <segment>
         <source>Groups</source>
@@ -1642,7 +1642,7 @@
     <unit id="4296542518018293988">
       <notes>
         <note category="location">src/app/access/group-editor.component.ts:61</note>
-        <note category="location">src/app/access/space-detail.component.html:50,51</note>
+        <note category="location">src/app/access/space-groups.component.html:26,27</note>
       </notes>
       <segment>
         <source>New group</source>
@@ -1771,416 +1771,6 @@
       </notes>
       <segment>
         <source>Everyone below sees these files, each with the rights of their groups.</source>
-      </segment>
-    </unit>
-    <unit id="5379891091883978691">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:30,31</note>
-      </notes>
-      <segment>
-        <source>A <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">group</pc> is a set of rights: what its members may do in this space (browse, download, tag, scan, change settings…). Accounts get rights only through their groups.</source>
-      </segment>
-    </unit>
-    <unit id="1909549764757830704">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:32,33</note>
-      </notes>
-      <segment>
-        <source>Every space has three built-in groups:</source>
-      </segment>
-    </unit>
-    <unit id="6240675728446201721">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:34,35</note>
-      </notes>
-      <segment>
-        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Administrators</pc> manage the space: its accounts, groups, settings, tags and scans.</source>
-      </segment>
-    </unit>
-    <unit id="1430157085929706178">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:36,37</note>
-      </notes>
-      <segment>
-        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Users</pc> are for everyday use: browse, play, download and tag.</source>
-      </segment>
-    </unit>
-    <unit id="8861985694973261529">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:37,38</note>
-      </notes>
-      <segment>
-        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Guests</pc> holds what visitors without an account may do (only look).</source>
-      </segment>
-    </unit>
-    <unit id="6494099920075858298">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:39,41</note>
-      </notes>
-      <segment>
-        <source>Make your own groups for anything in between. For example, <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Kids</pc> may browse and play but not download: put the children&apos;s accounts in Kids only.</source>
-      </segment>
-    </unit>
-    <unit id="6069169901755694621">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:46,47</note>
-      </notes>
-      <segment>
-        <source>Create a group in this space, with its own rights</source>
-      </segment>
-    </unit>
-    <unit id="6020432032757182597">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:62,63</note>
-      </notes>
-      <segment>
-        <source>Every space has this group; it can&apos;t be deleted</source>
-      </segment>
-    </unit>
-    <unit id="5810608815268928163">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:65,66</note>
-      </notes>
-      <segment>
-        <source>Built-in</source>
-      </segment>
-    </unit>
-    <unit id="8459847378675101648">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:70,71</note>
-      </notes>
-      <segment>
-        <source>Its members are those of the directory group <ph id="0" equiv="INTERPOLATION" disp="{{ group.externalName }}"/></source>
-      </segment>
-    </unit>
-    <unit id="7719551484742167982">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:81,82</note>
-      </notes>
-      <segment>
-        <source>{VAR_PLURAL, plural, one {<ph id="0" equiv="INTERPOLATION"/> right} other {<ph id="1" equiv="INTERPOLATION"/> rights}}</source>
-      </segment>
-    </unit>
-    <unit id="5917144226266485006">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:86</note>
-      </notes>
-      <segment>
-        <source>used for visitors without an account</source>
-      </segment>
-    </unit>
-    <unit id="5759940579622302765">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:88,89</note>
-        <note category="location">src/app/access/spaces-page.component.html:102,103</note>
-      </notes>
-      <segment>
-        <source>{VAR_PLURAL, plural, one {<ph id="0" equiv="INTERPOLATION"/> account} other {<ph id="1" equiv="INTERPOLATION"/> accounts}}</source>
-      </segment>
-    </unit>
-    <unit id="261941442272871636">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:98,99</note>
-      </notes>
-      <segment>
-        <source>Change what <ph id="0" equiv="INTERPOLATION" disp="{{ group.name }}"/> may do, and its members</source>
-      </segment>
-    </unit>
-    <unit id="8634702375972707031">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:107,108</note>
-      </notes>
-      <segment>
-        <source>Delete the group <ph id="0" equiv="INTERPOLATION" disp="{{ group.name }}"/> (asks first)</source>
-      </segment>
-    </unit>
-    <unit id="5483213616817732798">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:125</note>
-      </notes>
-      <segment>
-        <source>Accounts of a space</source>
-      </segment>
-    </unit>
-    <unit id="632883314584522713">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:126,127</note>
-      </notes>
-      <segment>
-        <source>The people who sign in to this space: every account in at least one of its groups. An account may be in several spaces, with different groups in each, and switches between them from the ⋮ menu.</source>
-      </segment>
-    </unit>
-    <unit id="1580759820517671836">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:129,131</note>
-      </notes>
-      <segment>
-        <source>For example, <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">anna</pc> is in Administrators here and in Users in the <pc id="1" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Work</pc> space: Anna sees both.</source>
-      </segment>
-    </unit>
-    <unit id="1600073478780949778">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:132,133</note>
-      </notes>
-      <segment>
-        <source>Server administrators open every space, even one where they are in no group; they aren&apos;t listed here then.</source>
-      </segment>
-    </unit>
-    <unit id="8336649086353182789">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:140,141</note>
-      </notes>
-      <segment>
-        <source>Put an account of another space in this one too (in its Users group)</source>
-      </segment>
-    </unit>
-    <unit id="3209832479344555866">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:144,145</note>
-      </notes>
-      <segment>
-        <source>Add an existing account…</source>
-      </segment>
-    </unit>
-    <unit id="7330800004808152934">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:153,154</note>
-      </notes>
-      <segment>
-        <source>Create an account in <ph id="0" equiv="INTERPOLATION" disp="{{ space().name }}"/> (in its Users group to start with)</source>
-      </segment>
-    </unit>
-    <unit id="6893529068206671358">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:175,176</note>
-      </notes>
-      <segment>
-        <source>Has every right in every space</source>
-      </segment>
-    </unit>
-    <unit id="5298460638839413457">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:202,203</note>
-      </notes>
-      <segment>
-        <source>last signed in <ph id="0" equiv="INTERPOLATION" disp="{{ formatDate(user.lastSignIn) }}"/></source>
-      </segment>
-    </unit>
-    <unit id="6110929851889942962">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:204</note>
-      </notes>
-      <segment>
-        <source>never signed in</source>
-      </segment>
-    </unit>
-    <unit id="481902693996222223">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:212,213</note>
-      </notes>
-      <segment>
-        <source>Change <ph id="0" equiv="INTERPOLATION" disp="{{ user.userName }}"/> and its groups here</source>
-      </segment>
-    </unit>
-    <unit id="916032722245743792">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:234,235</note>
-      </notes>
-      <segment>
-        <source>No accounts in this space yet. Create one, and it will be able to sign in and see these files.</source>
-      </segment>
-    </unit>
-    <unit id="9176796378416724294">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:243,244</note>
-        <note category="location">src/app/access/space-detail.component.html:244</note>
-      </notes>
-      <segment>
-        <source>Visitors without an account</source>
-      </segment>
-    </unit>
-    <unit id="1089718147011102863">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:245,248</note>
-      </notes>
-      <segment>
-        <source>Anyone who reaches the server can browse a space open to visitors without signing in: the sign-in page offers a button for each such space. Visitors get the rights of the <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Guests</pc> group, and never a right that changes something.</source>
-      </segment>
-    </unit>
-    <unit id="8268214299505660690">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:248,250</note>
-      </notes>
-      <segment>
-        <source>For example, open a <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Holiday photos</pc> space so that relatives on your network can look at it, while <pc id="1" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Family</pc> stays private.</source>
-      </segment>
-    </unit>
-    <unit id="3186002278895611381">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:250,252</note>
-      </notes>
-      <segment>
-        <source>For someone who should sign in but only look, make a <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">guest account</pc> instead (New account › Guest account).</source>
-      </segment>
-    </unit>
-    <unit id="3763473194160158087">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:262,263</note>
-      </notes>
-      <segment>
-        <source>Let visitors browse <ph id="0" equiv="INTERPOLATION" disp="{{ space().name }}"/> without an account</source>
-      </segment>
-    </unit>
-    <unit id="815932630984261694">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:265,266</note>
-      </notes>
-      <segment>
-        <source>Open: anyone who can reach the server sees these files. Visitors may do what the Guests group allows.</source>
-      </segment>
-    </unit>
-    <unit id="7284407019137020934">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:268,269</note>
-      </notes>
-      <segment>
-        <source>Closed: only the accounts above can open this space. Visitors may do what the Guests group allows.</source>
-      </segment>
-    </unit>
-    <unit id="6177743348624170027">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:276,277</note>
-      </notes>
-      <segment>
-        <source>SFE is in Local mode: only its administrators can open it (Administration › System › Installation).</source>
-      </segment>
-    </unit>
-    <unit id="8251207184107875115">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.html:279,281</note>
-      </notes>
-      <segment>
-        <source>The server&apos;s configuration doesn&apos;t allow visitors without an account (<pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">Sfe:Security:AnonymousGuests</pc>).</source>
-      </segment>
-    </unit>
-    <unit id="8984910376533083495">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:138</note>
-      </notes>
-      <segment>
-        <source>{others, plural, one {Also in another space} other {Also in # other spaces}}</source>
-      </segment>
-    </unit>
-    <unit id="6234900880945721733">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:157</note>
-      </notes>
-      <segment>
-        <source>Delete the account <ph id="0" equiv="name" disp="name"/>, which is in no other space (asks first)</source>
-      </segment>
-    </unit>
-    <unit id="6085687209145327013">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:158</note>
-      </notes>
-      <segment>
-        <source>Take <ph id="0" equiv="name" disp="name"/> out of <ph id="1" equiv="space" disp="space"/>; the account itself stays (asks first)</source>
-      </segment>
-    </unit>
-    <unit id="4954966493098896560">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:168,169</note>
-      </notes>
-      <segment>
-        <source>Delete the account “<ph id="0" equiv="name" disp="name"/>”? It is in no other space. Its preferences go with it; the tags it set stay. This cannot be undone.</source>
-      </segment>
-    </unit>
-    <unit id="4497173601918135544">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:170,171</note>
-      </notes>
-      <segment>
-        <source>Take “<ph id="0" equiv="name" disp="name"/>” out of “<ph id="1" equiv="space" disp="space"/>”? The account stays, and keeps its other spaces.</source>
-      </segment>
-    </unit>
-    <unit id="341801188762197617">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:188</note>
-      </notes>
-      <segment>
-        <source>“<ph id="0" equiv="name" disp="name"/>” is no longer in “<ph id="1" equiv="space" disp="space"/>”.</source>
-      </segment>
-    </unit>
-    <unit id="6291595032904645729">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:196</note>
-      </notes>
-      <segment>
-        <source>Could not take “<ph id="0" equiv="name" disp="name"/>” out of “<ph id="1" equiv="space" disp="space"/>”: <ph id="2" equiv="reason" disp="reason"/></source>
-      </segment>
-    </unit>
-    <unit id="2250754780485789841">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:204,205</note>
-      </notes>
-      <segment>
-        <source>Delete the group “<ph id="0" equiv="name" disp="group.name"/>”? Its members lose the rights it gave them; an account in no other group here loses access to “<ph id="1" equiv="space" disp="this.space().name"/>”. This cannot be undone.</source>
-      </segment>
-    </unit>
-    <unit id="4235923402878498735">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:211</note>
-      </notes>
-      <segment>
-        <source>Group “<ph id="0" equiv="name" disp="group.name"/>” deleted.</source>
-      </segment>
-    </unit>
-    <unit id="3340565827240007560">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:215</note>
-      </notes>
-      <segment>
-        <source>Could not delete the group “<ph id="0" equiv="name" disp="group.name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
-      </segment>
-    </unit>
-    <unit id="5876655023135172946">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:232,233</note>
-      </notes>
-      <segment>
-        <source>“<ph id="0" equiv="name" disp="user.userName"/>” is now in “<ph id="1" equiv="space" disp="this.space().name"/>”, in the group “<ph id="2" equiv="group" disp="usersGroup.name"/>”.</source>
-      </segment>
-    </unit>
-    <unit id="7907352864191169124">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:239</note>
-      </notes>
-      <segment>
-        <source>Could not add “<ph id="0" equiv="name" disp="user.userName"/>” to “<ph id="1" equiv="space" disp="this.space().name"/>”: <ph id="2" equiv="reason" disp="reason"/></source>
-      </segment>
-    </unit>
-    <unit id="3924974172537166672">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:259</note>
-      </notes>
-      <segment>
-        <source>Visitors without an account may now browse “<ph id="0" equiv="space" disp="space.name"/>”.</source>
-      </segment>
-    </unit>
-    <unit id="7382793037846518670">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:260</note>
-      </notes>
-      <segment>
-        <source>Only accounts may open “<ph id="0" equiv="space" disp="space.name"/>” now.</source>
-      </segment>
-    </unit>
-    <unit id="3930312196640910240">
-      <notes>
-        <note category="location">src/app/access/space-detail.component.ts:263</note>
-      </notes>
-      <segment>
-        <source>Could not change the visitors&apos; access: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
       </segment>
     </unit>
     <unit id="4932690213846965624">
@@ -2453,6 +2043,416 @@
         <source>Could not load the rights: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
       </segment>
     </unit>
+    <unit id="5379891091883978691">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:6,7</note>
+      </notes>
+      <segment>
+        <source>A <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">group</pc> is a set of rights: what its members may do in this space (browse, download, tag, scan, change settings…). Accounts get rights only through their groups.</source>
+      </segment>
+    </unit>
+    <unit id="1909549764757830704">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:8,9</note>
+      </notes>
+      <segment>
+        <source>Every space has three built-in groups:</source>
+      </segment>
+    </unit>
+    <unit id="6240675728446201721">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:10,11</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Administrators</pc> manage the space: its accounts, groups, settings, tags and scans.</source>
+      </segment>
+    </unit>
+    <unit id="1430157085929706178">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:12,13</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Users</pc> are for everyday use: browse, play, download and tag.</source>
+      </segment>
+    </unit>
+    <unit id="8861985694973261529">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:13,14</note>
+      </notes>
+      <segment>
+        <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Guests</pc> holds what visitors without an account may do (only look).</source>
+      </segment>
+    </unit>
+    <unit id="6494099920075858298">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:15,17</note>
+      </notes>
+      <segment>
+        <source>Make your own groups for anything in between. For example, <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Kids</pc> may browse and play but not download: put the children&apos;s accounts in Kids only.</source>
+      </segment>
+    </unit>
+    <unit id="6069169901755694621">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:22,23</note>
+      </notes>
+      <segment>
+        <source>Create a group in this space, with its own rights</source>
+      </segment>
+    </unit>
+    <unit id="6020432032757182597">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:38,39</note>
+      </notes>
+      <segment>
+        <source>Every space has this group; it can&apos;t be deleted</source>
+      </segment>
+    </unit>
+    <unit id="5810608815268928163">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:41,42</note>
+      </notes>
+      <segment>
+        <source>Built-in</source>
+      </segment>
+    </unit>
+    <unit id="8459847378675101648">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:46,47</note>
+      </notes>
+      <segment>
+        <source>Its members are those of the directory group <ph id="0" equiv="INTERPOLATION" disp="{{ group.externalName }}"/></source>
+      </segment>
+    </unit>
+    <unit id="7719551484742167982">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:57,58</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {<ph id="0" equiv="INTERPOLATION"/> right} other {<ph id="1" equiv="INTERPOLATION"/> rights}}</source>
+      </segment>
+    </unit>
+    <unit id="5917144226266485006">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:62</note>
+      </notes>
+      <segment>
+        <source>used for visitors without an account</source>
+      </segment>
+    </unit>
+    <unit id="5759940579622302765">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:64,65</note>
+        <note category="location">src/app/access/spaces-page.component.html:102,103</note>
+      </notes>
+      <segment>
+        <source>{VAR_PLURAL, plural, one {<ph id="0" equiv="INTERPOLATION"/> account} other {<ph id="1" equiv="INTERPOLATION"/> accounts}}</source>
+      </segment>
+    </unit>
+    <unit id="261941442272871636">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:74,75</note>
+      </notes>
+      <segment>
+        <source>Change what <ph id="0" equiv="INTERPOLATION" disp="{{ group.name }}"/> may do, and its members</source>
+      </segment>
+    </unit>
+    <unit id="8634702375972707031">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.html:83,84</note>
+      </notes>
+      <segment>
+        <source>Delete the group <ph id="0" equiv="INTERPOLATION" disp="{{ group.name }}"/> (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="2250754780485789841">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.ts:40,41</note>
+      </notes>
+      <segment>
+        <source>Delete the group “<ph id="0" equiv="name" disp="group.name"/>”? Its members lose the rights it gave them; an account in no other group here loses access to “<ph id="1" equiv="space" disp="this.space().name"/>”. This cannot be undone.</source>
+      </segment>
+    </unit>
+    <unit id="4235923402878498735">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.ts:47</note>
+      </notes>
+      <segment>
+        <source>Group “<ph id="0" equiv="name" disp="group.name"/>” deleted.</source>
+      </segment>
+    </unit>
+    <unit id="3340565827240007560">
+      <notes>
+        <note category="location">src/app/access/space-groups.component.ts:51</note>
+      </notes>
+      <segment>
+        <source>Could not delete the group “<ph id="0" equiv="name" disp="group.name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
+      </segment>
+    </unit>
+    <unit id="5483213616817732798">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:7</note>
+      </notes>
+      <segment>
+        <source>Accounts of a space</source>
+      </segment>
+    </unit>
+    <unit id="632883314584522713">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:8,10</note>
+      </notes>
+      <segment>
+        <source>The people who sign in to this space: every account in at least one of its groups. An account may be in several spaces, with different groups in each, and switches between them from the ⋮ menu.</source>
+      </segment>
+    </unit>
+    <unit id="1580759820517671836">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:11,13</note>
+      </notes>
+      <segment>
+        <source>For example, <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">anna</pc> is in Administrators here and in Users in the <pc id="1" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Work</pc> space: Anna sees both.</source>
+      </segment>
+    </unit>
+    <unit id="1600073478780949778">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:14,15</note>
+      </notes>
+      <segment>
+        <source>Server administrators open every space, even one where they are in no group; they aren&apos;t listed here then.</source>
+      </segment>
+    </unit>
+    <unit id="8336649086353182789">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:22,23</note>
+      </notes>
+      <segment>
+        <source>Put an account of another space in this one too (in its Users group)</source>
+      </segment>
+    </unit>
+    <unit id="3209832479344555866">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:26,27</note>
+      </notes>
+      <segment>
+        <source>Add an existing account…</source>
+      </segment>
+    </unit>
+    <unit id="7330800004808152934">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:35,36</note>
+      </notes>
+      <segment>
+        <source>Create an account in <ph id="0" equiv="INTERPOLATION" disp="{{ space().name }}"/> (in its Users group to start with)</source>
+      </segment>
+    </unit>
+    <unit id="6893529068206671358">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:57,58</note>
+      </notes>
+      <segment>
+        <source>Has every right in every space</source>
+      </segment>
+    </unit>
+    <unit id="5298460638839413457">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:84,85</note>
+      </notes>
+      <segment>
+        <source>last signed in <ph id="0" equiv="INTERPOLATION" disp="{{ formatDate(user.lastSignIn) }}"/></source>
+      </segment>
+    </unit>
+    <unit id="6110929851889942962">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:86</note>
+      </notes>
+      <segment>
+        <source>never signed in</source>
+      </segment>
+    </unit>
+    <unit id="481902693996222223">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:94,95</note>
+      </notes>
+      <segment>
+        <source>Change <ph id="0" equiv="INTERPOLATION" disp="{{ user.userName }}"/> and its groups here</source>
+      </segment>
+    </unit>
+    <unit id="916032722245743792">
+      <notes>
+        <note category="location">src/app/access/space-members.component.html:116,117</note>
+      </notes>
+      <segment>
+        <source>No accounts in this space yet. Create one, and it will be able to sign in and see these files.</source>
+      </segment>
+    </unit>
+    <unit id="8984910376533083495">
+      <notes>
+        <note category="location">src/app/access/space-members.component.ts:60</note>
+      </notes>
+      <segment>
+        <source>{others, plural, one {Also in another space} other {Also in # other spaces}}</source>
+      </segment>
+    </unit>
+    <unit id="6234900880945721733">
+      <notes>
+        <note category="location">src/app/access/space-members.component.ts:79</note>
+      </notes>
+      <segment>
+        <source>Delete the account <ph id="0" equiv="name" disp="name"/>, which is in no other space (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="6085687209145327013">
+      <notes>
+        <note category="location">src/app/access/space-members.component.ts:80</note>
+      </notes>
+      <segment>
+        <source>Take <ph id="0" equiv="name" disp="name"/> out of <ph id="1" equiv="space" disp="space"/>; the account itself stays (asks first)</source>
+      </segment>
+    </unit>
+    <unit id="4954966493098896560">
+      <notes>
+        <note category="location">src/app/access/space-members.component.ts:90,91</note>
+      </notes>
+      <segment>
+        <source>Delete the account “<ph id="0" equiv="name" disp="name"/>”? It is in no other space. Its preferences go with it; the tags it set stay. This cannot be undone.</source>
+      </segment>
+    </unit>
+    <unit id="4497173601918135544">
+      <notes>
+        <note category="location">src/app/access/space-members.component.ts:92,93</note>
+      </notes>
+      <segment>
+        <source>Take “<ph id="0" equiv="name" disp="name"/>” out of “<ph id="1" equiv="space" disp="space"/>”? The account stays, and keeps its other spaces.</source>
+      </segment>
+    </unit>
+    <unit id="341801188762197617">
+      <notes>
+        <note category="location">src/app/access/space-members.component.ts:110</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="name" disp="name"/>” is no longer in “<ph id="1" equiv="space" disp="space"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="6291595032904645729">
+      <notes>
+        <note category="location">src/app/access/space-members.component.ts:118</note>
+      </notes>
+      <segment>
+        <source>Could not take “<ph id="0" equiv="name" disp="name"/>” out of “<ph id="1" equiv="space" disp="space"/>”: <ph id="2" equiv="reason" disp="reason"/></source>
+      </segment>
+    </unit>
+    <unit id="5876655023135172946">
+      <notes>
+        <note category="location">src/app/access/space-members.component.ts:136,137</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="name" disp="user.userName"/>” is now in “<ph id="1" equiv="space" disp="this.space().name"/>”, in the group “<ph id="2" equiv="group" disp="usersGroup.name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="7907352864191169124">
+      <notes>
+        <note category="location">src/app/access/space-members.component.ts:143</note>
+      </notes>
+      <segment>
+        <source>Could not add “<ph id="0" equiv="name" disp="user.userName"/>” to “<ph id="1" equiv="space" disp="this.space().name"/>”: <ph id="2" equiv="reason" disp="reason"/></source>
+      </segment>
+    </unit>
+    <unit id="9176796378416724294">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.html:4,5</note>
+        <note category="location">src/app/access/space-visitors.component.html:5</note>
+      </notes>
+      <segment>
+        <source>Visitors without an account</source>
+      </segment>
+    </unit>
+    <unit id="1089718147011102863">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.html:6,9</note>
+      </notes>
+      <segment>
+        <source>Anyone who reaches the server can browse a space open to visitors without signing in: the sign-in page offers a button for each such space. Visitors get the rights of the <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Guests</pc> group, and never a right that changes something.</source>
+      </segment>
+    </unit>
+    <unit id="8268214299505660690">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.html:9,11</note>
+      </notes>
+      <segment>
+        <source>For example, open a <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Holiday photos</pc> space so that relatives on your network can look at it, while <pc id="1" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Family</pc> stays private.</source>
+      </segment>
+    </unit>
+    <unit id="3186002278895611381">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.html:11,13</note>
+      </notes>
+      <segment>
+        <source>For someone who should sign in but only look, make a <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">guest account</pc> instead (New account › Guest account).</source>
+      </segment>
+    </unit>
+    <unit id="3763473194160158087">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.html:23,24</note>
+      </notes>
+      <segment>
+        <source>Let visitors browse <ph id="0" equiv="INTERPOLATION" disp="{{ space().name }}"/> without an account</source>
+      </segment>
+    </unit>
+    <unit id="815932630984261694">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.html:26,27</note>
+      </notes>
+      <segment>
+        <source>Open: anyone who can reach the server sees these files. Visitors may do what the Guests group allows.</source>
+      </segment>
+    </unit>
+    <unit id="7284407019137020934">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.html:29,30</note>
+      </notes>
+      <segment>
+        <source>Closed: only the accounts above can open this space. Visitors may do what the Guests group allows.</source>
+      </segment>
+    </unit>
+    <unit id="6177743348624170027">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.html:37,38</note>
+      </notes>
+      <segment>
+        <source>SFE is in Local mode: only its administrators can open it (Administration › System › Installation).</source>
+      </segment>
+    </unit>
+    <unit id="8251207184107875115">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.html:40,43</note>
+      </notes>
+      <segment>
+        <source>The server&apos;s configuration doesn&apos;t allow visitors without an account (<pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">Sfe:Security:AnonymousGuests</pc>).</source>
+      </segment>
+    </unit>
+    <unit id="3924974172537166672">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.ts:53</note>
+      </notes>
+      <segment>
+        <source>Visitors without an account may now browse “<ph id="0" equiv="space" disp="space.name"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="7382793037846518670">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.ts:54</note>
+      </notes>
+      <segment>
+        <source>Only accounts may open “<ph id="0" equiv="space" disp="space.name"/>” now.</source>
+      </segment>
+    </unit>
+    <unit id="3930312196640910240">
+      <notes>
+        <note category="location">src/app/access/space-visitors.component.ts:57</note>
+      </notes>
+      <segment>
+        <source>Could not change the visitors&apos; access: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
+      </segment>
+    </unit>
     <unit id="7358105133521682540">
       <notes>
         <note category="location">src/app/access/spaces-page.component.html:2,3</note>
@@ -2586,7 +2586,7 @@
     </unit>
     <unit id="2012867539585346632">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:23,24</note>
+        <note category="location">src/app/access/spaces-page.component.ts:24,25</note>
       </notes>
       <segment>
         <source>Each <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">space</pc> holds:</source>
@@ -2594,7 +2594,7 @@
     </unit>
     <unit id="1205502245264789174">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:24</note>
+        <note category="location">src/app/access/spaces-page.component.ts:25</note>
       </notes>
       <segment>
         <source>How spaces work</source>
@@ -2602,7 +2602,7 @@
     </unit>
     <unit id="6011878169541548708">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:25,26</note>
+        <note category="location">src/app/access/spaces-page.component.ts:26,27</note>
       </notes>
       <segment>
         <source>A space is a separate home for one library on this server. Everything about the library belongs to the space: its files, index, tags and settings, and who may see it.</source>
@@ -2610,7 +2610,7 @@
     </unit>
     <unit id="913791182556451967">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:27,28</note>
+        <note category="location">src/app/access/spaces-page.component.ts:28,29</note>
       </notes>
       <segment>
         <source>An example server:</source>
@@ -2618,7 +2618,7 @@
     </unit>
     <unit id="5719924408543686871">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:28,40</note>
+        <note category="location">src/app/access/spaces-page.component.ts:29,41</note>
         <note category="description">example of two spaces, keep the drawing</note>
       </notes>
       <segment>
@@ -2638,7 +2638,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2599886499420442420">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:40,42</note>
+        <note category="location">src/app/access/spaces-page.component.ts:41,43</note>
       </notes>
       <segment>
         <source>Anna sees both spaces and switches between them from the ⋮ menu; Tom sees only Family; anyone on the network can look at the holiday photos without an account. Server administrators stand above every space.</source>
@@ -2646,7 +2646,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2845109119855183103">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:46,47</note>
+        <note category="location">src/app/access/spaces-page.component.ts:47,48</note>
       </notes>
       <segment>
         <source>A library</source>
@@ -2654,7 +2654,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6019707471531238770">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:47</note>
+        <note category="location">src/app/access/spaces-page.component.ts:48</note>
       </notes>
       <segment>
         <source>One folder of the server, with its files, index, tags and settings.</source>
@@ -2662,7 +2662,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3741198235211676500">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:49</note>
+        <note category="location">src/app/access/spaces-page.component.ts:50</note>
       </notes>
       <segment>
         <source>Sets of rights: what their members may do in the space.</source>
@@ -2670,7 +2670,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1639256427595228468">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:51</note>
+        <note category="location">src/app/access/spaces-page.component.ts:52</note>
       </notes>
       <segment>
         <source>People who sign in, each in one or more of the space&apos;s groups.</source>
@@ -2678,7 +2678,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2940211510142561457">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:52,53</note>
+        <note category="location">src/app/access/spaces-page.component.ts:53,54</note>
       </notes>
       <segment>
         <source>Visitors</source>
@@ -2686,7 +2686,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8369508087903057640">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:53,54</note>
+        <note category="location">src/app/access/spaces-page.component.ts:54,55</note>
       </notes>
       <segment>
         <source>If you let them in: people without an account, with the Guests group&apos;s rights.</source>
@@ -2694,7 +2694,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7686949027819324127">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:158,160</note>
+        <note category="location">src/app/access/spaces-page.component.ts:159,161</note>
       </notes>
       <segment>
         <source>Delete the space “<ph id="0" equiv="name" disp="space.name"/>”? Its groups and settings go, and its accounts lose access to it (the accounts themselves stay). The index of its library and its caches stay on the server&apos;s disk. This cannot be undone.</source>
@@ -2702,7 +2702,7 @@ Space “Holiday photos”
     </unit>
     <unit id="480459652821798344">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:166</note>
+        <note category="location">src/app/access/spaces-page.component.ts:167</note>
       </notes>
       <segment>
         <source>Space “<ph id="0" equiv="name" disp="space.name"/>” deleted.</source>
@@ -2710,7 +2710,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7699134136824287878">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.ts:172</note>
+        <note category="location">src/app/access/spaces-page.component.ts:173</note>
       </notes>
       <segment>
         <source>Could not delete the space “<ph id="0" equiv="name" disp="space.name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -8321,7 +8321,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3054489264627617667">
       <notes>
-        <note category="location">src/app/files/item-command-texts.ts:25</note>
+        <note category="location">src/app/files/item-command-texts.ts:15</note>
         <note category="description">what a greyed out action is about</note>
       </notes>
       <segment>
@@ -8330,7 +8330,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8114658593028052558">
       <notes>
-        <note category="location">src/app/files/item-command-texts.ts:31</note>
+        <note category="location">src/app/files/item-command-texts.ts:21</note>
         <note category="description">the reason a menu entry is greyed out</note>
       </notes>
       <segment>

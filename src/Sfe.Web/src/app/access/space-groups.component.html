@@ -1,0 +1,101 @@
+<section class="access-card" aria-labelledby="space-groups">
+    <header class="access-card-head help-row">
+        <svg sfeIcon="group"></svg>
+        <h3 id="space-groups"><span i18n>Groups</span> <span class="access-count">{{ groups().length }}</span></h3>
+        <sfe-help about="Groups" i18n-about>
+            <p i18n>A <strong>group</strong> is a set of rights: what its members may do in this space (browse,
+                download, tag, scan, change settings…). Accounts get rights only through their groups.</p>
+            <p i18n>Every space has three built-in groups:</p>
+            <ul>
+                <li i18n><strong>Administrators</strong> manage the space: its accounts, groups, settings, tags and
+                    scans.</li>
+                <li i18n><strong>Users</strong> are for everyday use: browse, play, download and tag.</li>
+                <li i18n><strong>Guests</strong> holds what visitors without an account may do (only look).</li>
+            </ul>
+            <p i18n>Make your own groups for anything in between. For example, <em>Kids</em> may browse and play but
+                not download: put the children's accounts in Kids only.</p>
+        </sfe-help>
+        <span class="spacer"></span>
+        <button
+            type="button"
+            class="button small"
+            title="Create a group in this space, with its own rights"
+            i18n-title
+            (click)="editor().open(null)"
+        >
+            <svg sfeIcon="plus"></svg><span i18n>New group</span>
+        </button>
+    </header>
+    <ul class="access-list">
+        @for (group of groups(); track group.id) {
+            <li class="access-row">
+                <div class="access-row-main">
+                    <strong>{{ group.name }}</strong>
+                    <span class="access-badges">
+                        @if (group.builtIn) {
+                            <span
+                                class="access-badge"
+                                title="Every space has this group; it can't be deleted"
+                                i18n-title
+                                i18n
+                            >Built-in</span>
+                        }
+                        @if (group.externalName) {
+                            <span
+                                class="access-badge"
+                                title="Its members are those of the directory group {{ group.externalName }}"
+                                i18n-title
+                            >{{ group.externalName }}</span>
+                        }
+                    </span>
+                </div>
+                <div class="access-row-detail muted">
+                    <span>
+                        @if (group.builtIn) {
+                            {{ purpose(group) + ' · ' }}
+                        }
+                        <ng-container i18n>{group.rights.length, plural,
+                            one {{{ group.rights.length }} right}
+                            other {{{ group.rights.length }} rights}}</ng-container>
+                        {{ ' · ' }}
+                        @if (group.builtIn === 'guests') {
+                            <ng-container i18n>used for visitors without an account</ng-container>
+                        } @else {
+                            <ng-container i18n>{group.memberIds.length, plural,
+                                one {{{ group.memberIds.length }} account}
+                                other {{{ group.memberIds.length }} accounts}}</ng-container>
+                        }
+                    </span>
+                </div>
+                <div class="access-row-actions">
+                    <button
+                        type="button"
+                        class="button small"
+                        title="Change what {{ group.name }} may do, and its members"
+                        i18n-title
+                        (click)="editor().open(group)"
+                        i18n
+                    >Edit</button>
+                    @if (!group.builtIn) {
+                        <button
+                            type="button"
+                            class="button small"
+                            title="Delete the group {{ group.name }} (asks first)"
+                            i18n-title
+                            (click)="remove(group)"
+                            i18n
+                        >Delete</button>
+                    }
+                </div>
+            </li>
+        }
+    </ul>
+</section>
+
+<sfe-group-editor
+    [space]="tenantParam()"
+    [spaceName]="space().name"
+    [candidates]="candidates()"
+    [catalog]="catalog()"
+    (saved)="changed.emit()"
+/>
