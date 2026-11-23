@@ -1,5 +1,5 @@
-import { DestroyRef, inject, Injectable, signal } from '@angular/core';
-import { API_BASE, TAB_ID } from '../core/api.service';
+import { DestroyRef, effect, inject, Injectable, signal, untracked } from '@angular/core';
+import { Api, API_BASE, TAB_ID } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { KeepAliveState } from './library.models';
 import { Rights } from '../core/rights';
@@ -25,20 +25,26 @@ export interface FolderChange {
     origin: string | null;
     /** The connection whose folder it is; absent for the library's. */
     connection?: number;
+    /** Changed outside SFE (another program), in a folder some tab watches. */
+    outside?: boolean;
 }
 
 /**
  * The change feed (agents/docs/features/change-feed.md): the server tells each open listing that a folder was changed
- * through SFE elsewhere (another tab, another person, a move or copy job); the folder listed is then refreshed in
- * place. The browser opens the feed again by itself when it ends or drops. It also tells how keep alive goes
- * (`keepAlive`) and whether the server answers (`serverLost`), for the indicator of the ⋮ menu, that the trash
- * changed (`trashChanges`), for the sidebar's Trash link, and how far items being written are (`WritingProgress`).
+ * through SFE elsewhere (another tab, another person, a move or copy job), or outside SFE in the folder this tab shows
+ * (named to the server: `watchFolder`); the folder listed is then refreshed in place. The browser opens the feed
+ * again by itself when it ends or drops. It also tells how keep alive goes (`keepAlive`) and whether the server
+ * answers (`serverLost`), for the indicator of the ⋮ menu, that the trash changed (`trashChanges`), for the sidebar's
+ * Trash link, and how far items being written are (`WritingProgress`).
  */
 @Injectable({ providedIn: 'root' })
 export class ChangeFeed {
     private readonly config = inject(ConfigService);
     private readonly store = inject(ListingStore);
     private readonly progress = inject(WritingProgress);
+    private readonly api = inject(Api);
+    /** The folder last named to the server for this feed; `undefined`: none since it opened. */
+    private watched: string | null | undefined;
     private source: EventSource | null = null;
     private timer: ReturnType<typeof setTimeout> | undefined;
     private lostTimer: ReturnType<typeof setTimeout> | undefined;
@@ -60,6 +66,12 @@ export class ChangeFeed {
     readonly serverLost = signal(false);
 
     constructor() {
+        // The folder shown is followed for changes made outside SFE: named on each move (and when the feed opens).
+        effect(() => {
+            this.store.route();
+            this.config.config();
+            untracked(() => this.watch());
+        });
         // A page left for another (kept by the browser for Back) gives its connection up: browsers allow 6 per server
         // over HTTP/1.1, and kept pages holding theirs made the next pages wait. Opened again when the page is back.
         const hidden = () => {
@@ -114,11 +126,12 @@ export class ChangeFeed {
         this.lostTimer = this.retryTimer = undefined;
         this.source?.close();
         this.source = null;
+        this.watched = undefined;
         this.serverLost.set(false);
     }
 
     private open(): void {
-        const source = (this.source = new EventSource(`${API_BASE}files/changes`));
+        const source = (this.source = new EventSource(`${API_BASE}files/changes?tab=${TAB_ID}`));
         source.addEventListener('open', () => this.opened());
         source.addEventListener('error', () => this.dropped(source));
         source.addEventListener('ping', () => this.heard());
@@ -145,6 +158,9 @@ export class ChangeFeed {
      * Open again: back to normal; after a loss, the folder listed is read again (changes made meanwhile weren't told).
      */
     private opened(): void {
+        // A feed opened again follows nothing until told.
+        this.watched = undefined;
+        this.watch();
         clearTimeout(this.lostTimer);
         this.lostTimer = undefined;
         this.heard();
@@ -196,6 +212,7 @@ export class ChangeFeed {
      * changes settle. Listeners hear the library's folders only.
      */
     changed(change: FolderChange): void {
+        if (change.outside && !this.live()) return;
         const connection = change.connection ?? null;
         if (change.origin !== TAB_ID && connection === null) this.listeners.forEach((listener) => listener(change));
         const route = this.store.route();
@@ -214,6 +231,29 @@ export class ChangeFeed {
         if (route.q || route.c != null || change.path !== route.path) return;
         const listed = new Set(this.store.items().map((item) => item.name));
         if (ended.length > 0 || started.some((name) => !listed.has(name))) this.settle();
+    }
+
+    /** Names the folder shown to the server, when the feed is open and it is another. */
+    private watch(): void {
+        if (!this.source || this.source.readyState !== EventSource.OPEN) return;
+        const folder = this.shownFolder();
+        if (folder === this.watched || (folder === null && this.watched === undefined)) return;
+        this.watched = folder;
+        this.api.watchFolder(folder).catch(() => {
+            // Named again on the next move.
+            if (this.watched === folder) this.watched = undefined;
+        });
+    }
+
+    /** The library's folder listed, when changes made outside SFE are followed; null otherwise. */
+    private shownFolder(): string | null {
+        const route = this.store.route();
+        return this.live() && !route.q && route.c == null ? route.path : null;
+    }
+
+    /** The user follows changes made outside SFE (`liveChanges`, on unless switched off). */
+    private live(): boolean {
+        return this.config.config()?.liveChanges !== false;
     }
 
     /** The folder listed is refreshed once the changes settle. */

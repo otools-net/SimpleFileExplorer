@@ -401,6 +401,8 @@ export class Api {
     trash = (before: number | null = null) => this.get<TrashPage>('files/trash', { before });
     trashCount = () => this.get<TrashCount>('files/trash/count');
     /** The space used and free on the disk holding the library, or in a connection's account (`id`). */
+    /** The folder this tab shows (null: none), followed for changes made outside SFE while its feed is open. */
+    watchFolder = (path: string | null) => this.put<{ watching: boolean }>('files/changes/watch', { path });
     storage = (id: number | null) =>
         id === null
             ? this.get<StorageUsage>('storage')

@@ -268,8 +268,13 @@ An uploaded file keeps its date from your computer and is added to the index at 
 
 When someone else (or you, in another tab) creates, renames, moves, copies, uploads or deletes something through SFE,
 the folder you are viewing is listed again by itself a moment later: what was added shows, what went away goes,
-without losing your place or what you selected. Changes made to the disk outside SFE show when you open the folder
-again.
+without losing your place or what you selected.
+
+The same goes for changes made **outside SFE**: a file saved by another program, a folder renamed in the file manager,
+someone else's change on a network share. They show a moment later in the folder you are viewing (on a network folder,
+within about 10 seconds; a file being written for a long time refreshes the listing at most every 2 seconds). Only the
+folders open in a browser are followed, not the whole library. To stop it, untick **Show changes made outside SFE** in
+your own [settings](../administration/my-account.md): such changes then show when you open the folder again.
 
 ## Files being written
 

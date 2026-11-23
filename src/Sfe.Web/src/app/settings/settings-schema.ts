@@ -72,6 +72,7 @@ export const SIMPLE_SETTINGS: ReadonlySet<string> = new Set([
     'reading.prose.size',
     'browse.defaultPageSize',
     'browse.folderPictures',
+    'browse.liveChanges',
     'browse.showResolution',
     'browse.showDuration',
     'browse.resolutionMark',

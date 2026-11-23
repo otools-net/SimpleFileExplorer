@@ -32,6 +32,8 @@ export interface ClientConfig {
     showResolution: boolean;
     /** Listings and the viewer show the duration of videos and audio files (Browse:ShowDuration). */
     showDuration: boolean;
+    /** The folder listed follows changes made outside SFE too (Browse:LiveChanges, each user's). */
+    liveChanges: boolean;
     /**
      * Smallest shorter side, in pixels, of a high-resolution image and video (HR/LR marks on previews); null = no
      * marks.

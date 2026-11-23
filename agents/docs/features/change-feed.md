@@ -7,8 +7,8 @@ Tests: `ChangeFeedRouteTests`, `FileOperationsTests.ANewFileIsEmptyIndexedAndNev
 Decided 2026-10-17: a live feed (not a refresh on focus).
 
 - Every file operation already calls `LibraryBrowser.Invalidate` for the folders it touched (creates, renames, moves,
-  copies, trash, restore, uploads): that is the one place the event comes from. Changes on the disk outside SFE are not
-  told (no file-system watcher over millions of files).
+  copies, trash, restore, uploads): that is the one place SFE's own changes come from. Changes outside SFE: below
+  (only the folders open in a tab are watched, never the library).
 - One connection per open listing tab: subscribes to its library's `LibraryBrowser` (the request's container), queues
   changes in a bounded channel (handlers run in the changing request; nothing is written from there), writes
   `event: changed` / `data: {"path","origin"}` for folders the caller sees (`library.browse`, access read when it
@@ -51,3 +51,40 @@ Decided 2026-10-17: a live feed (not a refresh on focus).
   with `connection` to feeds whose caller uses that connection in its library and sees the folder (folder rules),
   read once per connection per feed. The client refreshes only when `connection` matches the place shown
   (`route.c`); `listen` listeners hear library folders only.
+
+## Changes made outside SFE (2026-11-23, release 2.0 step 3.5a)
+
+Code: `Core/Library/Watching/` (`FolderWatchers`, `WatchedFolder`, `FolderWatch`, `FolderSignature`,
+`FolderWatchTimings`), `LibraryBrowser.Forget`, Api `ChangeFeedTabs`, `ChangeEndpoints.WatchAsync`
+(`PUT api/files/changes/watch`), `ChangeFeedQueue.Watch`; client `ChangeFeed.watch`, `Api.watchFolder`; setting
+`browse.liveChanges`. Tests: `FolderWatchersTests`, `ChangeFeedRouteTests` (`…OutsideSfe…`, `OnlyTheTabsOwnFeed…`),
+`library/change-feed.spec.ts`.
+
+- **What is watched:** the folder each tab lists. The feed is opened with `?tab=<TAB_ID>` (kept in `ChangeFeedTabs` by
+  caller and tab while open); the tab names its folder with `PUT files/changes/watch` (`{ path }`, `X-SFE-Tab`), on
+  each move and each time the feed opens (the server forgets with the feed; every 10 minutes). Null for a search, a
+  connection's folder, or the setting off. The folder must exist and be `Allowed` to browse for the feed's caller;
+  the feed's library must be the request's (`TenantId`), else `watching: false`.
+- **Holds:** `FolderWatchers.Watch` returns a `FolderWatch`; one watcher per folder, reference counted, let go with
+  the last hold (the feed's next folder is taken before the previous one is let go: a refresh doesn't restart it). At
+  most `MaxFolders` (256) per library, then nothing more (one warning).
+- **How:** `FileSystemWatcher` on the folder only (`IncludeSubdirectories` off: one inotify watch on Linux), names,
+  sizes, last writes. **Polled** instead (`FolderSignature`: count and an order-free hash of name, size, last write,
+  attributes; read at least every 10 s, and never more than a tenth of the time: a read of 3 s waits 30 s) when the
+  folder is on a network mount outside Windows (`NetworkFolders.IsNetwork`: inotify there sees only this computer's
+  changes), when the watcher can't be made (inotify's `max_user_watches`, a folder gone), or when it fails (not on
+  a buffer overflow: that only tells a change). Windows shares are watched (SMB change notifications).
+- **Told:** a change settles 300 ms, a folder is told at most every 2 s (a file written for minutes); then
+  `LibraryBrowser.Forget` (the kept listings, without `FolderChanged`) and `FolderWatchers.Changed`, queued by every
+  feed of the library as `changed` with `outside: true` and no origin, filtered by rights like the others (another
+  tab watching the folder doesn't matter: the event says only "changed").
+- **Left out:** items ending `.sfe-partial` (SFE's writes: the `writing` event tells them) and the work folder at the
+  top. SFE's own changes: `FolderChanged` marks the folder; a watcher's change within 1 s of it is SFE's, not told
+  again; a polled folder takes its next read as the new base. A change outside SFE within that second is told by
+  SFE's own event anyway (the folder is refreshed). An operation that touches a folder for longer (deleting many
+  files) may still be told twice: a second refresh in place, harmless.
+- **Off switch:** `browse.liveChanges` (user level, on by default): off, the client names no folder and drops
+  `outside` events (another user's tab may watch the same folder).
+- Tests share one process: `ChangeFeedTabs` is static (like the feed count), so route tests use a tab name of their
+  own.
+- Connections' folders: not yet (step 3.5b: the change cursor of open connection folders).

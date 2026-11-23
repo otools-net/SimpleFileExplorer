@@ -7,6 +7,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Changes made outside SFE shown live**: the folder you are viewing is listed again a moment later when another
+  program changes it on the disk (a file saved, renamed or deleted, someone else's change on a network share), as it
+  already was for changes made through SFE. Only the folders open in a browser are followed; network folders outside
+  Windows are read again every 10 seconds or so instead. Each user can switch it off (**Show changes made outside
+  SFE**, Interface › Browsing or their own settings; `Sfe:Browse:LiveChanges`). The change feed takes `?tab=`, a new
+  route `PUT api/v1/files/changes/watch` names the folder a tab shows, and `changed` events gain `outside`.
 - **Space used and free**: a bar at the bottom of the sidebar shows how full the disk holding the library is, or the
   account of the connection you are in ("120 GB used of 500 GB, 380 GB free"), orange from 85 % used and red from
   95 %; "Free space not reported" when a storage service doesn't tell. The trash page says what the whole trash holds

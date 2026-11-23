@@ -6,13 +6,15 @@ using Otools.Net.Sfe.Api.Security;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.KeepAlive;
+using Otools.Net.Sfe.Core.Library.Watching;
 using Otools.Net.Sfe.Core.Paths;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What one change feed listens to while it is open: folders changed in the library and in connections, keep alive's
-/// state, the trash (for callers who may open it), the progress of items being written. The events are only queued by
+/// state, the trash (for callers who may open it), the progress of items being written, changes made outside SFE (in
+/// the folder its tab shows, <see cref="Watch"/>, and those others watch). The events are only queued by
 /// the request (or job, or keep alive's loop) that raised them; the feed's own loop takes them as the text of
 /// server-sent events, keeping those the caller may see. Disposing it stops listening.
 /// </summary>
@@ -26,6 +28,9 @@ internal sealed class ChangeFeedQueue : IDisposable
     private readonly ChangeFeedServices _services;
     private readonly AccessState _state;
     private readonly ConnectionFeed _connections;
+    private readonly Lock _watchGate = new();
+    private FolderWatch? _watch;
+    private bool _closed;
 
     // Holds a FolderChange, a ConnectionFolderChange, a KeepAliveSignal, a TrashSignal or a WritingSignal.
     private readonly Channel<object> _changes = Channel.CreateBounded<object>(
@@ -36,12 +41,41 @@ internal sealed class ChangeFeedQueue : IDisposable
     {
         (_services, _state) = (services, state);
         services.Browser.FolderChanged += OnChanged;
+        services.Watchers.Changed += OnOutside;
         _connections = new ConnectionFeed(connections, state, _changes.Writer, services.Accessor);
         services.KeepAlive.StateChanged += OnKeepAlive;
         services.Writing.FolderProgressed += OnWriting;
         // The trash's count is for those who may open it.
         if (state.Access.Rights.Contains(Rights.DeleteFiles) || state.Access.Rights.Contains(Rights.DeletePermanently))
             services.Trash.EntriesChanged += OnTrash;
+    }
+
+    /// <summary>The library the feed tells of.</summary>
+    public int TenantId => _state.TenantId;
+
+    /// <summary>
+    /// Follows <paramref name="folder"/> (root-relative; null: none) for changes made outside SFE while the feed is
+    /// open, instead of the folder followed before (taken first, so the same folder isn't let go of in between).
+    /// False when it isn't followed: hidden from the caller, missing, too many followed, the feed closed.
+    /// </summary>
+    public bool Watch(string? folder)
+    {
+        var next =
+            folder is not null && _state.Check(_services.Paths, folder, Rights.Browse) == PathVerdict.Allowed
+                ? _services.Watchers.Watch(folder)
+                : null;
+        FolderWatch? previous;
+        lock (_watchGate)
+        {
+            if (_closed)
+            {
+                next?.Dispose();
+                return false;
+            }
+            (previous, _watch) = (_watch, next);
+        }
+        previous?.Dispose();
+        return next?.IsActive == true;
     }
 
     /// <summary>The `keepAlive` event with keep alive's state now (a feed's first event).</summary>
@@ -71,6 +105,13 @@ internal sealed class ChangeFeedQueue : IDisposable
     public void Dispose()
     {
         _services.Browser.FolderChanged -= OnChanged;
+        _services.Watchers.Changed -= OnOutside;
+        lock (_watchGate)
+        {
+            _closed = true;
+            _watch?.Dispose();
+            _watch = null;
+        }
         _services.KeepAlive.StateChanged -= OnKeepAlive;
         _services.Writing.FolderProgressed -= OnWriting;
         _services.Trash.EntriesChanged -= OnTrash;
@@ -119,6 +160,8 @@ internal sealed class ChangeFeedQueue : IDisposable
         var origin = _services.Accessor.HttpContext?.Request.Headers[ChangeEndpoints.TabHeader].ToString();
         _changes.Writer.TryWrite(new FolderChange(path, string.IsNullOrEmpty(origin) ? null : origin));
     }
+
+    private void OnOutside(string path) => _changes.Writer.TryWrite(new FolderChange(path, null, Outside: true));
 
     private void OnWriting(string folder) => _changes.Writer.TryWrite(new WritingSignal(folder));
 

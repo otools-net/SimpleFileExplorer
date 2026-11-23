@@ -3,6 +3,7 @@
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions.Serialization;
 using Microsoft.Kiota.Abstractions;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.Watch;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -16,12 +17,17 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     public partial class ChangesRequestBuilder : BaseRequestBuilder
     {
+        /// <summary>The watch property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.Watch.WatchRequestBuilder Watch
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.Watch.WatchRequestBuilder(PathParameters, RequestAdapter);
+        }
         /// <summary>
         /// Instantiates a new <see cref="global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.ChangesRequestBuilder"/> and sets the default values.
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public ChangesRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/files/changes", pathParameters)
+        public ChangesRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/files/changes{?tab*}", pathParameters)
         {
         }
         /// <summary>
@@ -29,39 +35,39 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public ChangesRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/files/changes", rawUrl)
+        public ChangesRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/files/changes{?tab*}", rawUrl)
         {
         }
         /// <summary>
-        /// Open with `EventSource`; `origin` is the `X-SFE-Tab` header of the request that changed it (a tabskips its own). `keepAlive` comes first, then each time keep alive&apos;s state changes: `none` (off, ornothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete orfiles.deletePermanently) when something came into or left the trash: ask its count again. `writing` with`{ path, items: [{ name, finalName, bytesDone, bytesTotal }] }` when items being written in a folder thecaller sees moved on, started or ended (at most every 300 msper folder, and every 3 s while some are; `name` ends with`.sfe-partial`, `bytesTotal` 0 when unknown, `items` empty once the last one ended). A `ping` eventafter 25 s without anything keeps it open; it ends after10 minutes and the browser opens it again. 12 at once percaller (429).
+        /// Open with `EventSource`; `origin` is the `X-SFE-Tab` header of the request that changed it (a tabskips its own). `keepAlive` comes first, then each time keep alive&apos;s state changes: `none` (off, ornothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete orfiles.deletePermanently) when something came into or left the trash: ask its count again. `writing` with`{ path, items: [{ name, finalName, bytesDone, bytesTotal }] }` when items being written in a folder thecaller sees moved on, started or ended (at most every 300 msper folder, and every 3 s while some are; `name` ends with`.sfe-partial`, `bytesTotal` 0 when unknown, `items` empty once the last one ended). `changed` with`outside` true: a folder changed outside SFE (another program), told only for folders some tab watches(`PUT files/changes/watch`, naming the feed&apos;s `tab`). A `ping` event after25 s without anything keeps it open; it ends after10 minutes and the browser opens it again. 12 at once percaller (429).
         /// </summary>
         /// <returns>A <see cref="Stream"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public async Task<Stream?> GetAsync(Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<Stream?> GetAsync(Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.ChangesRequestBuilder.ChangesRequestBuilderGetQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        public async Task<Stream> GetAsync(Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<Stream> GetAsync(Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.ChangesRequestBuilder.ChangesRequestBuilderGetQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
             var requestInfo = ToGetRequestInformation(requestConfiguration);
             return await RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Open with `EventSource`; `origin` is the `X-SFE-Tab` header of the request that changed it (a tabskips its own). `keepAlive` comes first, then each time keep alive&apos;s state changes: `none` (off, ornothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete orfiles.deletePermanently) when something came into or left the trash: ask its count again. `writing` with`{ path, items: [{ name, finalName, bytesDone, bytesTotal }] }` when items being written in a folder thecaller sees moved on, started or ended (at most every 300 msper folder, and every 3 s while some are; `name` ends with`.sfe-partial`, `bytesTotal` 0 when unknown, `items` empty once the last one ended). A `ping` eventafter 25 s without anything keeps it open; it ends after10 minutes and the browser opens it again. 12 at once percaller (429).
+        /// Open with `EventSource`; `origin` is the `X-SFE-Tab` header of the request that changed it (a tabskips its own). `keepAlive` comes first, then each time keep alive&apos;s state changes: `none` (off, ornothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete orfiles.deletePermanently) when something came into or left the trash: ask its count again. `writing` with`{ path, items: [{ name, finalName, bytesDone, bytesTotal }] }` when items being written in a folder thecaller sees moved on, started or ended (at most every 300 msper folder, and every 3 s while some are; `name` ends with`.sfe-partial`, `bytesTotal` 0 when unknown, `items` empty once the last one ended). `changed` with`outside` true: a folder changed outside SFE (another program), told only for folders some tab watches(`PUT files/changes/watch`, naming the feed&apos;s `tab`). A `ping` event after25 s without anything keeps it open; it ends after10 minutes and the browser opens it again. 12 at once percaller (429).
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
+        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.ChangesRequestBuilder.ChangesRequestBuilderGetQueryParameters>>? requestConfiguration = default)
         {
 #nullable restore
 #else
-        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
+        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.ChangesRequestBuilder.ChangesRequestBuilderGetQueryParameters>> requestConfiguration = default)
         {
 #endif
             var requestInfo = new RequestInformation(Method.GET, UrlTemplate, PathParameters);
@@ -76,6 +82,26 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.ChangesRequestBuilder WithUrl(string rawUrl)
         {
             return new global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Changes.ChangesRequestBuilder(rawUrl, RequestAdapter);
+        }
+        /// <summary>
+        /// Open with `EventSource`; `origin` is the `X-SFE-Tab` header of the request that changed it (a tabskips its own). `keepAlive` comes first, then each time keep alive&apos;s state changes: `none` (off, ornothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete orfiles.deletePermanently) when something came into or left the trash: ask its count again. `writing` with`{ path, items: [{ name, finalName, bytesDone, bytesTotal }] }` when items being written in a folder thecaller sees moved on, started or ended (at most every 300 msper folder, and every 3 s while some are; `name` ends with`.sfe-partial`, `bytesTotal` 0 when unknown, `items` empty once the last one ended). `changed` with`outside` true: a folder changed outside SFE (another program), told only for folders some tab watches(`PUT files/changes/watch`, naming the feed&apos;s `tab`). A `ping` event after25 s without anything keeps it open; it ends after10 minutes and the browser opens it again. 12 at once percaller (429).
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class ChangesRequestBuilderGetQueryParameters 
+        {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            #pragma warning disable CS1591
+            [QueryParameter("tab")]
+            public string? Tab { get; set; }
+            #pragma warning restore CS1591
+#nullable restore
+#else
+            #pragma warning disable CS1591
+            [QueryParameter("tab")]
+            public string Tab { get; set; }
+            #pragma warning restore CS1591
+#endif
         }
     }
 }

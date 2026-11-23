@@ -119,6 +119,7 @@ export function fakeConfig(overrides: Partial<ClientConfig> = {}): ClientConfig 
         animatedHover: true,
         showResolution: true,
         showDuration: true,
+        liveChanges: true,
         resolutionMark: null,
         rootPath: null,
         externalPlayer: null,

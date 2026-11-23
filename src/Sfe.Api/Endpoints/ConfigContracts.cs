@@ -97,6 +97,8 @@ public sealed record ConnectionsConfig(IReadOnlyList<string> Levels, IReadOnlyLi
 /// Connections to other storage; null when they are off (<c>Connections:Enabled</c>) or the session has none of the
 /// <c>connections.*</c> rights.
 /// </param>
+/// <param name="LiveChanges">The folder listed is watched for changes made outside SFE (`PUT files/changes/watch`),
+/// and such changes are heeded.</param>
 /// <param name="AccessTokens">
 /// Personal access tokens on this server; null when the session may neither have tokens nor manage them
 /// (<c>account.tokens</c>, <c>access.tokens</c>).
@@ -139,7 +141,8 @@ public sealed record ClientConfig(
     bool Flash = false,
     ArchivesConfig? Archives = null,
     ConnectionsConfig? Connections = null,
-    AccessTokensConfig? AccessTokens = null
+    AccessTokensConfig? AccessTokens = null,
+    bool LiveChanges = true
 );
 
 /// <param name="MaxCompressedTarMegabytes">Compressed tars (<c>.tar.gz</c>…) larger than this aren't explored (listing

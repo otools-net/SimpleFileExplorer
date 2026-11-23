@@ -18,6 +18,13 @@ public sealed class BrowseOptions
     public bool CopyPaths { get; set; }
 
     /// <summary>
+    /// The folder listed is listed again when it changes outside SFE (another program, the share's other users), not
+    /// only through SFE: the server watches the folders open in the web client (agents/docs/features/change-feed.md).
+    /// A user setting; off, the client neither asks for it nor heeds such changes.
+    /// </summary>
+    public bool LiveChanges { get; set; } = true;
+
+    /// <summary>
     /// The web client shows the resolution of images and videos (e.g. 1920×1080) next to their size, when the index
     /// has it (<see cref="ScanOptions.ReadResolution"/>).
     /// </summary>

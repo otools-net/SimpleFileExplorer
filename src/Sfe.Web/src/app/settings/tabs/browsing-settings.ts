@@ -44,6 +44,16 @@ show up faster on slow drives.`,
                     help: $localize`Only the grid and one-per-row views show them, where folders are cards.`,
                 },
                 {
+                    key: 'browse.liveChanges',
+                    label: $localize`Show changes made outside SFE`,
+                    type: 'checkbox',
+                    hint: $localize`The folder you view is listed again when another program changes it on the disk, \
+not only when SFE does.`,
+                    help: $localize`The server watches only the folders open in a browser. On a network folder it may \
+read the folder again every 10 seconds instead, which takes longer on very large folders. Off, a folder shows such \
+changes when you open it again.`,
+                },
+                {
                     key: 'browse.copyPaths',
                     label: $localize`Copy full paths`,
                     type: 'checkbox',

@@ -55,7 +55,7 @@ test.describe('the connection', () => {
 
     test('the server not answering: a warning on the ⋮, gone when it answers again', async ({ page }) => {
         await page.clock.install();
-        await page.route('**/api/v1/files/changes', (route) => route.abort());
+        await page.route('**/api/v1/files/changes?*', (route) => route.abort());
         await openFolder(page, 'Photos');
         const more = page.getByRole('button', { name: /^More/ }).first();
         await page.clock.fastForward(11_000);
@@ -66,7 +66,7 @@ test.describe('the connection', () => {
         await expectTapTargets(page, 'sfe-main-menu');
         await page.keyboard.press('Escape');
 
-        await page.unroute('**/api/v1/files/changes');
+        await page.unroute('**/api/v1/files/changes?*');
         await page.clock.fastForward(70_000);
         await expect(more.locator('.menu-keep-alive.failing')).toHaveCount(0, { timeout: 15_000 });
     });

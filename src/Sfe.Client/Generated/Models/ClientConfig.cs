@@ -94,6 +94,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public int? FolderPictures { get; set; }
         /// <summary>The largeImageSize property</summary>
         public long? LargeImageSize { get; set; }
+        /// <summary>The liveChanges property</summary>
+        public bool? LiveChanges { get; set; }
         /// <summary>The loop property</summary>
         public bool? Loop { get; set; }
         /// <summary>The maxFilesPerTagChange property</summary>
@@ -223,6 +225,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         {
             AdditionalData = new Dictionary<string, object>();
             Flash = false;
+            LiveChanges = true;
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -255,6 +258,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "flash", n => { Flash = n.GetBoolValue(); } },
                 { "folderPictures", n => { FolderPictures = n.GetIntValue(); } },
                 { "largeImageSize", n => { LargeImageSize = n.GetLongValue(); } },
+                { "liveChanges", n => { LiveChanges = n.GetBoolValue(); } },
                 { "loop", n => { Loop = n.GetBoolValue(); } },
                 { "maxFilesPerTagChange", n => { MaxFilesPerTagChange = n.GetIntValue(); } },
                 { "mode", n => { Mode = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ServerMode>(); } },
@@ -302,6 +306,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteBoolValue("flash", Flash);
             writer.WriteIntValue("folderPictures", FolderPictures);
             writer.WriteLongValue("largeImageSize", LargeImageSize);
+            writer.WriteBoolValue("liveChanges", LiveChanges);
             writer.WriteBoolValue("loop", Loop);
             writer.WriteIntValue("maxFilesPerTagChange", MaxFilesPerTagChange);
             writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ServerMode>("mode", Mode);

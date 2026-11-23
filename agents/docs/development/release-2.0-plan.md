@@ -334,7 +334,20 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   (SSE change feed, ~400 ms, selection/scroll kept). Add: a file watcher **only on folders someone has open**
   (reference counted, released with the feed; network shares included, with a polling fallback when the watcher
   fails), raising `LibraryBrowser.Invalidate`; for connections, poll the change cursor of open connection folders
-  (capability-driven). Per-user off switch. Changes applied quietly (no highlight).
+  (capability-driven). Per-user off switch. Changes applied quietly (no highlight). **Split** (2026-11-23: the
+  server didn't know which folder a tab shows; the connection part polls the providers, a session of its own):
+  - [x] **3.5a library folders**. Done 2026-11-23: the feed opened with `?tab=`, `PUT files/changes/watch` names
+    the folder a tab shows (each move, each time the feed opens); `FolderWatchers` (per library, reference counted,
+    256 at most) watch it with `FileSystemWatcher` (that folder only) or poll it (`FolderSignature`, every 10 s at
+    least, a tenth of the time at most) on a network mount outside Windows or when the watcher fails; settled 300 ms,
+    at most every 2 s per folder; `LibraryBrowser.Forget` (cache without the event) then `changed` with
+    `outside: true`; `.sfe-partial` items, the work folder and SFE's own changes (within 1 s) left out; user
+    setting `browse.liveChanges`. Note in change-feed.md. Screenshot `admin-interface-browsing.png` retaken.
+    Refactoring first: `editingSession()` out of `api.service.ts`.
+  - [ ] **3.5b connection folders**: while a connection folder is watched (same route, `connection` in the body),
+    read the connection's change cursor every ~30 s (capability `ChangeCursor`, index phase `Following`; no task
+    history run per poll), tell the folders whose items changed (`ConnectionChanges`) with `outside`; the client
+    names connection folders too.
 - [ ] **3.6 Scan as you go for library folders** (IDEA-008, M). Connections already sync when opened. For library
   folders: after a listing's first page, index **that folder only** (not recursive) in the background, at most
   once per 10 minutes per folder, never blocking the listing nor colliding with `ScanCoordinator`; removed tagged
@@ -451,7 +464,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
 - **Last session (2026-11-23):** phases 1 and 2 done, 3.1–3.4 (administration, deep folder, mode matrix and badge,
-  used and free space). Next: **3.5** (changes made outside SFE shown live), then 3.6.
+  used and free space), 3.5a (library folders changed outside SFE). Next: **3.5b** (connection folders), then 3.6.
 - Don't run `npm test` and `dotnet test` at the same time: the client build rewrites `wwwroot` under the server's
   build ("No file exists for the asset").
 - `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd

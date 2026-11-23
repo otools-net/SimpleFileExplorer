@@ -22,6 +22,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public int? FolderPictures { get; set; }
         /// <summary>The imageHighResolutionPixels property</summary>
         public int? ImageHighResolutionPixels { get; set; }
+        /// <summary>The liveChanges property</summary>
+        public bool? LiveChanges { get; set; }
         /// <summary>The maxPageSize property</summary>
         public int? MaxPageSize { get; set; }
         /// <summary>The resolutionMark property</summary>
@@ -61,6 +63,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "defaultPageSize", n => { DefaultPageSize = n.GetIntValue(); } },
                 { "folderPictures", n => { FolderPictures = n.GetIntValue(); } },
                 { "imageHighResolutionPixels", n => { ImageHighResolutionPixels = n.GetIntValue(); } },
+                { "liveChanges", n => { LiveChanges = n.GetBoolValue(); } },
                 { "maxPageSize", n => { MaxPageSize = n.GetIntValue(); } },
                 { "resolutionMark", n => { ResolutionMark = n.GetBoolValue(); } },
                 { "showDuration", n => { ShowDuration = n.GetBoolValue(); } },
@@ -79,6 +82,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteIntValue("defaultPageSize", DefaultPageSize);
             writer.WriteIntValue("folderPictures", FolderPictures);
             writer.WriteIntValue("imageHighResolutionPixels", ImageHighResolutionPixels);
+            writer.WriteBoolValue("liveChanges", LiveChanges);
             writer.WriteIntValue("maxPageSize", MaxPageSize);
             writer.WriteBoolValue("resolutionMark", ResolutionMark);
             writer.WriteBoolValue("showDuration", ShowDuration);

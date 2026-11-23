@@ -11,6 +11,7 @@ using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Data;
 using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.KeepAlive;
+using Otools.Net.Sfe.Core.Library.Watching;
 using Otools.Net.Sfe.Core.Settings;
 using Otools.Net.Sfe.Tests.Infrastructure;
 
@@ -246,6 +247,61 @@ public sealed class ChangeFeedRouteTests
     }
 
     [TestMethod]
+    public async Task AFolderChangedOutsideSfeIsToldOnceATabWatchesIt()
+    {
+        using var feed = await _alice.GetAsync(
+            $"{V1}/files/changes?tab=watching-tab",
+            HttpCompletionOption.ResponseHeadersRead,
+            Token
+        );
+        using var reader = new StreamReader(await feed.Content.ReadAsStreamAsync(Token));
+        await NextEventAsync<KeepAliveSignal>(reader, "keepAlive");
+
+        Assert.IsTrue(await WatchAsync(_alice, "watching-tab", "ChildDir"));
+        using var writing = new CancellationTokenSource();
+        var writer = WriteFilesAsync("ChildDir", writing.Token);
+        var change = await NextChangeAsync(reader);
+        await writing.CancelAsync();
+        await writer;
+
+        Assert.AreEqual(new FolderChange("ChildDir", null, Outside: true), change);
+    }
+
+    [TestMethod]
+    public async Task OnlyTheTabsOwnFeedFollowsAFolderItSees()
+    {
+        using var feed = await _alice.GetAsync(
+            $"{V1}/files/changes?tab=alice-tab",
+            HttpCompletionOption.ResponseHeadersRead,
+            Token
+        );
+        var watchers = (await _factory.Services.GetRequiredService<TenantRegistry>().GetAsync(_tenant, Token))!
+            .Services.GetRequiredService<FolderWatchers>();
+
+        // Tab names are unique per test: feeds are kept by user id and tab for the whole process.
+        // Hidden from Alice, missing, leaving the library, another tab, another caller with her tab's name: refused.
+        Assert.IsFalse(await WatchAsync(_alice, "alice-tab", "SpecialDir"));
+        Assert.IsFalse(await WatchAsync(_alice, "alice-tab", "NoSuchFolder"));
+        Assert.IsFalse(await WatchAsync(_alice, "alice-tab", "../Outside"));
+        Assert.IsFalse(await WatchAsync(_alice, "other-tab", "ChildDir"));
+        Assert.IsFalse(await WatchAsync(_admin, "alice-tab", "ChildDir"));
+        Assert.IsEmpty(watchers.Folders);
+
+        Assert.IsTrue(await WatchAsync(_alice, "alice-tab", ""));
+        Assert.IsTrue(await WatchAsync(_alice, "alice-tab", "ChildDir"));
+        CollectionAssert.AreEqual(new[] { "ChildDir" }, watchers.Folders.ToList(), "the top let go");
+        Assert.IsFalse(await WatchAsync(_alice, "alice-tab", null));
+        Assert.IsEmpty(watchers.Folders);
+
+        // The feed closed lets its folder go.
+        Assert.IsTrue(await WatchAsync(_alice, "alice-tab", "ChildDir"));
+        feed.Dispose();
+        for (var i = 0; i < 50 && watchers.Folders.Count > 0; i++)
+            await Task.Delay(100, Token);
+        Assert.IsEmpty(watchers.Folders);
+    }
+
+    [TestMethod]
     public void TheTrashEventReachesThePage()
     {
         CollectionAssert.AreEqual(new[] { "event: trash", "data: {}", "", "" }, ChangeEndpoints.TrashEvent.Split('\n'));
@@ -289,6 +345,35 @@ public sealed class ChangeFeedRouteTests
             request.Headers.Add(ChangeEndpoints.TabHeader, tab);
         using var response = await _admin.SendAsync(request, Token);
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+    }
+
+    private async Task<bool> WatchAsync(HttpClient client, string tab, string? path)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"{V1}/files/changes/watch")
+        {
+            Content = JsonContent.Create(new FolderWatchRequest(path), options: Json),
+        };
+        request.Headers.Add(ChangeEndpoints.TabHeader, tab);
+        using var response = await client.SendAsync(request, Token);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Token));
+        return (await response.Content.ReadFromJsonAsync<FolderWatchAnswer>(Json, Token))!.Watching;
+    }
+
+    /// <summary>
+    /// A new file in <paramref name="folder"/> every 300 ms, as another program would, until stopped (the watcher
+    /// starts on another thread: a file written before it is not seen).
+    /// </summary>
+    private async Task WriteFilesAsync(string folder, CancellationToken stop)
+    {
+        for (var i = 0; !stop.IsCancellationRequested && i < 30; i++)
+        {
+            _library.AddFile($"{folder}/outside-{i}.txt", 10 + i);
+            try
+            {
+                await Task.Delay(300, stop);
+            }
+            catch (OperationCanceledException) { }
+        }
     }
 
     private Task<HttpResponseMessage> OpenFeedAsync(HttpClient client) =>

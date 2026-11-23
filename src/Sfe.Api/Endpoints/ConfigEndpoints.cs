@@ -133,7 +133,8 @@ public static class ConfigEndpoints
                     ? new ArchivesConfig(Math.Max(0, server.Files.Archives.MaxCompressedTarMegabytes))
                     : null,
                 ConnectionsOf(state, server.Connections, services.Connections),
-                TokensOf(state, services.Tokens)
+                TokensOf(state, services.Tokens),
+                settings.Browse.LiveChanges
             )
         );
     }

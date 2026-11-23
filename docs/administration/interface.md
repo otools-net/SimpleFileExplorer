@@ -35,6 +35,7 @@ each browser keeps its own changes over them.
 | **Items per page** | 120 | Files and folders loaded at a time; more load as you scroll |
 | **Largest page** | 1000 | The most a client may ask for at once (all settings view) |
 | **Pictures per folder** | 4 | [Folder pictures](../user-guide/browsing.md#folder-pictures) in the grid and one-per-row views: 4 makes a 2×2 grid, 9 a 3×3 grid, up to 16; 0 lists folders without pictures |
+| **Show changes made outside SFE** | on | The folder viewed is [listed again](../user-guide/managing-files.md#seeing-changes-made-elsewhere) when another program changes it on the disk; each user can switch it off in their own settings |
 | **Copy full paths** | off | [Copy buttons](../user-guide/browsing.md#copying-full-paths) for the server's full path of folders and files; also needs the right `files.copyPaths` |
 | **Show resolutions** | on | Photo and video sizes in pixels next to their file size, in listings and the viewer |
 | **Show durations** | on | How long videos and audio files last |

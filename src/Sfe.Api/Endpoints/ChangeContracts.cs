@@ -6,7 +6,16 @@ namespace Otools.Net.Sfe.Api.Endpoints;
 /// <param name="Path">The folder changed (root-relative).</param>
 /// <param name="Origin">The tab whose request changed it (`X-SFE-Tab`), which needs no notice; null from a background
 /// job.</param>
-public sealed record FolderChange(string Path, string? Origin);
+/// <param name="Outside">Changed outside SFE (another program, the share's other users), seen in a folder a tab
+/// watches (`PUT files/changes/watch`).</param>
+public sealed record FolderChange(string Path, string? Origin, bool Outside = false);
+
+/// <param name="Path">The folder the tab shows (root-relative, "" for the top of the library); null: none.</param>
+public sealed record FolderWatchRequest(string? Path);
+
+/// <param name="Watching">The folder is followed for changes made outside SFE: false when the tab has no feed open
+/// in this library, or the folder is missing, hidden from the caller, or past the server's limit.</param>
+public sealed record FolderWatchAnswer(bool Watching);
 
 /// <param name="Path">The folder (root-relative) whose items being written moved on, started or ended.</param>
 /// <param name="Items">The items being written there now (those the caller may see); empty when the last one ended.

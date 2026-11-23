@@ -4612,7 +4612,7 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-sections.ts:114</note>
         <note category="location">src/app/library/topbar/search-box.component.html:11</note>
         <note category="location">src/app/library/topbar/search-box.component.ts:264</note>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:110</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:120</note>
       </notes>
       <segment>
         <source>Search</source>
@@ -19966,7 +19966,7 @@ The search index is updated in the background. This can take a while on large fo
     <unit id="2136618163523034774">
       <notes>
         <note category="location">src/app/settings/tabs/browsing-settings.ts:29</note>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:125</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:135</note>
       </notes>
       <segment>
         <source>Largest page</source>
@@ -20004,9 +20004,33 @@ The search index is updated in the background. This can take a while on large fo
         <source>Only the grid and one-per-row views show them, where folders are cards.</source>
       </segment>
     </unit>
-    <unit id="7678252496891159074">
+    <unit id="5434308546778594758">
       <notes>
         <note category="location">src/app/settings/tabs/browsing-settings.ts:48</note>
+      </notes>
+      <segment>
+        <source>Show changes made outside SFE</source>
+      </segment>
+    </unit>
+    <unit id="2770965948060932189">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:50</note>
+      </notes>
+      <segment>
+        <source>The folder you view is listed again when another program changes it on the disk, not only when SFE does.</source>
+      </segment>
+    </unit>
+    <unit id="7592293699411921182">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:52</note>
+      </notes>
+      <segment>
+        <source>The server watches only the folders open in a browser. On a network folder it may read the folder again every 10 seconds instead, which takes longer on very large folders. Off, a folder shows such changes when you open it again.</source>
+      </segment>
+    </unit>
+    <unit id="7678252496891159074">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:58</note>
       </notes>
       <segment>
         <source>Copy full paths</source>
@@ -20014,7 +20038,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="393467800418041198">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:50</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:60</note>
       </notes>
       <segment>
         <source>Adds buttons that copy the full path of a folder or file on the server.</source>
@@ -20022,7 +20046,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1446821861757584432">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:51</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:61</note>
       </notes>
       <segment>
         <source>For example D:\Media\Photos\beach.jpg. The buttons sit next to the location for the current folder, on each folder and file, and in the viewer. Everyone who sees them learns where the library is on the server&apos;s disk.</source>
@@ -20030,7 +20054,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4999860378494617470">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:58</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:68</note>
       </notes>
       <segment>
         <source>Resolution and duration</source>
@@ -20038,7 +20062,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1776210421325891412">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:59</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:69</note>
       </notes>
       <segment>
         <source>These need the resolutions and durations read by scans (Scanning › Indexing › Read resolutions and durations).</source>
@@ -20046,7 +20070,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4099423086858001962">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:64</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:74</note>
       </notes>
       <segment>
         <source>Show resolutions</source>
@@ -20054,7 +20078,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8277290844782775112">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:66</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:76</note>
       </notes>
       <segment>
         <source>Shows the size in pixels of photos and videos (e.g. 1920×1080) next to their file size, in listings and in the viewer.</source>
@@ -20062,7 +20086,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2541108176217297048">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:71</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:81</note>
       </notes>
       <segment>
         <source>Show durations</source>
@@ -20070,7 +20094,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8864695421690998465">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:73</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:83</note>
       </notes>
       <segment>
         <source>Shows how long each video and audio file lasts (e.g. 1:23:45) next to its file size, in listings and in the viewer.</source>
@@ -20078,7 +20102,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7025005937924653776">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:78</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:88</note>
       </notes>
       <segment>
         <source>Mark high and low resolution</source>
@@ -20086,7 +20110,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="367195855763293344">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:80</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:90</note>
       </notes>
       <segment>
         <source>Labels the preview of each photo and video HR (high resolution) or LR (low resolution) in its bottom-right corner, by the thresholds below.</source>
@@ -20094,7 +20118,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4371436865301707523">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:85</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:95</note>
       </notes>
       <segment>
         <source>Photos are high resolution from (pixels)</source>
@@ -20102,7 +20126,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2211103591967290516">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:89</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:99</note>
       </notes>
       <segment>
         <source>A photo whose shorter side reaches this many pixels is HR.</source>
@@ -20110,7 +20134,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7832799081905460617">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:90</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:100</note>
       </notes>
       <segment>
         <source>With 1500, a 2000×1500 photo (or a portrait one of 1500×2000) is HR, and a 1000×1000 one is LR.</source>
@@ -20118,7 +20142,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8500080773753869573">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:95</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:105</note>
       </notes>
       <segment>
         <source>Videos are high resolution from (pixels)</source>
@@ -20126,7 +20150,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5090246463923808326">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:99</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:109</note>
       </notes>
       <segment>
         <source>A video whose shorter side reaches this many pixels is HR.</source>
@@ -20134,7 +20158,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6627281149276913890">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:100</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:110</note>
       </notes>
       <segment>
         <source>With 720, videos of 1280×720 and 1000×1000 are HR, and one of 854×480 is LR. The searches r:hr and r:lr use both thresholds, whether the marks are shown or not.</source>
@@ -20142,7 +20166,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5968132631442328843">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:113</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:123</note>
       </notes>
       <segment>
         <source>Results</source>
@@ -20150,7 +20174,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="341618940227092764">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:117</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:127</note>
       </notes>
       <segment>
         <source>Results per page</source>
@@ -20158,7 +20182,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3661145885986683522">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:121</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:131</note>
       </notes>
       <segment>
         <source>Search results loaded at a time; more load as you scroll.</source>
@@ -20166,7 +20190,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2841612508133195877">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:129</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:139</note>
       </notes>
       <segment>
         <source>The most results a single request can ask for.</source>
@@ -20174,7 +20198,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8724969247795731822">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:135</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:145</note>
       </notes>
       <segment>
         <source>Search box</source>
@@ -20182,7 +20206,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7466220890637811224">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:140</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:150</note>
       </notes>
       <segment>
         <source>Explain searches</source>
@@ -20190,7 +20214,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7601240027795705190">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:142</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:152</note>
       </notes>
       <segment>
         <source>Adds a button to the search box that puts the search into words as you type.</source>
@@ -20198,7 +20222,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3306747909054935461">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:143</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:153</note>
       </notes>
       <segment>
         <source>It also points out the parts of a search that are ignored, or that don&apos;t work the way they may seem to.</source>
@@ -20206,7 +20230,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5949463342923797801">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:148</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:158</note>
       </notes>
       <segment>
         <source>Searches remembered</source>
@@ -20214,7 +20238,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3228224542697626101">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:152</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:162</note>
       </notes>
       <segment>
         <source>The last searches each browser keeps and suggests again as you type, newest first. 0 keeps none.</source>
@@ -20222,7 +20246,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5152929430307007483">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:154</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:164</note>
       </notes>
       <segment>
         <source>Each browser keeps its own searches: they never reach the server or other devices.</source>

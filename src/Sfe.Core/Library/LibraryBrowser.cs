@@ -305,6 +305,28 @@ public sealed class LibraryBrowser(
     /// </summary>
     public void Invalidate(string fullPath)
     {
+        // After the listing is forgotten: whoever listens lists it anew.
+        if (Forget(fullPath) is { } changed && FolderChanged is { } handlers)
+        {
+            // A listener failing (a connection gone) must not fail the operation that changed the folder.
+            foreach (var handler in handlers.GetInvocationList().Cast<Action<string>>())
+            {
+                try
+                {
+                    handler(changed);
+                }
+                catch (Exception ex) when (ex is not OutOfMemoryException) { }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Forgets what is kept of the folder <paramref name="fullPath"/> without raising <see cref="FolderChanged"/>: a
+    /// change made outside SFE, which <see cref="Watching.FolderWatchers"/> tells. Returns the folder root-relative
+    /// (null outside the library).
+    /// </summary>
+    public string? Forget(string fullPath)
+    {
         var folder = Path.TrimEndingDirectorySeparator(fullPath);
         lock (_cacheGate)
         {
@@ -326,19 +348,7 @@ public sealed class LibraryBrowser(
                 _covers.Remove(key);
             }
         }
-        // After the listing is forgotten: whoever listens lists it anew.
-        if (paths.ToRelative(folder) is { } changed && FolderChanged is { } handlers)
-        {
-            // A listener failing (a connection gone) must not fail the operation that changed the folder.
-            foreach (var handler in handlers.GetInvocationList().Cast<Action<string>>())
-            {
-                try
-                {
-                    handler(changed);
-                }
-                catch (Exception ex) when (ex is not OutOfMemoryException) { }
-            }
-        }
+        return paths.ToRelative(folder);
     }
 
     /// <param name="reuse">Take the cached listing when the folder is unchanged; false lists it from disk anew.</param>
