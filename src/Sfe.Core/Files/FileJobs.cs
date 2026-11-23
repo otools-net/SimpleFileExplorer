@@ -230,7 +230,7 @@ public sealed class FileJobs(
                 path,
                 null,
                 FileOperationStatus.Forbidden,
-                "It is behind a link leaving the library, which is read only: copy it instead."
+                "It is behind a link leaving the library, which is read-only: copy it instead."
             );
         }
         var isFolder = Directory.Exists(source);
@@ -332,7 +332,7 @@ public sealed class FileJobs(
                     null,
                     FileOperationStatus.Conflict,
                     begun.Problem is not null
-                        ? $"“{Base(destinationPath)}” can't go there: folder access rules are set for a folder of that "
+                        ? $"“{Base(destinationPath)}” can't go there: folder rules are set for a folder of that "
                             + $"name. An administrator can remove them or point them elsewhere."
                         : begun.Errors?.Values.SelectMany(e => e).FirstOrDefault()
                 );

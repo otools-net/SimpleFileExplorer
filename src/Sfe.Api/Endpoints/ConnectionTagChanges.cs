@@ -65,7 +65,7 @@ internal static class ConnectionTagChanges
     }
 
     private static IResult? Invalid(FileTagChange change) =>
-        change.Paths is not { Count: > 0 } paths ? Problem("paths", "No file given.")
+        change.Paths is not { Count: > 0 } paths ? Problem("paths", "Name at least one file.")
         : paths.Count > TagService.MaxFilesPerChange
             ? Problem("paths", $"At most {TagService.MaxFilesPerChange} files can be tagged at once.")
         : null;
@@ -122,8 +122,8 @@ internal static class ConnectionTagChanges
 
     private static IResult NotIndexed() =>
         TypedResults.Problem(
-            "The library's index doesn't hold these files yet: its sync of the connection brings them; "
-                + "try again once it has run.",
+            "The index doesn't have these files yet: the connection's next sync adds them. "
+                + "Try again once it has run.",
             statusCode: StatusCodes.Status409Conflict,
             type: ProblemTypes.ConnectionNotIndexed
         );

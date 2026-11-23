@@ -361,7 +361,7 @@ public sealed class TrickplayService : IDisposable
             // The settings changed: the loop starts a new pass with them (see OnOptionsChanged).
             _logger.LogInformation("Trickplay pass interrupted by a settings change");
             outcome = TaskOutcome.Cancelled;
-            note = "Interrupted by a settings change, a new pass follows";
+            note = "Interrupted by a change of settings: a new pass follows.";
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

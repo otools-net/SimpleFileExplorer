@@ -100,7 +100,7 @@ internal sealed class FolderRuleMoves(
         if (FolderRuleService.PathError(to, out target) is { } toError)
             return ("to", toError);
         if (source.Length == 0 || target.Length == 0)
-            return ("from", "The library's root folder can't be moved.");
+            return ("from", "The top of the library can't be moved.");
         if (string.Equals(source, target, StringComparison.Ordinal))
             return ("to", "The folder is already there.");
         if (!LibraryPaths.PathComparer.Equals(source, target) && FolderPolicy.IsBelow(target, source))

@@ -193,7 +193,10 @@ public static class FileTrackingEndpoints
                     }
             )
             : TypedResults.ValidationProblem(
-                new Dictionary<string, string[]> { ["path"] = ["Invalid library path or page."] }
+                new Dictionary<string, string[]>
+                {
+                    ["path"] = ["This is not a folder of the library, or not a page of this list."],
+                }
             );
     }
 
@@ -231,7 +234,7 @@ public static class FileTrackingEndpoints
             : TypedResults.ValidationProblem(
                 new Dictionary<string, string[]>
                 {
-                    ["path"] = ["Invalid library path, or page of an older comparison."],
+                    ["path"] = ["This is not a folder of the library, or the page is from an older comparison."],
                 }
             );
     }

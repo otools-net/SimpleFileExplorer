@@ -11,7 +11,7 @@ public sealed record JobToken(PresentedAccessToken Token, AccessTokens Tokens)
 {
     /// <summary>What the items a job didn't do any more say.</summary>
     public const string StoppedProblem =
-        "The access token that started this job was revoked or has expired: the rest was not done.";
+        "The access token that started this operation was revoked or has expired: the rest was not done.";
 
     /// <summary>The token still works.</summary>
     public Task<bool> IsActiveAsync(CancellationToken cancellationToken = default) =>

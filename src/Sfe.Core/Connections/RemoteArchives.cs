@@ -154,7 +154,7 @@ public static class RemoteArchives
                 return;
             }
             if (_maxBytes > 0 && Bytes + (file.Size ?? 0) > _maxBytes)
-                throw new IOException($"The zip passes the limit of {_maxBytes / 1024 / 1024:N0} MB.");
+                throw new IOException($"The zip would be larger than the {_maxBytes / 1024 / 1024:N0} MB allowed.");
 
             var level = Archives.Compressible.Contains(Path.GetExtension(file.Name))
                 ? CompressionLevel.Fastest

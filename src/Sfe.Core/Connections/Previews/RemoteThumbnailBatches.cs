@@ -80,7 +80,7 @@ public sealed class RemoteThumbnailBatches(
     private async Task<IReadOnlyList<RemoteThumbnail?>> CallAsync(int connectionId, List<string> paths, int size)
     {
         if (gates.WaitLeft(connectionId) is { } left)
-            throw new RemoteStorageException(RemoteErrorKind.RateLimited, "The provider asks to wait.", left);
+            throw new RemoteStorageException(RemoteErrorKind.RateLimited, "The storage service asks to wait.", left);
         var opened = await connections.OpenAsync(connectionId);
         await using var storage = opened.Value
             ?? throw new RemoteStorageException(RemoteErrorKind.Unavailable, "The connection can't be opened.");

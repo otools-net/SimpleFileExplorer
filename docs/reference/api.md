@@ -124,7 +124,7 @@ their status.
 | `file-changed` | 412 | the text file changed since it was read (its current version in `version`) |
 | `file-exists` | 409 | something of that name is already there |
 | `file-is-link` | 409 | the file is a link: it isn't saved over |
-| `folder-rules` | 409 | the folder's access rules can't follow it there |
+| `folder-rules` | 409 | the folder's rules can't follow it there |
 | `job-running` | 409 | the job still runs: retry once it ends |
 | `library-root-missing` | 404 | the library's folder doesn't exist on the server |
 | `local-administrators-only` | 400 | a Local server lets only administrators sign in |

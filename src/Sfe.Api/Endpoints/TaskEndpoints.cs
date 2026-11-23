@@ -224,7 +224,9 @@ public static class TaskEndpoints
     ) =>
         string.IsNullOrEmpty(path) || (await current.GetAsync()).At(paths, path) is { IsVisible: true }
             ? null
-            : TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["path"] = ["Invalid library path."] });
+            : TypedResults.ValidationProblem(
+                new Dictionary<string, string[]> { ["path"] = ["This is not a folder of the library."] }
+            );
 
     private static async Task<Results<NoContent, NotFound>> DeleteSchedule(
         TaskScheduleService schedules,

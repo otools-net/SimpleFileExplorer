@@ -92,7 +92,7 @@ list (`x-sfe-problem-types`), so the baseline refuses a word removed.
 | `file-changed` | 412 | the text file changed since it was read (its version in `version`) |
 | `file-exists` | 409 | something of that name is already there |
 | `file-is-link` | 409 | the file is a link: not saved over |
-| `folder-rules` | 409 | the folder access rules can't follow a folder there |
+| `folder-rules` | 409 | the folder rules can't follow a folder there |
 | `job-running` | 409 | a retry asked while the job still runs |
 | `library-root-missing` | 404 | the library's folder doesn't exist on the server |
 | `local-administrators-only` | 400 | sign-in refused: a Local server lets only administrators in |

@@ -390,7 +390,9 @@ public static class ConnectionWriteEndpoints
 
     private static IResult NotSupported(bool move) =>
         TypedResults.Problem(
-            move ? "The provider cannot move files on its side." : "The provider cannot copy files on its side.",
+            move
+                ? "This connection can't move files within itself."
+                : "This connection can't copy files within itself.",
             statusCode: StatusCodes.Status409Conflict,
             type: ConnectionProblems.NotSupportedType
         );

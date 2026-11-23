@@ -800,7 +800,7 @@ public static class FileEndpoints
     /// What a write refused by <see cref="ProtectedFromWrites"/> says where the place itself is no secret.
     /// </summary>
     internal const string ReadOnlyThroughLink =
-        "It is behind a link leaving the library, which is read only on this server.";
+        "It is behind a link leaving the library, which is read-only on this server.";
 
     internal static bool ProtectedFromWrites(string full, ServerFiles serverFiles, WorkFolder workFolder)
     {

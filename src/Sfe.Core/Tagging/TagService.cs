@@ -220,7 +220,7 @@ public sealed class TagService(
         }
 
         if (!string.IsNullOrWhiteSpace(input.Color) && !TagColors.IsDefined(input.Color))
-            return TagEditResult.Invalid("color", $"Unknown color '{input.Color}'.");
+            return TagEditResult.Invalid("color", $"Unknown colour “{input.Color}”.");
 
         var parents = input.ParentIds ?? [];
         foreach (var parent in parents.Where(p => !graph.Contains(p)))
@@ -533,7 +533,7 @@ public sealed class TagService(
         var remove = (change.Remove ?? []).Distinct().Where(id => !add.Contains(id)).ToList();
         var requested = change.Paths ?? [];
         if (requested.Count == 0)
-            return (null, Error("paths", "No file given."));
+            return (null, Error("paths", "Name at least one file."));
         if (requested.Count > MaxFilesPerChange)
             return (null, Error("paths", $"At most {MaxFilesPerChange} files can be tagged at once."));
 

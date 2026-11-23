@@ -145,7 +145,7 @@ public sealed class InstallationSettings
             if (root is null || !Directory.Exists(root))
                 errors["root"] = ["This folder does not exist on the server."];
             else if (!CanList(root))
-                errors["root"] = ["SFE cannot read this folder: check its permissions."];
+                errors["root"] = ["SFE cannot read this folder: check that the server's account may read it."];
             else
                 values[RootKey] = root;
         }

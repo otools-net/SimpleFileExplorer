@@ -87,7 +87,10 @@ public sealed class RemoteTransferEndpoint(
         try
         {
             if (served > offset)
-                throw new RemoteStorageException(RemoteErrorKind.Unavailable, "The provider served another part.");
+                throw new RemoteStorageException(
+                    RemoteErrorKind.Unavailable,
+                    "The storage service sent another part of the file."
+                );
             await SkipAsync(content.Stream, offset - served, cancellationToken);
             return content.Stream;
         }
@@ -153,7 +156,7 @@ public sealed class RemoteTransferEndpoint(
             if (await GetAsync(path, cancellationToken) is null)
                 return candidate;
         }
-        throw new RemoteStorageException(RemoteErrorKind.Exists, $"No free name for '{name}'.");
+        throw new RemoteStorageException(RemoteErrorKind.Exists, $"No free name for “{name}”.");
     }
 
     public async Task RemoveForReplaceAsync(TransferEntry existing, CancellationToken cancellationToken)

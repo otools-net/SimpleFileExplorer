@@ -223,7 +223,7 @@ public sealed class BackgroundTasks(
         {
             TaskState.Unavailable => "Connections are not available here.",
             TaskState.Running => string.Join("; ", running.Select(r => r.Describe())),
-            _ => last is null ? "Starts when a connection is first opened in this library." : LastResult(last),
+            _ => last is null ? "Starts when a connection is first opened in this space." : LastResult(last),
         };
         return new TaskInfo(
             BackgroundTaskKind.ConnectionIndex,

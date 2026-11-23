@@ -34,7 +34,7 @@ public static class ConnectionProblems
         var seconds = Math.Max(1, (int)Math.Ceiling(left.TotalSeconds));
         context.Response.Headers[HeaderNames.RetryAfter] = seconds.ToString();
         return TypedResults.Problem(
-            $"The provider asks to wait: try again in {seconds} s.",
+            $"The storage service asks to wait: try again in {seconds} s.",
             statusCode: StatusCodes.Status429TooManyRequests,
             type: RateLimitedType
         );

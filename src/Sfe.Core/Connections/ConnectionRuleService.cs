@@ -163,7 +163,7 @@ public sealed class ConnectionRuleService(
         {
             return AccessResult<IReadOnlyList<ConnectionRuleInfo>>.Invalid(
                 "path",
-                "One rule per folder and principal."
+                "Only one rule per folder for each group or account."
             );
         }
         var principalError = await ConnectionRuleChecks.PrincipalErrorAsync(

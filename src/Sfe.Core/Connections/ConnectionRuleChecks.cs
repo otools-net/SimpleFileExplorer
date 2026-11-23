@@ -46,7 +46,7 @@ internal static class ConnectionRuleChecks
             cancellationToken
         );
         if (groups != groupIds.Count)
-            return ("groupId", "Not a group of this library.");
+            return ("groupId", "Not a group of this space.");
 
         var userIds = rules.Where(r => r.UserId is not null).Select(r => r.UserId!.Value).Distinct().ToList();
         var members = await db
@@ -54,7 +54,7 @@ internal static class ConnectionRuleChecks
             .Select(m => m.UserId)
             .Distinct()
             .CountAsync(cancellationToken);
-        return members == userIds.Count ? null : ("userId", "The account isn't in this library.");
+        return members == userIds.Count ? null : ("userId", "The account isn't in this space.");
     }
 
     private static (string Key, string Message)? RuleError(ConnectionRuleInput rule)

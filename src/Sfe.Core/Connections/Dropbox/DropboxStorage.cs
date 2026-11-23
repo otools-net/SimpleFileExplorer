@@ -188,7 +188,7 @@ public sealed class DropboxStorage : IRemoteStorage
     {
         // Dropbox's root, or the connection's, is never deleted through it.
         if (path.Length == 0)
-            throw new RemoteStorageException(RemoteErrorKind.NotFound, "The root folder cannot be deleted.");
+            throw new RemoteStorageException(RemoteErrorKind.NotFound, "The connection's top folder can't be deleted.");
         await DropboxErrors.CallAsync(() => _client.Files.DeleteV2Async(DropboxPath(path)));
     }
 
@@ -279,7 +279,10 @@ public sealed class DropboxStorage : IRemoteStorage
     )
     {
         if (from.Length == 0 || to.Length == 0)
-            throw new RemoteStorageException(RemoteErrorKind.NotFound, "The root folder cannot be moved or copied.");
+            throw new RemoteStorageException(
+                RemoteErrorKind.NotFound,
+                "The connection's top folder can't be moved or copied."
+            );
         if (move && from != to && from.Equals(to, StringComparison.OrdinalIgnoreCase))
         {
             var temporary = $"{to}.sfe-{Guid.NewGuid().ToString("N")[..8]}";

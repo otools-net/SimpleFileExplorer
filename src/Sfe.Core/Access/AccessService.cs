@@ -159,7 +159,7 @@ public sealed partial class AccessService(
         {
             return AccessResult<TenantInfo>.Invalid(
                 "slug",
-                "The short name can only have lowercase letters, digits and '-' (at most 64), "
+                "The short name can only have lowercase letters, digits and “-” (at most 64), "
                     + "starting with a letter or digit."
             );
         }
@@ -455,7 +455,7 @@ public sealed partial class AccessService(
         }
 
         if (input.Password is not null && !IsLocal(user))
-            return AccessResult<UserInfo>.Invalid("password", "The password of this account is kept by its directory.");
+            return AccessResult<UserInfo>.Invalid("password", "Its sign-in directory keeps this account's password.");
         if (input.Password is not null && PasswordError(input.Password) is { } passwordError)
             return AccessResult<UserInfo>.Invalid("password", passwordError);
         var isServerAdmin = tenantScope is null ? input.IsServerAdmin : user.IsServerAdmin;
@@ -546,7 +546,7 @@ public sealed partial class AccessService(
         if (user is null)
             return AccessResult<UserInfo>.Missing();
         if (!IsLocal(user))
-            return AccessResult<UserInfo>.Invalid("password", "The password of this account is kept by its directory.");
+            return AccessResult<UserInfo>.Invalid("password", "Its sign-in directory keeps this account's password.");
         if (!PasswordHashing.Verify(current ?? string.Empty, user.PasswordHash, out _))
             return AccessResult<UserInfo>.Invalid("current", "This is not the current password.");
         if (PasswordError(password) is { } error)
@@ -793,7 +793,7 @@ public sealed partial class AccessService(
         {
             return AccessResult<UserGroup>.Invalid(
                 "externalName",
-                "The directory group can have at most 400 characters."
+                "The sign-in directory's group can have at most 400 characters."
             );
         }
 
@@ -808,7 +808,7 @@ public sealed partial class AccessService(
             {
                 return AccessResult<UserGroup>.Invalid(
                     "rights",
-                    $"Guests can never have the right “{RightCatalog.Find(forbidden)!.Title}”."
+                    $"Visitors and guest accounts can never have the right “{RightCatalog.Find(forbidden)!.Title}”."
                 );
             }
 

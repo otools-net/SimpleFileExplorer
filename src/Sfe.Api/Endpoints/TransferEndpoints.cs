@@ -184,12 +184,12 @@ public static class TransferEndpoints
     private static IResult NotRetried(FileJobState state) =>
         state is FileJobState.Running or FileJobState.Waiting
             ? TypedResults.Problem(
-                "The job is still running: it can be started again once it ends.",
+                "The operation is still running: you can start it again once it ends.",
                 statusCode: StatusCodes.Status409Conflict,
                 type: JobRunningType
             )
             : TypedResults.Problem(
-                "Nothing of this job is left to start again: its items went, or were started again already.",
+                "Nothing of this operation is left to start again: its items are done, or were started again already.",
                 statusCode: StatusCodes.Status409Conflict,
                 type: NothingToRetryType
             );

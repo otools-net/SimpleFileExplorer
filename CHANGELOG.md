@@ -293,6 +293,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   description is a sentence ("Edit pictures and save the result as a new file, or over the original where you may
   also replace files."). Their keys (`files.delete`, `duplicates.delete`…) are unchanged, so groups, tokens and
   programs keep working.
+- **Server messages reworded**: the reasons the server gives when it refuses something are plain sentences in the
+  app's words ("This is not a folder of the library.", "This connection can't move files within itself.", "The
+  operation is still running: you can start it again once it ends.", "This space is closed to visitors."). Problem
+  `type` words are unchanged, so programs reading them keep working.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

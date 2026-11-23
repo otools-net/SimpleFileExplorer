@@ -188,7 +188,7 @@ public sealed class ConnectionContentCache(
     private async Task<RemoteContent> ReadAsync(IRemoteStorage storage, ContentAsk ask, CancellationToken token)
     {
         if (gates.WaitLeft(ask.ConnectionId) is { } left)
-            throw new RemoteStorageException(RemoteErrorKind.RateLimited, "The provider asks to wait.", left);
+            throw new RemoteStorageException(RemoteErrorKind.RateLimited, "The storage service asks to wait.", left);
         using var turn = await gates.EnterAsync(ask.ConnectionId, token)
             ?? throw new RemoteStorageException(RemoteErrorKind.RateLimited, "The connection is busy.");
         try

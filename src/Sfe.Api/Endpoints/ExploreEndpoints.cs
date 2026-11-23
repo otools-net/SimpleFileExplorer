@@ -425,7 +425,7 @@ public static class ExploreEndpoints
             return TypedResults.ValidationProblem(
                 new Dictionary<string, string[]>
                 {
-                    ["folders"] = [$"Choose at most {MaxExtractChosen} folders and files: or the folder holding them."],
+                    ["folders"] = [$"Choose at most {MaxExtractChosen} folders and files, or the folder holding them."],
                 }
             );
         }

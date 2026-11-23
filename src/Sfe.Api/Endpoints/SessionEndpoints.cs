@@ -390,7 +390,7 @@ public static class SessionEndpoints
             string.Equals(t.Slug, choice.Tenant?.Trim(), StringComparison.OrdinalIgnoreCase)
         );
         if (tenant is null || !tenant.GuestAccess || tenant.Disabled || !security.CurrentValue.AnonymousGuests)
-            return TypedResults.Problem("This space is not open to guests.", statusCode: StatusCodes.Status404NotFound);
+            return TypedResults.Problem("This space is closed to visitors.", statusCode: StatusCodes.Status404NotFound);
 
         // As a visitor without an account: a signed-in account browsing as a guest signs out first.
         await SfeSession.SignOutAsync(context);

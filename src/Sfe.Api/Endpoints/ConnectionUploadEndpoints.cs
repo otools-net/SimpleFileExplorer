@@ -372,7 +372,7 @@ public static class ConnectionUploadEndpoints
 
     private static IResult NotSupported() =>
         TypedResults.Problem(
-            "The provider cannot take a file in parts.",
+            "This connection can't take a file in parts.",
             statusCode: StatusCodes.Status409Conflict,
             type: ConnectionProblems.NotSupportedType
         );

@@ -84,7 +84,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   left to 2.8). Corrected on the way: duplicate removal goes to the trash and needs the right "Delete duplicates"; the
   picture editor can save over. `template-texts.ts` counted plain texts inside `i18n` elements: fixed, with specs.
   `settings.spec.ts` checks the texts' style (no `...`, no "Colors", hints ≤ 200 characters, ending with a stop).
-- [ ] **2.4–2.8 Strings extracted and texts rewritten, area by area** (IDEA-010 + IDEA-011, M each). Each string is
+- [x] **2.4–2.8 Strings extracted and texts rewritten, area by area** (IDEA-010 + IDEA-011, M each). Each string is
   touched once: marked (`i18n`, `$localize`, `icu()` for counts, [translations](translations.md)) **and** rewritten
   to the glossary in the same commit; the area's `plural()` calls go, its counts in `hard-coded-texts.json` drop
   (write it again), `extract.mjs` writes the source file. Settings get an
@@ -257,8 +257,13 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     Done 2026-11-23: names start with a verb ("Move to trash and restore", "Remove duplicates", "Change … settings",
     "Manage spaces"), descriptions are sentences in the second person; `ConnectionRights` and `AccessTokenRights`
     too; the docs' rights tables and the client's texts naming a right follow ("Remove duplicates").
-  - [ ] **2.8c problem details and other server texts users see** (checked against the glossary and style; strings
-    the client or tests compare and problem `type` words unchanged).
+  - [x] **2.8c problem details and other server texts users see** (checked against the glossary and style; strings
+    the client or tests compare and problem `type` words unchanged). Done 2026-11-23: problem `detail`s and
+    validation messages as sentences ("Invalid library path." → "This is not a folder of the library."), "job" →
+    "operation", "provider" → "connection" / "storage service", "guests" → "visitors", "folder access rules" →
+    "folder rules", "the library's root" → "the top of the library"; "You may not …" kept (the client's texts use it
+    too); reasons that are a clause in a longer message ("“x” could not be read") left as they are. The tests'
+    expected reasons follow. `messages.xlf` written for 2.7b–2.8c.
   Steps 2.7b–2.8c were done by subagents in parallel (one per folder; the coordinator wrote the shared files:
   `messages.xlf`, `hard-coded-texts.json`, readability baseline, changelog, this plan) and committed one by one.
 - [ ] **2.9 Menus grouped, one action registry** (IDEA-025, M). Today `MenuEntry` has no groups, Delete sits in
@@ -410,8 +415,9 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-22):** steps 1.1 to 2.4d, 2.5a–2.5e, 2.6a–2.6c and 2.7a done (see their ticks; 2.4 to
-  2.7 were split). Next: **2.7b** (text viewer and editor, reading settings), then 2.7c–2.7f, then 2.8.
+- **Last session (2026-11-23):** phase 1 and steps 2.1 to 2.8c done (see their ticks; 2.4 to 2.8 were split). The
+  session before was cut short with 2.7b, 2.8a and 2.8c half done by subagents and uncommitted; this one finished and
+  committed them one by one. Next: **2.9** (menus grouped, one action registry).
 - `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd
   C:/workspace/…` first.
 - The docs-screenshots scene for `operations-panel.png` is `files` (it calls `operations()` at its end), not

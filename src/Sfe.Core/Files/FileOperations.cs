@@ -262,10 +262,10 @@ public sealed class FileOperations(
                 return FileOperationResult.Fail(
                     FileOperationStatus.Conflict,
                     begun.Problem is not null
-                        ? $"“{name}” can't be used here: folder access rules are set for a folder of that name. "
+                        ? $"“{name}” can't be used here: folder rules are set for a folder of that name. "
                             + $"An administrator can remove them or point them elsewhere (Folder access)."
                         : begun.Errors?.Values.SelectMany(e => e).FirstOrDefault()
-                            ?? "The folder's access rules can't follow it there."
+                            ?? "The folder's rules can't follow it there."
                 );
             }
 

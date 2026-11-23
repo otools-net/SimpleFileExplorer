@@ -39,14 +39,14 @@ public sealed class ConnectionSharing(
         {
             return AccessResult<ConnectionInfo>.Invalid(
                 "level",
-                "Only a server-level connection is offered to libraries."
+                "Only a connection of the whole server is offered to spaces."
             );
         }
 
         var wanted = tenantIds.ToHashSet();
         var known = await db.Tenants.Where(t => wanted.Contains(t.Id)).Select(t => t.Id).ToListAsync(cancellationToken);
         if (known.Count != wanted.Count)
-            return AccessResult<ConnectionInfo>.Invalid("tenantIds", "No such library.");
+            return AccessResult<ConnectionInfo>.Invalid("tenantIds", "No such space.");
 
         var before = connection.Tenants.Select(t => t.TenantId).ToHashSet();
         var openedToMore =
@@ -109,7 +109,7 @@ public sealed class ConnectionSharing(
             .Groups.Where(g => g.TenantId == tenantId && ids.Contains(g.Id))
             .ToDictionaryAsync(g => g.Id, cancellationToken);
         if (groups.Count != ids.Count)
-            return AccessResult<ConnectionInfo>.Invalid("groupId", "Not a group of this library.");
+            return AccessResult<ConnectionInfo>.Invalid("groupId", "Not a group of this space.");
 
         var before = connection
             .Groups.Where(g => g.Group!.TenantId == tenantId)

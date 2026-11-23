@@ -107,7 +107,10 @@ public static class ConnectionProviderEndpoints
             return TypedResults.ValidationProblem(
                 new Dictionary<string, string[]>
                 {
-                    ["secret"] = [$"The app secret as the provider shows it (at most {ProviderSecrets.MaxLength})."],
+                    ["secret"] =
+                    [
+                        $"The app secret as the provider shows it (at most {ProviderSecrets.MaxLength} characters).",
+                    ],
                 }
             );
         }

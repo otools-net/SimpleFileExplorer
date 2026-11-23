@@ -304,7 +304,9 @@ public static class ScanEndpoints
     }
 
     private static ValidationProblem InvalidPath() =>
-        TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["path"] = ["Invalid library path."] });
+        TypedResults.ValidationProblem(
+            new Dictionary<string, string[]> { ["path"] = ["This is not a folder of the library."] }
+        );
 
     private static async Task<Results<Accepted<ScanStatus>, Conflict<ScanStatus>, ValidationProblem>> Start(
         ScanCoordinator coordinator,
@@ -318,7 +320,7 @@ public static class ScanEndpoints
         if (path is null || (await current.GetAsync()).Check(paths, path, Rights.Scan) != PathVerdict.Allowed)
         {
             return TypedResults.ValidationProblem(
-                new Dictionary<string, string[]> { ["path"] = ["Invalid library path."] }
+                new Dictionary<string, string[]> { ["path"] = ["This is not a folder of the library."] }
             );
         }
         // Nothing to do there: the scan would leave it as it is.

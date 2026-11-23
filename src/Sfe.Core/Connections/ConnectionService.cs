@@ -23,7 +23,7 @@ public sealed class ConnectionService(
 )
 {
     /// <summary>The problem of a connection that cannot be opened before someone signs in to it again.</summary>
-    public const string NeedsReconnectingProblem = "The connection must be signed in to again.";
+    public const string NeedsReconnectingProblem = "Sign in to the connection again.";
 
     public const string UnusableProblem = "The connection cannot be used: it is off, or not allowed on this server.";
 
@@ -316,11 +316,11 @@ public sealed class ConnectionService(
         {
             ConnectionLevel.Account when draft.OwnerId is null => (
                 "ownerId",
-                "An account-level connection has an owner."
+                "A connection for one account needs its owner."
             ),
             ConnectionLevel.Library when draft.TenantId is null => (
                 "tenantId",
-                "A library-level connection has a library."
+                "A connection for a space needs its space."
             ),
             _ => null,
         };
@@ -345,7 +345,7 @@ public sealed class ConnectionService(
             && !await db.Tenants.AnyAsync(t => t.Id == draft.TenantId, cancellationToken)
         )
         {
-            return ("tenantId", "No such library.");
+            return ("tenantId", "No such space.");
         }
 
         return null;
@@ -355,9 +355,9 @@ public sealed class ConnectionService(
     {
         trimmed = name?.Trim() ?? string.Empty;
         if (trimmed.Length == 0)
-            return "A connection has a name.";
+            return "A connection needs a name.";
         if (trimmed.Length > MaxNameLength || trimmed.Any(char.IsControl))
-            return $"A name of at most {MaxNameLength} characters, without control characters.";
+            return $"A name can have at most {MaxNameLength} characters, and no control characters.";
         return null;
     }
 

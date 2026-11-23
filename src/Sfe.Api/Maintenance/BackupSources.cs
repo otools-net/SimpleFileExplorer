@@ -45,7 +45,7 @@ public sealed class BackupSources(
         {
             new(
                 Entry(provider, Resolve(provider, main, contentRoot), "databases"),
-                "Accounts, spaces, settings and the index of the first library",
+                "Accounts, spaces, settings and the index of the first space",
                 provider,
                 Resolve(provider, main, contentRoot)
             ),

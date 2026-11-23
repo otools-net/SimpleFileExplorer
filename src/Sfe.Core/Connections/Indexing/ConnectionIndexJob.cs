@@ -83,7 +83,7 @@ internal sealed class ConnectionIndexJob(
                 error.Kind,
                 error.Message
             );
-            return await FailedAsync(id, $"The provider: {error.Message}");
+            return await FailedAsync(id, error.Message);
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {

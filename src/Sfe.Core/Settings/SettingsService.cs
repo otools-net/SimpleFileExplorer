@@ -776,12 +776,11 @@ public sealed class SettingsService(
         {
             SettingLevel.Environment => "Set by the server's configuration: it cannot be changed here.",
             SettingLevel.Server => "Locked by the server's settings: it cannot be changed here.",
-            SettingLevel.Tenant => "Locked by the library's settings: it cannot be changed here.",
-            _ when definition.PerLibrary && level == SettingLevel.Server =>
-                "Set for each library, in its own settings.",
+            SettingLevel.Tenant => "Locked by the space's settings: it cannot be changed here.",
+            _ when definition.PerLibrary && level == SettingLevel.Server => "Set for each space, in its own settings.",
             _ when level > definition.Scope => definition.Scope == SettingLevel.Server
                 ? "A setting of the whole server: only server administrators change it."
-                : "A setting of the library: only its administrators change it.",
+                : "A setting of the space: only its administrators change it.",
             _ => "You don't have the right to change this setting.",
         };
 
@@ -907,7 +906,7 @@ public sealed class SettingsService(
             Check(
                 list.All(e => e.All(c => char.IsLetterOrDigit(c) || c is '_' or '-')),
                 key,
-                "Extensions can only contain letters, digits, '-' and '_'."
+                "Extensions can only contain letters, digits, “-” and “_”."
             );
         }
 

@@ -210,7 +210,7 @@ public sealed class AccessTokens(
         if (draft.Expires is { } expires && (expires <= now || expires > latest))
         {
             var within = options.MaxLifetimeDays > 0 ? $", within {options.MaxLifetimeDays} days" : string.Empty;
-            return AccessResult<CreatedAccessToken>.Invalid("expires", $"A token expires in the future{within}.");
+            return AccessResult<CreatedAccessToken>.Invalid("expires", $"Choose an expiry date in the future{within}.");
         }
         return null;
     }

@@ -63,7 +63,7 @@ public sealed partial class ConnectionSettings
         {
             yield return (
                 "connections.providers",
-                "A kind of connection is a short word of lowercase letters, digits and '-' (dropbox)."
+                "A kind of connection is a short word of lowercase letters, digits and “-” (dropbox)."
             );
         }
         if (Levels.Except(KnownLevels).Any())

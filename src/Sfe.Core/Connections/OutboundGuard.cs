@@ -28,7 +28,10 @@ internal sealed class OutboundGuard(OutboundRule rule, HttpMessageHandler transp
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new RemoteStorageException(RemoteErrorKind.Unavailable, "The provider did not answer in time.");
+            throw new RemoteStorageException(
+                RemoteErrorKind.Unavailable,
+                "The storage service did not answer in time."
+            );
         }
     }
 }

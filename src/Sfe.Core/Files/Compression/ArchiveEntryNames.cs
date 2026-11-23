@@ -27,7 +27,7 @@ public static class ArchiveEntryNames
             return Refuse("the name holds control characters", out reason);
         var path = name.Replace('\\', '/');
         if (path.StartsWith('/'))
-            return Refuse("the path starts at a root", out reason);
+            return Refuse("the path starts with “/”", out reason);
         if (path.Length >= 2 && path[1] == ':' && char.IsAsciiLetter(path[0]))
             return Refuse("the path starts with a drive", out reason);
 

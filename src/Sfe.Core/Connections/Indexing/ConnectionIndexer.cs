@@ -50,7 +50,7 @@ public sealed class ConnectionIndexer(
                 {
                     throw new RemoteStorageException(
                         RemoteErrorKind.Unavailable,
-                        "The provider reset its cursor again."
+                        "The storage service lost track of its changes again."
                     );
                 }
                 else
