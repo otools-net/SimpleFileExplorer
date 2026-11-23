@@ -88,7 +88,8 @@ Each space keeps an index of the connections opened in it: the names, sizes and 
 downloaded for it). Listings, searches and tags use it (below).
 
 - It begins the first time someone opens the connection in the space, and is brought up to date again when the
-  connection is opened and its index is more than 10 minutes old.
+  connection is opened and its index is more than 10 minutes old. While someone views one of its folders, what
+  changed in Dropbox is read every 30 seconds or so (not a run of the task below).
 - The first sync lists every folder, one after the other: Dropbox answers about three folders a second, and 500 files
   of one folder in about half a second, so a million files in ten thousand folders take about an hour. It goes on
   where it stopped after a restart. Later syncs only read what changed since (Dropbox tells it).
@@ -142,7 +143,9 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
   what has no content, a Dropbox Paper document, is listed in `SFE - left out.txt` inside).
 - Once the space's [index](#the-index-of-a-connection) holds a folder whole, the folder is listed from it, without
   asking Dropbox: at once, sorted whatever its size, and what you change through SFE shows at once; what was changed
-  in Dropbox itself shows after the next sync (at most about 10 minutes while the connection is in use). Names sort
+  in Dropbox itself (its website, its app, another computer) shows in the folder you are viewing within about 30
+  seconds, unless you switched off **Show changes made outside SFE**
+  ([seeing changes](../user-guide/managing-files.md#seeing-changes-made-elsewhere)); elsewhere, after the next sync. Names sort
   as in the library (`file2` before `file10`).
 - Until then (the first sync still under way, or the index not synced for more than 30 minutes), the folder is read
   from Dropbox, and items not in the index yet are faded, as files not scanned are in the library. A folder of more

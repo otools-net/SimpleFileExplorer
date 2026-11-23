@@ -217,6 +217,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<Connections.Indexing.RemoteIndexCleanup>();
         services.AddSingleton<Connections.Indexing.ConnectionIndexer>();
         services.AddSingleton<Connections.Indexing.ConnectionIndexes>();
+        services.AddSingleton<Connections.Indexing.ConnectionWatchers>();
         services.AddSingleton<Connections.Indexing.ConnectionIndexUpdates>();
         services.AddSingleton<Connections.Indexing.IndexListingPlaces>();
         services.AddSingleton<Connections.Indexing.RemoteIndexListings>();

@@ -62,8 +62,8 @@ Code: `Core/Library/Watching/` (`FolderWatchers`, `WatchedFolder`, `FolderWatch`
 
 - **What is watched:** the folder each tab lists. The feed is opened with `?tab=<TAB_ID>` (kept in `ChangeFeedTabs` by
   caller and tab while open); the tab names its folder with `PUT files/changes/watch` (`{ path }`, `X-SFE-Tab`), on
-  each move and each time the feed opens (the server forgets with the feed; every 10 minutes). Null for a search, a
-  connection's folder, or the setting off. The folder must exist and be `Allowed` to browse for the feed's caller;
+  each move and each time the feed opens (the server forgets with the feed; every 10 minutes). Null for a search or
+  the setting off; a connection's folder: below. The folder must exist and be `Allowed` to browse for the feed's caller;
   the feed's library must be the request's (`TenantId`), else `watching: false`.
 - **Holds:** `FolderWatchers.Watch` returns a `FolderWatch`; one watcher per folder, reference counted, let go with
   the last hold (the feed's next folder is taken before the previous one is let go: a refresh doesn't restart it). At
@@ -87,4 +87,38 @@ Code: `Core/Library/Watching/` (`FolderWatchers`, `WatchedFolder`, `FolderWatch`
   `outside` events (another user's tab may watch the same folder).
 - Tests share one process: `ChangeFeedTabs` is static (like the feed count), so route tests use a tab name of their
   own.
-- Connections' folders: not yet (step 3.5b: the change cursor of open connection folders).
+
+## Changes made in a connection's storage (2026-11-23, release 2.0 step 3.5b)
+
+Code: Core `Connections/Indexing/` (`ConnectionWatchers`, `ConnectionWatch`, `ConnectionFollow`,
+`ConnectionFollowResult`, `ConnectionIndexes.FollowAsync`, `ConnectionIndexer.FollowAsync`,
+`RemoteChangeReader.Folders`); Api `ChangeFeedQueue.WatchAsync`, `ConnectionFeed.WatchableAsync`; client
+`ChangeFeed.shownFolder`. Tests: `ConnectionIndexRouteTests` (`AWatchedFolderHears…`, `AFolderIsNoLongerRead…`),
+`ConnectionIndexerTests.AQuickLook…`, `library/change-feed.spec.ts`.
+
+- **Named** as a library folder is: `PUT files/changes/watch` with `{ path, connection }` (the path from the
+  connection's root). Followed when the caller uses the connection, sees the folder (its folder rules) and the
+  provider has `ChangeCursor`; else `watching: false`. The folder's existence isn't checked (it would cost a
+  provider call; nothing is read per folder anyway).
+- **Holds:** `ConnectionWatchers` (per library: the index is the library's), reference counted per connection and
+  folder, at most 256 folders; a connection with a hold has one loop reading its changes every 30 s
+  (`PollEvery`, shorter in tests), stopped with its last hold.
+- **Read through the index**, not a cursor of its own: the listing of an indexed folder comes from the index, so
+  the index must hold the change before the client lists again. `ConnectionIndexes.FollowAsync` runs a **quick look**
+  (`ConnectionIndexRun.Quiet`: in `_running`, so it never overlaps a sync, but not in `Running` nor the status; a
+  sync asked meanwhile waits for it; no task history run, failures logged at Debug) that reads and writes the changes
+  as a sync does (`ConnectionIndexer.FollowAsync`), only when the index is `Following` with a cursor of this root
+  and account. Otherwise (never made, being listed, cursor reset) it does what opening the connection does
+  (`OpenedAsync`: a sync when the index is over 10 minutes old, at most a check a minute).
+- **Cost of a look with no change:** one provider call (in a gate turn) and one write of `LastSync`; counts and the
+  purge of removed rows only when changes came (both read the connection's rows). `LastSync` kept fresh keeps the
+  index's listings whole (`MaxAge` 30 min) and stops opening the connection from starting a sync.
+- **Told:** the reader notes the parents of changed items and changed folders themselves (1,000 at most, then
+  `TooManyFolders`: every watched folder of the connection is told); the watched folders among them (compared by the
+  provider's case rule) raise `Changed`, queued by every feed of the library as `changed` with `connection` and
+  `outside: true`, filtered by `ConnectionFeed.SeesAsync` like SFE's own. The event carries the path as the tab named
+  it. The server's kept listings of the connection (`RemoteListings`) are forgotten when changes came.
+- SFE's own changes come back from the provider's cursor at the next look and are told again (a second refresh in
+  place, harmless); not filtered, as the window would hide real changes for 30 s.
+- Client: `shownFolder()` gives the connection (`route.c`) too; a library and a connection folder of the same path
+  are different keys; `changed()` already refreshes only when `connection` matches the place shown.

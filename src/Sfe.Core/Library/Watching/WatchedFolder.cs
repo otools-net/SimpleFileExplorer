@@ -70,7 +70,8 @@ internal sealed class WatchedFolder(FolderWatchers owner, string folder, string 
             owner.Logger.LogDebug("Folder {Folder}: watched for changes made outside SFE", folder);
         }
         catch (Exception ex)
-            when (ex is IOException or UnauthorizedAccessException or ArgumentException or PlatformNotSupportedException)
+            when (ex is IOException or UnauthorizedAccessException or ArgumentException or PlatformNotSupportedException
+            )
         {
             // Linux refuses past its limit of watches (fs.inotify.max_user_watches), Windows a folder gone.
             StartPolling(ex.Message);
@@ -104,7 +105,9 @@ internal sealed class WatchedFolder(FolderWatchers owner, string folder, string 
             Pending();
     }
 
-    /// <summary>The watcher lost track: more changes than it could hold (told: the listing reads it all), or broke.</summary>
+    /// <summary>
+    /// The watcher lost track: more changes than it could hold (told: the listing reads it all), or broke.
+    /// </summary>
     private void Failed(Exception error)
     {
         if (error is not InternalBufferOverflowException)
@@ -161,7 +164,9 @@ internal sealed class WatchedFolder(FolderWatchers owner, string folder, string 
         );
     }
 
-    /// <summary>Reads the folder again; a change from the last read is told. Never more than a tenth of the time.</summary>
+    /// <summary>
+    /// Reads the folder again; a change from the last read is told. Never more than a tenth of the time.
+    /// </summary>
     private void Poll()
     {
         var started = Stopwatch.GetTimestamp();

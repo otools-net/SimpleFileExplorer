@@ -50,8 +50,8 @@ show up faster on slow drives.`,
                     hint: $localize`The folder you view is listed again when another program changes it on the disk, \
 not only when SFE does.`,
                     help: $localize`The server watches only the folders open in a browser. On a network folder it may \
-read the folder again every 10 seconds instead, which takes longer on very large folders. Off, a folder shows such \
-changes when you open it again.`,
+read the folder again every 10 seconds instead, which takes longer on very large folders. In a connection, it asks the \
+storage service what changed every 30 seconds. Off, a folder shows such changes when you open it again.`,
                 },
                 {
                     key: 'browse.copyPaths',

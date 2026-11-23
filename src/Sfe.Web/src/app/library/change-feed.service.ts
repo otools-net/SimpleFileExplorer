@@ -25,17 +25,17 @@ export interface FolderChange {
     origin: string | null;
     /** The connection whose folder it is; absent for the library's. */
     connection?: number;
-    /** Changed outside SFE (another program), in a folder some tab watches. */
+    /** Changed outside SFE (another program, the storage service's site), in a folder some tab watches. */
     outside?: boolean;
 }
 
 /**
  * The change feed (agents/docs/features/change-feed.md): the server tells each open listing that a folder was changed
  * through SFE elsewhere (another tab, another person, a move or copy job), or outside SFE in the folder this tab shows
- * (named to the server: `watchFolder`); the folder listed is then refreshed in place. The browser opens the feed
- * again by itself when it ends or drops. It also tells how keep alive goes (`keepAlive`) and whether the server
- * answers (`serverLost`), for the indicator of the ⋮ menu, that the trash changed (`trashChanges`), for the sidebar's
- * Trash link, and how far items being written are (`WritingProgress`).
+ * (the library's or a connection's, named to the server: `watchFolder`); the folder listed is then refreshed in place.
+ * The browser opens the feed again by itself when it ends or drops. It also tells how keep alive goes (`keepAlive`)
+ * and whether the server answers (`serverLost`), for the indicator of the ⋮ menu, that the trash changed
+ * (`trashChanges`), for the sidebar's Trash link, and how far items being written are (`WritingProgress`).
  */
 @Injectable({ providedIn: 'root' })
 export class ChangeFeed {
@@ -43,7 +43,7 @@ export class ChangeFeed {
     private readonly store = inject(ListingStore);
     private readonly progress = inject(WritingProgress);
     private readonly api = inject(Api);
-    /** The folder last named to the server for this feed; `undefined`: none since it opened. */
+    /** The folder last named to the server for this feed (`watchedKey`); `undefined`: none since it opened. */
     private watched: string | null | undefined;
     private source: EventSource | null = null;
     private timer: ReturnType<typeof setTimeout> | undefined;
@@ -237,18 +237,22 @@ export class ChangeFeed {
     private watch(): void {
         if (!this.source || this.source.readyState !== EventSource.OPEN) return;
         const folder = this.shownFolder();
-        if (folder === this.watched || (folder === null && this.watched === undefined)) return;
-        this.watched = folder;
-        this.api.watchFolder(folder).catch(() => {
+        const key = folder && `${folder.connection ?? ''}:${folder.path}`;
+        if (key === this.watched || (key === null && this.watched === undefined)) return;
+        this.watched = key;
+        this.api.watchFolder(folder?.path ?? null, folder?.connection ?? null).catch(() => {
             // Named again on the next move.
-            if (this.watched === folder) this.watched = undefined;
+            if (this.watched === key) this.watched = undefined;
         });
     }
 
-    /** The library's folder listed, when changes made outside SFE are followed; null otherwise. */
-    private shownFolder(): string | null {
+    /**
+     * The folder listed (the library's, or a connection's: `connection`), when changes made outside SFE are followed;
+     * null otherwise.
+     */
+    private shownFolder(): { path: string; connection: number | null } | null {
         const route = this.store.route();
-        return this.live() && !route.q && route.c == null ? route.path : null;
+        return this.live() && !route.q ? { path: route.path, connection: route.c ?? null } : null;
     }
 
     /** The user follows changes made outside SFE (`liveChanges`, on unless switched off). */

@@ -270,6 +270,38 @@ public sealed class ConnectionIndexerTests
         Assert.IsNotNull(await FindAsync("a_b0/z.txt"));
     }
 
+    [TestMethod]
+    public async Task AQuickLookReadsTheChangesOnlyOnceTheIndexFollowsAndNamesTheFoldersTouched()
+    {
+        var target = new ConnectionIndexTarget(Id, "", "account", _provider.Capabilities, false);
+        Assert.IsNull(await Indexer.FollowAsync(target, new RecordingIndexSource(_storage), Token), "No index yet.");
+        await SyncAsync();
+        await using (var db = Db())
+        {
+            await db.RemoteIndexes.ExecuteUpdateAsync(s => s.SetProperty(i => i.LastSync, DateTime.UnixEpoch), Token);
+        }
+
+        var nothing = await Indexer.FollowAsync(target, new RecordingIndexSource(_storage), Token);
+        _account.WithFile("Photos/New.png", "new");
+        await _storage.DeleteAsync("Docs/Big", Token);
+        var source = new RecordingIndexSource(_storage);
+        var changed = await Indexer.FollowAsync(target, source, Token);
+
+        Assert.AreEqual(0, nothing!.Changes);
+        Assert.IsTrue(source.Calls.All(c => c.StartsWith("changes", StringComparison.Ordinal)));
+        Assert.IsFalse(changed!.TooManyFolders);
+        CollectionAssert.IsSubsetOf(new[] { "Photos", "Docs", "Docs/Big" }, changed.Folders.ToArray());
+        Assert.IsNotNull(await FindAsync("photos/new.png"));
+        Assert.IsNull(await FindAsync("docs/big/1.txt"), "Removed rows go once changes came.");
+        await using var after = Db();
+        var state = await after.RemoteIndexes.SingleAsync(Token);
+        Assert.IsGreaterThan(DateTime.UnixEpoch, state.LastSync!.Value, "The index is as recent as the look.");
+        Assert.AreEqual((6L, 4L), (state.Files, state.Folders));
+
+        await after.RemoteIndexes.ExecuteUpdateAsync(s => s.SetProperty(i => i.Phase, RemoteIndexPhase.Listing), Token);
+        Assert.IsNull(await Indexer.FollowAsync(target, source, Token), "Being listed: a sync goes on with it.");
+    }
+
     /// <summary>The listing pages of the whole tree at the fake's 2 items a page.</summary>
     private int Pages()
     {

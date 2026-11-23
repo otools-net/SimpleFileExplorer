@@ -39,7 +39,8 @@ public sealed class ConnectionIndexes(
     public bool IsAvailable => sources is not null;
 
     /// <summary>The syncs running now.</summary>
-    public IReadOnlyList<ConnectionIndexRun> Running => [.. _running.Values.OrderBy(r => r.Started)];
+    public IReadOnlyList<ConnectionIndexRun> Running =>
+        [.. _running.Values.Where(r => !r.Quiet).OrderBy(r => r.Started)];
 
     /// <summary>
     /// A connection was opened in the library: its first sync starts, or a new one when its index is old. Reads
@@ -76,14 +77,51 @@ public sealed class ConnectionIndexes(
         if (sources is null || _stopping.IsCancellationRequested)
             return false;
         var sync = new ConnectionIndexRun(connectionId, clock.GetUtcNow());
-        if (!_running.TryAdd(connectionId, sync))
-            return false;
+        while (!_running.TryAdd(connectionId, sync))
+        {
+            // A watched folder's quick look is short: the sync comes after it.
+            if (!_running.TryGetValue(connectionId, out var other))
+                continue;
+            if (!other.Quiet)
+                return false;
+            await other.Done;
+        }
         var info = await FindAsync(sync);
         if (info is null)
             return false;
         sync.Name = info.Level == ConnectionLevel.Account ? null : info.Name;
         sync.Done = Task.Run(() => RunAsync(info, sync, (trigger, scheduleId)));
         return true;
+    }
+
+    /// <summary>
+    /// A quick look at the connection's changes for the folders watched in it (<see cref="ConnectionWatchers"/>): read
+    /// and written into the index as a sync does, without a run of the task; nothing while a sync runs. An index that
+    /// doesn't follow the provider (never made, being listed, its cursor reset) is synced instead, as opening the
+    /// connection would (<see cref="OpenedAsync"/>). Null when nothing was read.
+    /// </summary>
+    public async Task<ConnectionFollowResult?> FollowAsync(int connectionId, CancellationToken cancellationToken)
+    {
+        if (sources is null || _stopping.IsCancellationRequested)
+            return null;
+        var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var look = new ConnectionIndexRun(connectionId, clock.GetUtcNow()) { Quiet = true, Done = done.Task };
+        if (!_running.TryAdd(connectionId, look))
+            return null;
+        (ConnectionFollowResult? Result, bool MustSync) followed;
+        try
+        {
+            using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, look.Stop.Token);
+            followed = await new ConnectionFollow(indexer, sources, logger).RunAsync(connectionId, Reaches, stop.Token);
+        }
+        finally
+        {
+            _running.TryRemove(connectionId, out _);
+            done.SetResult();
+        }
+        if (followed.MustSync)
+            await OpenedAsync(connectionId, cancellationToken);
+        return followed.Result;
     }
 
     /// <summary>Syncs every connection the library indexes, one after the other.</summary>
@@ -104,7 +142,8 @@ public sealed class ConnectionIndexes(
         foreach (var sync in _running.Values)
         {
             sync.Stop.Cancel();
-            any = true;
+            // A watched folder's quick look stops too, but it isn't a sync someone sees running.
+            any |= !sync.Quiet;
         }
         return any;
     }
@@ -112,7 +151,7 @@ public sealed class ConnectionIndexes(
     public async Task<ConnectionIndexStatus> StatusAsync(int connectionId, CancellationToken cancellationToken)
     {
         var state = await store.StateAsync(connectionId, cancellationToken);
-        var running = _running.GetValueOrDefault(connectionId);
+        var running = _running.GetValueOrDefault(connectionId) is { Quiet: false } sync ? sync : null;
         return new ConnectionIndexStatus(
             state is not null || running is not null,
             running is not null,

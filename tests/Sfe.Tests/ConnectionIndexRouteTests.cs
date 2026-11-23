@@ -136,6 +136,64 @@ public sealed class ConnectionIndexRouteTests
     }
 
     [TestMethod]
+    public async Task AWatchedFolderHearsWhatChangedAtTheProviderWhichTheIndexHoldsWithoutARunOfTheTask()
+    {
+        using (await _admin.GetAsync($"{V1}/connections/{_id}/browse", Token)) { }
+        await SyncedAsync();
+        Library<ConnectionWatchers>().PollEvery = TimeSpan.FromMilliseconds(100);
+        const string tab = "connection-watch-1";
+        using var feed = await _admin.GetAsync(
+            $"{V1}/files/changes?tab={tab}",
+            HttpCompletionOption.ResponseHeadersRead,
+            Token
+        );
+        using var reader = new StreamReader(await feed.Content.ReadAsStreamAsync(Token));
+
+        Assert.IsTrue(await WatchAsync(_admin, tab, "photos"), "Dropbox-like names: the case doesn't matter.");
+        Assert.IsFalse(await WatchAsync(_bob, tab, "Photos"), "Bob has no feed of that tab, nor the connection.");
+        _provider.Account("acct").WithFile("elsewhere.txt", "not watched").WithFile("Photos/outside.txt", "new");
+
+        var change = await NextChangeAsync(reader);
+        Assert.AreEqual(
+            ("photos", _id, true, (string?)null),
+            (change.Path, change.Connection, change.Outside, change.Origin)
+        );
+        await using var db = Library<IDbContextFactory<SfeDbContext>>().CreateDbContext();
+        Assert.IsTrue(await db.RemoteFiles.AnyAsync(f => f.FullName == "photos/outside.txt" && !f.Removed, Token));
+        var runs = await Library<TaskHistory>().ListAsync(BackgroundTaskKind.ConnectionIndex, null, null, Token);
+        Assert.HasCount(1, runs.Runs, "Only the first sync is a run of the task.");
+        Assert.IsFalse((await Library<ConnectionIndexes>().StatusAsync(_id, Token)).Running);
+    }
+
+    [TestMethod]
+    public async Task AFolderIsNoLongerReadOnceNoTabShowsIt()
+    {
+        using (await _admin.GetAsync($"{V1}/connections/{_id}/browse", Token)) { }
+        await SyncedAsync();
+        var watchers = Library<ConnectionWatchers>();
+        const string tab = "connection-watch-2";
+        using (
+            var feed = await _admin.GetAsync(
+                $"{V1}/files/changes?tab={tab}",
+                HttpCompletionOption.ResponseHeadersRead,
+                Token
+            )
+        )
+        {
+            Assert.IsTrue(await WatchAsync(_admin, tab, ""));
+            CollectionAssert.AreEqual(new[] { _id }, watchers.Connections.ToArray());
+            Assert.IsFalse(await WatchAsync(_admin, tab, null), "The tab shows no connection's folder any more.");
+            Assert.IsEmpty(watchers.Connections);
+            Assert.IsTrue(await WatchAsync(_admin, tab, "Photos"));
+        }
+
+        var until = DateTime.UtcNow.AddSeconds(10);
+        while (watchers.Connections.Count > 0 && DateTime.UtcNow < until)
+            await Task.Delay(50, Token);
+        Assert.IsEmpty(watchers.Connections, "Let go with the feed.");
+    }
+
+    [TestMethod]
     public async Task RowsGoWhenTheConnectionIsRemovedOrNoLongerOfferedToTheLibrary()
     {
         var shared = await CreateAsync(new(FakeProvider.FakeKind, "Shared", ConnectionLevel.Server));
@@ -257,6 +315,21 @@ public sealed class ConnectionIndexRouteTests
         request.Headers.Add(ChangeEndpoints.TabHeader, "tab-1");
         using var answer = await _admin.SendAsync(request, Token);
         Assert.AreEqual(HttpStatusCode.OK, answer.StatusCode, await answer.Content.ReadAsStringAsync(Token));
+    }
+
+    /// <summary>
+    /// Names the connection's folder <paramref name="tab"/> shows (null: none); whether it is followed.
+    /// </summary>
+    private async Task<bool> WatchAsync(HttpClient client, string tab, string? path)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"{V1}/files/changes/watch")
+        {
+            Content = JsonContent.Create(new FolderWatchRequest(path, _id), options: Json),
+        };
+        request.Headers.Add(ChangeEndpoints.TabHeader, tab);
+        using var answer = await client.SendAsync(request, Token);
+        Assert.AreEqual(HttpStatusCode.OK, answer.StatusCode);
+        return (await answer.Content.ReadFromJsonAsync<FolderWatchAnswer>(Json, Token))!.Watching;
     }
 
     /// <summary>The next `changed` event: a library's folder has no connection (0).</summary>

@@ -104,7 +104,8 @@ public sealed class FolderWatchers : IDisposable
     }
 
     /// <summary>
-    /// <paramref name="watched"/> changed, first seen at <paramref name="since"/> (<see cref="Environment.TickCount64"/>):
+    /// <paramref name="watched"/> changed, first seen at <paramref name="since"/>
+    /// (<see cref="Environment.TickCount64"/>):
     /// told, unless SFE changed it itself about then.
     /// </summary>
     internal void Tell(WatchedFolder watched, long since)

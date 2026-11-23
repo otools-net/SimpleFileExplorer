@@ -72,7 +72,53 @@ public sealed class ConnectionIndexer(
         }
     }
 
+    /// <summary>
+    /// A watched folder's quick look (<see cref="ConnectionWatchers"/>): the changes since the cursor read and written
+    /// as a sync does, only when the index follows the provider now (listed whole, of this root folder and account).
+    /// Null when it doesn't, or the provider reset its cursor: a sync must list. Counts are read again only when
+    /// something changed (they are a count over the connection's rows).
+    /// </summary>
+    public async Task<ConnectionFollowResult?> FollowAsync(
+        ConnectionIndexTarget target,
+        IRemoteIndexSource source,
+        CancellationToken cancellationToken
+    )
+    {
+        var state = await store.StateAsync(target.ConnectionId, cancellationToken);
+        if (
+            !target.Capabilities.ChangeCursor
+            || state is not { Phase: RemoteIndexPhase.Following, ChangeCursor: not null }
+            || state.RootPath != target.RootPath
+            || state.AccountKey != target.AccountKey
+        )
+            return null;
+        var progress = new ConnectionIndexProgress();
+        var reader = new RemoteChangeReader(store, cleanup, _report, logger) { PurgeWhenUnchanged = false };
+        if (!await reader.RunAsync(target, source, state, progress, cancellationToken))
+            return null;
+        if (progress.Changes > 0)
+            await CompleteAsync(target, false, progress, cancellationToken);
+        else
+            await MarkSyncedAsync(target.ConnectionId, cancellationToken);
+        return new ConnectionFollowResult(progress.Changes, reader.Folders, reader.TooManyFolders);
+    }
+
     private RemoteChangeReader Changes() => new(store, cleanup, _report, logger);
+
+    /// <summary>
+    /// Nothing changed: the counts stand, and the index is as recent as now (its listings stay whole).
+    /// </summary>
+    private Task MarkSyncedAsync(int id, CancellationToken cancellationToken) =>
+        store.WriteAsync(
+            id,
+            async (db, token) =>
+            {
+                var state = await db.RemoteIndexes.FirstAsync(s => s.ConnectionId == id, token);
+                state.LastSync = clock.GetUtcNow().UtcDateTime;
+                state.LastError = null;
+            },
+            cancellationToken
+        );
 
     /// <summary>The state to go on from; a new one (and a first listing) when there is none or it is another
     /// root folder's or account's.</summary>

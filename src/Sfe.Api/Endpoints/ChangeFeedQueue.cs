@@ -14,9 +14,9 @@ namespace Otools.Net.Sfe.Api.Endpoints;
 /// <summary>
 /// What one change feed listens to while it is open: folders changed in the library and in connections, keep alive's
 /// state, the trash (for callers who may open it), the progress of items being written, changes made outside SFE (in
-/// the folder its tab shows, <see cref="Watch"/>, and those others watch). The events are only queued by
-/// the request (or job, or keep alive's loop) that raised them; the feed's own loop takes them as the text of
-/// server-sent events, keeping those the caller may see. Disposing it stops listening.
+/// the folder its tab shows, <see cref="Watch"/> or <see cref="WatchAsync"/>, and those others watch). The events are
+/// only queued by the request (or job, or keep alive's loop) that raised them; the feed's own loop takes them as the
+/// text of server-sent events, keeping those the caller may see. Disposing it stops listening.
 /// </summary>
 internal sealed class ChangeFeedQueue : IDisposable
 {
@@ -29,7 +29,7 @@ internal sealed class ChangeFeedQueue : IDisposable
     private readonly AccessState _state;
     private readonly ConnectionFeed _connections;
     private readonly Lock _watchGate = new();
-    private FolderWatch? _watch;
+    private IDisposable? _watch;
     private bool _closed;
 
     // Holds a FolderChange, a ConnectionFolderChange, a KeepAliveSignal, a TrashSignal or a WritingSignal.
@@ -42,6 +42,7 @@ internal sealed class ChangeFeedQueue : IDisposable
         (_services, _state) = (services, state);
         services.Browser.FolderChanged += OnChanged;
         services.Watchers.Changed += OnOutside;
+        services.ConnectionWatchers.Changed += OnConnectionOutside;
         _connections = new ConnectionFeed(connections, state, _changes.Writer, services.Accessor);
         services.KeepAlive.StateChanged += OnKeepAlive;
         services.Writing.FolderProgressed += OnWriting;
@@ -64,7 +65,27 @@ internal sealed class ChangeFeedQueue : IDisposable
             folder is not null && _state.Check(_services.Paths, folder, Rights.Browse) == PathVerdict.Allowed
                 ? _services.Watchers.Watch(folder)
                 : null;
-        FolderWatch? previous;
+        return Hold(next) && next?.IsActive == true;
+    }
+
+    /// <summary>
+    /// Follows a connection's <paramref name="folder"/> (from its root) instead, while the feed is open: false when the
+    /// caller doesn't use the connection or see the folder, its storage service tells no changes, or too many are
+    /// followed.
+    /// </summary>
+    public async Task<bool> WatchAsync(int connection, string folder, CancellationToken cancellationToken)
+    {
+        var comparer = await _connections.WatchableAsync(connection, folder, cancellationToken);
+        var next = comparer is null ? null : _services.ConnectionWatchers.Watch(connection, folder, comparer);
+        return Hold(next) && next?.IsActive == true;
+    }
+
+    /// <summary>
+    /// Holds <paramref name="next"/> instead of the folder followed before; false once the feed closed.
+    /// </summary>
+    private bool Hold(IDisposable? next)
+    {
+        IDisposable? previous;
         lock (_watchGate)
         {
             if (_closed)
@@ -75,7 +96,7 @@ internal sealed class ChangeFeedQueue : IDisposable
             (previous, _watch) = (_watch, next);
         }
         previous?.Dispose();
-        return next?.IsActive == true;
+        return true;
     }
 
     /// <summary>The `keepAlive` event with keep alive's state now (a feed's first event).</summary>
@@ -106,6 +127,7 @@ internal sealed class ChangeFeedQueue : IDisposable
     {
         _services.Browser.FolderChanged -= OnChanged;
         _services.Watchers.Changed -= OnOutside;
+        _services.ConnectionWatchers.Changed -= OnConnectionOutside;
         lock (_watchGate)
         {
             _closed = true;
@@ -162,6 +184,9 @@ internal sealed class ChangeFeedQueue : IDisposable
     }
 
     private void OnOutside(string path) => _changes.Writer.TryWrite(new FolderChange(path, null, Outside: true));
+
+    private void OnConnectionOutside(int connection, string path) =>
+        _changes.Writer.TryWrite(new ConnectionFolderChange(path, null, connection, Outside: true));
 
     private void OnWriting(string folder) => _changes.Writer.TryWrite(new WritingSignal(folder));
 

@@ -18,8 +18,9 @@ public sealed class BrowseOptions
     public bool CopyPaths { get; set; }
 
     /// <summary>
-    /// The folder listed is listed again when it changes outside SFE (another program, the share's other users), not
-    /// only through SFE: the server watches the folders open in the web client (agents/docs/features/change-feed.md).
+    /// The folder listed is listed again when it changes outside SFE (another program, the share's other users, a
+    /// connection's storage service), not only through SFE: the server watches the folders open in the web client
+    /// (agents/docs/features/change-feed.md).
     /// A user setting; off, the client neither asks for it nor heeds such changes.
     /// </summary>
     public bool LiveChanges { get; set; } = true;

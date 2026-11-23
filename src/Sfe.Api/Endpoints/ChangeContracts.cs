@@ -10,11 +10,14 @@ namespace Otools.Net.Sfe.Api.Endpoints;
 /// watches (`PUT files/changes/watch`).</param>
 public sealed record FolderChange(string Path, string? Origin, bool Outside = false);
 
-/// <param name="Path">The folder the tab shows (root-relative, "" for the top of the library); null: none.</param>
-public sealed record FolderWatchRequest(string? Path);
+/// <param name="Path">The folder the tab shows (root-relative, "" for the top of the library or of the connection);
+/// null: none.</param>
+/// <param name="Connection">The connection whose folder it is; null for the library's.</param>
+public sealed record FolderWatchRequest(string? Path, int? Connection = null);
 
 /// <param name="Watching">The folder is followed for changes made outside SFE: false when the tab has no feed open
-/// in this library, or the folder is missing, hidden from the caller, or past the server's limit.</param>
+/// in this library, or the folder is missing, hidden from the caller, or past the server's limit; for a connection's,
+/// when the caller can't use it or its storage service tells no changes.</param>
 public sealed record FolderWatchAnswer(bool Watching);
 
 /// <param name="Path">The folder (root-relative) whose items being written moved on, started or ended.</param>
@@ -34,7 +37,8 @@ public sealed record TrashSignal;
 /// <param name="Path">The folder changed, from the connection's root.</param>
 /// <param name="Origin">The tab whose request changed it (`X-SFE-Tab`); null from a background job.</param>
 /// <param name="Connection">The connection's id.</param>
-public sealed record ConnectionFolderChange(string Path, string? Origin, int Connection);
+/// <param name="Outside">Changed outside SFE (at the storage service), seen in a folder a tab watches.</param>
+public sealed record ConnectionFolderChange(string Path, string? Origin, int Connection, bool Outside = false);
 
 /// <summary>What the change feed reads connections with (bound with <c>[AsParameters]</c>).</summary>
 internal sealed record ChangeFeedConnections(

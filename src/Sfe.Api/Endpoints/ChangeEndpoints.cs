@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Otools.Net.Sfe.Api.Security;
 using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Connections;
 using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.Paths;
 
@@ -145,13 +146,19 @@ public static class ChangeEndpoints
     {
         var state = await current.GetAsync();
         var tab = context.Request.Headers[TabHeader].ToString();
+        if (ChangeFeedTabs.Find(RequestLimits.Caller(context), tab) is not { } feed || feed.TenantId != state.TenantId)
+            return TypedResults.Ok(new FolderWatchAnswer(false));
+        if (request.Connection is { } connection)
+        {
+            var path = request.Path is null ? null : RemotePaths.Normalize(request.Path);
+            var followed = path is null
+                ? feed.Watch(null)
+                : await feed.WatchAsync(connection, path, context.RequestAborted);
+            return TypedResults.Ok(new FolderWatchAnswer(path is not null && followed));
+        }
         // A path leaving the library (`..`) is no folder: nothing followed.
         var folder = LibraryPaths.NormalizeRelative(request.Path ?? "..");
-        var watching =
-            ChangeFeedTabs.Find(RequestLimits.Caller(context), tab) is { } feed
-            && feed.TenantId == state.TenantId
-            && feed.Watch(folder);
-        return TypedResults.Ok(new FolderWatchAnswer(watching));
+        return TypedResults.Ok(new FolderWatchAnswer(feed.Watch(folder)));
     }
 
     /// <summary>Sends the queue's events as they come, until the feed's time is over or the tab closes.</summary>

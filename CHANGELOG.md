@@ -13,6 +13,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   Windows are read again every 10 seconds or so instead. Each user can switch it off (**Show changes made outside
   SFE**, Interface › Browsing or their own settings; `Sfe:Browse:LiveChanges`). The change feed takes `?tab=`, a new
   route `PUT api/v1/files/changes/watch` names the folder a tab shows, and `changed` events gain `outside`.
+- **Changes made in a connection's storage shown live**: in a Dropbox folder you are viewing, what was changed at
+  Dropbox itself (its website, its app, another computer) shows within about 30 seconds, and the space's index of the
+  connection is brought up to date at the same time (no run of the Connection index task each time). Only connections
+  with a folder open are asked; the same **Show changes made outside SFE** setting switches it off.
+  `PUT api/v1/files/changes/watch` takes `connection`.
 - **Space used and free**: a bar at the bottom of the sidebar shows how full the disk holding the library is, or the
   account of the connection you are in ("120 GB used of 500 GB, 380 GB free"), orange from 85 % used and red from
   95 %; "Free space not reported" when a storage service doesn't tell. The trash page says what the whole trash holds

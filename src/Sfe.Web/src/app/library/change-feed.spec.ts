@@ -59,7 +59,8 @@ async function setUp(config: ClientConfig = fakeConfig()): Promise<void> {
 }
 
 /** The folders named to the server so far. */
-const named = () => api.watchFolder.mock.calls.map(([path]) => path);
+const named = () =>
+    api.watchFolder.mock.calls.map(([path, connection]) => (connection == null ? path : `${connection}:${path}`));
 
 afterEach(() => {
     feed.stop();
@@ -80,13 +81,15 @@ describe('ChangeFeed and changes made outside SFE', () => {
         // Sorted otherwise: the same folder, not named again.
         store.route.set({ path: 'Media/Holidays', q: '', sort: 'size', desc: true });
         TestBed.tick();
-        // A search, a connection's folder: nothing followed.
+        // A search: nothing followed. A connection's folder: with its connection, even when its path is the same.
         store.route.set({ path: 'Media', q: 'beach', sort: '', desc: false });
         TestBed.tick();
         store.route.set({ path: 'Docs', q: '', sort: '', desc: false, c: 7 });
         TestBed.tick();
+        store.route.set({ path: 'Docs', q: '', sort: '', desc: false });
+        TestBed.tick();
 
-        expect(named()).toEqual(['Media', 'Media/Holidays', null]);
+        expect(named()).toEqual(['Media', 'Media/Holidays', null, '7:Docs', 'Docs']);
     });
 
     it('names the folder again when the feed opens again (the server forgot it)', async () => {
@@ -114,5 +117,20 @@ describe('ChangeFeed and changes made outside SFE', () => {
 
         expect(api.browse).toHaveBeenCalledTimes(1);
         expect(named()).toEqual([]);
+    });
+
+    it("refreshes a connection's folder listed when it changed at the storage service, not the library's", async () => {
+        await setUp();
+        store.route.set({ path: 'Media', q: '', sort: '', desc: false, c: 7 });
+        TestBed.tick();
+        const browse = vi.spyOn(store, 'refresh').mockResolvedValue();
+
+        feed.changed({ path: 'Media', origin: null, outside: true });
+        await settle(450);
+        expect(browse).not.toHaveBeenCalled();
+        feed.changed({ path: 'Media', origin: null, connection: 7, outside: true });
+        await settle(450);
+
+        expect(browse).toHaveBeenCalledTimes(1);
     });
 });

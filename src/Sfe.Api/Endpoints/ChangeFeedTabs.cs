@@ -12,13 +12,17 @@ internal static class ChangeFeedTabs
 
     private static readonly ConcurrentDictionary<string, ChangeFeedQueue> Open = new(StringComparer.Ordinal);
 
-    /// <summary>A tab's name as the client makes them (letters, digits, <c>-</c>, <c>_</c>); others are not kept.</summary>
+    /// <summary>
+    /// A tab's name as the client makes them (letters, digits, <c>-</c>, <c>_</c>); others are not kept.
+    /// </summary>
     public static bool IsValid(string? tab) =>
         !string.IsNullOrEmpty(tab)
         && tab.Length <= MaxTabLength
         && tab.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_');
 
-    /// <summary>Keeps <paramref name="feed"/> as the tab's (a newer feed of the same tab replaces an older one).</summary>
+    /// <summary>
+    /// Keeps <paramref name="feed"/> as the tab's (a newer feed of the same tab replaces an older one).
+    /// </summary>
     public static void Add(string caller, string tab, ChangeFeedQueue feed) => Open[Key(caller, tab)] = feed;
 
     /// <summary>Forgets <paramref name="feed"/>, unless a newer feed of the tab replaced it already.</summary>

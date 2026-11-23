@@ -330,7 +330,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   drive (no root path leaked to space administrators) and each connection; a bar "X used of Y, Z free" in the
   sidebar (library and connection place), orange past 85 %, red past 95 %; "not reported" when the provider can't.
   Refreshed every few minutes (cached server-side). The trash size shown in the trash page. No per-user quota.
-- [ ] **3.5 Changes made outside SFE shown live** (IDEA-007, M). SFE's own changes already reach open listings
+- [x] **3.5 Changes made outside SFE shown live** (IDEA-007, M). SFE's own changes already reach open listings
   (SSE change feed, ~400 ms, selection/scroll kept). Add: a file watcher **only on folders someone has open**
   (reference counted, released with the feed; network shares included, with a polling fallback when the watcher
   fails), raising `LibraryBrowser.Invalidate`; for connections, poll the change cursor of open connection folders
@@ -344,10 +344,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     `outside: true`; `.sfe-partial` items, the work folder and SFE's own changes (within 1 s) left out; user
     setting `browse.liveChanges`. Note in change-feed.md. Screenshot `admin-interface-browsing.png` retaken.
     Refactoring first: `editingSession()` out of `api.service.ts`.
-  - [ ] **3.5b connection folders**: while a connection folder is watched (same route, `connection` in the body),
-    read the connection's change cursor every ~30 s (capability `ChangeCursor`, index phase `Following`; no task
-    history run per poll), tell the folders whose items changed (`ConnectionChanges`) with `outside`; the client
-    names connection folders too.
+  - [x] **3.5b connection folders**. Done 2026-11-23: `PUT files/changes/watch` takes `connection` (followed when
+    the caller uses it, sees the folder and the provider has `ChangeCursor`); `ConnectionWatchers` (per library,
+    reference counted, 256 folders at most) read a watched connection's changes every 30 s **through the index**
+    (`ConnectionIndexes.FollowAsync`: a quiet run, not in the history nor shown as running, a sync waits for it;
+    only when the index is `Following`, else as opening the connection; counts and purge only when changes came),
+    so the index's listing is right when the client lists again; `changed` with `connection` and `outside` for
+    the watched folders touched (parents of the changes, 1,000 at most), filtered as SFE's own; `RemoteListings`
+    forgotten. SFE's own changes come back once (harmless refresh). Client names `{ path, connection }`. No
+    screenshot (nothing visible). Lines over 120 characters left by 3.5a fixed; `api.service.ts` baseline 788 → 789.
 - [ ] **3.6 Scan as you go for library folders** (IDEA-008, M). Connections already sync when opened. For library
   folders: after a listing's first page, index **that folder only** (not recursive) in the background, at most
   once per 10 minutes per folder, never blocking the listing nor colliding with `ScanCoordinator`; removed tagged
@@ -381,6 +386,32 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   flag), entries keep their actions and link to what they're about (folder, upload, task run — add a deep link to
   one run in the task history). Server events (task finished or failed while away) through the change feed,
   for the user who started them; administrators also get failed background tasks.
+- [ ] **4.6 What I may do here: read-only or writable shown** (owner's request 2026-11-23, M; after 2.9). Show, for
+  a folder and for a file, whether the user can only read it or can also change it, and **why**, from both sides:
+  **SFE** (the space's rights, `Sfe:Rights:Disabled` and the space's **Files read-only** switch, folder rules;
+  for connections the level, the connection's `ReadOnly` cap and its folder rules) and **the file system as it is
+  now** (read at request time, never from the index: the read-only attribute on Windows, the mode bits and a
+  read-only mount elsewhere, the server's account refused writing; providers that report a read-only folder, e.g.
+  a Dropbox shared folder, by capability). Was: listings carry `FolderAccessView.Rights` (folder rules, `Children`
+  for entries that differ) but nothing shows it; the disk's read-only flag is only a line in Properties
+  (`ItemDetails.ReadOnly`); writes the disk refuses surface as an error after trying (text editor's 409
+  `read-only`). Add:
+  - **Listing:** a mark in the location bar for the open folder — **Read only** or nothing when writable (the usual
+    case stays quiet) — whose hint gives the reason in one sentence ("Your rights in this folder let you open and
+    download files only." / "The disk refuses changes here: it is mounted read-only."); a small lock on the tiles /
+    rows whose access differs from the folder's (from `Children` and the attribute already read by the
+    enumeration: no extra call per item).
+  - **Properties:** an **Access** section: what the user may do with the item (open, download, change, rename,
+    move to trash…) and, apart, what the disk allows, each with its source (right, folder rule and the folder it is
+    set on, space switch, disk).
+  - **Server:** one effective check of the **folder** per listing (`access(2)` `W_OK` outside Windows, a write
+    test or `AccessCheck` on Windows; kept briefly per folder, no work per item, [scale](scale.md)); per item only
+    the facts the enumeration already gives. Problem `type` words unchanged.
+  - **Menus (2.9):** actions blocked by the disk are greyed with that reason too, as rights already are.
+  Gotchas to settle in the note: on Windows a folder's read-only attribute means "customised folder" to Explorer,
+  not "can't write" (don't show it as such); share permissions are only known by trying. Possibly split **a**
+  library, **b** connections. Feature note (folder-access.md or a new `item-access.md`), user docs with a
+  screenshot of the mark and of Properties.
 
 ### Phase 5: guidance
 
@@ -463,8 +494,9 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-23):** phases 1 and 2 done, 3.1–3.4 (administration, deep folder, mode matrix and badge,
-  used and free space), 3.5a (library folders changed outside SFE). Next: **3.5b** (connection folders), then 3.6.
+- **Last session (2026-11-23):** phases 1 and 2 done, 3.1–3.5 (administration, deep folder, mode matrix and badge,
+  used and free space, changes made outside SFE in library and connection folders). Next: **3.6** (scan as you go).
+  Step 4.6 (read-only or writable shown) was added to the plan by the owner on 2026-11-23.
 - Don't run `npm test` and `dotnet test` at the same time: the client build rewrites `wwwroot` under the server's
   build ("No file exists for the asset").
 - `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd

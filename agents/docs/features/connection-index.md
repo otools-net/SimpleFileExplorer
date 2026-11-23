@@ -73,6 +73,8 @@ real account: [dropbox-check](../../tools/dropbox-check/README.md#index-of-a-lar
   feed tells open listings (`ConnectionFeed`). A folder copied by the provider is added unlisted; its items come with
   the next sync. During a full listing a folder SFE changed keeps its pass (`RemoteIndexScope.BySfe` /
   `PassUnderWay`), else the listing took it as met and dropped its other items (fixed in phase 2).
+- While a folder of the connection is open in a tab, its changes are read every 30 s without a history run
+  (`ConnectionWatchers`, `ConnectionIndexes.FollowAsync`: [change-feed](change-feed.md)).
 - Task `ConnectionIndex` ("Connection index"): one history run per connection synced; Run now and schedules sync
   every connection the library indexes, one after the other; started by the browse route
   (`ConnectionIndexes.OpenedAsync`: first open, or older than 10 minutes; state read at most once a minute). Routes

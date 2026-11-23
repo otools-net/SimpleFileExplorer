@@ -15,6 +15,12 @@ public sealed class ConnectionIndexRun(int connectionId, DateTimeOffset started)
 
     internal Task Done { get; set; } = Task.CompletedTask;
 
+    /// <summary>
+    /// A watched folder's quick look at the changes (<see cref="ConnectionIndexes.FollowAsync"/>), not a sync: no
+    /// run of the task, not shown as running; a sync asked meanwhile waits for it.
+    /// </summary>
+    internal bool Quiet { get; init; }
+
     /// <summary>"Listing “Team Dropbox”: 1,200 files" or "Reading the changes of a private connection: 12".</summary>
     public string Describe()
     {
