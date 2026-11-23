@@ -10,7 +10,17 @@ import { registerDialog } from '../library/dialogs.service';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
 import { FileActions } from './file-actions';
-import { deletedToast, deleteQuestion, moreNames, notDeleted, putBack, trashUnavailable } from './file-dialog-texts';
+import {
+    deletedToast,
+    deleteQuestion,
+    moreNames,
+    notDeleted,
+    notDeletedOne,
+    notPutBack,
+    putBack,
+    trashUnavailable,
+    undoDeleteHint,
+} from './file-dialog-texts';
 
 /** Names listed in the confirmation, the rest counted. */
 const NAMES_SHOWN = 5;
@@ -102,7 +112,10 @@ export class DeleteDialog {
                 )
             ).items;
         } catch (error) {
-            this.toasts.error(`Could not delete: ${(error as Error).message}`);
+            const reason = (error as Error).message;
+            this.toasts.error(
+                items.length === 1 ? notDeletedOne(items[0].name, reason) : notDeleted(items.length, reason),
+            );
             return;
         }
         const done = results.filter((result) => result.status === 'done');
@@ -117,7 +130,11 @@ export class DeleteDialog {
                 {
                     timeout: trashed.length ? 10000 : 4500,
                     action: trashed.length
-                        ? { label: 'Undo', title: 'Put them back where they were', run: () => void this.undo(trashed) }
+                        ? {
+                              label: $localize`Undo`,
+                              title: undoDeleteHint(trashed.length),
+                              run: () => void this.undo(trashed),
+                          }
                         : undefined,
                 },
             );
@@ -129,7 +146,7 @@ export class DeleteDialog {
         if (failed.length)
             this.toasts.error(
                 failed.length === 1
-                    ? (failed[0].message ?? `“${baseOf(failed[0].path)}” could not be deleted.`)
+                    ? (failed[0].message ?? notDeletedOne(baseOf(failed[0].path)))
                     : notDeleted(failed.length, failed[0].message ?? baseOf(failed[0].path)),
                 8000,
             );
@@ -147,10 +164,10 @@ export class DeleteDialog {
         for (const id of ids) {
             try {
                 const result = await this.api.restoreFromTrash(id);
-                if (isFileConflict(result)) this.toasts.error(result.detail ?? 'It could not be restored.');
+                if (isFileConflict(result)) this.toasts.error(notPutBack(result.detail));
                 else restored++;
             } catch (error) {
-                this.toasts.error(`Could not restore: ${(error as Error).message}`);
+                this.toasts.error(notPutBack((error as Error).message));
             }
         }
         if (restored) {

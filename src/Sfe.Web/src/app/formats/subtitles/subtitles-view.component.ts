@@ -41,7 +41,7 @@ import {
     subtitleTypeOf,
 } from './subtitles';
 import { FILE_SOURCE } from '../file-source';
-import { cueCounts, subtitlesModes, SubtitlesMode, subtitlesTexts } from './subtitles-texts';
+import { cueCounts, shifted, shiftRefused, subtitlesModes, SubtitlesMode, subtitlesTexts } from './subtitles-texts';
 
 export const SUBTITLES_MODE_KEY = 'sfe.subtitles.mode';
 /** How long typing pauses before the cues show the source again, and the filter what is typed in it. */
@@ -335,14 +335,12 @@ export class SubtitlesViewComponent {
         const milliseconds = parseShift(box?.value ?? '');
         if (!editor || !this.session.editing()) return;
         if (milliseconds === null || milliseconds === 0) {
-            this.toasts.show('Type the seconds to move the cues by: 2.5 for later, -2.5 for earlier.', { error: true });
+            this.toasts.show(shiftRefused(), { error: true });
             box?.focus();
             return;
         }
         editor.edit(shiftEdits(editor.text(), milliseconds));
-        this.toasts.show(
-            `Every cue moved ${Math.abs(milliseconds / 1000)} s ${milliseconds > 0 ? 'later' : 'earlier'}`,
-        );
+        this.toasts.show(shifted(milliseconds));
     }
 
     protected setQuery(query: string): void {

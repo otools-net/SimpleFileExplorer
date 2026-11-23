@@ -161,7 +161,7 @@ other {Creating trickplay: # videos left.}}`,
         try {
             await whileBusy(this.checking, () => this.api.checkTrickplay());
         } catch (error) {
-            this.toasts.error(`Could not start the check: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not start the check: ${(error as Error).message}:reason:`);
         }
         void this.refresh();
     }

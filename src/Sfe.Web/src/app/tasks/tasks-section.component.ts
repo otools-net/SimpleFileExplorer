@@ -51,8 +51,8 @@ const STATES: Record<TaskInfo['state'], string> = {
 };
 
 const CANCEL_QUESTIONS: Partial<Record<TaskKind, string>> = {
-    scan: 'Cancel the scan? Folders already scanned stay indexed.',
-    trickplay: 'Stop creating trickplay? The videos waiting are forgotten until the next check.',
+    scan: $localize`Cancel the scan? Folders already scanned stay indexed.`,
+    trickplay: $localize`Stop making trickplay? The videos waiting are left until the next check.`,
 };
 
 /**
@@ -210,18 +210,21 @@ export class TasksSectionComponent {
             return;
         }
         this.busy.set(`${task.task}:start`);
+        const name = TASK_NAMES[task.task];
         try {
             const result = await this.api.startTask(task.task);
             if (result.result === 'unavailable')
-                this.toasts.error(`${TASK_NAMES[task.task]} can't run: it is turned off, or ffmpeg is missing.`);
+                this.toasts.error(
+                    $localize`Could not start the task “${name}:task:”: it is turned off, or ffmpeg is missing.`,
+                );
             else if (result.result === 'alreadyRunning')
                 this.toasts.show(
                     task.task === 'trickplay'
-                        ? 'A new check follows the one running.'
-                        : `${TASK_NAMES[task.task]} is already running.`,
+                        ? $localize`A new check starts when the one running has finished.`
+                        : $localize`The task “${name}:task:” is already running.`,
                 );
         } catch (error) {
-            this.toasts.error(`Could not start ${TASK_NAMES[task.task].toLowerCase()}: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not start the task “${name}:task:”: ${(error as Error).message}:reason:`);
         } finally {
             this.busy.set(null);
         }
@@ -235,7 +238,8 @@ export class TasksSectionComponent {
         try {
             await this.api.cancelTask(task.task);
         } catch (error) {
-            this.toasts.error(`Could not stop ${TASK_NAMES[task.task].toLowerCase()}: ${(error as Error).message}`);
+            const [name, reason] = [TASK_NAMES[task.task], (error as Error).message];
+            this.toasts.error($localize`Could not stop the task “${name}:task:”: ${reason}:reason:`);
         } finally {
             this.busy.set(null);
         }
@@ -258,10 +262,11 @@ export class TasksSectionComponent {
 
     protected onSaved(schedule: TaskSchedule): void {
         this.draft.set(null);
+        const name = TASK_NAMES[schedule.task];
         this.toasts.show(
             schedule.nextRun
-                ? `${TASK_NAMES[schedule.task]} scheduled: next run ${formatMoment(schedule.nextRun)}.`
-                : `${TASK_NAMES[schedule.task]} schedule saved.`,
+                ? $localize`Schedule of “${name}:task:” saved. Next run ${formatMoment(schedule.nextRun)}:when:.`
+                : $localize`Schedule of “${name}:task:” saved.`,
         );
         void this.refresh();
     }
@@ -270,16 +275,17 @@ export class TasksSectionComponent {
         try {
             await this.api.updateSchedule(schedule.id, { ...schedule, enabled: !schedule.enabled });
         } catch (error) {
-            this.toasts.error(`Could not change the schedule: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not change the schedule: ${(error as Error).message}:reason:`);
         }
         void this.refresh();
     }
 
     protected async remove(schedule: TaskSchedule): Promise<void> {
+        const [name, when] = [TASK_NAMES[schedule.task], describeSchedule(schedule)];
         if (
             !confirm(
-                `Delete the schedule “${TASK_NAMES[schedule.task]}: ${describeSchedule(schedule)}”? ` +
-                    `Its past runs stay in the history.`,
+                $localize`Delete the schedule “${name}:task:: ${when}:when:”? \
+Its past runs stay in the history. This cannot be undone.`,
             )
         )
             return;
@@ -287,7 +293,7 @@ export class TasksSectionComponent {
             await this.api.deleteSchedule(schedule.id);
             if (this.draft()?.schedule?.id === schedule.id) this.draft.set(null);
         } catch (error) {
-            this.toasts.error(`Could not delete the schedule: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not delete the schedule: ${(error as Error).message}:reason:`);
         }
         void this.refresh();
     }

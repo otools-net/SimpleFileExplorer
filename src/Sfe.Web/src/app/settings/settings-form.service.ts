@@ -10,6 +10,7 @@ import { ToastService } from '../core/toast.service';
 import { SearchHistory } from '../library/search-history.service';
 import { SidebarService } from '../library/sidebar/sidebar.service';
 import { getValue, SettingField, SettingGroup, SIMPLE_SETTINGS, TABS } from './settings-schema';
+import { partlySaved, resetTexts } from './settings-texts';
 
 const SHOW_ALL_KEY = 'sfe.settings.showAll';
 const LEVEL_KEY = 'sfe.settings.level';
@@ -34,7 +35,6 @@ interface LevelEdits {
  * The levels in the order they save: a level above first, so that one below is checked against what it then inherits.
  */
 const SAVE_ORDER: SettingLevel[] = ['server', 'tenant', 'user'];
-const LEVEL_NAMES: Partial<Record<SettingLevel, string>> = { server: 'the whole server', tenant: 'this space' };
 
 export const settingFieldId = (key: string) => `setting-${key.replaceAll('.', '-')}`;
 export const isSimpleGroup = (group: SettingGroup) => group.fields.some((field) => SIMPLE_SETTINGS.has(field.key));
@@ -415,21 +415,17 @@ export class SettingsForm {
                     if (error instanceof ApiError && error.errors) {
                         await this.showLevel(level);
                         this.showErrors(error.errors);
-                        if (saved.length)
-                            this.toasts.show(
-                                `Saved the settings of ${saved.map((l) => LEVEL_NAMES[l]).join(' and ')}; ` +
-                                    `those of ${LEVEL_NAMES[level]} need fixing.`,
-                            );
+                        if (saved.length) this.toasts.show(partlySaved(level));
                         return 'invalid';
                     }
-                    this.toasts.error(`Could not save the settings: ${(error as Error).message}`);
+                    this.toasts.error($localize`Could not save the settings: ${(error as Error).message}:reason:`);
                     return 'failed';
                 }
             }
         } finally {
             this.saving.set(false);
         }
-        this.toasts.show(shown === 'user' ? 'Preferences saved.' : 'Settings saved.');
+        this.toasts.show(shown === 'user' ? $localize`Your settings saved.` : $localize`Settings saved.`);
         if (saved.length) await this.applied();
         return 'saved';
     }
@@ -452,33 +448,19 @@ export class SettingsForm {
     /** Forgets the saved settings (after asking); true when done. */
     async reset(): Promise<boolean> {
         const level = this.level();
-        const [question, done] = {
-            environment: ['', ''],
-            server: [
-                "Forget the saved settings and go back to the values in the server's configuration file?",
-                "Settings reset to the server's configuration.",
-            ],
-            tenant: [
-                "Forget the space's own settings and follow the server's again?",
-                "The space follows the server's settings again.",
-            ],
-            user: [
-                "Forget your own preferences and follow the space's settings again?",
-                "Your preferences follow the space's settings again.",
-            ],
-        }[level];
-        if (!confirm(question)) return false;
+        const texts = resetTexts(level);
+        if (!texts || !confirm(texts.question)) return false;
         try {
             this.fill(
                 await (level === 'user'
                     ? this.api.resetPreferences()
                     : this.api.resetSettings(this.states() ? level : undefined)),
             );
-            this.toasts.show(done);
+            this.toasts.show(texts.done);
             await this.applied();
             return true;
         } catch (error) {
-            this.toasts.error(`Could not reset the settings: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not reset the settings: ${(error as Error).message}:reason:`);
             return false;
         }
     }
@@ -486,25 +468,26 @@ export class SettingsForm {
     async clearHistory(): Promise<void> {
         if (
             !confirm(
-                "Forget the searched and viewed tags? The sidebar's “Last searched” and “Last viewed” lists start " +
-                    'empty.',
+                $localize`Forget the searched and viewed tags? The sidebar's “Last searched” and “Last viewed” \
+lists start empty. This cannot be undone.`,
             )
         )
             return;
         try {
             await this.api.clearTagHistory();
             this.sidebar.refresh();
-            this.toasts.show('Tag history cleared.');
+            this.toasts.show($localize`Tag history cleared.`);
         } catch (error) {
-            this.toasts.error(`Could not clear the history: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not clear the tag history: ${(error as Error).message}:reason:`);
         }
     }
 
     /** Kept by the browser, so nothing is asked of the server. */
     clearSearchHistory(): void {
-        if (!confirm('Forget the searches made in this browser? The search box stops suggesting them.')) return;
+        if (!confirm($localize`Forget the searches made in this browser? The search box stops suggesting them.`))
+            return;
         this.searchHistory.clear();
-        this.toasts.show('Search history cleared.');
+        this.toasts.show($localize`Search history cleared.`);
     }
 
     /** The settings changed on the server: reload what the client derives from them (theme, links, page sizes...). */
@@ -512,7 +495,7 @@ export class SettingsForm {
         try {
             this.theme.setDefault((await this.config.load()).theme);
         } catch (error) {
-            this.toasts.error(`Could not reload the settings: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not reload the settings: ${(error as Error).message}:reason:`);
         }
     }
 

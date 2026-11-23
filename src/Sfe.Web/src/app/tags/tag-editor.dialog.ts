@@ -86,7 +86,7 @@ export class TagEditorDialog {
             try {
                 details = await this.api.tag(id);
             } catch (failure) {
-                this.toasts.error(`Could not load the tag: ${(failure as Error).message}`);
+                this.toasts.error($localize`Could not load the tag: ${(failure as Error).message}:reason:`);
                 return null;
             }
         }
@@ -154,7 +154,10 @@ export class TagEditorDialog {
     protected async delete(): Promise<void> {
         const tag = this.tag()!;
         const uses = removedFrom(tag.fileCount, this.config.can(Rights.useConnections));
-        if (!confirm(`Delete the tag “${tag.displayName}”?${uses ? ' ' + uses : ''}`)) return;
+        const question = uses
+            ? $localize`Delete the tag “${tag.displayName}:tag:”? ${uses}:uses: This cannot be undone.`
+            : $localize`Delete the tag “${tag.displayName}:tag:”? This cannot be undone.`;
+        if (!confirm(question)) return;
         try {
             await this.api.deleteTag(tag.id);
             this.store.applyTagDeleted(tag.id);

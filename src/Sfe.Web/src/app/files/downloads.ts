@@ -5,6 +5,7 @@ import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { ListingStore } from '../library/listing.store';
+import { itemCount, quoted } from './file-dialog-texts';
 
 /**
  * Downloading listed items (agents/docs/features/archives.md): one file as it is, several or a folder as a zip the
@@ -41,9 +42,11 @@ export class FileDownloads {
             const place = this.config.place();
             const link = await (place ? this.api.createArchive(paths, place.id) : this.api.createArchive(paths));
             save(link.url, link.fileName);
-            this.toasts.show(`Downloading ${link.fileName}: your browser shows its progress.`);
+            this.toasts.show($localize`Downloading ${quoted(link.fileName)}:zip:. Your browser shows its progress.`);
         } catch (error) {
-            this.toasts.error(`Could not download: ${(error as Error).message}`);
+            this.toasts.error(
+                $localize`Could not download ${itemCount(allowed.length)}:items:: ${(error as Error).message}:reason:`,
+            );
         }
         return true;
     }

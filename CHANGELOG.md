@@ -282,6 +282,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   **Whole words**); a file that can't be shown says why ("This file is not text, so it can't be shown here.",
   "You don't have the right to open this file."); a save that fails reads "Could not save the file: …"; the fonts
   and reading colours say what they are ("Show brown text on warm paper."). Their texts are ready for translation.
+- **Messages and questions reworded**: the short messages in the corner of the page and the questions asked before
+  an action follow the app's style: what was done, with the thing named ("Settings of the whole server saved.",
+  "Connection added.", "“x.jpg” is in the trash. “b/x.jpg” is kept."), errors as "Could not … : reason." naming
+  what failed ("Could not forget “a.jpg”: …"), and questions that say what will happen ("Which file gets the tags
+  of “a.jpg”? Type its path from the top of the library."). Their texts are ready for translation.
 - Log categories written by the server now start with `Otools.Net.Sfe.` (the code's namespaces were renamed);
   log levels set for the old `Sfe.` names in `Logging` still apply, and the log page still finds them.
 - **API under `/api/v1`**: every route of the API answers under `/api/v1/…`, the address the OpenAPI document shows.

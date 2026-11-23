@@ -168,12 +168,12 @@ export class PropertiesDialog {
         if (job && !job.done) void this.api.cancelPropertyJob(job.id).catch(() => {});
     }
 
-    protected async copy(text: string, what = 'Checksum'): Promise<void> {
+    protected async copy(text: string, what = $localize`Checksum`): Promise<void> {
         try {
             await copyText(text);
-            this.toasts.show(`${what} copied.`);
+            this.toasts.show($localize`:a checksum copied:${what}:what: copied.`);
         } catch {
-            this.toasts.error('The browser refused to copy.');
+            this.toasts.error($localize`Could not copy it: the browser refused.`);
         }
     }
 
@@ -207,7 +207,12 @@ export class PropertiesDialog {
             target.set(job);
             this.follow(generation);
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            const reason = (error as Error).message;
+            this.toasts.error(
+                target === this.count
+                    ? $localize`Could not start the count: ${reason}:reason:`
+                    : $localize`Could not start the checksum: ${reason}:reason:`,
+            );
         }
     }
 

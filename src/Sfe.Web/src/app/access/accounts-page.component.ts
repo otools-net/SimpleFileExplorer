@@ -129,20 +129,28 @@ export class AccountsPageComponent implements OnInit {
         if (
             !confirm(
                 outOnly
-                    ? `Take ${user.userName} out of this space? The account stays in its other spaces.`
-                    : `Delete the account ${user.userName}? It can no longer sign in anywhere; ` +
-                          `its preferences go with it, the tags it set stay.`,
+                    ? $localize`Take “${user.userName}:name:” out of this space? \
+The account stays in its other spaces.`
+                    : $localize`Delete the account “${user.userName}:name:”? It can no longer sign in anywhere. \
+Its preferences go with it; the tags it set stay. This cannot be undone.`,
             )
         )
             return;
         try {
             await this.api.deleteUser(user.id);
             this.toasts.show(
-                outOnly ? `${user.userName} is no longer in this space.` : `Account ${user.userName} deleted.`,
+                outOnly
+                    ? $localize`“${user.userName}:name:” is no longer in this space.`
+                    : $localize`Account “${user.userName}:name:” deleted.`,
             );
             await this.load();
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            const reason = (error as Error).message;
+            this.toasts.error(
+                outOnly
+                    ? $localize`Could not take “${user.userName}:name:” out of this space: ${reason}:reason:`
+                    : $localize`Could not delete the account “${user.userName}:name:”: ${reason}:reason:`,
+            );
         }
     }
 }

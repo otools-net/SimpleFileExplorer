@@ -2,10 +2,21 @@ import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signa
 import { Api, ApiError, editingSession } from '../core/api.service';
 import { canvasCheck } from '../core/canvas-probe';
 import { ConfigService } from '../core/config.service';
-import { formatSize } from '../core/format';
 import { LibraryItem } from '../core/models';
 import { EditedImageAccess, isSavedImage } from './editor.models';
-import { aspectHint, destinationLine, flipHint, overwriteHint, sizeLine } from './editor-texts';
+import {
+    aspectHint,
+    changedElsewhereQuestion,
+    destinationLine,
+    discardQuestion,
+    flipHint,
+    notSavedToast,
+    overwriteHint,
+    savedCopyToast,
+    savedOverToast,
+    sizeLine,
+} from './editor-texts';
+
 import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { IconComponent } from '../shared/icon.component';
@@ -253,12 +264,9 @@ export class ImageEditorDialog {
             );
             this.operations.set([]);
             this.close();
-            this.toasts.show(
-                `Saved as “${saved.path}” (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).`,
-                { timeout: 8000 },
-            );
+            this.toasts.show(savedCopyToast(saved.path, saved, saved.size), { timeout: 8000 });
         } catch (error) {
-            this.toasts.error(`Could not save the picture: ${(error as Error).message}`);
+            this.toasts.error(notSavedToast((error as Error).message));
         }
     }
 
@@ -281,7 +289,7 @@ export class ImageEditorDialog {
                 ),
             );
             if (!isSavedImage(saved)) {
-                this.toasts.error(saved.detail ?? 'The picture could not be saved.');
+                this.toasts.error(notSavedToast(saved.detail));
                 return;
             }
             this.store.applySaved(item.path, {
@@ -292,15 +300,11 @@ export class ImageEditorDialog {
             });
             this.operations.set([]);
             this.close();
-            const before = access.permanent ? '' : ' The version before is in the trash.';
-            this.toasts.show(`Saved (${saved.width} × ${saved.height}, ${formatSize(saved.size)}).${before}`, {
-                timeout: 8000,
-            });
+            this.toasts.show(savedOverToast(item.name, saved, saved.size, access.permanent), { timeout: 8000 });
         } catch (error) {
             if (error instanceof ApiError && error.status === 412) {
-                if (confirm('The picture was changed elsewhere since the editor opened it. Save over it anyway?'))
-                    await this.saveOver(true);
-            } else this.toasts.error(`Could not save the picture: ${(error as Error).message}`);
+                if (confirm(changedElsewhereQuestion())) await this.saveOver(true);
+            } else this.toasts.error(notSavedToast((error as Error).message));
         }
     }
 
@@ -399,7 +403,7 @@ export class ImageEditorDialog {
     }
 
     private confirmDiscard(): boolean {
-        return !this.dirty() || this.saving() || confirm('Close the editor and lose these edits?');
+        return !this.dirty() || this.saving() || confirm(discardQuestion());
     }
 
     protected onClose(): void {

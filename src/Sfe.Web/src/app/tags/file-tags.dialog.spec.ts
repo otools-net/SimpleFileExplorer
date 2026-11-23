@@ -207,7 +207,7 @@ describe('FileTagsDialog', () => {
         options()[0].click();
         await settle();
 
-        expect(error).toHaveBeenCalledWith('A tag needs a name.');
+        expect(error).toHaveBeenCalledWith('Could not add the tag: A tag needs a name.');
         expect(api.changeFileTags).not.toHaveBeenCalled();
     });
 
@@ -229,7 +229,7 @@ describe('FileTagsDialog', () => {
         element.querySelector<HTMLButtonElement>('[aria-label="Remove “Shrek”"]')!.click();
         await settle();
 
-        expect(error).toHaveBeenCalledWith('“x” is not a file of the library.');
+        expect(error).toHaveBeenCalledWith('Could not remove the tag “Shrek”: “x” is not a file of the library.');
         expect(groups()).toEqual([{ heading: 'Tags', tags: ['Shrek'] }]);
     });
 

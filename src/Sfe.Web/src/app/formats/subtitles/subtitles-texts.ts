@@ -77,5 +77,20 @@ export function playHint(video: string): string {
     return $localize`Play “${video}:video:” from this cue, in a new tab.`;
 }
 
+/** The toast refusing Shift times when the box holds no number of seconds (or 0). */
+export function shiftRefused(): string {
+    return $localize`Could not shift the times: type the seconds to move the cues by, 2.5 for later or -2.5 \
+for earlier.`;
+}
+
+/** The toast after Shift times moved every cue by `milliseconds` (later when positive). */
+export function shifted(milliseconds: number): string {
+    return icu(
+        $localize`{direction, select, later {Every cue moved {seconds, number} s later. Ctrl+Z undoes it.} \
+other {Every cue moved {seconds, number} s earlier. Ctrl+Z undoes it.}}`,
+        { direction: milliseconds > 0 ? 'later' : 'earlier', seconds: Math.abs(milliseconds / 1000) },
+    );
+}
+
 /** The texts the subtitles view's template asks for. */
 export const subtitlesTexts = { selectedCueLine, problemLine, cueListLabel, overlapHint, noCues, playHint };

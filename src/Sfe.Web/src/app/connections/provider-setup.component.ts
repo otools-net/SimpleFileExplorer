@@ -41,7 +41,7 @@ export class ProviderSetupComponent {
         try {
             this.setup.set(await this.api.connectionProvider(kind));
         } catch (error) {
-            this.toasts.error(`Could not read the setup: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not load the setup: ${(error as Error).message}:reason:`);
         }
     }
 
@@ -49,7 +49,7 @@ export class ProviderSetupComponent {
         const address = this.setup()?.returnAddress;
         if (!address) return;
         await navigator.clipboard.writeText(address);
-        this.toasts.show('Address copied.');
+        this.toasts.show($localize`Return address copied.`);
     }
 
     protected async saveSecret(): Promise<void> {
@@ -58,7 +58,7 @@ export class ProviderSetupComponent {
             await whileBusy(this.busy, () => this.api.setProviderSecret(this.kind(), this.secret()));
             // Never kept on the page once sent.
             this.secret.set('');
-            this.toasts.show('App secret saved.');
+            this.toasts.show($localize`App secret saved.`);
         } catch (error) {
             this.secretError.set(
                 error instanceof ApiError && error.errors
@@ -70,7 +70,7 @@ export class ProviderSetupComponent {
     }
 
     protected async removeSecret(): Promise<void> {
-        if (!confirm('Remove the app secret? Sign-ins go on without it (PKCE).')) return;
+        if (!confirm($localize`Remove the app secret? Sign-ins go on without it (PKCE).`)) return;
         await whileBusy(this.busy, () => this.api.removeProviderSecret(this.kind()));
         await this.load();
     }

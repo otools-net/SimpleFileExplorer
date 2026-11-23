@@ -1,4 +1,5 @@
 import { Size } from './edits';
+import { formatSize } from '../core/format';
 
 /** A picture's size in pixels, as the editor shows it ("800 × 600"). */
 export function dimensions({ width, height }: Size): string {
@@ -58,4 +59,34 @@ export function flipHint(flipped: string | null, portrait: boolean): string {
     return portrait
         ? $localize`Use ${flipped}:ratio: instead: the same ratio, in landscape (X).`
         : $localize`Use ${flipped}:ratio: instead: the same ratio, in portrait (X).`;
+}
+
+/** The toast of Save a copy: where the new file is, its size in pixels and bytes. */
+export function savedCopyToast(path: string, size: Size, bytes: number): string {
+    return $localize`Saved as “${path}:path:” (${dimensions(size)}:size:, ${formatSize(bytes)}:bytes:).`;
+}
+
+/** The toast of Save over the original; `permanent`: this space keeps no previous version. */
+export function savedOverToast(name: string, size: Size, bytes: number, permanent: boolean): string {
+    const pixels = dimensions(size);
+    const weight = formatSize(bytes);
+    return permanent
+        ? $localize`“${name}:name:” saved (${pixels}:size:, ${weight}:bytes:).`
+        : $localize`“${name}:name:” saved (${pixels}:size:, ${weight}:bytes:). The version before is in the trash.`;
+}
+
+/** The error toast of a save, with the reason when there is one. */
+export function notSavedToast(reason?: string | null): string {
+    return reason ? $localize`Could not save the picture: ${reason}:reason:` : $localize`Could not save the picture.`;
+}
+
+/** The question when the picture changed since the editor opened it. */
+export function changedElsewhereQuestion(): string {
+    return $localize`The picture was changed elsewhere since the editor opened it. Save over it anyway?`;
+}
+
+/** The question before closing the editor with edits not saved. */
+export function discardQuestion(): string {
+    return $localize`Close the editor and lose these edits? This can't be undone.`;
+
 }

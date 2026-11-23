@@ -304,7 +304,7 @@ describe('TagPickerComponent', () => {
         input().focus();
         await settle();
 
-        expect(errors).toHaveBeenCalledWith('Could not load tags: Boom');
+        expect(errors).toHaveBeenCalledWith('Could not load the tags: Boom');
         expect(options()).toHaveLength(0);
     });
 
@@ -317,7 +317,7 @@ describe('TagPickerComponent', () => {
         await key('Enter');
         await settle();
 
-        expect(errors).toHaveBeenCalledWith('Tag names are limited to 200 characters.');
+        expect(errors).toHaveBeenCalledWith('Could not add the tag: Tag names are limited to 200 characters.');
         expect(input().value).toBe('x'.repeat(201));
     });
 

@@ -31,5 +31,7 @@ describe('json texts', () => {
         expect(jsonTexts.toggle(true)).toBe('Close');
         expect(jsonTexts.members('plan.json')).toBe('Members of “plan.json”');
         expect(jsonTexts.kind(false)).toBe('JSON with comments');
+        expect(jsonTexts.pathCopied('$.days[1]')).toBe('Path “$.days[1]” copied.');
+        expect(jsonTexts.valueCopied('$.days[1]')).toBe('Value of “$.days[1]” copied.');
     });
 });

@@ -7,10 +7,10 @@ import { Api } from '../core/api.service';
 
 /** What the server's redirect says went wrong (`connections?error=`). */
 export const LANDING_ERRORS: Record<string, string> = {
-    'signed-out': 'You were signed out meanwhile: sign in, then connect again.',
-    refused: 'The provider did not give access: nothing was connected.',
-    expired: 'This sign-in is over (too late, or already used): start again.',
-    failed: 'The provider refused the sign-in: nothing was connected.',
+    'signed-out': $localize`Could not connect: you were signed out in the meantime. Sign in, then connect again.`,
+    refused: $localize`Could not connect: the storage didn't give access.`,
+    expired: $localize`Could not connect: this sign-in has expired or was already used. Start again.`,
+    failed: $localize`Could not connect: the storage refused the sign-in.`,
 };
 
 /**
@@ -31,10 +31,13 @@ export const connectionsLanding: CanActivateFn = async (route: ActivatedRouteSna
     }
 
     const level = await levelOf(inject(Api), id);
-    if (query.has('made')) toasts.show('Connected.');
+    if (query.has('made')) toasts.show($localize`Connection added.`);
     else if (query.get('otherAccount') === 'true')
-        toasts.show('Signed in again, to another account than before: who uses it now sees other files.');
-    else toasts.show('Signed in again.');
+        toasts.show(
+            $localize`Signed in again, to another account than before. Whoever uses the connection now sees \
+other files.`,
+        );
+    else toasts.show($localize`Signed in again.`);
     return pageFor(router, level);
 };
 

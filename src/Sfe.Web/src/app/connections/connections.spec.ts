@@ -418,7 +418,7 @@ describe('Connections', () => {
                 }),
             );
             expect(await land({ made: '8' })).toBe('/admin?section=connections&page=connections');
-            expect(shown).toHaveBeenCalledWith('Connected.');
+            expect(shown).toHaveBeenCalledWith('Connection added.');
 
             await land({ reconnected: '8', otherAccount: 'true' });
             expect(shown.mock.calls.at(-1)![0]).toContain('another account');
@@ -427,7 +427,7 @@ describe('Connections', () => {
         it('says what went wrong', async () => {
             const errors = vi.spyOn(TestBed.inject(ToastService), 'error');
             expect(await land({ error: 'expired' })).toBe('/admin?section=account&page=connections');
-            expect(errors.mock.calls[0][0]).toContain('start again');
+            expect(errors.mock.calls[0][0]).toContain('Start again');
         });
     });
 

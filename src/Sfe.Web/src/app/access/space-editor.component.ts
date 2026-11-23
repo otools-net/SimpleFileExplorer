@@ -126,7 +126,11 @@ export class SpaceEditorComponent {
             const space =
                 draft.id === null ? await this.api.createTenant(input) : await this.api.updateTenant(draft.id, input);
             this.sheet().close();
-            this.toasts.show(draft.id === null ? `Space ${space.name} created.` : `Space ${space.name} saved.`);
+            this.toasts.show(
+                draft.id === null
+                    ? $localize`Space “${space.name}:name:” created.`
+                    : $localize`Space “${space.name}:name:” saved.`,
+            );
             this.saved.emit(space);
             // The ⋮ menu's spaces and this space's rights may have changed.
             await this.config.load();

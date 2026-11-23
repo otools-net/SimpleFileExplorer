@@ -11,6 +11,7 @@ import { ListingStore } from '../library/listing.store';
 import { SheetComponent } from '../shared/sheet.component';
 import { TagChipComponent } from './tag-chip.component';
 import { TagOption, TagPickerComponent } from './tag-picker.component';
+import { tagCreated } from './tags';
 
 interface TagCount {
     tag: TagSummary;
@@ -80,7 +81,7 @@ other {On {some} of # files. Click to add it to all of them.}}`,
 
     protected readonly add = async (option: TagOption) => {
         const tag = option.create ? await this.api.createTag({ name: option.create }) : option.tag!;
-        if (option.create) this.toasts.show(`Tag “${tag.name}” created.`);
+        if (option.create) this.toasts.show(tagCreated(tag.name));
         await this.change({ add: [tag.id] });
     };
 
@@ -96,14 +97,18 @@ other {On {some} of # files. Click to add it to all of them.}}`,
     }
 
     protected addToAll(tag: TagSummary): void {
-        this.report(this.change({ add: [tag.id] }));
+        this.change({ add: [tag.id] }).catch((error: Error) =>
+            this.toasts.error($localize`Could not add the tag “${tag.displayName}:tag:”: ${error.message}:reason:`),
+        );
     }
 
     protected remove(tag: TagSummary): void {
         const paths = this.items()
             .filter((item) => item.tags?.some((t) => t.id === tag.id))
             .map((item) => item.path);
-        this.report(this.change({ remove: [tag.id] }, paths));
+        this.change({ remove: [tag.id] }, paths).catch((error: Error) =>
+            this.toasts.error($localize`Could not remove the tag “${tag.displayName}:tag:”: ${error.message}:reason:`),
+        );
     }
 
     protected async edit(tag: TagSummary): Promise<void> {
@@ -111,10 +116,6 @@ other {On {some} of # files. Click to add it to all of them.}}`,
         await this.dialogs.tagEditor()?.open(tag.id);
         const listed = new Map(this.store.items().map((item) => [item.path, item]));
         this.items.update((items) => items.map((item) => listed.get(item.path) ?? item));
-    }
-
-    private report(promise: Promise<void>): void {
-        promise.catch((error: Error) => this.toasts.error(error.message));
     }
 
     /**

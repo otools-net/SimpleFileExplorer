@@ -99,7 +99,8 @@ export class TagMenu {
             );
             this.store.applyFileTags(result.files);
         } catch (error) {
-            this.toasts.error(`Could not remove the tag: ${(error as Error).message}`);
+            const [name, reason] = [tag.displayName || tag.name, (error as Error).message];
+            this.toasts.error($localize`Could not take “${name}:tag:” off “${file.name}:file:”: ${reason}:reason:`);
         }
     }
 }

@@ -40,7 +40,7 @@ export class UploadsSectionComponent implements OnInit {
         try {
             this.items.set(await this.api.uploads(true));
         } catch (error) {
-            this.toasts.error(`Could not list the uploads: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not list the uploads: ${(error as Error).message}:reason:`);
         } finally {
             this.loading.set(false);
         }
@@ -79,16 +79,18 @@ export class UploadsSectionComponent implements OnInit {
     }
 
     protected async cancel(item: UploadInfo): Promise<void> {
-        if (
-            !confirm(`Cancel the upload of “${baseName(item.name)}” by ${item.ownerName}? What it received is removed.`)
-        )
+        const name = baseName(item.name);
+        const owner = item.ownerName;
+        if (!confirm($localize`Cancel the upload of “${name}:name:” by ${owner}:owner:? What it received is removed.`))
             return;
         try {
             this.busy.set(item.id);
             await this.api.cancelUpload(item.id);
             this.items.update((items) => items.filter((i) => i.id !== item.id));
         } catch (error) {
-            this.toasts.error(`Could not cancel: ${(error as Error).message}`);
+            const reason = (error as Error).message;
+            this.toasts.error($localize`Could not cancel the upload of “${name}:name:”: ${reason}:reason:`);
+
         } finally {
             this.busy.set(null);
         }

@@ -126,9 +126,9 @@ export class TokenCreateComponent {
         if (!secret) return;
         try {
             await copyText(secret);
-            this.toasts.show('Token copied.');
+            this.toasts.show($localize`Token copied.`);
         } catch {
-            this.toasts.error('Could not copy the token: select it and copy it by hand.');
+            this.toasts.error($localize`Could not copy the token: select it and copy it by hand.`);
         }
     }
 

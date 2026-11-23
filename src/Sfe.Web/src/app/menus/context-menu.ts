@@ -367,9 +367,9 @@ export class ContextMenu {
     private async copyLink(href: string): Promise<void> {
         try {
             await copyText(href);
-            this.toasts.show('Link copied.');
+            this.toasts.show($localize`Link copied.`);
         } catch {
-            this.toasts.show('The link could not be copied.', { error: true });
+            this.toasts.show($localize`Could not copy the link.`, { error: true });
         }
     }
 

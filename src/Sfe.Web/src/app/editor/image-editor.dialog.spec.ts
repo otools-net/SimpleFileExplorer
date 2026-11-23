@@ -303,7 +303,7 @@ describe('ImageEditorDialog', () => {
             TestBed.inject(ToastService)
                 .toasts()
                 .map((t) => t.message),
-        ).toEqual(['Saved (1000 × 3000, 2 KB). The version before is in the trash.']);
+        ).toEqual(['“photo.jpg” saved (1000 × 3000, 2 KB). The version before is in the trash.']);
     });
 
     it('asks before saving over a picture changed meanwhile; Ctrl+Shift+S saves a copy', async () => {

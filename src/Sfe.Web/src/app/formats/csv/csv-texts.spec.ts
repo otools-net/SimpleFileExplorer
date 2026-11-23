@@ -41,6 +41,7 @@ describe('csv texts', () => {
         expect(csvTexts.cell(5000, 'km', '1,014')).toBe('Row 5,000 · km: 1,014');
         expect(csvTexts.noMatch('zermatt')).toBe('No row holds “zermatt”.');
         expect(csvTexts.empty()).toBe('This file has no rows.');
+        expect(csvTexts.cellCopied(1200, 'km')).toBe('Cell in row 1,200, column “km” copied.');
     });
 
     it('tells where the file is wrong, in words of its own', () => {

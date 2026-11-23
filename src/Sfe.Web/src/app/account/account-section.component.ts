@@ -68,7 +68,7 @@ export class AccountSectionComponent {
             this.current.set('');
             this.password.set('');
             this.confirm.set('');
-            this.toasts.show('Password changed.');
+            this.toasts.show($localize`Password changed.`);
         } catch (error) {
             if (error instanceof ApiError && error.errors)
                 this.passwordErrors.set(
@@ -76,7 +76,7 @@ export class AccountSectionComponent {
                         Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')]),
                     ),
                 );
-            else this.toasts.error(`Could not change the password: ${(error as Error).message}`);
+            else this.toasts.error($localize`Could not change the password: ${(error as Error).message}:reason:`);
         } finally {
             this.busy.set(false);
         }

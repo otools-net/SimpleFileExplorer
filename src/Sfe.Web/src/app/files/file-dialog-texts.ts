@@ -105,9 +105,30 @@ export function notDeleted(count: number, reason: string): string {
     return icu($localize`Could not delete {count, plural, one {# item} other {# items}}: {reason}`, { count, reason });
 }
 
+/** One item not deleted, with the server's reason when it gives one. */
+export function notDeletedOne(name: string, reason?: string | null): string {
+    return reason
+        ? $localize`Could not delete ${quoted(name)}:name:: ${reason}:reason:`
+        : $localize`Could not delete ${quoted(name)}:name:.`;
+}
+
+/** The hint of the Undo button of a delete to the trash. */
+export function undoDeleteHint(count: number): string {
+    return icu($localize`{count, plural, one {Put it back where it was.} other {Put them back where they were.}}`, {
+        count,
+    });
+}
+
 /** Items of the trash put back by Undo. */
 export function putBack(count: number): string {
     return icu($localize`{count, plural, one {# item put back.} other {# items put back.}}`, { count });
+}
+
+/** An item of the trash Undo could not put back, with the reason when there is one. */
+export function notPutBack(reason?: string | null): string {
+    return reason
+        ? $localize`Could not put an item back: ${reason}:reason:`
+        : $localize`Could not put an item back.`;
 }
 
 /** The line above the folder picker of Move to… and Copy to…: "Move “a.jpg” into:". */
@@ -180,6 +201,18 @@ export function leftOut(count: number): string {
 /** The toast of a batch rename. */
 export function renamedToast(count: number): string {
     return icu($localize`{count, plural, one {# item renamed.} other {# items renamed.}}`, { count });
+}
+
+/** The hint of the Undo button of a batch rename. */
+export function undoRenameHint(count: number): string {
+    return icu($localize`{count, plural, one {Give it back its name.} other {Give them back their names.}}`, { count });
+}
+
+/** The undo of a rename, when the old name couldn't be given back; with the reason when there is one. */
+export function nameNotBack(name: string, reason?: string | null): string {
+    return reason
+        ? $localize`Could not give back the name ${quoted(name)}:name:: ${reason}:reason:`
+        : $localize`Could not give back the name ${quoted(name)}:name:.`;
 }
 
 /** The undo of a batch rename, when some names couldn't be given back. */

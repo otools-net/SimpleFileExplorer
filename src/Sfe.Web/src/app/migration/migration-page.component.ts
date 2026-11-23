@@ -80,8 +80,8 @@ export class MigrationPageComponent implements OnInit {
         if (
             !info ||
             !confirm(
-                `Update the databases and settings to SFE ${info.appVersion}? Earlier versions cannot use them ` +
-                    `afterwards.`,
+                $localize`Update the databases and settings to SFE ${info.appVersion}:version:? \
+Earlier versions cannot use them afterwards: this cannot be undone.`,
             )
         )
             return;

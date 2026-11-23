@@ -10,6 +10,7 @@ import { SheetComponent } from '../shared/sheet.component';
 import { Dialogs, registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
+import { nameNotBack, quoted } from './file-dialog-texts';
 
 type Mode =
     { kind: 'folder'; parent: string } | { kind: 'file'; parent: string } | { kind: 'rename'; item: LibraryItem };
@@ -171,11 +172,11 @@ export class NameDialog {
         if (mode.kind === 'rename') {
             this.renamed(mode.item.path, result);
             const renamed = result;
-            this.toasts.show(`Renamed to “${renamed.name}”.`, {
+            this.toasts.show($localize`Renamed to ${quoted(renamed.name)}:name:.`, {
                 timeout: 8000,
                 action: {
-                    label: 'Undo',
-                    title: `Give it back its name “${mode.item.name}”`,
+                    label: $localize`Undo`,
+                    title: $localize`Give it back its name ${quoted(mode.item.name)}:name:.`,
                     run: () => void this.undoRename(renamed, mode.item.name),
                 },
             });
@@ -200,12 +201,12 @@ export class NameDialog {
         try {
             const result = await this.files.rename(item.path, name);
             if (isFileConflict(result)) {
-                this.toasts.error(result.detail ?? `“${name}” could not be given back.`);
+                this.toasts.error(nameNotBack(name, result.detail));
                 return;
             }
             this.renamed(item.path, result);
         } catch (error) {
-            this.toasts.error(`“${name}” could not be given back: ${(error as Error).message}`);
+            this.toasts.error(nameNotBack(name, (error as Error).message));
         }
     }
 }

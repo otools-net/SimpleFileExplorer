@@ -351,7 +351,8 @@ describe('Quick links', () => {
             await settle();
 
             expect(error).toHaveBeenCalledWith(
-                'Quick links: Quick links hold at most 100 folders and files: remove some first.',
+                'Could not add to the quick links: Quick links hold at most 100 folders and files: remove some first.',
+
             );
         });
     });

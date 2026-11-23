@@ -82,7 +82,7 @@ export class TagPickerComponent {
         try {
             results = await this.api.tags({ q: text, limit: 40 });
         } catch (error) {
-            this.toasts.error(`Could not load tags: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not load the tags: ${(error as Error).message}:reason:`);
             return;
         }
         if (request !== this.sequence || document.activeElement !== input) return;
@@ -105,7 +105,7 @@ export class TagPickerComponent {
             this.input().nativeElement.value = '';
             await this.refresh();
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            this.toasts.error($localize`Could not add the tag: ${(error as Error).message}:reason:`);
         } finally {
             this.busy = false;
         }

@@ -76,7 +76,10 @@ export class RemoveFromIndexDialog {
                 this.api.removeFromIndex(this.path(), this.excluding()),
             );
             if (!('files' in result)) {
-                this.toasts.error('A scan is running: try again when it has finished.');
+                this.toasts.error(
+                    $localize`Could not remove ${this.nameOf(this.path())}:name: from the index: a scan is running. \
+Try again when it has finished.`,
+                );
                 return;
             }
             this.sheet().close();
@@ -84,12 +87,21 @@ export class RemoveFromIndexDialog {
             // Search results may have lost files; a folder listing comes from the disk and is unchanged.
             if (this.store.route().q) void this.store.load();
         } catch (error) {
-            this.toasts.error(`Could not remove the folder: ${(error as Error).message}`);
+            const reason = (error as Error).message;
+            this.toasts.error(
+                $localize`Could not remove ${this.nameOf(this.path())}:name: from the index: ${reason}:reason:`,
+            );
         }
+    }
+
+    /** The folder quoted, or "the library" for its top. */
+    private nameOf(path: string): string {
+        return path ? `“${path}”` : $localize`:in a sentence:the library`;
     }
 
     private message(result: RemovedFromIndex): string {
         const name = result.path ? `“${result.path}”` : $localize`:start of a sentence:The library`;
+
         const values = { name, count: result.files, skipped: result.excluded ? 'yes' : 'no' };
         return result.files || result.directories
             ? icu(

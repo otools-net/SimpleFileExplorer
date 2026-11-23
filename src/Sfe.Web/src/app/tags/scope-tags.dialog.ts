@@ -26,6 +26,7 @@ import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { SheetComponent } from '../shared/sheet.component';
 import { TagChipComponent } from './tag-chip.component';
 import { TagOption, TagPickerComponent } from './tag-picker.component';
+import { scanRunning, tagCreated } from './tags';
 
 /** A change waiting for the user's confirmation: a tag to add (`create`: a new tag, made on confirming) or remove. */
 interface PendingChange {
@@ -203,7 +204,7 @@ export class ScopeTagsDialog {
                 let tag = pending.tag;
                 if (!tag) {
                     tag = await this.api.createTag({ name: pending.create! });
-                    this.toasts.show(`Tag “${tag.name}” created.`);
+                    this.toasts.show(tagCreated(tag.name));
                     this.pendingDefault.set({ ...pending, tag });
                 }
                 const id = tag.id;
@@ -213,7 +214,8 @@ export class ScopeTagsDialog {
                         : { path, add: [id], addToFiles: toFiles },
                 );
                 if (!('defaults' in result)) {
-                    this.toasts.error(result.detail ?? 'A scan is running: try again when it has finished.');
+                    const reason = result.detail ?? scanRunning();
+                    this.toasts.error($localize`Could not change the default tags: ${reason}:reason:`);
                     return;
                 }
                 this.defaults.set(result.defaults);
@@ -230,7 +232,7 @@ export class ScopeTagsDialog {
                 if (files) await this.load();
             });
         } catch (error) {
-            this.toasts.error(`Could not change the default tags: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not change the default tags: ${(error as Error).message}:reason:`);
         }
     }
 
@@ -263,14 +265,14 @@ export class ScopeTagsDialog {
                 let tag = pending.tag;
                 if (!tag) {
                     tag = await this.api.createTag({ name: pending.create! });
-                    this.toasts.show(`Tag “${tag.name}” created.`);
+                    this.toasts.show(tagCreated(tag.name));
                     this.pending.set({ ...pending, tag });
                 }
                 const id = tag.id;
                 const change = { ...scope, ...(pending.remove ? { remove: [id] } : { add: [id] }) };
                 const result = await this.api.changeScopeTags(change, this.connection());
                 if (!('files' in result)) {
-                    this.toasts.error(result.detail ?? 'A scan is running: try again when it has finished.');
+                    this.toasts.error($localize`Could not change the tags: ${result.detail ?? scanRunning()}:reason:`);
                     return;
                 }
                 this.toasts.show(
@@ -281,7 +283,7 @@ export class ScopeTagsDialog {
                 await this.load();
             });
         } catch (error) {
-            this.toasts.error(`Could not change the tags: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not change the tags: ${(error as Error).message}:reason:`);
         }
     }
 

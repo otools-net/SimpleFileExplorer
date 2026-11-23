@@ -245,7 +245,14 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     `quoted()`; `i18n-*` kept on their attribute's line (template within its 403-line baseline); component 928 → 888.
   **2.8 split** (2026-11-22: ~200 toast calls and ~40 confirms in the client; `RightCatalog` 650 lines; ~470 sentence
   strings in `Sfe.Api`/`Sfe.Core`, most not shown to users):
-  - [ ] **2.8a toasts and confirms** (every `ToastService` call, toast action, `confirm`/`prompt` of the client).
+  - [x] **2.8a toasts and confirms** (every `ToastService` call, toast action, `confirm`/`prompt` of the client).
+    Done 2026-11-23: every toast, toast action, `confirm` and `prompt` marked (`$localize`, `icu()` for counts) and
+    rewritten: success "… saved." / "… is in the trash.", errors "Could not *verb* *object*: reason" with the thing
+    named, questions saying what happens; whole messages in the areas' texts files where they choose between
+    sentences (`settings-texts.ts`, `scan-texts.ts`, `tracking-texts.ts`'s `removedText` / `notPutBack`, …), pure
+    functions with specs; `CANVAS_REFUSED` marked. Readability baselines raised by the added lines:
+    `image-editor.dialog.ts` 445 → 449, `file-transfers.ts` 467 → 469, `item-menu.ts` 530 → 534, `listing.store.ts`
+    622 → 626, `viewer.component.ts` 824 → 827.
   - [ ] **2.8b rights' names and descriptions** (`RightCatalog` and the other right lists; keys unchanged).
   - [ ] **2.8c problem details and other server texts users see** (checked against the glossary and style; strings
     the client or tests compare and problem `type` words unchanged).

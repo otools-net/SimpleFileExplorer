@@ -10,6 +10,7 @@ import { ListingStore } from '../library/listing.store';
 import { SheetComponent } from '../shared/sheet.component';
 import { TagChipComponent } from './tag-chip.component';
 import { TagOption, TagPickerComponent } from './tag-picker.component';
+import { tagCreated } from './tags';
 
 /**
  * The tags of a file, grouped by category: add (or create), remove, or edit them, each with its right (only seen
@@ -44,7 +45,7 @@ export class FileTagsDialog {
     protected readonly excluded = () => new Set(this.current()?.tags.map((tag) => tag.id));
     protected readonly add = async (option: TagOption) => {
         const tag = option.create ? await this.api.createTag({ name: option.create }) : option.tag!;
-        if (option.create) this.toasts.show(`Tag “${tag.name}” created.`);
+        if (option.create) this.toasts.show(tagCreated(tag.name));
         await this.change({ add: [tag.id] });
     };
 
@@ -63,7 +64,9 @@ export class FileTagsDialog {
     }
 
     protected remove(tag: TagSummary): void {
-        this.change({ remove: [tag.id] }).catch((error: Error) => this.toasts.error(error.message));
+        this.change({ remove: [tag.id] }).catch((error: Error) =>
+            this.toasts.error($localize`Could not remove the tag “${tag.displayName}:tag:”: ${error.message}:reason:`),
+        );
     }
 
     protected async edit(tag: TagSummary): Promise<void> {
@@ -81,7 +84,7 @@ export class FileTagsDialog {
         try {
             this.current.set(await this.api.fileTags(this.path, this.connection));
         } catch (error) {
-            this.toasts.error(`Could not load the tags: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not load the tags: ${(error as Error).message}:reason:`);
         }
     }
 }

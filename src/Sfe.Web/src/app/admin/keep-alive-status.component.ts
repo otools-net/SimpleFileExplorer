@@ -100,7 +100,7 @@ export class KeepAliveStatusComponent {
             this.view.set(await whileBusy(this.pinging, () => this.api.pingKeepAlive()));
             this.error.set(null);
         } catch (error) {
-            this.toasts.error(`Could not ping: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not ping the network folders: ${(error as Error).message}:reason:`);
         }
     }
 

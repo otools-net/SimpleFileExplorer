@@ -50,3 +50,16 @@ export function exclusionTitle(excluded: FolderExclusions | null | undefined, pa
     );
     return `${sentence} ${where}`;
 }
+
+/** The toast after a folder's exclusions are saved: what it is kept out of now (`name`: quoted), or nothing. */
+export function exclusionsSaved(state: FolderExclusions, name: string): string {
+    const kept = [
+        state.scan ? $localize`scans` : null,
+        state.trickplay ? $localize`trickplay` : null,
+        state.thumbnails ? $localize`thumbnails` : null,
+    ].filter((part) => part !== null);
+    const list = new Intl.ListFormat(textLocale(), { type: 'conjunction' }).format(kept);
+    return kept.length
+        ? $localize`${name}:name: is kept out of ${list}:list:.`
+        : $localize`${name}:name: is no longer excluded.`;
+}

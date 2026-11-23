@@ -210,12 +210,15 @@ export class ListingStore {
         const item = this.items().find((candidate) => candidate.path === path);
         if (generation !== this.generation()) return;
         if (!item) {
+            const name = baseName(path);
+            const limit = REVEAL_LIMIT.toLocaleString();
             this.toasts.show(
                 this.hasMore()
-                    ? `“${baseName(path)}” is not among the first ${REVEAL_LIMIT.toLocaleString()} items of this ` +
-                          `folder: scroll down to find it.`
-                    : `“${baseName(path)}” is not in this folder any more.`,
+                    ? $localize`“${name}:name:” is not among the first ${limit}:limit: items of this folder. \
+Scroll down to find it.`
+                    : $localize`“${name}:name:” is not in this folder any more.`,
             );
+
             return;
         }
         this.highlight(path, () => {
@@ -254,7 +257,8 @@ export class ListingStore {
             })
             .catch((error: Error) => {
                 if (generation !== this.generation()) return false; // cancelled by navigating away
-                this.toasts.error(`Could not load more items: ${error.message}`);
+                this.toasts.error($localize`Could not load more items: ${error.message}:reason:`);
+
                 this.hasMore.set(false);
                 return false;
             })

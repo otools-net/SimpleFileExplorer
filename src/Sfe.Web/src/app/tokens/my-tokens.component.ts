@@ -51,23 +51,29 @@ export class MyTokensComponent {
     }
 
     protected async revoke(token: AccessTokenInfo): Promise<void> {
-        if (!confirm(`Revoke “${token.name}”? The programs using it are refused from now on.`)) return;
+        const name = token.name;
+        const question = $localize`Revoke the token “${name}:name:”? The programs using it are refused from now on. \
+This cannot be undone.`;
+        if (!confirm(question)) return;
         try {
             await this.api.revokeToken(token.id);
-            this.toasts.show(`“${token.name}” revoked.`);
+            this.toasts.show($localize`Token “${name}:name:” revoked.`);
         } catch (error) {
-            this.toasts.error(`Could not revoke “${token.name}”: ${(error as Error).message}`);
+            const reason = (error as Error).message;
+            this.toasts.error($localize`Could not revoke the token “${name}:name:”: ${reason}:reason:`);
         }
         await this.load();
     }
 
     protected async revokeAll(): Promise<void> {
-        if (!confirm('Revoke all your tokens? Every program using one is refused from now on.')) return;
+        const question = $localize`Revoke all your tokens? Every program using one is refused from now on. \
+This cannot be undone.`;
+        if (!confirm(question)) return;
         try {
             const { revoked } = await this.api.revokeAllTokens();
             this.toasts.show(icu($localize`{revoked, plural, one {# token} other {# tokens}} revoked.`, { revoked }));
         } catch (error) {
-            this.toasts.error(`Could not revoke your tokens: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not revoke your tokens: ${(error as Error).message}:reason:`);
         }
         await this.load();
     }

@@ -86,12 +86,14 @@ export class MissingPanelComponent {
         try {
             await this.api.relinkMissingFile(item.id, path);
             this.changed.emit();
-            this.toasts.show(`Tags of “${item.name}” moved to “${path}”.`);
+            this.toasts.show($localize`The tags of “${item.name}:name:” moved to “${path}:path:”.`);
             this.removeItem(item);
         } catch (error) {
             const gone = error instanceof ApiError && error.status === 404;
             this.toasts.error(
-                gone ? 'This file was already relinked or forgotten.' : `Could not relink: ${(error as Error).message}`,
+                gone
+                    ? $localize`This file was already relinked or forgotten.`
+                    : $localize`Could not relink “${item.name}:name:”: ${(error as Error).message}:reason:`,
             );
             if (gone) this.removeItem(item);
         } finally {
@@ -100,18 +102,21 @@ export class MissingPanelComponent {
     }
 
     protected choose(item: MissingFileInfo): void {
-        const path = prompt(`Give the tags of “${item.name}” to which file? Path from the library root:`, item.path);
+        const question = $localize`Which file gets the tags of “${item.name}:name:”? \
+Type its path from the top of the library.`;
+        const path = prompt(question, item.path);
         if (path?.trim()) void this.relink(item, path.trim().replace(/^\/+/, ''), 'choose');
     }
 
     protected async forget(item: MissingFileInfo): Promise<void> {
-        if (!confirm(`Forget “${item.name}” and its tags?`)) return;
+        if (!confirm($localize`Forget “${item.name}:name:” and its tags?`)) return;
         this.busy.set(`${item.id}:forget`);
         try {
             await this.api.forgetMissingFiles(item.id);
         } catch (error) {
             if (!(error instanceof ApiError && error.status === 404)) {
-                this.toasts.error(`Could not forget it: ${(error as Error).message}`);
+                const reason = (error as Error).message;
+                this.toasts.error($localize`Could not forget “${item.name}:name:”: ${reason}:reason:`);
                 return;
             }
         } finally {
@@ -134,7 +139,7 @@ export class MissingPanelComponent {
                     : $localize`No missing file has a single likely new place.`,
             );
         } catch (error) {
-            this.toasts.error(`Could not relink: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not relink the missing files: ${(error as Error).message}:reason:`);
         }
         void this.load();
     }
@@ -149,7 +154,7 @@ other {Forget all # missing files and their tags?}}`,
         try {
             await whileBusy(this.forgettingAll, () => this.api.forgetMissingFiles());
         } catch (error) {
-            this.toasts.error(`Could not forget them: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not forget the missing files: ${(error as Error).message}:reason:`);
         }
         void this.load();
     }

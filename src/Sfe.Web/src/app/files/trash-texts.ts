@@ -65,6 +65,30 @@ export function openFolderInTabHint(folder: string): string {
         : $localize`Open the top of the library in a new tab.`;
 }
 
+/** The toast after Restore: the item back where it was, or under another name (`path`) when its name was taken. */
+export function restoredText(name: string, path: string | null): string {
+    return path
+        ? $localize`“${name}:name:” restored as “${path}:path:”.`
+        : $localize`“${name}:name:” restored.`;
+}
+
+/** Restore refused or failed, with the reason when there is one. */
+export function notRestored(name: string, reason?: string | null): string {
+    return reason
+        ? $localize`Could not restore “${name}:name:”: ${reason}:reason:`
+        : $localize`Could not restore “${name}:name:”.`;
+}
+
+/** The question before deleting one entry for good. */
+export function purgeQuestion(name: string): string {
+    return $localize`Delete “${name}:name:” for good? This can't be undone.`;
+}
+
+/** The question before emptying the trash. */
+export function emptyQuestion(): string {
+    return $localize`Delete for good everything in the trash that you may delete? This can't be undone.`;
+}
+
 /** The toast after emptying the trash. */
 export function purgedText(count: number): string {
     return icu($localize`{count, plural, one {# item deleted for good.} other {# items deleted for good.}}`, { count });

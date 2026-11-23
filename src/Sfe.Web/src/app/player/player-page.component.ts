@@ -145,16 +145,16 @@ export class PlayerPageComponent implements OnInit {
                 new URL(this.urls()!.player(this.path, Math.floor(this.player()?.currentTime() ?? 0)), document.baseURI)
                     .href,
             );
-            this.toasts.show('Link copied.');
+            this.toasts.show($localize`Link copied.`);
         } catch {
-            this.toasts.show('The link could not be copied.', { error: true });
+            this.toasts.show($localize`Could not copy the link.`, { error: true });
         }
     }
 
     protected openExternal(): void {
         this.config
             .openExternal(this.path)
-            .catch((error: Error) => this.toasts.error(`Could not open the video: ${error.message}`));
+            .catch((error: Error) => this.toasts.error($localize`Could not open the video: ${error.message}:reason:`));
     }
 
     /**

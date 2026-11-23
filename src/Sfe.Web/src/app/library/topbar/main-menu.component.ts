@@ -124,7 +124,7 @@ export class MainMenuComponent {
             this.configService.clear();
             await this.router.navigate(['/login']);
         } catch (error) {
-            this.toasts.error(`Could not sign out: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not sign out: ${(error as Error).message}:reason:`);
         }
     };
 
@@ -141,7 +141,7 @@ export class MainMenuComponent {
             await this.api.switchTenant(slug);
             window.location.assign(document.baseURI);
         } catch (error) {
-            this.toasts.error(`Could not switch the space: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not switch to another space: ${(error as Error).message}:reason:`);
         }
     }
 }

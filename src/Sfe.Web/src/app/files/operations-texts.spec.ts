@@ -104,9 +104,9 @@ describe('the texts of the operations panel', () => {
         expect(transferredToast('move', 2, '“Holidays”')).toBe('2 items moved to “Holidays”.');
         expect(stoppedToast('copy', 0, '“Holidays”')).toBe('Stopped. Nothing was copied to “Holidays”.');
         expect(stoppedToast('move', 1, '“Holidays”')).toBe('Stopped. 1 item was moved to “Holidays” before.');
-        expect(notDoneToast('move', [{ path: 'a/clip.mp4' }])).toBe('“clip.mp4” could not be moved.');
+        expect(notDoneToast('move', [{ path: 'a/clip.mp4' }])).toBe('Could not move “clip.mp4”.');
         expect(notDoneToast('copy', [{ path: 'a', message: 'It is in use.' }, { path: 'b' }])).toBe(
-            '2 items could not be copied. It is in use.',
+            'Could not copy 2 items. It is in use.',
         );
         expect(couldNotStart('retry', 'Gone.')).toBe('Could not try again: Gone.');
         expect(takenToast('move', ['a', 'b'], '“Saved”')).toBe(

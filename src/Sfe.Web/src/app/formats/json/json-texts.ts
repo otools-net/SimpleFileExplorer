@@ -25,6 +25,9 @@ export const jsonTexts = {
         expanded ? $localize`:close a JSON member:Close` : $localize`:open a JSON member:Open`,
     /** The tree's name for screen readers. */
     members: (name: string) => $localize`Members of “${name}:name:”`,
+    /** The toasts of Copy path and Copy value, naming the member by its path. */
+    pathCopied: (path: string) => $localize`Path “${path}:path:” copied.`,
+    valueCopied: (path: string) => $localize`Value of “${path}:path:” copied.`,
     /** What the strict parse calls a file with comments or trailing commas (the status bar). */
     kind: (strict: boolean) => (strict ? 'JSON' : $localize`JSON with comments`),
 };

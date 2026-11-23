@@ -231,7 +231,9 @@ describe('ScopeTagsDialog', () => {
         buttonNamed(confirmBox()!, 'Add tag')!.click();
         await settle();
 
-        expect(error).toHaveBeenCalledWith('A scan is running: try again when it has finished.');
+        expect(error).toHaveBeenCalledWith(
+            'Could not change the tags: A scan is running: try again when it has finished.',
+        );
         expect(confirmBox()).not.toBeNull();
     });
 
@@ -346,7 +348,9 @@ describe('ScopeTagsDialog', () => {
             buttonNamed(defaultConfirm()!, 'Existing files too')!.click();
             await settle();
 
-            expect(error).toHaveBeenCalledWith('A scan is running: try again when it has finished.');
+            expect(error).toHaveBeenCalledWith(
+                'Could not change the default tags: A scan is running: try again when it has finished.',
+            );
             expect(defaultConfirm()).not.toBeNull();
         });
 

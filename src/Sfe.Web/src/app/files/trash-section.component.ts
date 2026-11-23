@@ -6,10 +6,14 @@ import { isFileConflict } from '../core/models';
 import { TrashItem } from './file.models';
 import {
     describeTrashed,
+    emptyQuestion,
+    notRestored,
     openFolderHint,
     openFolderInTabHint,
     purgedText,
     purgeHint,
+    purgeQuestion,
+    restoredText,
     restoreHint,
     trashIntro,
 } from './trash-texts';
@@ -67,7 +71,7 @@ export class TrashSectionComponent implements OnInit {
             this.next.set(page.hasMore ? page.next : null);
             this.retention.set(page.retentionDays);
         } catch (error) {
-            this.toasts.error(`Could not read the trash: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not read the trash: ${(error as Error).message}:reason:`);
         } finally {
             this.loading.set(false);
         }
@@ -81,7 +85,7 @@ export class TrashSectionComponent implements OnInit {
             this.items.update((items) => [...items, ...page.items]);
             this.next.set(page.hasMore ? page.next : null);
         } catch (error) {
-            this.toasts.error(`Could not read the trash: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not read more of the trash: ${(error as Error).message}:reason:`);
         }
     }
 
@@ -147,41 +151,41 @@ export class TrashSectionComponent implements OnInit {
         try {
             const result = await this.api.restoreFromTrash(item.id);
             if (isFileConflict(result)) {
-                this.toasts.error(result.detail ?? `“${item.name}” could not be restored.`);
+                this.toasts.error(notRestored(item.name, result.detail));
                 return;
             }
             this.remove(item.id);
-            this.toasts.show(
-                result.path === item.path ? `“${item.name}” is back.` : `“${item.name}” is back, as “${result.path}”.`,
-            );
+            this.toasts.show(restoredText(item.name, result.path === item.path ? null : result.path));
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            this.toasts.error(notRestored(item.name, (error as Error).message));
         } finally {
             this.busy.set(null);
         }
     }
 
     protected async purge(item: TrashItem): Promise<void> {
-        if (!confirm(`Delete “${item.name}” for good? This can't be undone.`)) return;
+        if (!confirm(purgeQuestion(item.name))) return;
         this.busy.set(`${item.id}:purge`);
         try {
             await this.api.purgeFromTrash(item.id);
             this.remove(item.id);
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            const reason = (error as Error).message;
+            this.toasts.error($localize`Could not delete “${item.name}:name:” for good: ${reason}:reason:`);
         } finally {
             this.busy.set(null);
         }
     }
 
     protected async empty(): Promise<void> {
-        if (!confirm("Delete for good everything of the trash you may? This can't be undone.")) return;
+        if (!confirm(emptyQuestion())) return;
         try {
             const result = await whileBusy(this.emptying, () => this.api.emptyTrash());
             this.toasts.show(purgedText(result.purged));
             await this.load();
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            this.toasts.error($localize`Could not empty the trash: ${(error as Error).message}:reason:`);
+
         }
     }
 

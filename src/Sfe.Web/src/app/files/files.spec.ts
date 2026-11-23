@@ -515,7 +515,7 @@ describe('ItemMenu', () => {
             await settle();
             expect(TestBed.inject(ContextMenu).open()).toBeNull();
             expect(toasts.toasts().map((toast) => toast.message)).toEqual([
-                'beach.jpg is no longer in this folder: it was moved or deleted elsewhere.',
+                '“beach.jpg” is no longer in this folder. It was moved or deleted elsewhere.',
             ]);
         },
     );

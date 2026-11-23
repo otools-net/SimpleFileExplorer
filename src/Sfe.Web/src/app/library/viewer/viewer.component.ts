@@ -348,9 +348,9 @@ export class ViewerComponent {
                 new URL(this.urls()!.player(item.path, Math.floor(this.player()?.currentTime() ?? 0)), document.baseURI)
                     .href,
             );
-            this.toasts.show('Link copied.');
+            this.toasts.show($localize`Link copied.`);
         } catch {
-            this.toasts.show('The link could not be copied.', { error: true });
+            this.toasts.show($localize`Could not copy the link.`, { error: true });
         }
     }
 
@@ -701,7 +701,10 @@ export class ViewerComponent {
             this.config
                 .openExternal(item.path)
                 .catch((error: Error) =>
-                    this.toasts.error(`Could not open it in ${this.urls()?.externalName}: ${error.message}`),
+                    this.toasts.error(
+                        $localize`Could not open “${item.name}:name:” in ${this.urls()?.externalName}:player:: \
+${error.message}:reason:`,
+                    ),
                 );
     }
 

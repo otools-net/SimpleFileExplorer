@@ -97,7 +97,7 @@ export class SimilarPanelComponent {
             if (current !== this.generation) return;
             if (append) {
                 // The page of an older comparison: start over with the new one.
-                this.toasts.error(`Could not load more: ${(error as Error).message}`);
+                this.toasts.error($localize`Could not load more similar videos: ${(error as Error).message}:reason:`);
                 void this.load();
                 return;
             }
@@ -116,7 +116,7 @@ export class SimilarPanelComponent {
         try {
             await whileBusy(this.comparing, () => this.api.compareVideos());
         } catch (error) {
-            this.toasts.error(`Could not compare the videos: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not compare the videos: ${(error as Error).message}:reason:`);
         }
         void this.load({ quiet: true });
     }

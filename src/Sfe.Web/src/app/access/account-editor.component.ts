@@ -195,7 +195,9 @@ export class AccountEditorComponent {
                 draft.id === null ? await this.api.createUser(input) : await this.api.updateUser(draft.id, input);
             this.sheet().close();
             this.toasts.show(
-                draft.id === null ? `Account ${input.userName} created.` : `Account ${input.userName} saved.`,
+                draft.id === null
+                    ? $localize`Account “${input.userName}:name:” created.`
+                    : $localize`Account “${input.userName}:name:” saved.`,
             );
             this.saved.emit(user);
         } catch (error) {

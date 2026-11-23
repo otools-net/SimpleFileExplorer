@@ -160,13 +160,15 @@ export class SpaceDetailComponent {
 
     protected async remove(user: UserInfo): Promise<void> {
         const deletes = this.deletes(user);
+        const name = user.userName;
+        const space = this.space().name;
         if (
             !confirm(
                 deletes
-                    ? `Delete the account ${user.userName}? It is in no other space. Its preferences go with it; ` +
-                          `the tags it set stay.`
-                    : `Take ${user.userName} out of ${this.space().name}? The account stays, ` +
-                          `and keeps its other spaces.`,
+                    ? $localize`Delete the account “${name}:name:”? It is in no other space. \
+Its preferences go with it; the tags it set stay. This cannot be undone.`
+                    : $localize`Take “${name}:name:” out of “${space}:space:”? \
+The account stays, and keeps its other spaces.`,
             )
         )
             return;
@@ -182,29 +184,35 @@ export class SpaceDetailComponent {
             else await this.api.deleteUser(user.id);
             this.toasts.show(
                 deletes
-                    ? `Account ${user.userName} deleted.`
-                    : `${user.userName} is no longer in ${this.space().name}.`,
+                    ? $localize`Account “${name}:name:” deleted.`
+                    : $localize`“${name}:name:” is no longer in “${space}:space:”.`,
             );
             await this.load();
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            const reason = (error as Error).message;
+            this.toasts.error(
+                deletes
+                    ? $localize`Could not delete the account “${name}:name:”: ${reason}:reason:`
+                    : $localize`Could not take “${name}:name:” out of “${space}:space:”: ${reason}:reason:`,
+            );
         }
     }
 
     protected async removeGroup(group: GroupInfo): Promise<void> {
         if (
             !confirm(
-                `Delete the group ${group.name}? Its members lose the rights it gave them; ` +
-                    `an account in no other group here loses access to ${this.space().name}.`,
+                $localize`Delete the group “${group.name}:name:”? Its members lose the rights it gave them; \
+an account in no other group here loses access to “${this.space().name}:space:”. This cannot be undone.`,
             )
         )
             return;
         try {
             await this.api.deleteGroup(group.id, this.tenantParam());
-            this.toasts.show(`Group ${group.name} deleted.`);
+            this.toasts.show($localize`Group “${group.name}:name:” deleted.`);
             await this.load();
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            const reason = (error as Error).message;
+            this.toasts.error($localize`Could not delete the group “${group.name}:name:”: ${reason}:reason:`);
         }
     }
 
@@ -220,10 +228,16 @@ export class SpaceDetailComponent {
                 user.id,
                 this.inputOf(user, [...user.groups.map((group) => group.groupId), usersGroup.id]),
             );
-            this.toasts.show(`${user.userName} is now in ${this.space().name}, in the group ${usersGroup.name}.`);
+            this.toasts.show(
+                $localize`“${user.userName}:name:” is now in “${this.space().name}:space:”, \
+in the group “${usersGroup.name}:group:”.`,
+            );
             await this.load();
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            const reason = (error as Error).message;
+            this.toasts.error(
+                $localize`Could not add “${user.userName}:name:” to “${this.space().name}:space:”: ${reason}:reason:`,
+            );
         }
     }
 
@@ -242,11 +256,11 @@ export class SpaceDetailComponent {
             this.changed.emit({ ...space, guestAccess: open });
             this.toasts.show(
                 open
-                    ? `Visitors without an account may browse ${space.name}.`
-                    : `Only accounts may open ${space.name} now.`,
+                    ? $localize`Visitors without an account may now browse “${space.name}:space:”.`
+                    : $localize`Only accounts may open “${space.name}:space:” now.`,
             );
         } catch (error) {
-            this.toasts.error(`Could not change the visitors' access: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not change the visitors' access: ${(error as Error).message}:reason:`);
         } finally {
             this.busy.set(false);
         }

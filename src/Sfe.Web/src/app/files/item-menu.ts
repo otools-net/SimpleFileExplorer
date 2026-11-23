@@ -27,6 +27,7 @@ import { FileActions } from './file-actions';
 import { extractEachTitle, stemOf } from './extract.dialog';
 import { partialEntries } from './partial-files';
 import { FileTransfers, pasteTitle } from './file-transfers';
+import { quoted } from './file-dialog-texts';
 
 /** One entry of an item's menu: always an action. */
 export interface ItemMenuEntry extends MenuEntry {
@@ -105,7 +106,10 @@ export class ItemMenu {
                 if (!listed) {
                     watched = null;
                     this.menu.close();
-                    this.toasts.show(`${item.name} is no longer in this folder: it was moved or deleted elsewhere.`);
+                    this.toasts.show(
+                        $localize`${quoted(item.name)}:name: is no longer in this folder. \
+It was moved or deleted elsewhere.`,
+                    );
                 }
             });
         });

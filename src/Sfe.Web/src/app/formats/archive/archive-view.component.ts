@@ -373,7 +373,7 @@ export class ArchiveViewComponent {
         } catch (error) {
             if (abort.signal.aborted) return;
             this.found.update((found) => found && { ...found, next: null, searching: false });
-            this.toasts.error(error instanceof Error ? error.message : String(error));
+            this.toasts.error(archiveTexts.searchFailed(error instanceof Error ? error.message : String(error)));
         }
     }
 
@@ -520,7 +520,7 @@ export class ArchiveViewComponent {
             this.components.delete(place.id);
             if (this.viewing() === viewing) {
                 this.viewing.set(null);
-                this.toasts.error('This viewer could not be loaded: reload the page to try again.');
+                this.toasts.error(archiveTexts.viewerNotLoaded());
             }
         }
     }

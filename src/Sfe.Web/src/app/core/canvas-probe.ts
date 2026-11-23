@@ -20,10 +20,11 @@ const PROBE_SIZE = 32;
 /** How long the explanation stays: it is long. */
 const REFUSED_TIMEOUT_MS = 15000;
 
-export const CANVAS_REFUSED =
-    'This browser does not let the page read the pictures it draws, which editing a picture and saving a video ' +
-    'frame need. Firefox does this when privacy.resistFingerprinting is on: allow the permission it asks for ' +
-    '(the picture icon in the address bar), then try again.';
+export const CANVAS_REFUSED = $localize`Could not read the picture drawn: this browser does not let the page read \
+the pictures it draws, which editing a picture and saving a video frame need. Firefox does this when \
+privacy.resistFingerprinting is on. Allow the permission it asks for (the picture icon in the address bar), \
+then try again.`;
+
 
 /** Draws a known colour and reads it back; false when the browser refuses, changes it or has no 2D canvas. */
 export function canvasReadable(): boolean {

@@ -36,9 +36,10 @@ export class CopyPathService {
         try {
             await copyText(text);
             this.copiedPaths.update((paths) => new Set(paths).add(path));
-            this.toasts.show(`Copied ${text}`);
+            this.toasts.show($localize`“${text}:path:” copied.`);
         } catch {
-            this.toasts.error(`Could not copy ${text}`);
+            this.toasts.error($localize`Could not copy “${text}:path:”: the browser refused.`);
+
         }
     }
 }

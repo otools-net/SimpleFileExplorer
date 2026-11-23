@@ -7,6 +7,7 @@ import { ScanStatus } from '../library.models';
 import { readPreference, writePreference } from '../../core/preferences';
 import { ToastService } from '../../core/toast.service';
 import { ListingStore } from '../listing.store';
+import { excludedFromScans, otherScanRunning, scanName, scanQuestion } from './scan-texts';
 
 const DISMISSED_KEY = 'sfe.scan.dismissed';
 
@@ -91,61 +92,42 @@ export class ScanService {
     async start(): Promise<void> {
         if (this.busy()) return;
         const path = this.store.route().path;
-        const name = path ? `“${path}”` : `the whole library (${this.config.value.rootName})`;
+        const name = scanName(path, this.config.value.rootName);
         // A folder kept out of scans: nothing to do there (the server refuses it too).
         const listing = this.store.listing();
         const through = listing && !this.store.searching() && 'exclusions' in listing ? listing.exclusions?.scan : null;
         if (through) {
-            this.toasts.show(
-                through === listing!.path
-                    ? `${name} is excluded from scans: what the index has of it stays as it is.`
-                    : `${name} is inside “${through}”, which is excluded from scans.`,
-            );
+            this.toasts.show(excludedFromScans(name, through, through === listing!.path));
             return;
         }
-        if (
-            !confirm(
-                `Scan ${name} and all its sub-folders?\n\nThe search index is updated in the background. ` +
-                    `This can take a while on large folders.${this.skippedNote()}`,
-            )
-        )
-            return;
+        if (!confirm(scanQuestion(name, this.skipped()))) return;
 
         this.starting.set(true);
         try {
             const status = await this.api.startScan(path);
             if (status.state === 'running' && (status.path ?? '') !== path)
-                this.toasts.show(`Another scan is already running (${status.path || 'library'}).`);
+                this.toasts.show(otherScanRunning(name, status.path ?? ''));
             this.status.set(status);
             void this.poll();
         } catch (error) {
-            this.toasts.error(`Scan failed to start: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not start the scan: ${(error as Error).message}:reason:`);
         } finally {
             this.starting.set(false);
         }
     }
 
-    /** The folders listed here that scans skip, for the confirmation: '' when none. */
-    private skippedNote(): string {
-        const skipped = this.store.searching()
+    /** The folders listed here that scans skip, quoted, for the confirmation. */
+    private skipped(): string[] {
+        return this.store.searching()
             ? []
             : this.store
                   .items()
                   .filter((item) => item.kind === 'directory' && item.excluded?.scan)
                   .map((item) => `“${item.name}”`);
-        if (!skipped.length) return '';
-        const names =
-            skipped.length > 3
-                ? `${skipped.slice(0, 3).join(', ')} and ${skipped.length - 3} more`
-                : skipped.join(', ');
-        return (
-            `\n\nExcluded from scans: ${names}. ${skipped.length === 1 ? 'It is' : 'They are'} skipped, ` +
-            `and what the index has of ${skipped.length === 1 ? 'it' : 'them'} stays as it is.`
-        );
     }
 
     async cancel(): Promise<void> {
-        if (!confirm('Cancel the scan? Folders already scanned stay indexed.')) return;
+        if (!confirm($localize`Cancel the scan? Folders already scanned stay indexed.`)) return;
         await this.api.cancelScan().catch(() => {});
         void this.poll();
     }
@@ -165,9 +147,12 @@ export class ScanService {
             this.status.set(status);
             if (status.state === 'running') this.later(() => this.poll(), 1000);
             else if (wasRunning && status.state === 'completed')
-                this.toasts.show(`Index updated: ${describeScan(status)}`);
+                this.toasts.show($localize`Index updated: ${describeScan(status)}:counts:`);
         } catch (error) {
-            if (!quiet) this.toasts.error(`Cannot read scan status: ${(error as Error).message}`);
+            const reason = (error as Error).message;
+            if (!quiet) this.toasts.error($localize`Could not read the scan's progress: ${reason}:reason:`);
+
+
             // Keep watching a running scan through a hiccup (e.g. the server restarting).
             if (wasRunning) this.later(() => this.poll({ quiet: true }), 5000);
         }

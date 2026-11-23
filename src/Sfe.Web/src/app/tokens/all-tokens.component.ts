@@ -71,13 +71,15 @@ export class AllTokensComponent {
     }
 
     protected async revoke(token: AccessTokenInfo): Promise<void> {
-        const question = `Revoke “${token.name}” of ${token.userName}? The programs using it are refused from now on.`;
+        const question = $localize`Revoke the token “${token.name}:name:” of “${token.userName}:account:”? \
+The programs using it are refused from now on. This cannot be undone.`;
         if (!confirm(question)) return;
         try {
             await this.api.revokeAnyToken(token.id);
-            this.toasts.show(`“${token.name}” revoked.`);
+            this.toasts.show($localize`Token “${token.name}:name:” revoked.`);
         } catch (error) {
-            this.toasts.error(`Could not revoke “${token.name}”: ${(error as Error).message}`);
+            const reason = (error as Error).message;
+            this.toasts.error($localize`Could not revoke the token “${token.name}:name:”: ${reason}:reason:`);
         }
         await this.load();
     }

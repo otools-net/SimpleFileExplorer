@@ -317,6 +317,10 @@ to keep them at hand.`;
 
     /** A gone target stays listed (it may come back): the user removes it. */
     private notFound(link: QuickLink): void {
-        this.toasts.show(`“${link.name}” is not there any more (moved, renamed or deleted). Remove its link with ×.`);
+        this.toasts.show(
+            $localize`“${link.name}:name:” is not there any more: it was moved, renamed or deleted. \
+Remove its link with ×.`,
+        );
+
     }
 }

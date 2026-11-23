@@ -347,7 +347,7 @@ describe('TagEditorDialog', () => {
 
             expect(ask).toHaveBeenCalledWith(
                 "Delete the tag “Cat (Ani)”? It is removed from 3 library files and from the connections' files " +
-                    'that have it.',
+                    'that have it. This cannot be undone.',
             );
             expect(api.deleteTag).toHaveBeenCalledWith(details.id);
             expect(deleted).toHaveBeenCalledWith(details.id);
@@ -362,7 +362,8 @@ describe('TagEditorDialog', () => {
             await settle();
 
             expect(ask).toHaveBeenCalledWith(
-                "Delete the tag “Unused”? It is removed from the connections' files that have it.",
+                "Delete the tag “Unused”? It is removed from the connections' files that have it. " +
+                    'This cannot be undone.',
             );
             expect(api.deleteTag).not.toHaveBeenCalled();
             expect(dialog().open).toBe(true);

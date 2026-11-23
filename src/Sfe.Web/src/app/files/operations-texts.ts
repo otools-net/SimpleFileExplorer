@@ -180,13 +180,13 @@ export function notDoneToast(kind: FileJobKind, failed: readonly { path: string;
     const first =
         failed[0].message ??
         (kind === 'move'
-            ? $localize`${quoted(baseName(failed[0].path))}:name: could not be moved.`
-            : $localize`${quoted(baseName(failed[0].path))}:name: could not be copied.`);
+            ? $localize`Could not move ${quoted(baseName(failed[0].path))}:name:.`
+            : $localize`Could not copy ${quoted(baseName(failed[0].path))}:name:.`);
     if (failed.length === 1) return first;
     const count = icu(
         $localize`{kind, select, \
-move {{count, plural, other {# items could not be moved.}}} \
-other {{count, plural, other {# items could not be copied.}}}}`,
+move {{count, plural, one {Could not move # item.} other {Could not move # items.}}} \
+other {{count, plural, one {Could not copy # item.} other {Could not copy # items.}}}}`,
         { kind, count: failed.length },
     );
     return `${count} ${first}`;

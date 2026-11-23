@@ -6,7 +6,7 @@ import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { BusyDirective } from '../shared/busy.directive';
 import { SheetComponent } from '../shared/sheet.component';
-import { leftOut, namesNotBack, renamedToast, selectedCount } from './file-dialog-texts';
+import { leftOut, namesNotBack, renamedToast, selectedCount, undoRenameHint } from './file-dialog-texts';
 
 export type BatchRenameMode = 'replace' | 'number';
 
@@ -193,7 +193,11 @@ export class BatchRenameDialog {
         if (done.length)
             this.toasts.show(renamedToast(done.length), {
                 timeout: 10000,
-                action: { label: 'Undo', title: 'Give them back their names', run: () => void this.undo(done) },
+                action: {
+                    label: $localize`Undo`,
+                    title: undoRenameHint(done.length),
+                    run: () => void this.undo(done),
+                },
             });
         if (failures.length) {
             // Those left are shown again, under their new names.

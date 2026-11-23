@@ -106,7 +106,7 @@ export class ConnectionsSectionComponent {
     }
 
     protected made(connection: ConnectionInfo): void {
-        this.toasts.show(`“${connection.name}” is connected.`);
+        this.toasts.show($localize`Connection “${connection.name}:name:” added.`);
         void this.load();
     }
 
@@ -133,10 +133,10 @@ library {Sign in to a storage and add it for this space} other {Sign in to a sto
         try {
             const answer = await this.api.syncConnectionIndex(id);
             const problem = problemOf(answer);
-            if (problem) this.toasts.error(`Could not sync it: ${problem}`);
+            if (problem) this.toasts.error($localize`Could not sync the connection: ${problem}:reason:`);
             else this.index.set(answer);
         } catch (error) {
-            this.toasts.error(`Could not sync it: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not sync the connection: ${(error as Error).message}:reason:`);
         }
     }
 
@@ -157,15 +157,26 @@ library {Sign in to a storage and add it for this space} other {Sign in to a sto
     }
 
     protected async change(id: number, change: ConnectionChange): Promise<boolean> {
-        return this.run(() => this.api.updateConnection(id, change), 'Could not change the connection');
+        return this.run(
+            () => this.api.updateConnection(id, change),
+            (reason) => $localize`Could not change the connection: ${reason}:reason:`,
+        );
     }
 
     protected async remove(item: ManagedConnection): Promise<void> {
         const name = item.connection.name;
-        if (!confirm(`Remove “${name}”? Its files stay where they are; whoever used it here no longer sees it.`))
+        if (
+            !confirm(
+                $localize`Remove the connection “${name}:name:”? Its files stay where they are; \
+whoever used it here no longer sees it.`,
+            )
+        )
             return;
-        if (await this.run(() => this.api.removeConnection(item.connection.id), 'Could not remove it'))
-            this.toasts.show(`“${name}” removed.`);
+        const removed = await this.run(
+            () => this.api.removeConnection(item.connection.id),
+            (reason) => $localize`Could not remove the connection “${name}:name:”: ${reason}:reason:`,
+        );
+        if (removed) this.toasts.show($localize`Connection “${name}:name:” removed.`);
     }
 
     /** The level of a group of this space for a connection ('' = none). */
@@ -179,7 +190,10 @@ library {Sign in to a storage and add it for this space} other {Sign in to a sto
         for (const group of connection.groups.filter((g) => g.tenantId === tenant)) groups[group.groupId] = group.level;
         if (level) groups[groupId] = level as FolderLevelName;
         else delete groups[groupId];
-        await this.run(() => this.api.setConnectionGroups(connection.id, groups), 'Could not change who uses it');
+        await this.run(
+            () => this.api.setConnectionGroups(connection.id, groups),
+            (reason) => $localize`Could not change who uses “${connection.name}:name:”: ${reason}:reason:`,
+        );
     }
 
     protected async setLibrary(connection: ConnectionInfo, libraryId: number | 'all', on: boolean): Promise<void> {
@@ -191,7 +205,8 @@ library {Sign in to a storage and add it for this space} other {Sign in to a sto
         }
         await this.run(
             () => this.api.setConnectionLibraries(connection.id, all, [...ids]),
-            'Could not change the spaces it is offered to',
+            (reason) =>
+                $localize`Could not change the spaces “${connection.name}:name:” is offered to: ${reason}:reason:`,
         );
     }
 
@@ -217,16 +232,16 @@ library {Sign in to a storage and add it for this space} other {Sign in to a sto
     }
 
     /** Runs a change and loads the list again; false (and a toast) when it was refused. */
-    private async run(request: () => Promise<unknown>, failure: string): Promise<boolean> {
+    private async run(request: () => Promise<unknown>, failure: (reason: string) => string): Promise<boolean> {
         try {
             const problem = problemOf(await request());
             if (problem) {
-                this.toasts.error(`${failure}: ${problem}`);
+                this.toasts.error(failure(problem));
                 return false;
             }
             return true;
         } catch (error) {
-            this.toasts.error(`${failure}: ${(error as Error).message}`);
+            this.toasts.error(failure((error as Error).message));
             return false;
         } finally {
             await this.load();

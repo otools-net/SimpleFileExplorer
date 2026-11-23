@@ -922,7 +922,7 @@ describe('AdminPageComponent by rights and levels', () => {
                 expect(marked('server')).toBe(false);
                 expect(marked('tenant')).toBe(true);
                 expect(toast).toHaveBeenCalledWith(
-                    'Saved the settings of the whole server; those of this space need fixing.',
+                    'Settings of the whole server saved. Those of this space need fixing.',
                 );
             },
         );

@@ -85,7 +85,7 @@ describe('FileDownloads', () => {
             ['api/v1/files/archive/' + 'a'.repeat(48), 'Media.zip'],
             ['api/v1/files/archive/' + 'a'.repeat(48), 'Media.zip'],
         ]);
-        expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toContain('Downloading Media.zip');
+        expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toContain('Downloading “Media.zip”');
     });
 
     it('says why a zip is refused', async () => {
@@ -98,7 +98,7 @@ describe('FileDownloads', () => {
 
         expect(saved).toEqual([]);
         expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toBe(
-            'Could not download: This is 5 MB: a zip may hold at most 1 MB here. Choose fewer files.',
+            'Could not download 1 item: This is 5 MB: a zip may hold at most 1 MB here. Choose fewer files.',
         );
     });
 

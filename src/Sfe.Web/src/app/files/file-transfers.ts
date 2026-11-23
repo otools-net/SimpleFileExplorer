@@ -275,7 +275,7 @@ export class FileTransfers {
         try {
             await this.api.answerFileJob(job.id, choice, forAll);
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            this.toasts.error($localize`Could not send your answer: ${(error as Error).message}:reason:`);
         }
         this.replace({ ...job, conflict: null, state: 'running' });
         this.poll(0);
@@ -285,7 +285,7 @@ export class FileTransfers {
         try {
             await this.api.cancelFileJob(job.id);
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            this.toasts.error($localize`Could not stop the operation: ${(error as Error).message}:reason:`);
         }
         this.poll(0);
     }
@@ -338,7 +338,7 @@ export class FileTransfers {
             return;
         }
         if (!result || result.status !== 'done' || !result.newPath) {
-            this.toasts.error(result?.message ?? $localize`The zip could not be made.`, 8000);
+            this.toasts.error(result?.message ?? $localize`Could not make the zip.`, 8000);
             return;
         }
         const zip = result.newPath;
@@ -363,7 +363,9 @@ export class FileTransfers {
             return;
         }
         if (this.canRetryExtraction(job)) {
-            this.toasts.show(result.message ?? $localize`It's protected by a password.`, {
+            const archive = quoted(baseName(result.path));
+            const locked = $localize`Could not extract ${archive}:archive:: it is protected by a password.`;
+            this.toasts.show(result.message ?? locked, {
                 error: true,
                 timeout: 12000,
                 actions: [
@@ -378,7 +380,7 @@ export class FileTransfers {
         }
         if (!result || result.status !== 'done') {
             this.toasts.error(
-                result?.message ?? $localize`${quoted(baseName(job.target))}:archive: could not be extracted.`,
+                result?.message ?? $localize`Could not extract ${quoted(baseName(job.target))}:archive:.`,
                 8000,
             );
             return;

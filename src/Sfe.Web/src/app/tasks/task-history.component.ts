@@ -109,13 +109,14 @@ export class TaskHistoryComponent {
     }
 
     protected async clear(): Promise<void> {
-        if (!confirm('Delete the history of the finished runs, with their logs?')) return;
+        if (!confirm($localize`Delete the history of the finished runs, with their logs? This cannot be undone.`))
+            return;
         try {
             await whileBusy(this.clearing, () => this.api.clearTaskRuns());
             this.paged = false;
             await this.load();
         } catch (error) {
-            this.toasts.error(`Could not clear the history: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not clear the task history: ${(error as Error).message}:reason:`);
         }
     }
 
@@ -161,7 +162,8 @@ export class TaskHistoryComponent {
             const details = await this.api.taskRun(id);
             if (this.openId() === id) this.details.set(details);
         } catch (error) {
-            if (this.openId() === id) this.toasts.error(`Could not read the log: ${(error as Error).message}`);
+            if (this.openId() === id)
+                this.toasts.error($localize`Could not load the log: ${(error as Error).message}:reason:`);
         }
     }
 }

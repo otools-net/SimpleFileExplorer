@@ -6,6 +6,8 @@ import {
     playHint,
     problemLine,
     selectedCueLine,
+    shifted,
+    shiftRefused,
     subtitlesModes,
 } from './subtitles-texts';
 
@@ -33,6 +35,14 @@ describe('subtitles texts', () => {
         expect(problemLine(3, 'Missing timestamp', 0)).toBe('Line 3: Missing timestamp.');
         expect(problemLine(3, 'Missing timestamp', 1)).toBe('Line 3: Missing timestamp (and 1 more problem).');
         expect(problemLine(1200, 'Bad {cue}', 4)).toBe('Line 1200: Bad {cue} (and 4 more problems).');
+    });
+
+    it('says how Shift times moved the cues, or why it could not', () => {
+        expect(shifted(2500)).toBe('Every cue moved 2.5 s later. Ctrl+Z undoes it.');
+        expect(shifted(-1000)).toBe('Every cue moved 1 s earlier. Ctrl+Z undoes it.');
+        expect(shiftRefused()).toBe(
+            'Could not shift the times: type the seconds to move the cues by, 2.5 for later or -2.5 for earlier.',
+        );
     });
 
     it('writes the list, overlap, empty list and Play texts as sentences', () => {

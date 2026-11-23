@@ -84,6 +84,8 @@ other {# entries are not listed: their names lead out of the archive, or they ar
     nothingLocked: () => $localize`Nothing in this archive is protected by a password.`,
     tooManyTries: () => $localize`Too many tries: wait a minute before the next one.`,
     wrongPassword: () => $localize`That password doesn't open this archive.`,
+    viewerNotLoaded: () => $localize`Could not load the viewer of this file. Reload the page to try again.`,
+    searchFailed: (reason: string) => $localize`Could not search the archive: ${reason}:reason:`,
     cannotExplore: () => $localize`This file can't be explored.`,
     noSuchFolder: () => $localize`There is no such folder in the archive.`,
 };

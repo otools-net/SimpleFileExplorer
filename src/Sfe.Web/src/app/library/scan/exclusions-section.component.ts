@@ -101,7 +101,7 @@ export class ExclusionsSectionComponent implements OnInit {
         try {
             this.folders.set(await this.api.folderExclusions());
         } catch (error) {
-            this.toasts.error(`Could not list the excluded folders: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not list the excluded folders: ${(error as Error).message}:reason:`);
         } finally {
             this.loading.set(false);
         }
@@ -167,7 +167,12 @@ export class ExclusionsSectionComponent implements OnInit {
             );
             return true;
         } catch (error) {
-            this.toasts.error(`Could not change “${folder.path}”: ${(error as Error).message}`);
+            const reason = (error as Error).message;
+            this.toasts.error(
+                $localize`Could not change what “${folder.path}:folder:” is kept out of: ${reason}:reason:`,
+            );
+
+
             return false;
         } finally {
             this.busy.set(null);

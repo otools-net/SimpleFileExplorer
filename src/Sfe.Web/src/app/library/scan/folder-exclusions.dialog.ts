@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Api } from '../../core/api.service';
-import { joinParts } from '../../core/format';
 import { FolderExclusions } from '../../core/models';
 import { ExclusionKind } from '../library.models';
+import { exclusionsSaved } from '../items/exclusions';
 import { ToastService } from '../../core/toast.service';
 import { BusyDirective, whileBusy } from '../../shared/busy.directive';
 import { SheetComponent } from '../../shared/sheet.component';
@@ -100,19 +100,11 @@ export class FolderExclusionsDialog {
         try {
             const state = await whileBusy(this.saving, () => this.api.setFolderExclusions(this.path(), changes));
             this.sheet().close();
-            this.toasts.show(this.message(state));
+            this.toasts.show(exclusionsSaved(state, this.name()));
             void this.store.refresh();
         } catch (error) {
             this.error.set((error as Error).message);
         }
-    }
-
-    private message(state: FolderExclusions): string {
-        const kept = joinParts(
-            [state.scan ? 'scans' : null, state.trickplay ? 'trickplay' : null, state.thumbnails ? 'thumbnails' : null],
-            ', ',
-        );
-        return kept ? `${this.name()} is kept out of ${kept}.` : `${this.name()} is no longer excluded.`;
     }
 
     protected checkedOf(event: Event): boolean {

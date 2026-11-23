@@ -131,7 +131,11 @@ export class GroupEditorComponent {
                     ? await this.api.createGroup(input, this.space())
                     : await this.api.updateGroup(draft.id, input, this.space());
             this.sheet().close();
-            this.toasts.show(draft.id === null ? `Group ${group.name} created.` : `Group ${group.name} saved.`);
+            this.toasts.show(
+                draft.id === null
+                    ? $localize`Group “${group.name}:name:” created.`
+                    : $localize`Group “${group.name}:name:” saved.`,
+            );
             this.saved.emit(group);
             // The signed-in account's own rights may have changed.
             if (this.space() === null) await this.config.load();

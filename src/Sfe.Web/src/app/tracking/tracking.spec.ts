@@ -234,7 +234,7 @@ describe('DuplicatesPanelComponent', () => {
 
         expect(api.removeDuplicate).toHaveBeenCalledWith('a/tagged.jpg', 'c/x.jpg');
         expect(show).toHaveBeenCalledWith(
-            '“tagged.jpg” moved to the trash; “c/x.jpg” is kept with its tags.',
+            '“tagged.jpg” is in the trash. “c/x.jpg” is kept, with its tags.',
             expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) }),
         );
         const rows = [...groupElements()[0].querySelectorAll('li.tracking-row')];
@@ -260,7 +260,7 @@ describe('DuplicatesPanelComponent', () => {
         await settle();
 
         expect(api.restoreFromTrash).toHaveBeenCalledWith(3);
-        expect(show).toHaveBeenLastCalledWith('“x.jpg” put back.');
+        expect(show).toHaveBeenLastCalledWith('“x.jpg” is back.');
         expect(groupElements()).toHaveLength(2);
         expect(groupElements()[0].querySelectorAll('li.tracking-row')).toHaveLength(2);
         expect(statusText(element)).toBe('2 groups of identical files in the library: 3 MB could be freed.');
@@ -278,7 +278,7 @@ describe('DuplicatesPanelComponent', () => {
         buttonNamed(element, 'Delete this copy')!.click();
         await settle();
 
-        expect(show).toHaveBeenCalledWith('“x.jpg” deleted; “b/x.jpg” is kept.');
+        expect(show).toHaveBeenCalledWith('“x.jpg” is deleted. “b/x.jpg” is kept.');
     });
 
     it('drops a group once a single copy is left', async () => {
@@ -412,7 +412,7 @@ describe('MissingPanelComponent', () => {
         await settle();
 
         expect(api.relinkMissingFile).toHaveBeenCalledWith(1, 'New/a.jpg');
-        expect(show).toHaveBeenCalledWith('Tags of “a.jpg” moved to “New/a.jpg”.');
+        expect(show).toHaveBeenCalledWith('The tags of “a.jpg” moved to “New/a.jpg”.');
         expect(rows()).toHaveLength(1);
         expect(statusText(element)).toBe('1 tagged file is missing.');
         expect(changed).toBe(1);
@@ -438,7 +438,7 @@ describe('MissingPanelComponent', () => {
         await settle();
 
         expect(ask).toHaveBeenCalledWith(
-            'Give the tags of “a.jpg” to which file? Path from the library root:',
+            'Which file gets the tags of “a.jpg”? Type its path from the top of the library.',
             'Old/a.jpg',
         );
         expect(api.relinkMissingFile).not.toHaveBeenCalled();
@@ -464,7 +464,7 @@ describe('MissingPanelComponent', () => {
         buttonNamed(rows()[0], 'Relink here')!.click();
         await settle();
 
-        expect(error).toHaveBeenCalledWith('Could not relink: “b.jpg” is not a file of the library.');
+        expect(error).toHaveBeenCalledWith('Could not relink “a.jpg”: “b.jpg” is not a file of the library.');
         expect(rows()).toHaveLength(1);
         expect(buttonNamed(rows()[0], 'Relink here')!.disabled).toBe(false);
     });
@@ -511,7 +511,7 @@ describe('MissingPanelComponent', () => {
         buttonNamed(rows()[0], 'Forget')!.click();
         await settle();
 
-        expect(error).toHaveBeenCalledWith('Could not forget it: Boom');
+        expect(error).toHaveBeenCalledWith('Could not forget “a.jpg”: Boom');
         expect(rows()).toHaveLength(1);
     });
 
@@ -695,7 +695,7 @@ describe('SimilarPanelComponent', () => {
         await fixture.componentInstance.load({ append: true });
         await settle();
 
-        expect(error).toHaveBeenCalledWith('Could not load more: Gone');
+        expect(error).toHaveBeenCalledWith('Could not load more similar videos: Gone');
         expect(api.similarVideos).toHaveBeenLastCalledWith({ path: '', after: null });
     });
 });

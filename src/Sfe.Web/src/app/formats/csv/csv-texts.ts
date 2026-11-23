@@ -25,6 +25,9 @@ export const csvTexts = {
     separator: () => $localize`:what separates the cells of a CSV file:Separator`,
     separatorHint: () => $localize`Choose what separates the cells.`,
     /** The cell selected, in the status bar: "Row 3 · km: 1,014". */
+    /** The toast of Copy cell. */
+    cellCopied: (row: number, column: string) =>
+        icu($localize`Cell in row {row, number}, column “{column}” copied.`, { row, column }),
     cell: (row: number, column: string, value: string) =>
         icu($localize`Row {row, number} · {column}: {value}`, { row, column, value }),
     /** What the table says when no row shows: none holds what the filter has, or the file has none. */

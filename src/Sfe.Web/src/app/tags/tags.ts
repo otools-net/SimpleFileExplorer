@@ -92,3 +92,13 @@ export function libraryFiles(count: number): string {
 export function listed(names: string[]): string {
     return new Intl.ListFormat(textLocale(), { type: 'conjunction' }).format(names);
 }
+
+/** The toast after a tag was made from the text typed in a picker. */
+export function tagCreated(name: string): string {
+    return $localize`Tag “${name}:tag:” created.`;
+}
+
+/** Why a change of tags over a folder or a search is refused when the server gives no reason. */
+export function scanRunning(): string {
+    return $localize`A scan is running. Try again when it has finished.`;
+}

@@ -673,6 +673,6 @@ describe('settings on the administration page', () => {
         buttonNamed(element, 'Clear tag history')!.click();
         await settle();
 
-        expect(error).toHaveBeenCalledWith('Could not clear the history: Boom');
+        expect(error).toHaveBeenCalledWith('Could not clear the tag history: Boom');
     });
 });

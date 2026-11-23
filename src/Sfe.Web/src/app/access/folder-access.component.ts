@@ -99,7 +99,7 @@ export class FolderAccessComponent {
         try {
             this.rules.set(await this.rulesSource().load());
         } catch (error) {
-            this.toasts.error(`Could not load the folder rules: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not load the folder rules: ${(error as Error).message}:reason:`);
         }
     }
 
@@ -151,7 +151,9 @@ export class FolderAccessComponent {
         await this.run(async () => {
             if (from !== null && source.repoint) {
                 this.rules.set(await source.repoint(from, draft.path));
-                this.toasts.show(`The rules of ${this.named(from)} now apply to ${this.named(draft.path)}.`);
+                this.toasts.show(
+                    $localize`The rules of ${this.named(from)}:from: now apply to ${this.named(draft.path)}:to:.`,
+                );
             } else {
                 const id = Number(draft.principal.slice(1));
                 this.rules.set(
@@ -162,7 +164,7 @@ export class FolderAccessComponent {
                         level: draft.level,
                     }),
                 );
-                this.toasts.show(`Rule set on ${this.named(draft.path)}.`);
+                this.toasts.show($localize`Rule set on ${this.named(draft.path)}:folder:.`);
             }
             this.cancel();
         });
@@ -173,10 +175,11 @@ export class FolderAccessComponent {
         const source = this.rulesSource();
         await this.run(async () => {
             this.rules.set(await source.set({ path: rule.path, groupId: rule.groupId, userId: rule.userId, level }));
+            const folder = this.named(rule.path);
             this.toasts.show(
                 level === null
-                    ? `${rule.name} follows the folder above again at ${this.named(rule.path)}.`
-                    : `Rule changed for ${rule.name}.`,
+                    ? $localize`“${rule.name}:name:” follows the folder above again at ${folder}:folder:.`
+                    : $localize`Rule changed for “${rule.name}:name:” at ${folder}:folder:.`,
             );
             if (this.report()?.path === rule.path && source.report) this.report.set(await source.report(rule.path));
         });
@@ -192,7 +195,8 @@ export class FolderAccessComponent {
         try {
             this.report.set(await source.report(path));
         } catch (error) {
-            this.toasts.error(`Could not tell who has access: ${(error as Error).message}`);
+            const [folder, reason] = [this.named(path), (error as Error).message];
+            this.toasts.error($localize`Could not find who has access to ${folder}:folder:: ${reason}:reason:`);
         }
     }
 
@@ -204,9 +208,9 @@ export class FolderAccessComponent {
         return value ? $localize`Yes` : $localize`No`;
     }
 
-    /** A folder as the toasts name it. */
+    /** A folder as the toasts name it, quoted: its path, or the name of the top folder. */
     private named(path: string): string {
-        return path || `the ${this.rootName().toLowerCase()}`;
+        return $localize`:a folder quoted in a sentence:“${path || this.rootName()}:folder:”`;
     }
 
     private async run(action: () => Promise<void>): Promise<void> {
@@ -215,8 +219,9 @@ export class FolderAccessComponent {
         try {
             await action();
         } catch (error) {
-            this.problem.set((error as Error).message);
-            if (!this.draft()) this.toasts.error((error as Error).message);
+            const reason = (error as Error).message;
+            this.problem.set(reason);
+            if (!this.draft()) this.toasts.error($localize`Could not change the rule: ${reason}:reason:`);
         } finally {
             this.busy.set(false);
         }

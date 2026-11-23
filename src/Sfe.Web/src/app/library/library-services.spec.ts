@@ -255,7 +255,7 @@ describe('ScanService', () => {
 
         await scan.start();
 
-        expect(show).toHaveBeenCalledWith('Another scan is already running (Other).');
+        expect(show).toHaveBeenCalledWith('Could not scan “Media”: another scan is running, in “Other”.');
     });
 
     it('does not start twice while one runs', async () => {
@@ -275,7 +275,7 @@ describe('ScanService', () => {
 
         await scan.start();
 
-        expect(error).toHaveBeenCalledWith('Scan failed to start: Outside the library');
+        expect(error).toHaveBeenCalledWith('Could not start the scan: Outside the library');
         expect(scan.busy()).toBe(false);
     });
 

@@ -162,3 +162,22 @@ export function moreFiles(count: number): string {
 export function moreVideos(count: number): string {
     return icu($localize`{count, plural, one {And # more video.} other {And # more videos.}}`, { count });
 }
+
+/**
+ * The toast after a copy was removed: moved to the trash (or deleted for good when there is no trash), and which copy
+ * stays, with its tags when the copy removed gave it some.
+ */
+export function removedText(name: string, trashed: boolean, keptPath: string, withTags: boolean): string {
+    const gone = trashed ? $localize`“${name}:name:” is in the trash.` : $localize`“${name}:name:” is deleted.`;
+    const kept = withTags
+        ? $localize`“${keptPath}:path:” is kept, with its tags.`
+        : $localize`“${keptPath}:path:” is kept.`;
+    return sentences([gone, kept]);
+}
+
+/** Why a removed copy couldn't be put back: the server's reason when it gave one. */
+export function notPutBack(name: string, reason: string | null): string {
+    return reason
+        ? $localize`Could not put “${name}:name:” back: ${reason}:reason:`
+        : $localize`Could not put “${name}:name:” back.`;
+}

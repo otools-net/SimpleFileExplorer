@@ -64,6 +64,11 @@ describe('archive texts', () => {
         expect(folderCounts(listing)).toBe('1 folder · 3 files here · 6 KB in 12 files below · ZIP');
     });
 
+    it('keeps the reason in its error toasts', () => {
+        expect(texts.searchFailed('The archive changed.')).toBe('Could not search the archive: The archive changed.');
+        expect(texts.viewerNotLoaded()).toBe('Could not load the viewer of this file. Reload the page to try again.');
+    });
+
     it('says where a search stands', () => {
         const found = { query: 'summ', folder: null, rows: [] as unknown[], next: null, searching: true };
         expect(foundStatus(found)).toBe('Searching the archive…');

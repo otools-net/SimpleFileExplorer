@@ -51,7 +51,7 @@ describe('AllTokensComponent', () => {
         buttonNamed(rows()[1], 'Revoke')!.click();
         await settle();
 
-        expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('of bob'));
+        expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('of “bob”'));
         expect(api.revokeAnyToken).toHaveBeenCalledWith(2);
         expect(api.allTokens).toHaveBeenCalledTimes(2);
     });

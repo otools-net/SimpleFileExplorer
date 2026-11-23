@@ -210,7 +210,7 @@ export class CsvViewComponent {
         if (!position || !table || !column || position.record >= table.rows.length) return null;
         const text = table.rows[position.record][position.column] ?? '';
         const row = position.record - this.first() + 1;
-        return { text, label: csvTexts.cell(row, column.name, shownCell(text).slice(0, 60)) };
+        return { text, row, column: column.name, label: csvTexts.cell(row, column.name, shownCell(text).slice(0, 60)) };
     });
     protected readonly downloadUrl = computed(() =>
         this.offerDownload() && this.fileHost.can(Rights.download) ? this.fileSource.download(this.item()) : null,
@@ -396,7 +396,7 @@ export class CsvViewComponent {
         const value = this.selectedValue();
         if (!value) return;
         await copyText(value.text);
-        this.toasts.show('Cell copied');
+        this.toasts.show(csvTexts.cellCopied(value.row, value.column));
     }
 
     /** Arrows move between cells, Home / End to the row's ends (with Ctrl, the table's), Page Up / Down by a screen. */

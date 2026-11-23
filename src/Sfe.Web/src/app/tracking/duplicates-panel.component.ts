@@ -10,7 +10,7 @@ import { ToastService } from '../core/toast.service';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { checkedOf, valueOf } from '../shared/events';
 import { StatusBoxComponent, TrackingFileComponent } from './tracking-parts';
-import { duplicatesStatus, moreFiles } from './tracking-texts';
+import { duplicatesStatus, moreFiles, notPutBack, removedText } from './tracking-texts';
 
 const SCOPE_KEY = 'sfe.duplicates.folderOnly';
 
@@ -113,21 +113,23 @@ export class DuplicateGroupComponent {
             this.confirming.set(null);
             this.removedPaths.update((paths) => new Set([...paths, file.path]));
             this.keptTags.update((tags) => new Map(tags).set(keepPath, result.kept.tags));
-            const kept = `“${keepPath}” is kept${result.kept.tags.length ? ' with its tags' : ''}.`;
             const trashId = result.trashId;
-            if (typeof trashId === 'number')
-                this.toasts.show(`“${file.name}” moved to the trash; ${kept}`, {
+            const trashed = typeof trashId === 'number';
+            const text = removedText(file.name, trashed, keepPath, result.kept.tags.length > 0);
+            if (trashed)
+                this.toasts.show(text, {
                     timeout: 10000,
                     action: {
-                        label: 'Undo',
-                        title: 'Put it back where it was',
+                        label: $localize`Undo`,
+                        title: $localize`Put it back where it was.`,
                         run: () => void this.undo(file, trashId),
                     },
                 });
-            else this.toasts.show(`“${file.name}” deleted; ${kept}`);
+            else this.toasts.show(text);
             this.removed.emit({ file, keepPath, kept: result.kept, dissolved: this.count() < 2 });
         } catch (error) {
-            this.toasts.error(`Could not remove “${file.name}”: ${(error as Error).message}`, 8000);
+            const reason = (error as Error).message;
+            this.toasts.error($localize`Could not remove “${file.name}:name:”: ${reason}:reason:`, 8000);
         }
     }
 
@@ -136,14 +138,14 @@ export class DuplicateGroupComponent {
         try {
             const result = await this.api.restoreFromTrash(trashId);
             if (isFileConflict(result)) {
-                this.toasts.error(result.detail ?? `“${file.name}” could not be put back.`);
+                this.toasts.error(notPutBack(file.name, result.detail ?? null));
                 return;
             }
         } catch (error) {
-            this.toasts.error(`Could not put “${file.name}” back: ${(error as Error).message}`);
+            this.toasts.error(notPutBack(file.name, (error as Error).message));
             return;
         }
-        this.toasts.show(`“${file.name}” put back.`);
+        this.toasts.show($localize`“${file.name}:name:” is back.`);
         if (this.destroyed || !this.removedPaths().has(file.path)) return;
         const revived = this.count() < 2;
         this.removedPaths.update((paths) => new Set([...paths].filter((path) => path !== file.path)));

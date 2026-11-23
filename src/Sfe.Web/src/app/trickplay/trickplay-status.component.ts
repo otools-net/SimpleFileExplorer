@@ -115,7 +115,7 @@ export class TrickplayStatusComponent {
             // Shown once the button is back: off or without ffmpeg, it stays disabled.
             this.status.set(await whileBusy(this.checking, () => this.api.checkTrickplay()));
         } catch (error) {
-            this.toasts.error(`Could not start the check: ${(error as Error).message}`);
+            this.toasts.error($localize`Could not start the check: ${(error as Error).message}:reason:`);
         }
     }
 }

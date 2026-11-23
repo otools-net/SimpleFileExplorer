@@ -263,7 +263,7 @@ describe('TrashSectionComponent', () => {
         await settle();
         expect(api.restoreFromTrash).toHaveBeenCalledWith(9);
         expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toBe(
-            '“beach.jpg” is back, as “Media/beach (2).jpg”.',
+            '“beach.jpg” restored as “Media/beach (2).jpg”.',
         );
         expect(element.querySelector('[data-id="9"]')).toBeNull();
 

@@ -41,7 +41,7 @@ export class QuickLinksService {
 
     async load(): Promise<void> {
         if (!this.enabled()) return;
-        await this.change(() => this.api.quickLinks(), null);
+        await this.change(() => this.api.quickLinks(), null, 'load');
         this.loaded.set(true);
     }
 
@@ -56,12 +56,12 @@ export class QuickLinksService {
                         count: added.length,
                     })
                   : null;
-        return this.change(() => this.api.addQuickLinks(paths, position), message);
+        return this.change(() => this.api.addQuickLinks(paths, position), message, 'add');
     }
 
     /** Moves the link to `path` before the one at `position` of the list (its length: to the end). */
     move(path: string, position: number): Promise<boolean> {
-        return this.change(() => this.api.addQuickLinks([path], position), null);
+        return this.change(() => this.api.addQuickLinks([path], position), null, 'move');
     }
 
     remove(path: string): Promise<boolean> {
@@ -69,6 +69,7 @@ export class QuickLinksService {
         return this.change(
             () => this.api.removeQuickLink(path),
             $localize`Removed “${name}:name:” from the quick links.`,
+            'remove',
         );
     }
 
@@ -99,9 +100,14 @@ export class QuickLinksService {
     }
 
     /**
-     * Runs a request answering the list; only the last one sent sets it. Says `done` once done, the error otherwise.
+     * Runs a request answering the list; only the last one sent sets it. Says `done` once done, the error otherwise
+     * (what could not be done: `action`).
      */
-    private async change(request: () => Promise<QuickLink[]>, done: string | null): Promise<boolean> {
+    private async change(
+        request: () => Promise<QuickLink[]>,
+        done: string | null,
+        action: 'load' | 'add' | 'move' | 'remove',
+    ): Promise<boolean> {
         const sequence = ++this.sequence;
         try {
             const links = await request();
@@ -109,8 +115,21 @@ export class QuickLinksService {
             if (done) this.toasts.show(done);
             return true;
         } catch (error) {
-            this.toasts.error(`Quick links: ${(error as Error).message}`);
+            this.toasts.error(notChanged(action, (error as Error).message));
+
             return false;
         }
     }
+}
+
+/** The error toast of a change of the quick links: what could not be done, then the server's reason. */
+function notChanged(action: 'load' | 'add' | 'move' | 'remove', reason: string): string {
+    return icu(
+        $localize`{action, select, \
+load {Could not read the quick links: {reason}} \
+add {Could not add to the quick links: {reason}} \
+move {Could not move the quick link: {reason}} \
+other {Could not remove the quick link: {reason}}}`,
+        { action, reason },
+    );
 }

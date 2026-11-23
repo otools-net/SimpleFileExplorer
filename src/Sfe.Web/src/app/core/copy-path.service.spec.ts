@@ -60,7 +60,7 @@ describe('CopyPathService', () => {
         await service.copy('a/b.jpg');
 
         expect(writeText).toHaveBeenCalledWith('/m/a/b.jpg');
-        expect(show).toHaveBeenCalledWith('Copied /m/a/b.jpg');
+        expect(show).toHaveBeenCalledWith('“/m/a/b.jpg” copied.');
     });
 
     it('falls back to a selected text box inside the open dialog (the page around it is inert)', async () => {
@@ -107,7 +107,7 @@ describe('CopyPathService', () => {
 
         await service.copy('x.jpg');
 
-        expect(error).toHaveBeenCalledWith('Could not copy /m/x.jpg');
+        expect(error).toHaveBeenCalledWith('Could not copy “/m/x.jpg”: the browser refused.');
         expect(document.querySelector('textarea')).toBeNull();
     });
 

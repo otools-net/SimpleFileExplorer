@@ -200,7 +200,7 @@ describe('FilesTagsDialog', () => {
             section('On some of these files')!.querySelector<HTMLButtonElement>('button.tag-name')!.click();
             await settle();
 
-            expect(error).toHaveBeenCalledWith('Tag 9 does not exist.');
+            expect(error).toHaveBeenCalledWith('Could not add the tag “sun”: Tag 9 does not exist.');
             expect(chips('On some of these files')).toEqual(['sun · 1']);
         });
 

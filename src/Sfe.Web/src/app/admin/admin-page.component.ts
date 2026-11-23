@@ -326,7 +326,7 @@ export class AdminPageComponent implements OnInit {
 
     /** False when the user would rather stay, to save the settings changed. */
     canLeave(): boolean {
-        return !this.form.changed() || confirm('Leave without saving the settings you changed?');
+        return !this.form.changed() || confirm($localize`Leave without saving? The settings you changed are lost.`);
     }
 
     /** Some settings of `pages` need fixing. */

@@ -155,20 +155,21 @@ export class SpacesPageComponent implements OnInit {
     protected async remove(space: TenantDetails): Promise<void> {
         if (
             !confirm(
-                `Delete the space ${space.name}? Its groups and settings go, and its accounts lose access to it ` +
-                    `(accounts themselves stay). ` +
-                    "The index of its library and its caches stay on the server's disk.",
+                $localize`Delete the space “${space.name}:name:”? Its groups and settings go, and its accounts lose \
+access to it (the accounts themselves stay). The index of its library and its caches stay on the server's disk. \
+This cannot be undone.`,
             )
         )
             return;
         try {
             await this.api.deleteTenant(space.id);
-            this.toasts.show(`Space ${space.name} deleted.`);
+            this.toasts.show($localize`Space “${space.name}:name:” deleted.`);
             this.openSpace(null);
             await this.load();
             await this.config.load();
         } catch (error) {
-            this.toasts.error((error as Error).message);
+            const reason = (error as Error).message;
+            this.toasts.error($localize`Could not delete the space “${space.name}:name:”: ${reason}:reason:`);
         }
     }
 

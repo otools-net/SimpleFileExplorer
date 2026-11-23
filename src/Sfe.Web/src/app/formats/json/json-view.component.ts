@@ -410,13 +410,13 @@ export class JsonViewComponent {
 
     protected async copyPath(row: JsonRow): Promise<void> {
         await copyText(pathLabel(row.id));
-        this.toasts.show('Path copied');
+        this.toasts.show(jsonTexts.pathCopied(pathLabel(row.id)));
     }
 
     protected async copyValue(row: JsonRow): Promise<void> {
         const text = this.document()!.text;
         await copyText(text.slice(row.node.offset, row.node.offset + row.node.length));
-        this.toasts.show('Value copied');
+        this.toasts.show(jsonTexts.valueCopied(pathLabel(row.id)));
     }
 
     /** Lays the source out again (an edit: undone with Ctrl+Z). */
