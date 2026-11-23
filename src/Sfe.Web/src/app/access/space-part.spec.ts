@@ -225,7 +225,7 @@ describe('SpacePartComponent', () => {
         );
     });
 
-    it('marks the rights that change things, those that change files the most, after those that only look', async () => {
+    it('marks the rights that change things, those that change files the most, after the others', async () => {
         serverSpaces();
         api.groups.mockResolvedValue(work);
         await create('groups', `/?space=${WORK.id}`);

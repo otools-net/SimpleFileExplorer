@@ -124,7 +124,7 @@
     "src/Sfe.Web/src/app/trickplay/trickplay-activity.component.html": {"longLines":2},
     "src/Sfe.Web/src/app/trickplay/trickplay-hover.service.ts": {"longFunctions":1},
     "src/Sfe.Web/src/app/trickplay/trickplay-status.component.ts": {"longLines":1},
-    "src/Sfe.Web/src/styles/access.css": {"fileLines":707},
+    "src/Sfe.Web/src/styles/access.css": {"fileLines":709},
     "src/Sfe.Web/src/styles/admin.css": {"fileLines":677},
     "src/Sfe.Web/src/styles/file-management.css": {"fileLines":559},
     "src/Sfe.Web/src/styles/reader.css": {"fileLines":1704},

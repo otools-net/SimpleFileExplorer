@@ -126,6 +126,23 @@ textarea {
     font: inherit;
     color: inherit;
 }
+/*
+ * A select without a style of its own (in a card's row, beside a heading): the app's colours, border and about the
+ * height of a small button, not the browser's own box. Forms, toolbars and the sort box style theirs over this.
+ */
+select {
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text);
+    font-weight: 400;
+    cursor: pointer;
+}
+select:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
 
 /* Touch screens: iOS zooms the whole page into a field whose text is under 16 px when it gets the focus, and leaves
    it zoomed (e2e `expectNoZoomOnFocus`). Over the fields' own sizes (`font: inherit` in a 12 px status bar...). */

@@ -14,6 +14,9 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
 - Styling is global CSS in `src/styles/` by class name (`styles.css` imports one partial per area), no component
   styles; hosts carry the classes (`host: { class: 'tile' }`, attribute selectors like `article[sfeFileTile]`) so the
   DOM and the CSS stay as they were.
+- A `select` gets the app's look from `base.css` (border, `--surface-2`, ~32 px like a small button); an area
+  styles its own over it (forms, toolbars, the sort box). Never leave one with the browser's box: it stood out beside
+  the buttons of a row (folder rules, 2026-11-23).
 - Icons: `<svg sfeIcon="name">` from `IconSpriteComponent`.
 - Per-browser preferences through `core/preferences.ts`.
 - Every button (and icon link) gets a `title` hint saying what it does, with its shortcut if any.

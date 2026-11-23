@@ -339,6 +339,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **Drop-down lists look like the rest of the page**: those outside a form (a folder rule's level, the Space picker,
+  Add an existing account…, a connection's group, the copy to keep among duplicates) showed the browser's own small
+  box; they now have the app's colours, border and the height of the buttons beside them.
+
 Security (second audit, 2026-11):
 
 - **A file of the library can no longer be loaded as a script or a style sheet of SFE's own pages**: scripts, style
