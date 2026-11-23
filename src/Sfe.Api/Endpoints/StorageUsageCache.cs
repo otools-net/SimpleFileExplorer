@@ -14,7 +14,7 @@ public sealed class StorageUsageCache(TimeProvider time)
 
     private readonly ConcurrentDictionary<string, (DateTimeOffset Read, StorageUsage Usage)> _entries = new();
 
-    /// <summary>What was read for <paramref name="key"/> less than <see cref="Lifetime"/> ago; null otherwise.</summary>
+    /// <summary>What was read for <paramref name="key"/> within <see cref="Lifetime"/>; null otherwise.</summary>
     public StorageUsage? Find(string key) =>
         _entries.TryGetValue(key, out var entry) && time.GetUtcNow() - entry.Read < Lifetime ? entry.Usage : null;
 

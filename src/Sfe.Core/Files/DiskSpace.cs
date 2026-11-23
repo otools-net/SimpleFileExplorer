@@ -10,7 +10,7 @@ namespace Otools.Net.Sfe.Core.Files;
 /// </summary>
 public static class DiskSpace
 {
-    /// <summary>The space of the file system of <paramref name="folder"/>; not reported when it can't be read.</summary>
+    /// <summary>The space of the file system of <paramref name="folder"/>; not reported if it can't be read.</summary>
     public static StorageUsage Of(string folder)
     {
         try

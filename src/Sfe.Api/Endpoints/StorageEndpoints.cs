@@ -13,7 +13,7 @@ namespace Otools.Net.Sfe.Api.Endpoints;
 /// </summary>
 public static class StorageEndpoints
 {
-    /// <summary>A drive that doesn't answer in this time (a share gone) is not reported, the request not held.</summary>
+    /// <summary>A drive not answering in this time (a share gone) is not reported, the request not held.</summary>
     private static readonly TimeSpan DiskWait = TimeSpan.FromSeconds(5);
 
     private const string Description = """

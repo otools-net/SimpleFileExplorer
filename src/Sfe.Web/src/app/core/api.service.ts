@@ -135,6 +135,7 @@ import { takeSetupLink } from './setup-link';
  * are old names the server still answers, never used by the client. `api/docs` (Swagger UI) has no version.
  */
 export { ApiError, redirected } from './api-error';
+export { editingSession } from './editing-session';
 
 export const API_BASE = 'api/v1/';
 
@@ -143,15 +144,6 @@ export const TAB_ID = Math.random().toString(36).slice(2, 12);
 
 /** The token of the link SFE opened this browser with at its first start (setup-link.ts); null without it. */
 const SETUP_LINK = takeSetupLink();
-
-/**
- * An editing session id, as the server wants it (letters, digits): the previous version of a file saved over goes to
- * the trash at the first save of a session. crypto.randomUUID needs a secure context.
- */
-export function editingSession(): string {
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
-    return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
-}
 
 type QueryValue = string | number | boolean | null | undefined;
 
