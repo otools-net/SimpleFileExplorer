@@ -86,6 +86,9 @@ everything below it, for a group (Guests included: visitors without an account) 
 
 - **The nearest rule wins.** Hide *Private* and set *Private/Shared* to Read only again: *Private* then only shows the
   way to *Shared* (none of its own files), and everything else in *Private* stays hidden.
+- **One folder deep down opens directly.** When the folders above the ones someone sees only lead one way (the top of
+  the library to *Clients*, *Clients* to *Acme*), they start in *Acme*: the folders above it show greyed in the path,
+  not as links. Where those folders lead several ways, they list the ways as usual.
 - **Groups add up.** An account sees a folder when **any** of its groups does, and may do there what each group's own
   rights and level allow. To hide a folder from the kids, hide it from every group they are in.
 - **An account's own rule only adds** to what its groups give: open one folder to one person without a new group.

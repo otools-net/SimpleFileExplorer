@@ -126,6 +126,11 @@ export interface FolderAccessView {
     pathOnly: boolean;
     /** The entries whose access differs from the folder's, by name; the others have the folder's. */
     children?: Record<string, FolderAccessView> | null;
+    /**
+     * Where the session's library starts when the folders above it only lead there, one way; absent or null when it
+     * starts at the top (and on children).
+     */
+    start?: string | null;
 }
 
 export type KeepAliveMode = 'off' | 'auto' | 'always';

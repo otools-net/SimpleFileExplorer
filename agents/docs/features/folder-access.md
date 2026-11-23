@@ -50,6 +50,19 @@ deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per 
   subfolders leading there; nothing else (files, counts, covers, tags, search results) and 404 for the rest.
 - Tagging needs `Read` only (user's choice): folder levels govern files on disk; index data follows readability.
 
+## Start folder
+
+- `FolderChecks.StartFolder`: from the root, down through path-only folders while each has exactly one visible child
+  (a way to a rule) that exists on disk (`ChildrenWithRules` + `Directory.Exists`) and that child is visible; O(depth ×
+  rules), a look at the disk per level. Every folder the subject sees is at or below it (the folders above lead one
+  way), so the client compares **depths**, never names (no case trouble with a rule's spelling).
+- `browse` gives it as `access.start` (restricted subjects only, null when the root); `ListingStore.leadsToStart`
+  replaces a library folder above it (the root when entering) by it with `replaceUrl`, before showing anything;
+  `passesThrough(path)` greys those crumbs (`span.through`, not links), disables the up button ("This is the top of
+  the folders you can see.") and Backspace. Kept through searches (`ListingStore.start`), never on connections.
+- Decision (2026-11-23): only the folders above the start are greyed; a path-only folder leading several ways (at or
+  below the start) stays a link: it lists the ways, the only place showing them all.
+
 ## Compiled policy (`FolderPolicy`)
 
 - Per subject, the rules of all its principals compile into one nearest-wins table: the root plus every path holding

@@ -77,7 +77,8 @@
 }
 
 .crumbs a,
-.crumbs span.current {
+.crumbs span.current,
+.crumbs span.through {
     padding: 2px 6px;
     border-radius: 6px;
     word-break: break-word;
@@ -89,6 +90,12 @@
 .crumbs a:hover {
     background: var(--surface-2);
     color: var(--text);
+}
+/* A folder the session only passes through (folder rules): greyed, not a link. */
+.crumbs span.through {
+    color: var(--text-muted);
+    opacity: 0.6;
+    cursor: default;
 }
 .crumbs .sep {
     width: 16px;

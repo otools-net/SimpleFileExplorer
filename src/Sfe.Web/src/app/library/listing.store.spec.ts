@@ -85,6 +85,37 @@ describe('ListingStore', () => {
             expect(store.can('tags.assign', folder)).toBe(false);
         });
 
+        it('goes from the top to where the library starts, in place of the top in the history', async () => {
+            const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => {});
+            const access = { rights: ['library.browse'], pathOnly: true, start: 'a/b/c' };
+            api.browse.mockResolvedValue(listing([folder], { access }));
+
+            await store.load();
+
+            expect(navigate).toHaveBeenCalledWith({ path: 'a/b/c' }, { replace: true });
+            expect(store.items()).toEqual([]);
+            expect(store.status()).toBe('loading');
+            expect(store.passesThrough('')).toBe(true);
+            expect(store.passesThrough('a/b')).toBe(true);
+            expect(store.passesThrough('a/b/c')).toBe(false);
+        });
+
+        it('stays in a folder at or below where the library starts, and anywhere without a start', async () => {
+            const navigate = vi.spyOn(store, 'navigate').mockImplementation(() => {});
+            const access = { rights: ['library.browse'], pathOnly: false, start: 'a/b' };
+            api.browse.mockResolvedValue(listing([a], { path: 'a/b/c', access }));
+            store.route.set({ path: 'a/b/c', q: '', sort: '', desc: false });
+            await store.load();
+            expect(store.items()).toEqual([a]);
+            expect(store.passesThrough('a')).toBe(true);
+
+            api.browse.mockResolvedValue(listing([a]));
+            store.route.set({ path: '', q: '', sort: '', desc: false });
+            await store.load();
+            expect(navigate).not.toHaveBeenCalled();
+            expect(store.passesThrough('')).toBe(false);
+        });
+
         it('leaves the rights of the space as they are without rules, and in searches', async () => {
             api.browse.mockResolvedValue(listing([a]));
             await store.load();

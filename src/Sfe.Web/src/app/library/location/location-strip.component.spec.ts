@@ -173,3 +173,34 @@ describe('LocationComponent new folder button', () => {
         expect(button()).toBeNull();
     });
 });
+
+describe('LocationComponent where the library starts deep down', () => {
+    it('greys the folders above the start, not links, and goes no higher than the start', async () => {
+        api.browse.mockResolvedValue({
+            path: 'Media/2020',
+            name: '2020',
+            parentPath: 'Media',
+            items: [],
+            offset: 0,
+            limit: 100,
+            total: 0,
+            directoryCount: 0,
+            fileCount: 0,
+            access: { rights: ['library.browse'], pathOnly: false, start: 'Media/2020' },
+        } as DirectoryListing);
+        store.route.set({ path: 'Media/2020', q: '', sort: '', desc: false });
+        await store.load();
+        const fixture = TestBed.createComponent(LocationComponent);
+        await settle();
+        const element = fixture.nativeElement as HTMLElement;
+
+        expect([...element.querySelectorAll('.crumbs .through')].map((span) => span.textContent)).toEqual([
+            'Library',
+            'Media',
+        ]);
+        expect(element.querySelectorAll('.crumbs a')).toHaveLength(0);
+        const up = element.querySelector<HTMLAnchorElement>('.folder-nav a')!;
+        expect(up.getAttribute('aria-disabled')).toBe('true');
+        expect(up.title).toBe('This is the top of the folders you can see.');
+    });
+});

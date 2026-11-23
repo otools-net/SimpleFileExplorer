@@ -44,7 +44,8 @@ layout. Hover the number for its meaning.
 
 ![A folder with its folder pictures](../images/library-folders.png)
 
-- The path (breadcrumbs) at the top goes to any folder above.
+- The path (breadcrumbs) at the top goes to any folder above. When you may only see one folder deep down, the
+  library opens there, and the folders above it are greyed: they only lead to it.
 - The buttons before the path go to the **parent folder** (also Backspace or Alt+↑) and to the **previous / next
   folder** of the parent (also `[` and `]`), in the order the parent is sorted by the current sort.
 - Once you scroll down past the path, a slim bar under the top bar keeps these buttons and the folder's name (with its

@@ -102,10 +102,14 @@ public sealed record DirectoryListing(
 /// <param name="PathOnly">It doesn't see the folder: the folder only leads to what it sees below.</param>
 /// <param name="Children">The entries whose access differs from the folder's, by name; the others have the
 /// folder's.</param>
+/// <param name="Start">Where the asker's library starts when not at the top: the folders above it only lead there,
+/// one way (agents/docs/features/folder-access.md, "Start folder"). Null when it starts at the top, and on
+/// children.</param>
 public sealed record FolderAccessView(
     IReadOnlyList<string> Rights,
     bool PathOnly,
-    IReadOnlyDictionary<string, FolderAccessView>? Children = null
+    IReadOnlyDictionary<string, FolderAccessView>? Children = null,
+    string? Start = null
 );
 
 /// <param name="Previous">The folder listed before this one in its parent; null for the first one or the root.</param>

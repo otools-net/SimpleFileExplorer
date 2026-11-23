@@ -32,6 +32,14 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public List<string> Rights { get; set; }
 #endif
+        /// <summary>The start property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? Start { get; set; }
+#nullable restore
+#else
+        public string Start { get; set; }
+#endif
         /// <summary>
         /// Instantiates a new <see cref="global::Otools.Net.Sfe.Client.Generated.Models.FolderAccessView"/> and sets the default values.
         /// </summary>
@@ -60,6 +68,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "children", n => { Children = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.FolderAccessView_children>(global::Otools.Net.Sfe.Client.Generated.Models.FolderAccessView_children.CreateFromDiscriminatorValue); } },
                 { "pathOnly", n => { PathOnly = n.GetBoolValue(); } },
                 { "rights", n => { Rights = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
+                { "start", n => { Start = n.GetStringValue(); } },
             };
         }
         /// <summary>
@@ -72,6 +81,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.FolderAccessView_children>("children", Children);
             writer.WriteBoolValue("pathOnly", PathOnly);
             writer.WriteCollectionOfPrimitiveValues<string>("rights", Rights);
+            writer.WriteStringValue("start", Start);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

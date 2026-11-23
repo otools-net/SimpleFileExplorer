@@ -9,6 +9,8 @@
             }
             @if (last && !store.route().q) {
                 <span class="current" aria-current="page">{{ crumb.name }}</span>
+            } @else if (crumb.through) {
+                <span class="through" [title]="links.throughTitle">{{ crumb.name }}</span>
             } @else {
                 <!-- data-path: dragged onto the quick links, it adds the folder; data-drop: items dropped on it move there. -->
                 <a

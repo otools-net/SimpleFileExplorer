@@ -8525,7 +8525,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/name.dialog.ts:19</note>
         <note category="location">src/app/files/name.dialog.ts:111</note>
-        <note category="location">src/app/library/location/location.component.html:85,86</note>
+        <note category="location">src/app/library/location/location.component.html:87,88</note>
         <note category="description">dialog title</note>
       </notes>
       <segment>
@@ -8535,7 +8535,7 @@ Space “Holiday photos”
     <unit id="5695157036278702587">
       <notes>
         <note category="location">src/app/files/name.dialog.ts:20</note>
-        <note category="location">src/app/library/location/location.component.html:72,73</note>
+        <note category="location">src/app/library/location/location.component.html:74,75</note>
         <note category="description">dialog title</note>
       </notes>
       <segment>
@@ -14698,7 +14698,7 @@ Space “Holiday photos”
     <unit id="4434941750967738192">
       <notes>
         <note category="location">src/app/library/folder-menu.ts:307</note>
-        <note category="location">src/app/library/location/location.component.html:87,88</note>
+        <note category="location">src/app/library/location/location.component.html:89,90</note>
       </notes>
       <segment>
         <source>Make a new folder in this folder (Shift+N).</source>
@@ -14715,7 +14715,7 @@ Space “Holiday photos”
     <unit id="2946216077309757238">
       <notes>
         <note category="location">src/app/library/folder-menu.ts:316</note>
-        <note category="location">src/app/library/location/location.component.html:74,75</note>
+        <note category="location">src/app/library/location/location.component.html:76,77</note>
       </notes>
       <segment>
         <source>Make a new empty file in this folder.</source>
@@ -15146,7 +15146,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5083853018913650507">
       <notes>
-        <note category="location">src/app/library/listing.store.ts:217,218</note>
+        <note category="location">src/app/library/listing.store.ts:228,229</note>
       </notes>
       <segment>
         <source>“<ph id="0" equiv="name" disp="name"/>” is not among the first <ph id="1" equiv="limit" disp="limit"/> items of this folder. Scroll down to find it.</source>
@@ -15154,7 +15154,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8514850206285569078">
       <notes>
-        <note category="location">src/app/library/listing.store.ts:219</note>
+        <note category="location">src/app/library/listing.store.ts:230</note>
       </notes>
       <segment>
         <source>“<ph id="0" equiv="name" disp="name"/>” is not in this folder any more.</source>
@@ -15162,7 +15162,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1423388579464336303">
       <notes>
-        <note category="location">src/app/library/listing.store.ts:260</note>
+        <note category="location">src/app/library/listing.store.ts:271</note>
       </notes>
       <segment>
         <source>Could not load more items: <ph id="0" equiv="reason" disp="error.message"/></source>
@@ -15179,7 +15179,7 @@ Space “Holiday photos”
     <unit id="5064816944902805732">
       <notes>
         <note category="location">src/app/library/location/folder-nav.component.ts:47</note>
-        <note category="location">src/app/library/location/location-links.service.ts:53</note>
+        <note category="location">src/app/library/location/location-links.service.ts:61</note>
       </notes>
       <segment>
         <source>Previous folder</source>
@@ -15188,7 +15188,7 @@ Space “Holiday photos”
     <unit id="5523357630140634984">
       <notes>
         <note category="location">src/app/library/location/folder-nav.component.ts:47</note>
-        <note category="location">src/app/library/location/location-links.service.ts:61</note>
+        <note category="location">src/app/library/location/location-links.service.ts:69</note>
       </notes>
       <segment>
         <source>Next folder</source>
@@ -15202,9 +15202,25 @@ Space “Holiday photos”
         <source>Nearby folders</source>
       </segment>
     </unit>
+    <unit id="3194450713980084670">
+      <notes>
+        <note category="location">src/app/library/location/location-links.service.ts:41,42</note>
+      </notes>
+      <segment>
+        <source>You can&apos;t open this folder: it only leads to the folders below it that you can see.</source>
+      </segment>
+    </unit>
+    <unit id="8658182220357967970">
+      <notes>
+        <note category="location">src/app/library/location/location-links.service.ts:53</note>
+      </notes>
+      <segment>
+        <source>This is the top of the folders you can see.</source>
+      </segment>
+    </unit>
     <unit id="1975867108386612355">
       <notes>
-        <note category="location">src/app/library/location/location-links.service.ts:46</note>
+        <note category="location">src/app/library/location/location-links.service.ts:54</note>
       </notes>
       <segment>
         <source>Go up to “<ph id="0" equiv="folder" disp="parentName"/>” (Backspace).</source>
@@ -15212,7 +15228,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8410467823515066435">
       <notes>
-        <note category="location">src/app/library/location/location-links.service.ts:50</note>
+        <note category="location">src/app/library/location/location-links.service.ts:58</note>
       </notes>
       <segment>
         <source>Previous folder: “<ph id="0" equiv="folder" disp="siblings.previous.name"/>”.</source>
@@ -15220,7 +15236,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1378495081338609754">
       <notes>
-        <note category="location">src/app/library/location/location-links.service.ts:52</note>
+        <note category="location">src/app/library/location/location-links.service.ts:60</note>
       </notes>
       <segment>
         <source>This is the first folder.</source>
@@ -15228,7 +15244,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5512020077384015674">
       <notes>
-        <note category="location">src/app/library/location/location-links.service.ts:58</note>
+        <note category="location">src/app/library/location/location-links.service.ts:66</note>
       </notes>
       <segment>
         <source>Next folder: “<ph id="0" equiv="folder" disp="siblings.next.name"/>”.</source>
@@ -15236,7 +15252,7 @@ Space “Holiday photos”
     </unit>
     <unit id="958436430283944501">
       <notes>
-        <note category="location">src/app/library/location/location-links.service.ts:60</note>
+        <note category="location">src/app/library/location/location-links.service.ts:68</note>
       </notes>
       <segment>
         <source>This is the last folder.</source>
@@ -15244,7 +15260,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1681901749044148502">
       <notes>
-        <note category="location">src/app/library/location/location-links.service.ts:71</note>
+        <note category="location">src/app/library/location/location-links.service.ts:79</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="hint" disp="title"/> This is folder <ph id="1" equiv="position" disp="position"/> of <ph id="2" equiv="count" disp="count"/>.</source>
@@ -15261,7 +15277,7 @@ Space “Holiday photos”
     <unit id="5341365790745562200">
       <notes>
         <note category="location">src/app/library/location/location-strip.component.ts:38,39</note>
-        <note category="location">src/app/library/location/location.component.html:25,26</note>
+        <note category="location">src/app/library/location/location.component.html:27,28</note>
       </notes>
       <segment>
         <source>Search “<ph id="0" equiv="INTERPOLATION" disp="{{ store.route().q }}"/>”</source>
@@ -15278,7 +15294,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5744880155732837230">
       <notes>
-        <note category="location">src/app/library/location/location.component.html:46,47</note>
+        <note category="location">src/app/library/location/location.component.html:48,49</note>
       </notes>
       <segment>
         <source>Upload files</source>
@@ -15286,7 +15302,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6268007114657674089">
       <notes>
-        <note category="location">src/app/library/location/location.component.html:48,49</note>
+        <note category="location">src/app/library/location/location.component.html:50,51</note>
       </notes>
       <segment>
         <source>Upload files into this folder, or drop them on the page.</source>
@@ -15294,7 +15310,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6148964674735727397">
       <notes>
-        <note category="location">src/app/library/location/location.component.html:57,58</note>
+        <note category="location">src/app/library/location/location.component.html:59,60</note>
       </notes>
       <segment>
         <source>Upload a folder</source>
@@ -15302,7 +15318,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4555216765553875888">
       <notes>
-        <note category="location">src/app/library/location/location.component.html:59,60</note>
+        <note category="location">src/app/library/location/location.component.html:61,62</note>
       </notes>
       <segment>
         <source>Upload a folder, with everything in it, into this folder.</source>
@@ -15310,7 +15326,7 @@ Space “Holiday photos”
     </unit>
     <unit id="9075842703518115522">
       <notes>
-        <note category="location">src/app/library/location/location.component.html:99,100</note>
+        <note category="location">src/app/library/location/location.component.html:101,102</note>
       </notes>
       <segment>
         <source>Copy the full path of this folder</source>
@@ -15318,7 +15334,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2957647181775177138">
       <notes>
-        <note category="location">src/app/library/location/location.component.html:101,102</note>
+        <note category="location">src/app/library/location/location.component.html:103,104</note>
       </notes>
       <segment>
         <source>Copy the full path of this folder on the server.</source>
@@ -15326,7 +15342,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7699622144571229146">
       <notes>
-        <note category="location">src/app/library/location/location.component.html:142,143</note>
+        <note category="location">src/app/library/location/location.component.html:144,145</note>
       </notes>
       <segment>
         <source>Sort by</source>
@@ -15334,7 +15350,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4386296856930513376">
       <notes>
-        <note category="location">src/app/library/location/location.component.html:154,155</note>
+        <note category="location">src/app/library/location/location.component.html:156,157</note>
       </notes>
       <segment>
         <source>Sort direction</source>

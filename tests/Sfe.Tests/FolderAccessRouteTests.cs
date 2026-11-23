@@ -429,6 +429,29 @@ public sealed class FolderAccessRouteTests
     }
 
     [TestMethod]
+    public async Task ListingsTellWhereALibraryReachedOneWayStarts()
+    {
+        var seen = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse");
+        await RuleAsync("", FolderLevel.Hidden);
+        var several = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse");
+        await RuleAsync("Gone/Away", FolderLevel.Read);
+        foreach (var path in new[] { "Media", "Edited" })
+            await _rules.SetAsync(_tenant, path, FolderPrincipalRef.Group(_users), null, null, Token);
+        var root = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse");
+        var start = await GetAsync<DirectoryListing>(_alice, $"{V1}/browse?path=RepeatedDir/ChildDir");
+
+        Assert.IsNull(seen.Access!.Start, "Alice sees the top of the library");
+        Assert.IsNull(several.Access!.Start, "The top leads to Media, Edited and RepeatedDir");
+        Assert.IsTrue(root.Access!.PathOnly);
+        Assert.AreEqual(
+            "RepeatedDir/ChildDir",
+            root.Access.Start,
+            "One way down: a rule on a folder that isn't there leads nowhere"
+        );
+        Assert.AreEqual("RepeatedDir/ChildDir", start.Access!.Start, "Every listing tells it");
+    }
+
+    [TestMethod]
     public async Task ManagersSetRulesAndSeeWhoMayDoWhat()
     {
         using var refused = await _alice.PutAsJsonAsync(

@@ -87,6 +87,45 @@ public static class FolderChecks
     }
 
     /// <summary>
+    /// Where the subject's library starts: from the top, down through the folders it only passes through as long as
+    /// each leads one way, to the first that it sees or that leads several ways. Empty when that is the top itself.
+    /// Every folder the subject sees is there or below, so the folders above it are only ever passed through.
+    /// </summary>
+    /// <remarks>O(depth × rules), and a look at the disk per folder passed through.</remarks>
+    public static string StartFolder(this AccessState state, LibraryPaths paths)
+    {
+        var folder = string.Empty;
+        while (
+            state.At(paths, folder) is { PathOnly: true }
+            && OnlyWayDown(state, paths, folder) is { } next
+            && state.At(paths, next) is { IsVisible: true }
+        )
+        {
+            folder = next;
+        }
+        return folder;
+    }
+
+    /// <summary>
+    /// The one sub-folder of <paramref name="folder"/> (only passed through) that leads to what the subject sees and
+    /// exists; null when none or several do.
+    /// </summary>
+    private static string? OnlyWayDown(AccessState state, LibraryPaths paths, string folder)
+    {
+        string? only = null;
+        foreach (var (name, access) in state.Access.FolderPolicy.ChildrenWithRules(folder, state.Access.Rights))
+        {
+            var child = folder.Length == 0 ? name : folder + "/" + name;
+            if (!access.IsVisible || !paths.TryResolve(child, out var full) || !Directory.Exists(full))
+                continue;
+            if (only is not null)
+                return null;
+            only = child;
+        }
+        return only;
+    }
+
+    /// <summary>
     /// The items of a page of index results the subject sees where they really are. Scans follow folder links, so an
     /// index row's path can lead through a link into a folder the subject doesn't see: the query's filter can't tell,
     /// this check can (one look at the disk per item, for subjects folder rules restrict only).

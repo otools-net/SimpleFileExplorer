@@ -300,7 +300,11 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   4–5 clicks). Give Groups, Accounts, Visitors and Folder access their own sub-pages (`admin?section=&page=&space=`),
   index them in `admin-search.ts`, add "Folder access…" to a folder's menu for administrators. Target: any admin
   page in **at most 3 clicks** from the library. Old addresses kept through `ADMIN_MOVED`.
-- [ ] **3.2 Deep single folder opened directly** (IDEA-027 part 1, S–M). A user whose rights reach only `/a/b/c/d`
+- [x] **3.2 Deep single folder opened directly** (IDEA-027 part 1, S–M). Done 2026-11-23: `FolderChecks.StartFolder`
+  (path-only folders followed while one way leads down and exists), `access.start` on every restricted `browse`;
+  `ListingStore.leadsToStart` replaces a folder above it (the top) by it in the history, `passesThrough` by depth
+  greys those crumbs, disables up and Backspace; several ways: links as before (decision in folder-access.md). No
+  screenshot (a greyed crumb). Was: A user whose rights reach only `/a/b/c/d`
   sees path-only parents today and clicks through them. On entering the library root, follow path-only folders with
   a single branch down to the first usable one (`access.pathOnly`, server-side so it costs one call). Breadcrumbs:
   path-only parents shown greyed, not clickable. Several branches: the root keeps listing the path-only branches.
@@ -433,8 +437,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-23):** phases 1 and 2 done, and 3.1 (shallower administration). Next: **3.2** (deep single
-  folder); steps of phase 3 may be taken in any order except 3.6 after 3.5, and 3.3 uses 2.9's greyed entries.
+- **Last session (2026-11-23):** phases 1 and 2 done, 3.1 (shallower administration) and 3.2 (deep single folder).
+  Next: **3.3** (feature × mode matrix); steps of phase 3 may be taken in any order except 3.6 after 3.5, and 3.3 uses 2.9's greyed entries.
 - `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd
   C:/workspace/…` first.
 - The docs-screenshots scene for `operations-panel.png` is `files` (it calls `operations()` at its end), not

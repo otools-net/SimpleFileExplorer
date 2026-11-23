@@ -7,6 +7,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **A folder deep down opens directly**: someone whose folder rules let them see one folder only, deep in the library
+  (the folders above only lead there, one way), starts in it; the folders above show greyed in the path, not as links,
+  and the parent folder button and Backspace stop there. Where the folders above lead several ways, they list them as
+  before. `GET api/v1/browse` gives `access.start` (where the asker's library starts) to those folder rules restrict.
 - **Files being written are marked**: a file copied from a connection, a zip being made and a folder being extracted
   (`name.sfe-partial` until complete) show faded with a "being written" mark in listings; they can't be opened or
   previewed, their menu keeps Delete, Copy full path and Properties, and scans leave them out, so search and

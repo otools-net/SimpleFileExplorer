@@ -5,6 +5,11 @@ export function encodePath(path: string): string {
     return path.split('/').map(encodeURIComponent).join('/');
 }
 
+/** How many folders down from the root: 0 for the root, 1 for `a`, 2 for `a/b`. */
+export function pathDepth(path: string): number {
+    return path ? path.split('/').length : 0;
+}
+
 export function parentPath(path: string): string {
     return path.split('/').slice(0, -1).join('/');
 }

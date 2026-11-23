@@ -7,7 +7,7 @@ import { isViewable } from '../formats/formats';
 import { LibraryItem } from '../core/models';
 import { FileTags, TagDetails, TagScope, TagSummary } from '../core/tag.models';
 import { FolderSiblings, ListingPage } from './library.models';
-import { baseName, parentPath } from '../core/paths';
+import { baseName, parentPath, pathDepth } from '../core/paths';
 import { readPreference, writePreference } from '../core/preferences';
 import { ToastService } from '../core/toast.service';
 import { restorePosition } from './items/listing-position';
@@ -89,6 +89,17 @@ export class ListingStore {
         return (own ?? access).rights.includes(right);
     }
 
+    /**
+     * Where the session's library starts when folder rules let it reach one folder only, deep down (the server's
+     * `access.start`): every folder it sees is there or below. Kept through searches; '' for the top.
+     */
+    readonly start = signal('');
+
+    /** `path`, a library folder, is above `start`: the session only passes through it, never stays there. */
+    passesThrough(path: string): boolean {
+        return !this.route().c && pathDepth(path) < pathDepth(this.start());
+    }
+
     /** Path of the file last (de)selected: shift-click extends from it. */
     private anchor: string | null = null;
     private loading: Promise<boolean> | null = null;
@@ -161,7 +172,7 @@ export class ListingStore {
         try {
             const minimum = Math.max(this.pageSize(), restore.loaded || 0);
             const page = await this.fetchPage(null, minimum);
-            if (generation !== this.generation()) return;
+            if (generation !== this.generation() || this.leadsToStart(page)) return;
             this.accept(page);
             // The server caps a page (`MaxPageSize`): coming back to more items than that takes the next pages too,
             // or the scroll position below them couldn't be restored.
@@ -582,6 +593,19 @@ Scroll down to find it.`
         return c
             ? connectionPage(this.api, this.config, c, { path, offset, limit, sort, desc }, signal)
             : this.api.browse({ path, offset, limit, sort, desc }, signal);
+    }
+
+    /**
+     * Notes where the session's library starts from a library folder's first page; a folder above it (the top, as the
+     * library is entered) is replaced by the start folder, in the history too. True when it goes there.
+     */
+    private leadsToStart(page: ListingPage): boolean {
+        const { c, q, path } = this.route();
+        if (q || c || !('directoryCount' in page)) return false;
+        this.start.set(page.access?.start ?? '');
+        if (!this.passesThrough(path)) return false;
+        this.navigate({ path: this.start() }, { replace: true });
+        return true;
     }
 
     private accept(page: ListingPage): void {

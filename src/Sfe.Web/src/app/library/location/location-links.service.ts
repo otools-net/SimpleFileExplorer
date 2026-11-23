@@ -12,6 +12,8 @@ export interface FolderLink {
 export interface Crumb {
     name: string;
     path: string;
+    /** A folder the session only passes through (`ListingStore.passesThrough`): shown, not a link. */
+    through: boolean;
 }
 
 /**
@@ -32,8 +34,12 @@ export class LocationLinks {
         return [
             { name: this.config.config()?.rootName ?? '', path: '' },
             ...segments.map((segment, i) => ({ name: segment, path: segments.slice(0, i + 1).join('/') })),
-        ];
+        ].map((crumb) => ({ ...crumb, through: this.store.passesThrough(crumb.path) }));
     });
+
+    /** The hint of a folder the session only passes through. */
+    readonly throughTitle = $localize`You can't open this folder: it only leads to the folders below it that you can \
+see.`;
 
     /** Parent, previous and next folder links, while browsing below the root; a null path is disabled. */
     readonly folderNav = computed((): FolderLink[] | null => {
@@ -43,7 +49,9 @@ export class LocationLinks {
         const siblings = this.store.siblings();
         const parentName = baseName(parent) || this.config.config()?.rootName;
         return [
-            { path: parent, title: $localize`Go up to “${parentName}:folder:” (Backspace).` },
+            this.store.passesThrough(parent)
+                ? { path: null, title: $localize`This is the top of the folders you can see.` }
+                : { path: parent, title: $localize`Go up to “${parentName}:folder:” (Backspace).` },
             {
                 path: siblings?.previous?.path ?? null,
                 title: siblings?.previous

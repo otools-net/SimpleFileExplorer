@@ -386,7 +386,7 @@ export class LibraryPageComponent implements OnInit {
             this.dialogs.searchHelp()?.open();
         } else if ((event.key === 'Backspace' || (event.altKey && event.key === 'ArrowUp')) && !q && path) {
             event.preventDefault();
-            this.store.navigate({ path: parentPath(path) });
+            if (!this.store.passesThrough(parentPath(path))) this.store.navigate({ path: parentPath(path) });
         } else if ((event.key === '[' || event.key === ']') && !q && this.store.siblings()) {
             const sibling = event.key === '[' ? this.store.siblings()!.previous : this.store.siblings()!.next;
             if (sibling) this.store.navigate({ path: sibling.path });
