@@ -289,7 +289,7 @@ has them too, and the folder it goes into (also in a new tab). The browser warns
 you leave the page while files are being sent.
 
 **Interrupted uploads go on:** if the page is reloaded or closed, or the connection drops, the panel lists the
-unfinished files when you come back. Pick or drop the same files into the same folder again: they go on where they
+unfinished files when you come back (also those into a connection such as Dropbox, and after the server restarted). Pick or drop the same files into the same folder again: they go on where they
 stopped. What was sent is kept on the server for the space's **Keep unfinished uploads for** (48 hours by default)
 after the last piece arrived.
 

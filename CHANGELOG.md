@@ -28,6 +28,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Changed
 
+- **Uploads into a connection go on** after the page is reloaded or the server restarts, as the library's do: the
+  operations panel lists them again and the same file picked or dropped sends the rest. The server keeps their
+  records in `connection-uploads` beside the setup code (the provider's upload session protected by the server's
+  keys); those idle for 24 hours, or of a connection removed, are removed every 10 minutes and at start.
 - Unfinished uploads not touched for **Keep unfinished uploads for** are now removed every 10 minutes and at start,
   not only when someone starts or lists uploads, so their pieces don't stay on the disk.
 - A "for all" answer to a name clash now holds apart for clashes of two folders that could be merged and for the

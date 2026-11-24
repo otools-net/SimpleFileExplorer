@@ -140,6 +140,12 @@ public static class AccessServiceCollectionExtensions
         services.AddSingleton<RemoteListings>();
         services.AddSingleton<ConnectionGates>();
         services.AddSingleton<Transfers.TransferCalls>();
+        // Unfinished uploads into connections, kept across restarts beside the setup code (sessions protected).
+        services.AddSingleton(sp => new RemoteUploadRecords(
+            Path.Combine(Path.GetDirectoryName(codePath)!, RemoteUploadRecords.FolderName),
+            sp.GetRequiredService<ICredentialProtector>(),
+            sp.GetRequiredService<ILogger<RemoteUploads>>()
+        ));
         services.AddSingleton<RemoteUploads>();
         // What SFE changes in connections, told to every library's index of them and to the change feeds.
         services.AddSingleton<ConnectionChanges>();

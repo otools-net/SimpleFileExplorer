@@ -412,9 +412,14 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     a try. No whole-file hash (a browser can't stream a digest). No screenshot (nothing visible). `api.service.ts`
     kept at its baseline (`UploadChunk` and `chunkHeaders` in `core/api-query.ts`); `uploads.ts` 449 → 450 (an
     import).
-  - [ ] **4.3b connection uploads kept across restarts**: `RemoteUploads` records written to the work folder (the
-    provider's session id is a secret: stored as the connection's credentials are), listed after a reload, swept in
-    the background.
+  - [x] **4.3b connection uploads kept across restarts**. Done 2026-11-24: `RemoteUploadRecords` writes each
+    record to `connection-uploads/{id}.json` beside the setup code (not a work folder: `RemoteUploads` is a root
+    singleton, which can't use a library's services), the provider's session through `ICredentialProtector`; read
+    back on first use, a record that doesn't unprotect deleted; written when an upload starts and after each chunk.
+    `RemoteUploadSweepWorker` (root, at start and every 10 minutes) removes idle uploads and those of removed
+    connections, skipping one whose gate is held. Client: `resume()` also lists each usable connection with write
+    access, `findInterrupted` matches the connection. No migration (nothing was stored), no screenshot (the panel is
+    unchanged). Readability baselines raised by the added lines: `api.service.ts` 779 → 780, `uploads.ts` 450 → 458.
   - [ ] **4.3c load test** (`agents/tools/upload-load/`: 5,000 small files through `Sfe.Client`, one file of 100+ GB
     on a scratch disk, timings) and fixes of what it finds.
 - [ ] **4.4 Ctrl+Z** (IDEA-026, S–M). Toast Undo exists for rename, batch rename, move, delete, duplicate removal.
@@ -534,11 +539,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-24):** 4.3 split in three; **4.3a** (upload sweep, chunk checksums) done. Next: **4.3b**
-  (connection uploads kept across restarts). Step 4.6 (read-only or writable shown) was added by the owner on
-  2026-11-23.
-- 4.3a is committed (`bd57c98f`), its refactoring (`UploadRecords`, `UploadPlaces`) in the same commit: both touch
-  `Uploads.cs`.
+- **Last session (2026-11-24):** **4.3b** (connection uploads kept across restarts) done. Next: **4.3c** (upload
+  load test). Step 4.6 (read-only or writable shown) was added by the owner on 2026-11-23.
+- A restart is tested for real in `ConnectionUploadRouteTests.AnUploadGoesOnAfterARestart`: dispose the factory and
+  make another over the same `TestLibrary` (its keys folder persists, so protected text unprotects).
 - `BackgroundService` (.NET 10) runs `ExecuteAsync` apart from `StartAsync`: a test of a worker waits for its effect.
 - Client specs that drive `UploadQueue` call `instantDigests()` (`testing/fakes.ts`): Node's `crypto.subtle`
   answers after `settle()`.

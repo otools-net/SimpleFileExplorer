@@ -423,7 +423,8 @@ export class Api {
     startUpload = (start: UploadStart, connection?: number | null) =>
         this.post<UploadInfo>(uploadsRoute(connection), start);
     /** The session's unfinished uploads into the library (not a connection's); `all`: everyone's (`settings.files`). */
-    uploads = (all = false) => this.get<UploadInfo[]>(uploadsRoute(), { all: all || null });
+    uploads = (all = false, connection?: number | null) =>
+        this.get<UploadInfo[]>(uploadsRoute(connection), { all: all || null });
     /** Sends `chunk` at offset `at`; the upload also on a 409 (the server has another offset): go on from there. */
     sendUploadChunk = (id: string, at: number, chunk: UploadChunk, signal?: AbortSignal, connection?: number | null) =>
         this.send(

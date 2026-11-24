@@ -158,8 +158,10 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
   folder. A connection made read only shows none of them.
 - **Upload** files or folders (the button, or dropping them from the desktop) on such a connection: each part goes
   on to Dropbox as it arrives, nothing is kept on the server. As in the library, a name already taken asks keep both,
-  replace or skip, and the space's largest file size applies. An upload into a connection interrupted by closing the
-  page starts over.
+  replace or skip, and the space's largest file size applies. An upload into a connection interrupted by reloading
+  or closing the page, or by a restart of the server, goes on as in the library: the operations panel lists it when
+  you come back, and picking or dropping the same file into the same folder sends the rest. Unfinished uploads into a
+  connection are dropped after 24 hours without a piece, or when the connection is removed.
 - When Dropbox no longer accepts the connection's sign-in, the listing says so and the connection shows **Sign in
   again** for whoever manages it. When Dropbox asks to wait (too many requests), wait a moment and try again.
 

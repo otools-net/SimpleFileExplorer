@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Otools.Net.Sfe.Api;
 using Otools.Net.Sfe.Api.Endpoints;
 using Otools.Net.Sfe.Core.Access;
@@ -22,7 +23,7 @@ namespace Otools.Net.Sfe.Tests;
 /// <summary>
 /// Resumable uploads into a connection through <c>api/connections/{id}/files/uploads</c>: the library's protocol,
 /// chunks passed on to the provider's session, offsets, names taken, an upload seen by its owner only, names and
-/// targets refused, and the provider's session id never in an answer.
+/// targets refused, the provider's session id never in an answer, and an upload going on after a restart.
 /// </summary>
 [TestClass]
 public sealed class ConnectionUploadRouteTests
@@ -49,14 +50,7 @@ public sealed class ConnectionUploadRouteTests
     public async Task InitializeAsync()
     {
         _library = new TestLibrary();
-        _factory = ApiClients
-            .CreateFactory(_library)
-            .WithWebHostBuilder(builder =>
-                builder
-                    // The space's limit holds on a connection too (BadNamesAndTargetsLeavingTheRootAreRefused).
-                    .UseSetting("Sfe:Files:Uploads:MaxFileSizeMegabytes", "1")
-                    .ConfigureServices(services => services.AddSingleton<IConnectionProvider>(_provider))
-            );
+        _factory = CreateFactory();
         await ApiClients.SetUpAsync(_factory, Cancel);
         var accounts = _factory.Services.GetRequiredService<AccessService>();
         var tenant = (await accounts.GetTenantsAsync(Cancel)).Single().Id;
@@ -136,6 +130,45 @@ public sealed class ConnectionUploadRouteTests
             Cancel
         );
         CollectionAssert.Contains(listing!.Listing.Items.Select(i => i.Name).ToArray(), "new.txt");
+    }
+
+    [TestMethod]
+    public async Task AnUploadGoesOnAfterARestart()
+    {
+        var upload = await StartAsync(new UploadStart("Trips", "later.txt", 11));
+        await SendAsync(_alice, upload.Id, 0, "hello ");
+        var folder = _factory.Services.GetRequiredService<RemoteUploadRecords>().Folder;
+        var record = await File.ReadAllTextAsync(Directory.GetFiles(folder, "*.json").Single(), Cancel);
+
+        await _factory.DisposeAsync();
+        _factory = CreateFactory();
+        _alice = await ApiClients.SignInAsync(_factory, "alice", "alice-password", Cancel);
+        var listed = await ListAsync(_alice);
+        await SendAsync(_alice, upload.Id, 6, "world");
+        using var finish = await FinishAsync(_alice, upload.Id, ConflictChoice.Ask);
+
+        // The provider's session is kept protected, never as it is.
+        Assert.IsFalse(record.Contains("session-", StringComparison.Ordinal));
+        Assert.AreEqual((upload.Id, 6L), (listed.Single().Id, listed.Single().Received));
+        Assert.AreEqual(HttpStatusCode.OK, finish.StatusCode);
+        Assert.AreEqual("hello world", _account.TextOf("Photos/Trips/later.txt"));
+        Assert.IsEmpty(Directory.GetFiles(folder));
+    }
+
+    [TestMethod]
+    public async Task TheUploadsOfAConnectionRemovedAreSweptInTheBackground()
+    {
+        await UploadAsync("gone.txt", "text");
+        var worker = _factory.Services.GetServices<IHostedService>().OfType<RemoteUploadSweepWorker>().Single();
+        await worker.SweepAsync(Cancel);
+        var kept = (await ListAsync(_alice)).Count;
+
+        var removed = await _factory.Services.GetRequiredService<ConnectionService>().RemoveAsync(_id, null, Cancel);
+        await worker.SweepAsync(Cancel);
+
+        Assert.AreEqual(1, kept);
+        Assert.AreEqual(AccessStatus.Ok, removed);
+        Assert.IsEmpty(Directory.GetFiles(_factory.Services.GetRequiredService<RemoteUploadRecords>().Folder));
     }
 
     [TestMethod]
@@ -297,6 +330,16 @@ public sealed class ConnectionUploadRouteTests
         Assert.AreEqual(ConnectionProblems.NotSupportedType, (await ReadAsync<ProblemDetails>(unsupported)).Type);
         Assert.IsFalse(_account.Exists("Photos/x.txt"));
     }
+
+    private WebApplicationFactory<Program> CreateFactory() =>
+        ApiClients
+            .CreateFactory(_library)
+            .WithWebHostBuilder(builder =>
+                builder
+                    // The space's limit holds on a connection too (BadNamesAndTargetsLeavingTheRootAreRefused).
+                    .UseSetting("Sfe:Files:Uploads:MaxFileSizeMegabytes", "1")
+                    .ConfigureServices(services => services.AddSingleton<IConnectionProvider>(_provider))
+            );
 
     private string Base => $"{V1}/connections/{_id}/files/uploads";
 

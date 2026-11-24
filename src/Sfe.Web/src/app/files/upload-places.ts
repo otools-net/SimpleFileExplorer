@@ -4,7 +4,7 @@ import { LibraryRoute } from '../library/library-route';
 /**
  * Where uploads go (agents/docs/features/uploads.md): the place listed when they start, kept by their batch while the
  * person goes elsewhere. A connection's id (`?c=`), its files reached through `api/connections/{id}/files/uploads…`;
- * null for the library's. Only the library's unfinished uploads are listed again after a reload.
+ * null for the library's. Unfinished uploads are listed again after a reload, the library's and each connection's.
  */
 export function uploadConnection(config: ConfigService): number | null {
     return config.place()?.id ?? null;

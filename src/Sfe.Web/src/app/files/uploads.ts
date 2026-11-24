@@ -5,6 +5,7 @@ import { isFileConflict, LibraryItem } from '../core/models';
 import { ConflictChoice, UploadInfo } from './file.models';
 import { baseName } from '../core/paths';
 import { Rights } from '../core/rights';
+import { UsableConnections } from '../core/usable-connections';
 import { ToastService } from '../core/toast.service';
 import { isRefusedChunk, readChunk } from './chunk-digest';
 import { currentPosition } from '../library/items/listing-position';
@@ -77,6 +78,7 @@ export interface UploadBatch {
 export class UploadQueue {
     private readonly api = inject(Api);
     private readonly config = inject(ConfigService);
+    private readonly connections = inject(UsableConnections);
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
 
@@ -115,29 +117,17 @@ export class UploadQueue {
         );
     }
 
-    /** Lists the uploads into the library a reload interrupted, once per page (a connection's are not listed). */
+    /**
+     * Lists the uploads a reload interrupted, once per page: the library's, and those into each connection the session
+     * may write in.
+     */
     async resume(): Promise<void> {
         if (this.resumed || !this.config.can(Rights.uploadFiles)) return;
         this.resumed = true;
-        let unfinished: UploadInfo[];
-        try {
-            unfinished = await this.api.uploads();
-        } catch {
-            return;
-        }
-        const byTarget = new Map<string, UploadInfo[]>();
-        for (const upload of unfinished) byTarget.set(upload.target, [...(byTarget.get(upload.target) ?? []), upload]);
-        const batches = [...byTarget].map(([target, uploads]) =>
-            this.batch(
-                target,
-                uploads.map((upload) => ({
-                    ...this.item(null, upload.name, upload.size, upload.modified ? Date.parse(upload.modified) : null),
-                    id: upload.id,
-                    sent: upload.received,
-                    state: 'interrupted' as const,
-                })),
-            ),
-        );
+        const writable = (await this.connections.load()).filter((connection) => connection.access === 'write');
+        const places = [null, ...writable.map((connection) => connection.id)];
+        const lists = await Promise.all(places.map((place) => this.api.uploads(false, place).catch(() => [])));
+        const batches = places.flatMap((place, i) => this.interruptedBatches(lists[i], place));
         if (batches.length) this.batches.update((list) => [...list, ...batches]);
     }
 
@@ -153,8 +143,8 @@ export class UploadQueue {
             files = files.filter((picked) => !tooLarge.includes(picked));
         }
         for (const picked of files) {
-            // The same file as an interrupted upload (into the library): it goes on there.
-            const interrupted = connection === null ? this.findInterrupted(target, picked) : null;
+            // The same file as an interrupted upload into that folder: it goes on there.
+            const interrupted = this.findInterrupted(target, connection, picked);
             if (interrupted) {
                 interrupted.file = picked.file;
                 interrupted.state = 'queued';
@@ -365,9 +355,27 @@ export class UploadQueue {
         item.message = message;
     }
 
-    private findInterrupted(target: string, picked: PickedFile): UploadItem | null {
+    /** Batches of the uploads into `connection` (the library: null) a reload cut off, one per folder. */
+    private interruptedBatches(unfinished: UploadInfo[], connection: number | null): UploadBatch[] {
+        const byTarget = new Map<string, UploadInfo[]>();
+        for (const upload of unfinished) byTarget.set(upload.target, [...(byTarget.get(upload.target) ?? []), upload]);
+        return [...byTarget].map(([target, uploads]) =>
+            this.batch(
+                target,
+                uploads.map((upload) => ({
+                    ...this.item(null, upload.name, upload.size, upload.modified ? Date.parse(upload.modified) : null),
+                    id: upload.id,
+                    sent: upload.received,
+                    state: 'interrupted' as const,
+                })),
+                connection,
+            ),
+        );
+    }
+
+    private findInterrupted(target: string, connection: number | null, picked: PickedFile): UploadItem | null {
         for (const batch of this.batches()) {
-            if (batch.target !== target) continue;
+            if (batch.target !== target || batch.connection !== connection) continue;
             const match = batch.items.find(
                 (item) =>
                     item.state === 'interrupted' &&

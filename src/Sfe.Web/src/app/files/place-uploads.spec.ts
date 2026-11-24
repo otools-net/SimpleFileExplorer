@@ -108,6 +108,41 @@ describe('Uploads into a connection', () => {
         expect(api.cancelUpload).toHaveBeenCalledWith(ID, 7);
     });
 
+    it("lists a connection's uploads a reload interrupted and goes on with one on that connection", async () => {
+        config = await loadConfig(api, fakeConfig({ connections: { levels: ['account'], kinds: [] } }));
+        const queue = TestBed.inject(UploadQueue);
+        api.connections.mockResolvedValue({
+            usable: [
+                { id: 7, kind: 'dropbox', name: 'Team', level: 'library', state: 'ready', access: 'write' },
+                { id: 8, kind: 'dropbox', name: 'Shared', level: 'library', state: 'ready', access: 'read' },
+            ],
+            managed: [],
+            groups: [],
+            libraries: [],
+        });
+        api.uploads.mockImplementation((_all, connection) =>
+            Promise.resolve(connection === 7 ? [upload({ received: 6 })] : []),
+        );
+        api.sendUploadChunk.mockResolvedValue(upload({ received: 10 }));
+        api.finishUpload.mockResolvedValue(item('Docs/new.txt', { size: 10 }));
+
+        await queue.resume();
+        const batch = queue.batches()[0];
+        enter({ access: 'write', uploadsInParts: true });
+        await queue.add([{ file: new File(['abcdefghij'], 'new.txt'), name: 'new.txt' }], 'Docs');
+        await settle();
+
+        // The library and the connection written in are asked; the one only read is not.
+        expect(api.uploads.mock.calls.map((call) => call[1])).toEqual([null, 7]);
+        expect(queue.batches()).toHaveLength(1);
+        expect(batch.connection).toBe(7);
+        expect(api.checkUploads).not.toHaveBeenCalled();
+        expect(api.startUpload).not.toHaveBeenCalled();
+        expect(api.sendUploadChunk.mock.calls[0][1]).toBe(6);
+        expect(api.finishUpload).toHaveBeenCalledWith(ID, 'ask', 7);
+        expect(batch.items[0].state).toBe('done');
+    });
+
     it("sends the library's uploads without a connection", async () => {
         const queue = TestBed.inject(UploadQueue);
         api.checkUploads.mockResolvedValue({ existing: [], canReplace: true });
@@ -142,6 +177,7 @@ describe('Upload routes', () => {
         void api.sendUploadChunk(ID, 0, { bytes: new Blob(['a']), digest: 'sha-256=:x:' }, undefined, connection);
         void api.finishUpload(ID, 'ask', connection);
         void api.cancelUpload(ID, connection);
+        void api.uploads(false, connection);
     }
 
     function requested(): string[] {
@@ -164,12 +200,12 @@ describe('Upload routes', () => {
             `PUT api/v1/connections/7/files/uploads/${ID}`,
             `POST api/v1/connections/7/files/uploads/${ID}/finish`,
             `DELETE api/v1/connections/7/files/uploads/${ID}`,
+            'GET api/v1/connections/7/files/uploads',
         ]);
     });
 
-    it("stay the library's otherwise, and the unfinished uploads listed are the library's", () => {
+    it("stay the library's otherwise", () => {
         callAll(null);
-        void api.uploads();
         expect(requested()).toEqual([
             'POST api/v1/files/uploads/check',
             'POST api/v1/files/uploads',

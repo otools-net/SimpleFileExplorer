@@ -43,6 +43,8 @@ public static class TenancyServiceCollectionExtensions
         services.AddHostedService<AuditLogWorker>();
         // The connections' cache: its folder checked, its age limit and removed connections kept.
         services.AddHostedService<ConnectionCacheWorker>();
+        // Unfinished uploads into connections: read back at start, the abandoned ones removed.
+        services.AddHostedService<RemoteUploadSweepWorker>();
         services.AddScoped<TenantScope>();
 
         // The types a library's services register, but those the whole server shares (registered here already).

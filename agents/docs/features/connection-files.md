@@ -6,10 +6,11 @@ Code: Api `ConnectionFileEndpoints` (browse, raw, thumbnails, properties), `Conn
 `ConnectionUploadEndpoints` (`ConnectionUploadSteps`,
 `ConnectionUploadNames`), `ConnectionProblems`, `OpenConnection`, `RemoteFileResult`, `RemoteRanges`; Core
 `Connections/RemoteListings` (`RemoteSnapshot`, `RemoteSort`), `Connections/Indexing/RemoteIndexListings`,
-`RemoteArchives`, `RemoteUploads`, `ConnectionGates`. Client `library/connection-pages.ts`, `place-files.ts`,
-`place-transfers.ts`, `place-properties.ts`, `upload-places.ts`, `files/drag-items.ts`, `file-clipboard.ts`. Tests:
-`ConnectionFileRouteTests`, `ConnectionSearchRouteTests`, `RemoteIndexSearchTests`, `ConnectionWriteRouteTests`,
-`ConnectionUploadRouteTests`, `ConnectionGatesTests`, `RemoteListingsTests`, `place-*.spec.ts`. The connection itself:
+`RemoteArchives`, `RemoteUploads` (`RemoteUploadRecords`), `ConnectionGates`; Api `RemoteUploadSweepWorker`. Client
+`library/connection-pages.ts`, `place-files.ts`, `place-transfers.ts`, `place-properties.ts`, `upload-places.ts`,
+`files/drag-items.ts`, `file-clipboard.ts`. Tests: `ConnectionFileRouteTests`, `ConnectionSearchRouteTests`,
+`RemoteIndexSearchTests`, `ConnectionWriteRouteTests`, `ConnectionUploadRouteTests`, `RemoteUploadsTests`,
+`ConnectionGatesTests`, `RemoteListingsTests`, `place-*.spec.ts`. The connection itself:
 [connections](connections.md); who sees what inside it: [connection-folder-rules](connection-folder-rules.md); copies
 with the library: [transfers](transfers.md).
 
@@ -111,8 +112,15 @@ with the library: [transfers](transfers.md).
 
 - `connections/{id}/files/uploads…`: the library's routes (check, start, list, get, PUT chunk, finish, cancel),
   paths, bodies and answers. Each chunk goes to the provider's upload session as it comes (`AppendUploadAsync`):
-  nothing is kept on the server's disk. `RemoteUploads` keeps the records in memory (20 unfinished per person, swept
-  after 24 h idle; a restart loses them); the provider's session id is never answered.
+  nothing is kept on the server's disk. `RemoteUploads` holds the records (20 unfinished per person, 24 h idle at
+  most); `RemoteUploadRecords` writes each to `connection-uploads/{id}.json` beside the setup code (a root singleton
+  can't use a library's work folder: [tenants](../architecture/tenants.md)), the provider's session protected by
+  `ICredentialProtector` (as credentials), read back on first use; a record that doesn't read or unprotect (other
+  keys) is deleted. Written when the upload starts and after each chunk; a write failure is logged and the upload
+  goes on in memory.
+  `RemoteUploadSweepWorker` (root, at start and every 10 minutes) removes idle uploads and, once no update waits,
+  those of connections removed; an upload whose gate is held (a chunk or finish running) is skipped. Provider
+  sessions are never cancelled (Dropbox ends its own after a week). The provider's session id is never answered.
 - A wrong offset: the provider says where it is (`WrongOffset` with the offset); the record follows it and the route
   answers 409 with the upload, as the library does, and the client goes on from there.
 - A chunk's `Content-Digest` is checked on the part held in memory before the provider gets it (400
@@ -121,8 +129,9 @@ with the library: [transfers](transfers.md).
   `files.delete`. The space's `Files:Uploads:MaxFileSizeMegabytes` is checked at start; free space is the
   provider's (413).
 - Client: `files.upload` comes back with write access and `UploadsInParts`; `UploadBatch.connection` is set when the
-  batch starts (`uploadsRoute`), so navigating away keeps the target; unfinished uploads into a connection are not
-  offered again after a reload.
+  batch starts (`uploadsRoute`), so navigating away keeps the target; after a reload `UploadQueue.resume` lists the
+  library's unfinished uploads and those of each usable connection with write access (`UsableConnections`, one
+  `GET` each), and `findInterrupted` matches a file picked again by folder **and** connection.
 
 ## Properties
 
