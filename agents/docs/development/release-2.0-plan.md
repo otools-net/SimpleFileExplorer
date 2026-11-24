@@ -537,10 +537,8 @@ Where the work stands, for a session that picks it up. Update it at the end of e
 - **Last session (2026-11-24):** 4.3 split in three; **4.3a** (upload sweep, chunk checksums) done. Next: **4.3b**
   (connection uploads kept across restarts). Step 4.6 (read-only or writable shown) was added by the owner on
   2026-11-23.
-- Commits were not allowed in that session (the owner hadn't asked): its work is uncommitted. To commit it apart:
-  first the refactoring (`UploadRecords.cs`, `UploadPlaces.cs`, `Uploads.cs` without the sweep's gate and
-  `WriteAsync`, the two `AddSingleton` lines; readability baseline written), then 4.3a (everything else). Doing it
-  needs `git add -p` on `Uploads.cs`; committing both together as one step is the simpler fallback.
+- 4.3a is committed (`bd57c98f`), its refactoring (`UploadRecords`, `UploadPlaces`) in the same commit: both touch
+  `Uploads.cs`.
 - `BackgroundService` (.NET 10) runs `ExecuteAsync` apart from `StartAsync`: a test of a worker waits for its effect.
 - Client specs that drive `UploadQueue` call `instantDigests()` (`testing/fakes.ts`): Node's `crypto.subtle`
   answers after `settle()`.
