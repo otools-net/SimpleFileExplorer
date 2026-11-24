@@ -404,6 +404,8 @@ export class FileTransfers {
     /** A job followed has ended: the listing shows its result, a toast says it. */
     private ended(job: FileJobView): void {
         const done = job.results.filter((result) => result.status === 'done');
+        // A merged folder went into one that held other items: Undo would take them too.
+        const undoable = done.filter((result) => !result.merged);
         const route = this.store.route();
         const listed = route.path;
         const places = jobPlaces(job);
@@ -431,11 +433,11 @@ export class FileTransfers {
         if (job.state === 'cancelled') this.toasts.show(stoppedToast(job.kind, done.length, where));
         else if (done.length) {
             const actions = [];
-            if (job.kind === 'move')
+            if (job.kind === 'move' && undoable.length)
                 actions.push({
                     label: $localize`Undo`,
                     title: $localize`Move them back where they were.`,
-                    run: () => this.undoMove(done, places),
+                    run: () => this.undoMove(undoable, places),
                 });
             if (job.target !== listed || places.to !== here)
                 actions.push({

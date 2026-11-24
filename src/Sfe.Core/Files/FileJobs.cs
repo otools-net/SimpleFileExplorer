@@ -161,16 +161,7 @@ public sealed class FileJobs(
                         path,
                         targetPath
                     );
-                    result = new FileJobItem(
-                        path,
-                        null,
-                        FileOperationStatus.Failed,
-                        ex is LinksInsideException or NoRoomException
-                            ? ex.Message
-                            : FileOperations
-                                .DiskFailure(ex, $"“{Base(path)}” could not be {Done(request.Kind)}")
-                                .Message
-                    );
+                    result = new FileJobItem(path, null, FileOperationStatus.Failed, FailureOf(ex, path, request.Kind));
                 }
                 job.Report(result);
             }
@@ -255,7 +246,7 @@ public sealed class FileJobs(
             return new FileJobItem(path, sourcePath, FileOperationStatus.Skipped, $"“{name}” is already there.");
 
         // A name clash: the person's choice, asked when needed.
-        var (clash, refused) = await clashes.ClashAsync(
+        var (clash, refused, merge) = await clashes.ClashAsync(
             job,
             new ClashCheck
             {
@@ -269,6 +260,7 @@ public sealed class FileJobs(
                 KeepBoth =
                     request.Kind == FileJobKind.Copy
                     && LibraryPaths.PathComparer.Equals(Parent(sourcePath), targetPath),
+                MergeRight = right,
             },
             token
         );
@@ -277,6 +269,11 @@ public sealed class FileJobs(
         name = clash!;
         var destination = Path.Combine(targetFull, name);
         var destinationPath = Join(targetPath, name);
+        if (merge)
+        {
+            var merged = new MergedFolder(source, sourcePath, destination, destinationPath);
+            return await MergeAsync(job, path, merged, copiedFolders, token);
+        }
         if (await TooLongForTheIndexAsync(source, destination.Length - source.Length, token) is { } tooLong)
             return new FileJobItem(path, null, FileOperationStatus.Invalid, tooLong);
 
@@ -294,6 +291,118 @@ public sealed class FileJobs(
                 token
             );
     }
+
+    /// <summary>
+    /// A folder merged into the folder of its name there: each item it holds moved or copied into it as an item of
+    /// the job (rights, clash questions, merged again); then, for a move, the folder goes once nothing is left in it.
+    /// One result for the folder, saying what was left out.
+    /// </summary>
+    private async Task<FileJobItem> MergeAsync(
+        JobRun job,
+        string path,
+        MergedFolder folder,
+        List<string> copiedFolders,
+        CancellationToken token
+    )
+    {
+        var move = job.Request.Kind == FileJobKind.Move;
+        if (!move)
+            _partials.RemoveLeftovers(job, folder.Into);
+        var tally = new MergeTally(Base(folder.SourcePath), folder.IntoPath);
+        // Read first: a move changes what the folder holds.
+        var entries = new DirectoryInfo(folder.Source)
+            .EnumerateFileSystemInfos("*", new EnumerationOptions { AttributesToSkip = 0, IgnoreInaccessible = true })
+            .ToList();
+        foreach (var entry in entries)
+        {
+            token.ThrowIfCancellationRequested();
+            var entryPath = Join(folder.SourcePath, entry.Name);
+            // A copy never follows links (as a copied folder's).
+            tally.Add(
+                !move && entry.LinkTarget is not null
+                    ? new FileJobItem(
+                        entryPath,
+                        null,
+                        FileOperationStatus.Skipped,
+                        $"“{entry.Name}” was left out: it is a link."
+                    )
+                    : await MergeEntryAsync(job, entryPath, folder, copiedFolders, token)
+            );
+        }
+        if (move)
+            await RemoveEmptiedAsync(job, folder);
+        logger.LogInformation(
+            "{Account} merged {Path} into {Target}",
+            job.Actor.Name,
+            folder.SourcePath,
+            folder.IntoPath
+        );
+        return tally.Result(path);
+    }
+
+    private async Task<FileJobItem> MergeEntryAsync(
+        JobRun job,
+        string entryPath,
+        MergedFolder folder,
+        List<string> copiedFolders,
+        CancellationToken token
+    )
+    {
+        try
+        {
+            return await job.BeginAsync(entryPath)
+                ?? await ItemAsync(job, entryPath, folder.IntoPath, folder.Into, copiedFolders, token);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(
+                ex,
+                "{Account} could not merge {Path} into {Target}",
+                job.Actor.Name,
+                entryPath,
+                folder.IntoPath
+            );
+            return new FileJobItem(
+                entryPath,
+                null,
+                FileOperationStatus.Failed,
+                FailureOf(ex, entryPath, job.Request.Kind)
+            );
+        }
+    }
+
+    /// <summary>
+    /// The folder a move merged goes when nothing is left in it: its index row, its own folder rules and default tags
+    /// with it (what it held took what SFE knew of each). One still holding what was left out stays.
+    /// </summary>
+    private async Task RemoveEmptiedAsync(JobRun job, MergedFolder folder)
+    {
+        using var hold = scans.TryBeginOperation(folder.Source);
+        try
+        {
+            if (hold is null || Directory.EnumerateFileSystemEntries(folder.Source).Any())
+                return;
+            Directory.Delete(folder.Source);
+            if (rules is not null && tenant.TenantId is { } tenantId)
+                await rules.TakeTreeAsync(tenantId, folder.SourcePath, CancellationToken.None);
+            await moves.ForgetMergedAsync(folder.Source, CancellationToken.None);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(
+                ex,
+                "{Account} merged {Path}, which stays: it could not be removed",
+                job.Actor.Name,
+                folder.SourcePath
+            );
+        }
+    }
+
+    /// <summary>The reason an item failed for <paramref name="ex"/>, a failure of the disk.</summary>
+    private static string? FailureOf(Exception ex, string path, FileJobKind kind) =>
+        ex is LinksInsideException or NoRoomException
+            ? ex.Message
+            : FileOperations.DiskFailure(ex, $"“{Base(path)}” could not be {Done(kind)}").Message;
 
     private async Task<FileJobItem> MoveAsync(
         JobRun job,
@@ -610,37 +719,13 @@ public sealed class FileJobs(
             }
             else
             {
-                foreach (var item in Directory.EnumerateFileSystemEntries(partial).ToList())
-                {
-                    var isFolder = Directory.Exists(item);
-                    var (itemName, refused) = await clashes.ClashAsync(
-                        job,
-                        new ClashCheck
-                        {
-                            Path = path,
-                            Source = item,
-                            IsFolder = isFolder,
-                            TargetPath = targetPath,
-                            TargetFull = targetFull,
-                            Name = Path.GetFileName(item),
-                        },
-                        token
-                    );
-                    if (refused is not null)
-                    {
-                        skipped++;
-                        continue;
-                    }
-                    var destination = Path.Combine(targetFull, itemName!);
-                    using var place = scans.TryBeginOperation(destination);
-                    if (place is null)
-                    {
-                        skipped++;
-                        continue;
-                    }
-                    FileTree.Move(item, destination, isFolder);
-                    placed.Add((destination, isFolder));
-                }
+                skipped = await PlaceAsync(
+                    job,
+                    path,
+                    new MergedFolder(partial, "", targetFull, targetPath),
+                    placed,
+                    token
+                );
             }
         }
         finally
@@ -679,6 +764,56 @@ public sealed class FileJobs(
             extracted.LeftOutCount
         );
         return new FileJobItem(path, newPath, FileOperationStatus.Done, JobMessages.Extracted(extracted, skipped));
+    }
+
+    /// <summary>
+    /// What was extracted into <c>from.Source</c> (the partial folder, or a folder of it) given its place in
+    /// <c>from.Into</c>: each name taken asked (a folder may be merged, its items placed in turn). The result is how
+    /// many were left out.
+    /// </summary>
+    private async Task<int> PlaceAsync(
+        JobRun job,
+        string path,
+        MergedFolder from,
+        List<(string Full, bool IsFolder)> placed,
+        CancellationToken token
+    )
+    {
+        var skipped = 0;
+        foreach (var item in Directory.EnumerateFileSystemEntries(from.Source).ToList())
+        {
+            var isFolder = Directory.Exists(item);
+            var (itemName, refused, merge) = await clashes.ClashAsync(
+                job,
+                new ClashCheck
+                {
+                    Path = path,
+                    Source = item,
+                    IsFolder = isFolder,
+                    TargetPath = from.IntoPath,
+                    TargetFull = from.Into,
+                    Name = Path.GetFileName(item),
+                    MergeRight = Rights.ExtractFiles,
+                },
+                token
+            );
+            var destination = refused is null ? Path.Combine(from.Into, itemName!) : null;
+            if (destination is not null && merge)
+            {
+                var into = new MergedFolder(item, "", destination, Join(from.IntoPath, itemName!));
+                skipped += await PlaceAsync(job, path, into, placed, token);
+                continue;
+            }
+            using var place = destination is null ? null : scans.TryBeginOperation(destination);
+            if (place is null)
+            {
+                skipped++;
+                continue;
+            }
+            FileTree.Move(item, destination!, isFolder);
+            placed.Add((destination!, isFolder));
+        }
+        return skipped;
     }
 
     /// <summary>
@@ -805,7 +940,7 @@ public sealed class FileJobs(
             }
 
             // Its name, now that it is whole: a clash is asked (or answered by the request).
-            var (finalName, clash) = await clashes.ClashAsync(
+            var (finalName, clash, _) = await clashes.ClashAsync(
                 job,
                 new ClashCheck
                 {

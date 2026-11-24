@@ -113,6 +113,24 @@ public sealed class TransferJobsTests
     }
 
     [TestMethod]
+    public async Task AFolderMergesIntoTheOneThereAskingAboutTheFilesTheyShare()
+    {
+        _account.WithFile("RepeatedDir/RDFile1.txt", "old");
+
+        var started = Start(Up(FileJobKind.Copy, ["RepeatedDir"], "") with { Conflicts = ConflictChoice.Merge });
+        var waiting = await WaitForAsync(started.Id, j => j.State == FileJobState.Waiting);
+        Assert.AreEqual("RDFile1.txt", waiting.Conflict!.Source.Name);
+        Assert.IsFalse(waiting.Conflict.CanMerge);
+        Assert.IsTrue(Board.Answer(started.Id, ConflictChoice.Replace, forAll: false));
+        var merged = await FinishedAsync(started.Id);
+
+        AssertDone(merged, "RepeatedDir");
+        Assert.IsTrue(merged.Results[0].Merged);
+        await AssertSameAsync("RepeatedDir/RDFile1.txt");
+        Assert.IsTrue(_account.Exists("RepeatedDir/ChildDir/AFile2"));
+    }
+
+    [TestMethod]
     public async Task ACancelledTransferLeavesNoPartialFile()
     {
         _account.WithFile("Docs/big.bin", new string('x', 1000));

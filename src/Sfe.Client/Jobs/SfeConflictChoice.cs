@@ -19,4 +19,11 @@ public enum SfeConflictChoice
 
     /// <summary>Keep both: <c> (2)</c> is added to the new one's name.</summary>
     KeepBoth,
+
+    /// <summary>
+    /// A folder meeting a folder (<see cref="SfeJobConflict.CanMerge"/>): what it holds goes into the one there, each
+    /// name they share asked in turn. In a job's options it answers those clashes only, the others are asked; an
+    /// upload (a file) asks.
+    /// </summary>
+    Merge,
 }

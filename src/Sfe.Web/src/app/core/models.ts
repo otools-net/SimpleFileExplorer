@@ -93,6 +93,8 @@ export interface FileJobConflict {
     existing: ClashSide;
     /** The session may replace it (it would go to the trash). */
     canReplace: boolean;
+    /** Both are folders the job may merge: what the one coming holds goes into the one there. */
+    canMerge?: boolean;
 }
 
 /** The names already taken in a folder, and whether the session may replace them. */

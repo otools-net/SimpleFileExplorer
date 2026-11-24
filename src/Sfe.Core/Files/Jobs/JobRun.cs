@@ -16,7 +16,13 @@ internal sealed class JobRun(
 {
     private readonly Lock _gate = new();
     private readonly List<FileJobItem> _results = [];
-    private ConflictChoice? _forAll = request.Conflicts == ConflictChoice.Ask ? null : request.Conflicts;
+
+    // "For all" answers, apart for the clashes of two folders that may merge and for the others: replacing every file
+    // never replaces a folder the job could merge without asking.
+    private ConflictChoice? _forAll = request.Conflicts is ConflictChoice.Ask or ConflictChoice.Merge
+        ? null
+        : request.Conflicts;
+    private ConflictChoice? _forAllFolders = request.Conflicts == ConflictChoice.Ask ? null : request.Conflicts;
     private TaskCompletionSource<ConflictChoice>? _answer;
     private FileJobConflict? _conflict;
     private long _bytesDone;
@@ -86,7 +92,8 @@ internal sealed class JobRun(
         Task<ConflictChoice> answer;
         lock (_gate)
         {
-            if (_forAll is { } choice && (choice != ConflictChoice.Replace || conflict.CanReplace))
+            var forAll = conflict.CanMerge ? _forAllFolders : _forAll;
+            if (forAll is { } choice && (choice != ConflictChoice.Replace || conflict.CanReplace))
                 return choice;
             _conflict = conflict;
             _answer = new TaskCompletionSource<ConflictChoice>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -113,9 +120,13 @@ internal sealed class JobRun(
     {
         lock (_gate)
         {
-            if (_answer is null)
+            if (_answer is null || _conflict is not { } conflict)
                 return false;
-            if (forAll)
+            if (choice == ConflictChoice.Merge && !conflict.CanMerge)
+                return false;
+            if (forAll && conflict.CanMerge)
+                _forAllFolders = choice;
+            else if (forAll)
                 _forAll = choice;
             return _answer.TrySetResult(choice);
         }

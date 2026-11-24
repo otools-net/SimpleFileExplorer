@@ -72,7 +72,7 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
         if (entry is null)
             return new FileJobItem(path, null, FileOperationStatus.NotFound, "It was not found.");
 
-        var (name, leftOut) = await NameAsync(path, entry, folder, token);
+        var (name, leftOut, merged) = await NameAsync(path, entry, folder, token);
         if (leftOut is { Status: FileOperationStatus.Done })
             return await AlreadyThereAsync(path, entry, leftOut.NewPath!, token);
         if (leftOut is not null)
@@ -80,7 +80,7 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
         var placed = entry.IsFolder
             ? await FolderAsync(entry, folder, name!, token)
             : await TopFileAsync(entry, folder, name!, token);
-        var result = _tally.Result(path, placed);
+        var result = _tally.Result(path, placed, merged);
         if (result.Status == FileOperationStatus.Done)
             Log(entry.Path, placed!);
         return result;
@@ -142,7 +142,7 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
         CancellationToken token
     )
     {
-        var (name, leftOut) = await NameAsync(child.Path, child, into, token);
+        var (name, leftOut, _) = await NameAsync(child.Path, child, into, token);
         if (leftOut is { Status: FileOperationStatus.Done })
             AlreadyThere(child, moved);
         else if (leftOut is not null)
@@ -226,10 +226,11 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
     }
 
     /// <summary>
-    /// The name the item takes at the target: its own when free, else the person's choice (asked when needed): a
-    /// free name, or what is there taken away; or the item's result when it is left out.
+    /// The name the item takes at the target: its own when free, else the person's choice (asked when needed): a free
+    /// name, what is there taken away, or a folder's own when merged (CreateFolderAsync then gives the one there); or
+    /// the item's result when it is left out.
     /// </summary>
-    private async Task<(string? Name, FileJobItem? LeftOut)> NameAsync(
+    private async Task<(string? Name, FileJobItem? LeftOut, bool Merged)> NameAsync(
         string path,
         TransferEntry entry,
         string into,
@@ -237,24 +238,28 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
     )
     {
         if (await Target.GetAsync(LibraryClashes.Join(into, entry.Name), token) is not { } existing)
-            return (entry.Name, null);
+            return (entry.Name, null, false);
         if (start.Retry && WrittenBefore(entry, existing))
         {
             return entry.IsFolder
-                ? (entry.Name, null)
-                : (null, new FileJobItem(path, existing.Path, FileOperationStatus.Done));
+                ? (entry.Name, null, false)
+                : (null, new FileJobItem(path, existing.Path, FileOperationStatus.Done), false);
         }
 
-        var conflict = new FileJobConflict(Side(entry), Side(existing), CanReplace: true);
-        return await job.ChooseAsync(conflict, token) switch
+        var canMerge = entry.IsFolder && existing.IsFolder;
+        var conflict = new FileJobConflict(Side(entry), Side(existing), CanReplace: true, canMerge);
+        var choice = await job.ChooseAsync(conflict, token);
+        if (choice == ConflictChoice.KeepBoth)
+            return (await Target.FreeNameAsync(into, entry.Name, entry.IsFolder, token), null, false);
+        return choice switch
         {
-            ConflictChoice.Skip => (null, LeftOut(path, entry.Name)),
-            ConflictChoice.KeepBoth => (await Target.FreeNameAsync(into, entry.Name, entry.IsFolder, token), null),
+            ConflictChoice.Skip => (null, LeftOut(path, entry.Name), false),
+            ConflictChoice.Merge when canMerge => (existing.Name, null, true),
             _ => await ReplaceAsync(path, entry.Name, existing, token),
         };
     }
 
-    private async Task<(string? Name, FileJobItem? LeftOut)> ReplaceAsync(
+    private async Task<(string? Name, FileJobItem? LeftOut, bool Merged)> ReplaceAsync(
         string path,
         string name,
         TransferEntry existing,
@@ -264,13 +269,14 @@ internal sealed class TransferRun(JobRun job, TransferStart start, ILogger logge
         try
         {
             await Target.RemoveForReplaceAsync(existing, token);
-            return (name, null);
+            return (name, null, false);
         }
         catch (RemoteStorageException failure) when (failure.Kind == RemoteErrorKind.Refused)
         {
             return (
                 null,
-                new FileJobItem(path, null, FileOperationStatus.Forbidden, $"You may not replace “{name}” there.")
+                new FileJobItem(path, null, FileOperationStatus.Forbidden, $"You may not replace “{name}” there."),
+                false
             );
         }
     }

@@ -87,6 +87,16 @@
                     }</dt><dd>{{ side(conflict.source) }}</dd>
                 </dl>
                 <div class="operation-choices">
+                    @if (conflict.canMerge) {
+                        <button
+                            type="button"
+                            class="button small primary"
+                            title="Merge them. Its items go into the folder there; each name they share is asked."
+                            i18n-title
+                            (click)="answer(job, 'merge')"
+                            i18n
+                        >Merge</button>
+                    }
                     @if (conflict.canReplace) {
                         <button
                             type="button"
@@ -107,7 +117,8 @@
                     >Skip</button>
                     <button
                         type="button"
-                        class="button small primary"
+                        class="button small"
+                        [class.primary]="!conflict.canMerge"
                         title="Keep both. This one gets a number added to its name."
                         i18n-title
                         (click)="answer(job, 'keepBoth')"
@@ -116,7 +127,11 @@
                 </div>
                 <label class="check">
                     <input type="checkbox" [checked]="forAll()" (change)="forAll.set(checked($event))">
-                    <span i18n>Do the same for the next ones</span>
+                    @if (conflict.canMerge) {
+                        <span i18n>Do the same for the next folders</span>
+                    } @else {
+                        <span i18n>Do the same for the next ones</span>
+                    }
                 </label>
             </div>
         }

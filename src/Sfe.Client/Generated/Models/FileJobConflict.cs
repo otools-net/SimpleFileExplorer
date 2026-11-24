@@ -14,6 +14,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>The canMerge property</summary>
+        public bool? CanMerge { get; set; }
         /// <summary>The canReplace property</summary>
         public bool? CanReplace { get; set; }
         /// <summary>The existing property</summary>
@@ -38,6 +40,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public FileJobConflict()
         {
             AdditionalData = new Dictionary<string, object>();
+            CanMerge = false;
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -57,6 +60,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "canMerge", n => { CanMerge = n.GetBoolValue(); } },
                 { "canReplace", n => { CanReplace = n.GetBoolValue(); } },
                 { "existing", n => { Existing = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ClashSide>(global::Otools.Net.Sfe.Client.Generated.Models.ClashSide.CreateFromDiscriminatorValue); } },
                 { "source", n => { Source = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ClashSide>(global::Otools.Net.Sfe.Client.Generated.Models.ClashSide.CreateFromDiscriminatorValue); } },
@@ -69,6 +73,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteBoolValue("canMerge", CanMerge);
             writer.WriteBoolValue("canReplace", CanReplace);
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ClashSide>("existing", Existing);
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ClashSide>("source", Source);

@@ -291,6 +291,31 @@ public sealed class PathMoves(
     }
 
     /// <summary>
+    /// The folder <paramref name="full"/>, emptied by a merge into another and taken off the disk: its index row and
+    /// default tags go (what it held went with what SFE knew of each). Settings, schedules and quick links naming it
+    /// stay, as for a deleted folder.
+    /// </summary>
+    public async Task ForgetMergedAsync(string full, CancellationToken cancellationToken = default)
+    {
+        full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(full));
+        try
+        {
+            await indexer.ForgetAsync(full, cancellationToken);
+            if (paths.ToRelative(full) is { Length: > 0 } relative)
+                await defaultTags.TakeTreeAsync(relative, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(
+                ex,
+                "The index row of {Folder}, merged into another, stays: the next scan forgets it",
+                full
+            );
+        }
+        browser.Invalidate(Path.GetDirectoryName(full)!);
+    }
+
+    /// <summary>
     /// The thumbnail and trickplay (with the video's fingerprint) of <paramref name="oldPath"/> become those of
     /// <paramref name="newPath"/>: both are keyed by path and checked against the file's modification time, which a
     /// rename or move keeps. Best effort.

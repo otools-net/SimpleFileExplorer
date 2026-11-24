@@ -14,6 +14,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
     {
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
+        /// <summary>The merged property</summary>
+        public bool? Merged { get; set; }
         /// <summary>The message property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -46,6 +48,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public FileJobItem()
         {
             AdditionalData = new Dictionary<string, object>();
+            Merged = false;
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -65,6 +68,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "merged", n => { Merged = n.GetBoolValue(); } },
                 { "message", n => { Message = n.GetStringValue(); } },
                 { "newPath", n => { NewPath = n.GetStringValue(); } },
                 { "path", n => { Path = n.GetStringValue(); } },
@@ -78,6 +82,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteBoolValue("merged", Merged);
             writer.WriteStringValue("message", Message);
             writer.WriteStringValue("newPath", NewPath);
             writer.WriteStringValue("path", Path);

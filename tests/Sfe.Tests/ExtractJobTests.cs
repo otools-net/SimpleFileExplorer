@@ -103,6 +103,35 @@ public sealed class ExtractJobTests
     }
 
     [TestMethod]
+    public async Task ExtractedHereAFolderMergesIntoTheOneThere()
+    {
+        Archive("Media/merge.zip", ("Photos/new.txt", "new"), ("Photos/old.txt", "from the archive"));
+        Directory.CreateDirectory(_library.FullPath("Media/Photos"));
+        File.WriteAllText(_library.FullPath("Media/Photos/old.txt"), "there");
+
+        var view = Jobs.Start(
+            Extract("Media/merge.zip", "Media") with
+            {
+                NewFolder = false,
+                Conflicts = ConflictChoice.Merge,
+            },
+            Me,
+            new FakeAccess()
+        );
+        var waiting = await WaitForAsync(view.Id, j => j.State == FileJobState.Waiting);
+
+        Assert.AreEqual("old.txt", waiting.Conflict!.Existing.Name, "The folders merged, the file is asked");
+        Assert.IsTrue(Board.Answer(view.Id, ConflictChoice.KeepBoth, forAll: false));
+        await Board.Completion(view.Id)!;
+        var result = Board.Find(view.Id)!.Results.Single();
+        Assert.AreEqual(FileOperationStatus.Done, result.Status, result.Message);
+        Assert.AreEqual("new", File.ReadAllText(_library.FullPath("Media/Photos/new.txt")));
+        Assert.AreEqual("from the archive", File.ReadAllText(_library.FullPath("Media/Photos/old (2).txt")));
+        Assert.AreEqual("there", File.ReadAllText(_library.FullPath("Media/Photos/old.txt")));
+        Assert.IsEmpty(Directory.GetDirectories(_library.FullPath("Media"), "*" + FileJobs.PartialSuffix));
+    }
+
+    [TestMethod]
     public async Task ExtractedHereOverTheFileItWasMadeFromReplacesIt()
     {
         File.WriteAllText(_library.FullPath("README.md"), "old");

@@ -3,6 +3,24 @@
 What each version of SFE added or fixed. What an upgrade changes for an existing install (database, settings, first
 scan) is in [docs/upgrading.md](docs/upgrading.md).
 
+## Unreleased
+
+### Added
+
+- **Merge folders**: when a folder is moved, copied, extracted or transferred where a folder of the same name is, the
+  operations panel offers **Merge** besides Replace, Skip and Keep both: what the folder holds goes into the one
+  there, each name they share asked in turn (files replaced, skipped or kept both; folders merged again). A moved
+  folder is removed once emptied (its own folder rules and default tags with it); what was left out stays in it. Not
+  offered into the folder holding the one coming, through links, or where you may not write. API: the conflict word
+  `merge` (`conflicts` of a request answers folder clashes only), `canMerge` on a job's `conflict`, `merged` on an
+  item's result; Sfe.Client: `SfeConflictChoice.Merge`, `SfeJobConflict.CanMerge`, `SfeJobItem.Merged`.
+
+### Changed
+
+- A "for all" answer to a name clash now holds apart for clashes of two folders that could be merged and for the
+  others: answering **Replace** for every file no longer replaces such a folder without asking.
+- **Undo** after a move leaves out the folders merged (moving them back would take what the folder there held).
+
 ## 1.86.0
 
 ### Added

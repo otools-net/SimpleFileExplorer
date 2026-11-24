@@ -90,7 +90,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Jobs
             return collectionResult?.AsList();
         }
         /// <summary>
-        /// Starts a job and answers its first state (202). `conflicts` says what to do when the target holds anitem of the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies),`replace` (needs the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth`(` (2)` added). Moves keep tags, folder rules (`keepAccess` pins each group&apos;s current access), quicklinks and caches; copies never follow links, leave out folders the caller may not see, and get the tagsof their originals with `keepTags`. Results per item in `results`.
+        /// Starts a job and answers its first state (202). `conflicts` says what to do when the target holds anitem of the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies),`replace` (needs the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth`(` (2)` added), `merge` (a folder meeting a folder goes into it, each name they share asked; other clashesasked; the result has `merged`). Moves keep tags, folder rules (`keepAccess` pins each group&apos;s current access), quicklinks and caches; copies never follow links, leave out folders the caller may not see, and get the tagsof their originals with `keepTags`. Results per item in `results`.
         /// </summary>
         /// <returns>A <see cref="global::Otools.Net.Sfe.Client.Generated.Models.FileJobView"/></returns>
         /// <param name="body">The request body</param>
@@ -134,7 +134,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Jobs
             return requestInfo;
         }
         /// <summary>
-        /// Starts a job and answers its first state (202). `conflicts` says what to do when the target holds anitem of the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies),`replace` (needs the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth`(` (2)` added). Moves keep tags, folder rules (`keepAccess` pins each group&apos;s current access), quicklinks and caches; copies never follow links, leave out folders the caller may not see, and get the tagsof their originals with `keepTags`. Results per item in `results`.
+        /// Starts a job and answers its first state (202). `conflicts` says what to do when the target holds anitem of the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies),`replace` (needs the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth`(` (2)` added), `merge` (a folder meeting a folder goes into it, each name they share asked; other clashesasked; the result has `merged`). Moves keep tags, folder rules (`keepAccess` pins each group&apos;s current access), quicklinks and caches; copies never follow links, leave out folders the caller may not see, and get the tagsof their originals with `keepTags`. Results per item in `results`.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="body">The request body</param>

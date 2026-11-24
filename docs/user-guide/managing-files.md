@@ -178,6 +178,21 @@ rest. A copy into the folder it is in always keeps both.
 
 ![A copy asking about a name already taken](../images/operations-panel.png)
 
+When a folder meets a folder of the same name, the panel also offers **Merge**: what the folder holds goes into the one
+there, and SFE asks about each name they share in the same way (a file: replace, skip or keep both; a folder: merge it
+too, and so on down). Nothing else in the folder there changes. Answers given for all are kept apart for folders and
+for files: replacing every file never replaces a whole folder without asking. After a merge:
+
+- a **moved** folder is gone once everything it held went in; what was skipped stays where it was, in its folder;
+- the panel says how many items were left out and why;
+- **Undo** doesn't move a merged folder back (it would take what the folder there held before).
+
+Merge is not offered when the folder there holds the one coming, when either is a link to another folder, or where you
+may not move, copy or extract into the folder there. Extracting an archive into a folder merges in the same way.
+Transfers between the library and a connection merge too; moves and copies inside a connection don't.
+
+![Copying a folder where one of its name is: Merge, Replace, Skip or Keep both](../images/merge-folders.png)
+
 **Moving** keeps what SFE knows about the files and folders, as a [rename](#rename) does: tags, thumbnails and
 trickplay, a folder's access rules, quick links, scheduled scans and settings naming it. A folder takes along the
 access it has in its own rules; what it got from the folder it was in changes to what the new place gives. When more

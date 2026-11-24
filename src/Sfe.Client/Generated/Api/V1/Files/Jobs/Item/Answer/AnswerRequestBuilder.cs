@@ -34,7 +34,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Jobs.Item.Answer
         {
         }
         /// <summary>
-        /// Answers a job&apos;s question about a name clash (`forAll`: the same for the next ones).
+        /// Answers a job&apos;s question about a name clash (`forAll`: the same for the next ones of its kind, two folders that may merge or the others; `merge` only when `canMerge`).
         /// </summary>
         /// <param name="body">The request body</param>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -53,7 +53,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Jobs.Item.Answer
             await RequestAdapter.SendNoContentAsync(requestInfo, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Answers a job&apos;s question about a name clash (`forAll`: the same for the next ones).
+        /// Answers a job&apos;s question about a name clash (`forAll`: the same for the next ones of its kind, two folders that may merge or the others; `merge` only when `canMerge`).
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="body">The request body</param>

@@ -1799,7 +1799,7 @@
         <note category="location">src/app/access/space-detail.component.html:41</note>
         <note category="location">src/app/access/spaces-page.component.html:111</note>
         <note category="location">src/app/files/file-transfers.ts:394</note>
-        <note category="location">src/app/files/file-transfers.ts:442</note>
+        <note category="location">src/app/files/file-transfers.ts:444</note>
         <note category="location">src/app/files/opening-commands.ts:43</note>
         <note category="location">src/app/files/opening-commands.ts:52</note>
         <note category="location">src/app/formats/archive/archive-texts.ts:78</note>
@@ -7121,7 +7121,7 @@ Space “Holiday photos”
         <note category="location">src/app/editor/image-editor.dialog.html:36</note>
         <note category="location">src/app/files/batch-rename.dialog.ts:197</note>
         <note category="location">src/app/files/delete.dialog.ts:134</note>
-        <note category="location">src/app/files/file-transfers.ts:436</note>
+        <note category="location">src/app/files/file-transfers.ts:438</note>
         <note category="location">src/app/files/name.dialog.ts:178</note>
         <note category="location">src/app/tracking/duplicates-panel.component.ts:123</note>
       </notes>
@@ -8362,7 +8362,7 @@ Space “Holiday photos”
     <unit id="8876125281336377441">
       <notes>
         <note category="location">src/app/files/file-transfers.ts:373</note>
-        <note category="location">src/app/files/operations-panel.component.html:141,142</note>
+        <note category="location">src/app/files/operations-panel.component.html:156,157</note>
       </notes>
       <segment>
         <source>Enter the password…</source>
@@ -8371,7 +8371,7 @@ Space “Holiday photos”
     <unit id="6404255192971813326">
       <notes>
         <note category="location">src/app/files/file-transfers.ts:374</note>
-        <note category="location">src/app/files/operations-panel.component.html:137,138</note>
+        <note category="location">src/app/files/operations-panel.component.html:152,153</note>
       </notes>
       <segment>
         <source>Extract it again, with its password.</source>
@@ -8395,7 +8395,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1877082256408805881">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:437</note>
+        <note category="location">src/app/files/file-transfers.ts:439</note>
       </notes>
       <segment>
         <source>Move them back where they were.</source>
@@ -8890,9 +8890,25 @@ Space “Holiday photos”
         <source>{VAR_SELECT, select, move {Moved} copy {Copied} extract {Extracted} other {The new zip}}</source>
       </segment>
     </unit>
-    <unit id="9050539073781334291">
+    <unit id="3345929635295131160">
       <notes>
         <note category="location">src/app/files/operations-panel.component.html:94,95</note>
+      </notes>
+      <segment>
+        <source>Merge them. Its items go into the folder there; each name they share is asked.</source>
+      </segment>
+    </unit>
+    <unit id="3206542606001340679">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:98,99</note>
+      </notes>
+      <segment>
+        <source>Merge</source>
+      </segment>
+    </unit>
+    <unit id="9050539073781334291">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:104,105</note>
       </notes>
       <segment>
         <source>Replace it. The one there goes to the trash.</source>
@@ -8900,7 +8916,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6254459922754143568">
       <notes>
-        <note category="location">src/app/files/operations-panel.component.html:98,99</note>
+        <note category="location">src/app/files/operations-panel.component.html:108,109</note>
         <note category="location">src/app/files/place-transfers.ts:163</note>
         <note category="location">src/app/files/uploads-panel.component.html:66,67</note>
         <note category="location">src/app/formats/text/text-texts.ts:85</note>
@@ -8912,7 +8928,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4732153382582811726">
       <notes>
-        <note category="location">src/app/files/operations-panel.component.html:103,104</note>
+        <note category="location">src/app/files/operations-panel.component.html:113,114</note>
       </notes>
       <segment>
         <source>Leave this one out.</source>
@@ -8920,7 +8936,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4563965495368336177">
       <notes>
-        <note category="location">src/app/files/operations-panel.component.html:107,108</note>
+        <note category="location">src/app/files/operations-panel.component.html:117,118</note>
         <note category="location">src/app/files/uploads-panel.component.html:75,76</note>
       </notes>
       <segment>
@@ -8929,7 +8945,7 @@ Space “Holiday photos”
     </unit>
     <unit id="29220177801620079">
       <notes>
-        <note category="location">src/app/files/operations-panel.component.html:111,112</note>
+        <note category="location">src/app/files/operations-panel.component.html:122,123</note>
         <note category="location">src/app/files/uploads-panel.component.html:79,80</note>
       </notes>
       <segment>
@@ -8938,7 +8954,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1790494039990261456">
       <notes>
-        <note category="location">src/app/files/operations-panel.component.html:115,116</note>
+        <note category="location">src/app/files/operations-panel.component.html:126,127</note>
         <note category="location">src/app/files/place-transfers.ts:158</note>
         <note category="location">src/app/files/uploads-panel.component.html:83,84</note>
       </notes>
@@ -8946,9 +8962,17 @@ Space “Holiday photos”
         <source>Keep both</source>
       </segment>
     </unit>
+    <unit id="4469842260611697416">
+      <notes>
+        <note category="location">src/app/files/operations-panel.component.html:131,132</note>
+      </notes>
+      <segment>
+        <source>Do the same for the next folders</source>
+      </segment>
+    </unit>
     <unit id="7676069328777556313">
       <notes>
-        <note category="location">src/app/files/operations-panel.component.html:119,120</note>
+        <note category="location">src/app/files/operations-panel.component.html:133,134</note>
       </notes>
       <segment>
         <source>Do the same for the next ones</source>

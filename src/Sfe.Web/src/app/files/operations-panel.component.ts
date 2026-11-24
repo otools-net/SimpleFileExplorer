@@ -9,7 +9,7 @@ import {
     signal,
 } from '@angular/core';
 import { ClashSide, LibraryItem } from '../core/models';
-import { FileJobView } from './file.models';
+import { ConflictChoice, FileJobView } from './file.models';
 import { baseName } from '../core/paths';
 import { checkedOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
@@ -207,7 +207,7 @@ export class OperationsPanelComponent implements OnInit {
         if (view && view.id !== job.id) this.transfers.dismiss(job);
     }
 
-    protected answer(job: FileJobView, choice: 'replace' | 'skip' | 'keepBoth'): void {
+    protected answer(job: FileJobView, choice: Exclude<ConflictChoice, 'ask'>): void {
         void this.transfers.answer(job, choice, this.forAll());
         this.forAll.set(false);
     }

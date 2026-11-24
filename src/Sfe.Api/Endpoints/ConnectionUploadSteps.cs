@@ -69,7 +69,8 @@ internal static class ConnectionUploadSteps
         var path = RemotePaths.Combine(upload.Target, upload.Name);
         return await files.RunAsync(open, async storage =>
         {
-            var asksFirst = choice is ConflictChoice.Ask or ConflictChoice.Skip;
+            // Merge is for folders: a file uploaded asks.
+            var asksFirst = choice is ConflictChoice.Ask or ConflictChoice.Skip or ConflictChoice.Merge;
             if (asksFirst && await storage.GetAsync(path, cancellationToken) is not null)
                 return Taken(services.Uploads, upload, choice);
 

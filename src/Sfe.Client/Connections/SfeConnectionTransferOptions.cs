@@ -7,7 +7,8 @@ public sealed class SfeConnectionTransferOptions
     /// What to do when the target holds an item of the same name: <see cref="SfeConflictChoice.Ask"/> (the default)
     /// and <see cref="SfeConflictChoice.Skip"/> leave it (its result <see cref="SfeItemStatus.Exists"/>: nothing waits
     /// for an answer), <see cref="SfeConflictChoice.Replace"/> replaces a file (never a folder),
-    /// <see cref="SfeConflictChoice.KeepBoth"/> lets the provider number the name.
+    /// <see cref="SfeConflictChoice.KeepBoth"/> lets the provider number the name;
+    /// <see cref="SfeConflictChoice.Merge"/> leaves it as <c>Ask</c> does (a provider's own moves don't merge folders).
     /// </summary>
     public SfeConflictChoice Conflicts { get; set; } = SfeConflictChoice.Ask;
 

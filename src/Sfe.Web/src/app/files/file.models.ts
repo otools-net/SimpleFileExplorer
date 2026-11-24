@@ -34,7 +34,8 @@ export interface ExtractRequest {
 }
 
 /** What a job does when the target holds an item of the same name; `ask`: it waits for the answer. */
-export type ConflictChoice = 'ask' | 'replace' | 'skip' | 'keepBoth';
+/** `merge`: two folders only (`FileJobConflict.canMerge`); in a request, the other clashes are asked. */
+export type ConflictChoice = 'ask' | 'replace' | 'skip' | 'keepBoth' | 'merge';
 
 export interface FileJobRequest {
     kind: FileJobKind;
@@ -62,6 +63,8 @@ export interface FileJobItem {
     /** `needsPassword`: an extraction of an archive whose password wasn't given, or was wrong. */
     status: DeleteStatus | 'skipped' | 'invalid' | 'conflict' | 'needsPassword';
     message?: string | null;
+    /** A folder merged into the one of its name at `newPath`, which held other items: never moved back whole. */
+    merged?: boolean;
 }
 
 /** A move or copy running in the background, or done. */

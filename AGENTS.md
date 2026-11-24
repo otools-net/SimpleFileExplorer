@@ -187,7 +187,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [context-menu](agents/docs/features/context-menu.md) | the app's one right-click menu: targets, which menu where, browser menu kept (Shift, text), keyboard, Open in new tab | `menus/context-menu.ts`, `ItemMenu`, `FolderMenu` |
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
 | [trash](agents/docs/features/trash.md) | delete, trash, restore, purge task, links as links | `Trash`, `FileTree`, `app/files/delete.dialog.ts` |
-| [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, conflicts, clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |
+| [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, name clashes (replace, skip, keep both, merging folders), clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |
 | [uploads](agents/docs/features/uploads.md) | resumable chunked uploads, folder uploads, desktop drops, admin list | `Uploads`, `UploadEndpoints`, `app/files/uploads.ts` |
 | [archives](agents/docs/features/archives.md) | several files or a folder downloaded as one streamed zip, one-time links | `Archives`, `ArchiveEndpoints`, `ArchiveLinks`, `app/files/downloads.ts` |
 | [archive-viewer](agents/docs/features/archive-viewer.md) | exploring archives in the viewer: `api/files/explore` routes, catalog store (build queue, eviction), the virtual table, `isExplorable`, entries shown in place (`FILE_SOURCE`) | `ExploreEndpoints`, `ArchiveCatalogs`, `app/formats/archive/` |

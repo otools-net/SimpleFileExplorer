@@ -25,4 +25,10 @@ internal sealed record ClashCheck
 
     /// <summary>Keep both without asking (a copy in its own folder).</summary>
     public bool KeepBoth { get; init; }
+
+    /// <summary>
+    /// A folder may be merged into the folder of its name there when the person has this right in it (the job's: move,
+    /// copy, extract); null: never merged.
+    /// </summary>
+    public string? MergeRight { get; init; }
 }

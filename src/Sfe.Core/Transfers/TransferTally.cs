@@ -19,13 +19,17 @@ internal sealed class TransferTally
 
     public void Skip(string message) => Add(FileOperationStatus.Skipped, message);
 
-    /// <summary>The item's result: <paramref name="placed"/> is where it went, when it went somewhere.</summary>
-    public FileJobItem Result(string path, string? placed)
+    /// <summary>
+    /// The item's result: <paramref name="placed"/> is where it went, when it went somewhere;
+    /// <paramref name="merged"/>: a folder written into the folder of its name there.
+    /// </summary>
+    public FileJobItem Result(string path, string? placed, bool merged = false)
     {
         if (_problems == 0)
-            return new FileJobItem(path, placed, FileOperationStatus.Done);
+            return new FileJobItem(path, placed, FileOperationStatus.Done, Merged: merged);
         var more = _problems > 1 ? $" ({_problems} items were not transferred.)" : "";
-        return new FileJobItem(path, placed, _problems > 1 ? FileOperationStatus.Failed : _status, _first + more);
+        var status = _problems > 1 ? FileOperationStatus.Failed : _status;
+        return new FileJobItem(path, placed, status, _first + more, merged);
     }
 
     private void Add(FileOperationStatus status, string? message)

@@ -1,9 +1,11 @@
 # Move and copy (file management, phase 4)
 
-Code: `src/Sfe.Core/Files/FileJobs.cs` (jobs, `IFileJobAccess`), `Api/Security/FileJobAccess.cs`,
+Code: `src/Sfe.Core/Files/FileJobs.cs` (jobs, `IFileJobAccess`), `Files/Jobs/` (`JobRun` answers, `LibraryClashes`,
+`LibraryCopies` writing copies, `MergeTally`), `Api/Security/FileJobAccess.cs`,
 `Api/Endpoints/FileEndpoints.cs` (`api/files/jobs…`); client `app/files/` (`file-transfers.ts` service and clipboard,
 `transfer.dialog.ts` picker and confirmations, `operations-panel.component.ts` panel and drops). Tests: `FileJobsTests`,
-`FileJobRouteTests`, `transfer.spec.ts`. User docs: `docs/user-guide/managing-files.md#move-and-copy`.
+`FileJobRouteTests`, `FolderMergeTests`, `transfer.spec.ts`. User docs:
+`docs/user-guide/managing-files.md#move-and-copy`.
 Extractions are jobs of the same kind: [archive-extraction](archive-extraction.md).
 
 ## Decisions (2026-10-17)
@@ -33,10 +35,43 @@ Extractions are jobs of the same kind: [archive-extraction](archive-extraction.m
   cancelled or failed item deletes its partial file/folder; leftovers of a stopped job in the target are removed first. Links and work folders are never copied (reported). Free space: refused when the drive would keep less
   than `Files:MinimumFreeSpaceMegabytes`. Then the originals' thumbnail/trickplay caches are copied, files indexed at
   once (`IndexFilesAsync`), folders by a scan of each (`ScanCoordinator.TryStart`, skipped while another scan runs).
-- Clash: a copy into its own folder always keeps both; otherwise the choice of the request, else the job waits
-  (`Waiting`, `conflict` in the view) for `answer`; `forAll` keeps the answer for the next clashes.
+- Clash: see [Name clashes](#name-clashes).
 - Scan gate: each item takes `ScanCoordinator.TryBeginOperation` (source and destination); a scan over it = that item
   fails with "a scan is running".
+
+## Name clashes
+
+`LibraryClashes.ClashAsync` (moves, copies, an extraction's top items, a compression's zip); transfers in
+`TransferRun.NameAsync`.
+
+- Before 4.1 (2026-11-24): **Replace** (what is there to the trash, or for good when the space always deletes
+  permanently; needs the delete right at the item there, at the target, and throughout a folder; never what holds the
+  item itself: moving X/X next to X), **Skip**, **Keep both** (`FileNames.KeepBoth`: ` (2)`). A folder replaced went
+  whole to the trash. A copy into its own folder always keeps both. A name kept for SFE (the work folder) is refused.
+- The choice of the request, else the job waits (`Waiting`, `conflict` in the view: both sides, `canReplace`,
+  `canMerge`) for `answer`. Answering `replace` without the right gives a Forbidden result for that item.
+- **Merge** (`ConflictChoice.Merge`, step 4.1): offered (`canMerge`) only between two folders, neither a link, the one
+  there not holding the one coming, and with the job's right (move, copy, extract: `ClashCheck.MergeRight`) in the
+  folder there. `answer` with `merge` when it can't: 409.
+  - Moves and copies: `FileJobs.MergeAsync` runs each entry of the folder through `ItemAsync` with the folder there as
+    target, so every rule of a single item holds (rights read again, scan gate, partial copies, a clash asked, merged
+    again below); a copy leaves links out. One result for the folder (`MergeTally`): done, or the first problem's
+    status (failed if any failed) with "N items were left out" and its reason; `newPath` the folder there, `merged`.
+  - A moved folder emptied is removed (`Directory.Delete`, never recursive): its own folder rules
+    (`TakeTreeAsync`, dropped: its sub-folders took theirs along, `keepAccess` pinned them), its index row and default
+    tags (`PathMoves.ForgetMergedAsync`); settings, schedules and quick links naming it stay, as for a deleted folder.
+    One still holding what was left out stays with its rules.
+  - Extraction: `FileJobs.PlaceAsync` places a merged folder's entries recursively with the same questions.
+  - Transfers: the name is kept; `CreateFolderAsync` of both sides returns the folder there, and each child is
+    already asked. Moves inside a connection (provider moves, `PlaceConflict`) don't merge.
+  - Uploads are files: `merge` behaves as `ask`.
+- **For all** (`JobRun`): two answers, one for clashes that may merge (`canMerge`) and one for the rest, so "Replace
+  for all" on files never replaces a folder that could be merged. A request's `replace` / `skip` / `keepBoth` fills
+  both; its `merge` only the first (other clashes are asked).
+- The access check before a move (`jobs/check`, `CompareMoveAsync`) compares the folder as if moved whole: for a merge
+  it is an approximation (the items take the access of the folder there).
+- Client: **Merge** first and primary when `canMerge` (Keep both primary otherwise); "Do the same for the next
+  folders"; **Undo** after a move leaves out `merged` results (moving the folder there back would take what it held).
 
 ## Client
 
@@ -50,5 +85,5 @@ Extractions are jobs of the same kind: [archive-extraction](archive-extraction.m
 - The picker is `FolderBrowser` + `<sfe-folder-browser>` (`files/folder-browser.component.ts`), shared with Extract…
   and Compress…: the dialog holds the state (`folderBrowser()`: target, listing, `allows(right)` from the folder's
   `access`), the component shows the way and the subfolders (`closedBecause`: a folder moved can't take itself).
-- Not done: merging folders on a clash (only replace/skip/keep both), dropping onto a quick link, "new folder" inside
+- Not done: merging folders inside a connection, dropping onto a quick link, "new folder" inside
   the picker, cancelling SFE's own work on a file in use.

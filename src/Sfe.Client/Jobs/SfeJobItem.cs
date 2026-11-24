@@ -14,4 +14,9 @@ public sealed class SfeJobItem
 
     /// <summary>The reason, for people, when it wasn't done.</summary>
     public string? Message { get; init; }
+
+    /// <summary>
+    /// A folder merged into the folder of its name there (<see cref="NewPath"/>, which held other items before).
+    /// </summary>
+    public bool Merged { get; init; }
 }

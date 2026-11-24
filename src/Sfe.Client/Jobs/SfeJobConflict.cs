@@ -11,4 +11,7 @@ public sealed class SfeJobConflict
 
     /// <summary>Whether the caller may replace it (<see cref="SfeConflictChoice.Replace"/>).</summary>
     public bool CanReplace { get; init; }
+
+    /// <summary>Whether both are folders the job may merge (<see cref="SfeConflictChoice.Merge"/>).</summary>
+    public bool CanMerge { get; init; }
 }

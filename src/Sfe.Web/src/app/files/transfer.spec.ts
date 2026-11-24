@@ -339,6 +339,44 @@ describe('OperationsPanelComponent', () => {
         expect(element.querySelector('[data-job]')).toBeNull();
     });
 
+    it('offers Merge when two folders meet, and no Undo for a folder merged', async () => {
+        await setUp();
+        const toasts = TestBed.inject(ToastService);
+        const waiting = job({
+            state: 'waiting',
+            conflict: {
+                source: { name: 'Holidays', isFolder: true, size: null, modified: null },
+                existing: { name: 'Holidays', isFolder: true, size: null, modified: null },
+                canReplace: true,
+                canMerge: true,
+            },
+        });
+        api.fileJobs.mockResolvedValue([waiting]);
+        api.answerFileJob.mockResolvedValue(undefined);
+        const { fixture, element } = await panel();
+
+        expect(element.textContent).toContain('Do the same for the next folders');
+        expect(buttonNamed(element, 'Merge')!.classList).toContain('primary');
+        expect(buttonNamed(element, 'Keep both')!.classList).not.toContain('primary');
+        api.fileJobs.mockResolvedValue([
+            job({
+                ...waiting,
+                conflict: null,
+                state: 'completed',
+                done: 1,
+                results: [{ path: 'Holidays', newPath: 'Media/Holidays', status: 'done', merged: true }],
+            }),
+        ]);
+        buttonNamed(element, 'Merge')!.click();
+        await settle();
+        await settle();
+        fixture.detectChanges();
+
+        expect(api.answerFileJob).toHaveBeenCalledWith(1, 'merge', false);
+        const moved = toasts.toasts().find((t) => t.message.includes('moved'))!;
+        expect(moved.actions.map((action) => action.label)).not.toContain('Undo');
+    });
+
     it('has a menu on each job: Cancel (Close once done), then its folder', async () => {
         await setUp();
         api.fileJobs.mockResolvedValue([job()]);

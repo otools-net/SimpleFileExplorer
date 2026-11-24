@@ -868,6 +868,25 @@ const scenes = {
         await a.close();
         await operations();
     },
+    /**
+     * A folder meeting a folder of its name: "2024 Beach trip" copied into Inbox twice, the second copy asking with
+     * Merge; then Skip, and the first copy deleted so that the library stays as it was.
+     */
+    async merge() {
+        const b = await session();
+        const post = (url, body) => `fetch('${url}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify(${JSON.stringify(body)}) }).then(r => r.status)`;
+        const copy = { kind: 'copy', paths: ['Photos/2024 Beach trip'], target: 'Inbox' };
+        await b.open('?path=Inbox');
+        await b.eval(post('api/v1/files/jobs', copy));
+        await sleep(3000);
+        await b.eval(post('api/v1/files/jobs', copy));
+        await b.open('?path=Inbox', 3000);
+        await b.shot(OUT + 'merge-folders.png');
+        await b.clickTitle('Leave this one out');
+        await sleep(1000);
+        await b.eval(post('api/v1/files/delete', { paths: ['Inbox/2024 Beach trip'], permanent: true }));
+        await b.close();
+    },
     async properties() {
         const b = await session();
         /** Right click on the item `selector`, then Properties in its menu. */

@@ -190,6 +190,36 @@ public sealed class FileJobRouteTests
     }
 
     [TestMethod]
+    public async Task TwoFoldersAreMergedWhenAnsweredSoAndFilesNever()
+    {
+        _library.AddFile("ChildDir/RepeatedDir/RDFile1.txt", 5);
+        var started = await StartAsync(_alice, new FileJobRequest(FileJobKind.Copy, ["RepeatedDir"], "ChildDir"));
+        var folders = await WaitForAsync(_alice, started.Id, j => j.Conflict?.Source.Name == "RepeatedDir");
+        Assert.IsTrue(folders.Conflict!.CanMerge);
+        Assert.AreEqual(HttpStatusCode.NoContent, await AnswerAsync(started.Id, ConflictChoice.Merge));
+        await WaitForAsync(_alice, started.Id, j => j.Conflict?.Source.Name == "RDFile1.txt");
+        Assert.AreEqual(HttpStatusCode.Conflict, await AnswerAsync(started.Id, ConflictChoice.Merge), "A file");
+        Assert.AreEqual(HttpStatusCode.NoContent, await AnswerAsync(started.Id, ConflictChoice.Skip));
+
+        var result = (await FinishedAsync(_alice, started.Id)).Results.Single();
+        Assert.IsTrue(result.Merged);
+        Assert.AreEqual("ChildDir/RepeatedDir", result.NewPath);
+        Assert.AreEqual(5, new FileInfo(_library.FullPath("ChildDir/RepeatedDir/RDFile1.txt")).Length);
+        Assert.IsTrue(File.Exists(_library.FullPath("ChildDir/RepeatedDir/RDFile2.txt")));
+    }
+
+    private async Task<HttpStatusCode> AnswerAsync(int id, ConflictChoice choice)
+    {
+        using var answered = await _alice.PostAsJsonAsync(
+            $"{V1}/files/jobs/{id}/answer",
+            new JobAnswer(choice),
+            Json,
+            Token
+        );
+        return answered.StatusCode;
+    }
+
+    [TestMethod]
     public async Task AWaitingJobCanBeCancelled()
     {
         _library.AddFile("ChildDir/RFile1.txt", 5);

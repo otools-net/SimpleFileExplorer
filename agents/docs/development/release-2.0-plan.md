@@ -369,7 +369,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 ### Phase 4: files
 
-- [ ] **4.1 Merge folders on a clash** (IDEA-016, M). Today a clashing folder is replaced whole (old one to the
+- [x] **4.1 Merge folders on a clash** (IDEA-016, M). Done 2026-11-24: a refactoring first moved the writing of copies
+  out of `FileJobs` into `LibraryCopies`; `ConflictChoice.Merge`, `canMerge` on the conflict (two folders, no link,
+  the one there not holding the one coming, the job's right in it), `merged` on the result; library moves and copies
+  run each entry through `ItemAsync` (`MergeAsync`, `MergeTally`: one result per folder), a moved folder emptied is
+  removed with its own rules and default tags; extraction places recursively (`PlaceAsync`); transfers keep the name
+  (`CreateFolderAsync` gives the folder there); moves inside a connection don't merge; uploads take `merge` as `ask`.
+  "For all" answers kept apart for folders that may merge and the rest (changelog: Changed); Undo leaves merged
+  folders out. Note move-and-copy.md (Name clashes); screenshot `merge-folders.png` (scene `merge`).
+  Was: Today a clashing folder is replaced whole (old one to the
   trash), skipped or kept as `folder1 (2)`; replaced files already go to the trash and picture "Save over" keeps
   the previous version there — part 2 of the idea is done. Add a **Merge** choice: go into the folder, add new
   items, ask per clashing file (replace → trash / skip / keep both, "for all"), recursively. Library jobs
@@ -502,9 +510,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-23):** phases 1–3 done (3.6 scan as you go last). Next: **4.1** (merge folders on a clash).
-  The session before it got stuck; nothing was left running but an idle Docker Desktop (stopped).
+- **Last session (2026-11-24):** 4.1 (merge folders) done. Next: **4.2** (previous versions of a file).
   Step 4.6 (read-only or writable shown) was added to the plan by the owner on 2026-11-23.
+- `FileJobs.cs` is at its baseline again after 4.1 (1,087 lines): the extraction part (`ExtractAsync`, `PlaceAsync`)
+  or the compression (`CompressAsync`) is the next candidate to move out before adding job code.
+- `measure.mjs` only measures files git tracks: write the baseline after `git add` of a new file, or its debt is
+  missed (as `LibraryCopies.cs` was by the refactoring commit of 4.1).
 - Don't run `npm test` and `dotnet test` at the same time: the client build rewrites `wwwroot` under the server's
   build ("No file exists for the asset").
 - `npm test` from `/c/workspace/…` fails every suite with "Vitest failed to find the runner": always `cd
@@ -530,8 +541,6 @@ Where the work stands, for a session that picks it up. Update it at the end of e
   - A refactoring that frees lines: write the baseline, but the step after it may raise it back a little (as 1.1 and
     1.2 did); `measure.mjs --write-baseline` alone writes it (with `--check` it doesn't).
   - Client specs run with `npm test -- --include <path>` (not `npx vitest`).
-  - `FileJobs.cs` is at its baseline again after 1.4: new job code needs lines moved out first (the copy part —
-    `CopyAsync`, `CopyFolderAsync`, `CopyFileAsync`, `AfterCopyAsync`, `CopyCache` — is the next candidate).
   - Scripted C# edits from `node -e` in Git Bash: write the script to a file with a quoted heredoc (`<<'EOF'`);
     `
 ` inside JS template strings becomes a real newline in the C# source otherwise.

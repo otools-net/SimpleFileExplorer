@@ -24,5 +24,9 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         #pragma warning disable CS1591
         KeepBoth,
         #pragma warning restore CS1591
+        [EnumMember(Value = "merge")]
+        #pragma warning disable CS1591
+        Merge,
+        #pragma warning restore CS1591
     }
 }

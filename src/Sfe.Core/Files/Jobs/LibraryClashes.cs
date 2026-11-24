@@ -12,9 +12,10 @@ public sealed class LibraryClashes(LibraryPaths paths, ScanCoordinator scans, Tr
 {
     /// <summary>
     /// The name the item takes in the target: itself when free, else the person's choice (asked when needed): another
-    /// name, or the item there replaced (to the trash); or the item's result when it is left out.
+    /// name, the item there replaced (to the trash), or (two folders) merged into the folder there; or the item's
+    /// result when it is left out.
     /// </summary>
-    internal async Task<(string? Name, FileJobItem? Refused)> ClashAsync(
+    internal async Task<(string? Name, FileJobItem? Refused, bool Merge)> ClashAsync(
         JobRun job,
         ClashCheck item,
         CancellationToken token
@@ -31,44 +32,43 @@ public sealed class LibraryClashes(LibraryPaths paths, ScanCoordinator scans, Tr
                     null,
                     FileOperationStatus.Invalid,
                     $"“{name}” was left out: that name is kept for SFE's own files."
-                )
+                ),
+                false
             );
         }
 
         var destination = Path.Combine(item.TargetFull, name);
         if (!File.Exists(destination) && !Directory.Exists(destination))
-            return (name, null);
+            return (name, null, false);
         var canReplace = await CanReplaceAsync(job, item, destination);
+        var canMerge = await CanMergeAsync(job, item, destination);
         var choice = item.KeepBoth
             ? ConflictChoice.KeepBoth
-            : await job.ChooseAsync(new FileJobConflict(Side(item.Source), Side(destination), canReplace), token);
-        switch (choice)
+            : await job.ChooseAsync(
+                new FileJobConflict(Side(item.Source), Side(destination), canReplace, canMerge),
+                token
+            );
+        return choice switch
         {
-            case ConflictChoice.Skip:
-                return (
-                    null,
-                    new FileJobItem(
-                        path,
-                        null,
-                        FileOperationStatus.Skipped,
-                        $"“{name}” was left out: there is one of that name there."
-                    )
-                );
-            case ConflictChoice.KeepBoth:
-                return (
-                    FileNames.KeepBoth(name, item.IsFolder, Taken(item.TargetFull))
-                        ?? throw new IOException("No free name."),
-                    null
-                );
-            case ConflictChoice.Replace when canReplace:
-                return await ReplaceAsync(job, item, destination, token);
-            default:
-                return (
-                    null,
-                    new FileJobItem(path, null, FileOperationStatus.Forbidden, $"You may not replace “{name}” there.")
-                );
-        }
+            ConflictChoice.Skip => (null, Skipped(path, name), false),
+            ConflictChoice.KeepBoth => (
+                FileNames.KeepBoth(name, item.IsFolder, Taken(item.TargetFull))
+                    ?? throw new IOException("No free name."),
+                null,
+                false
+            ),
+            ConflictChoice.Merge when canMerge => (name, null, true),
+            ConflictChoice.Replace when canReplace => await ReplaceAsync(job, item, destination, token),
+            _ => (
+                null,
+                new FileJobItem(path, null, FileOperationStatus.Forbidden, $"You may not replace “{name}” there."),
+                false
+            ),
+        };
     }
+
+    private static FileJobItem Skipped(string path, string name) =>
+        new(path, null, FileOperationStatus.Skipped, $"“{name}” was left out: there is one of that name there.");
 
     /// <summary>
     /// <paramref name="name"/> in <paramref name="folder"/> is a path no route takes (the work folder, its 8.3 name).
@@ -98,8 +98,24 @@ public sealed class LibraryClashes(LibraryPaths paths, ScanCoordinator scans, Tr
             && (!Directory.Exists(destination) || await job.Access.MayThroughoutAsync(existingPath, replaceRight));
     }
 
+    /// <summary>
+    /// The item, a folder, may be merged into the folder <paramref name="destination"/>: the job merges, neither is a
+    /// link (what is behind one is never walked into), the folder there doesn't hold the item, and the person has the
+    /// job's right in it.
+    /// </summary>
+    private static async Task<bool> CanMergeAsync(JobRun job, ClashCheck item, string destination)
+    {
+        if (item.MergeRight is not { } right || !item.IsFolder || !Directory.Exists(destination))
+            return false;
+        var existingPath = Join(item.TargetPath, item.Name);
+        return new DirectoryInfo(item.Source).LinkTarget is null
+            && new DirectoryInfo(destination).LinkTarget is null
+            && (item.SourcePath is null || !FolderPolicy.IsSameOrBelow(item.SourcePath, existingPath))
+            && await job.Access.MayAsync(existingPath, right);
+    }
+
     /// <summary>What is at <paramref name="destination"/> goes to the trash (or for good) to free the name.</summary>
-    private async Task<(string? Name, FileJobItem? Refused)> ReplaceAsync(
+    private async Task<(string? Name, FileJobItem? Refused, bool Merge)> ReplaceAsync(
         JobRun job,
         ClashCheck item,
         string destination,
@@ -109,7 +125,7 @@ public sealed class LibraryClashes(LibraryPaths paths, ScanCoordinator scans, Tr
         var existingPath = Join(item.TargetPath, item.Name);
         using var hold = scans.TryBeginOperation(destination);
         if (hold is null)
-            return (null, ScanRunning(item.Path));
+            return (null, ScanRunning(item.Path), false);
         if (trash.AlwaysPermanent)
         {
             await trash.DeleteForGoodAsync(destination, existingPath, Directory.Exists(destination), job.Actor, token);
@@ -118,7 +134,7 @@ public sealed class LibraryClashes(LibraryPaths paths, ScanCoordinator scans, Tr
         {
             await trash.MoveInAsync(destination, existingPath, Directory.Exists(destination), job.Actor, token);
         }
-        return (item.Name, null);
+        return (item.Name, null, false);
     }
 
     private static ClashSide Side(string full)

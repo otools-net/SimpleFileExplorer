@@ -109,9 +109,10 @@ public static class FileEndpoints
         Starts a job and answers its first state (202). `conflicts` says what to do when the target holds an
         item of the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies),
         `replace` (needs the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth`
-        (` (2)` added). Moves keep tags, folder rules (`keepAccess` pins each group's current access), quick
-        links and caches; copies never follow links, leave out folders the caller may not see, and get the tags
-        of their originals with `keepTags`. Results per item in `results`.
+        (` (2)` added), `merge` (a folder meeting a folder goes into it, each name they share asked; other
+        clashes asked; the result has `merged`). Moves keep tags, folder rules (`keepAccess` pins each
+        group's current access), quick links and caches; copies never follow links, leave out folders the caller
+        may not see, and get the tags of their originals with `keepTags`. Results per item in `results`.
         """;
 
     private static readonly string CompressDescription = $"""
@@ -177,7 +178,10 @@ public static class FileEndpoints
             .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles, Rights.CompressFiles)
             .NotLibraryPaths()
             .WithName("AnswerFileJob")
-            .WithSummary("Answers a job's question about a name clash (`forAll`: the same for the next ones).");
+            .WithSummary(
+                "Answers a job's question about a name clash (`forAll`: the same for the next ones of its kind, two "
+                    + "folders that may merge or the others; `merge` only when `canMerge`)."
+            );
         jobs.MapPost("/{id:int}/cancel", CancelJob)
             .RequireRight(Rights.MoveFiles, Rights.CopyFiles, Rights.ExtractFiles, Rights.CompressFiles)
             .NotLibraryPaths()
