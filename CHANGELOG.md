@@ -21,8 +21,15 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   `GET api/files/versions?path=`, `GET api/files/versions/{id}/content`, `POST api/files/versions/{id}/copy`,
   `POST api/files/versions/{id}/restore`.
 
+- **Uploads checked piece by piece**: each piece of an upload carries its SHA-256 (`Content-Digest: sha-256=:…:`,
+  RFC 9530), and the server compares it before keeping the piece (library and connections): a piece damaged on the way
+  is sent again instead of landing in the file. The page and Sfe.Client send it; a piece without it is taken as
+  before. API: problem type `chunk-digest` (400).
+
 ### Changed
 
+- Unfinished uploads not touched for **Keep unfinished uploads for** are now removed every 10 minutes and at start,
+  not only when someone starts or lists uploads, so their pieces don't stay on the disk.
 - A "for all" answer to a name clash now holds apart for clashes of two folders that could be merged and for the
   others: answering **Replace** for every file no longer replaces such a folder without asking.
 - **Undo** after a move leaves out the folders merged (moving them back would take what the folder there held).

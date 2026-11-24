@@ -115,6 +115,8 @@ with the library: [transfers](transfers.md).
   after 24 h idle; a restart loses them); the provider's session id is never answered.
 - A wrong offset: the provider says where it is (`WrongOffset` with the offset); the record follows it and the route
   answers 409 with the upload, as the library does, and the client goes on from there.
+- A chunk's `Content-Digest` is checked on the part held in memory before the provider gets it (400
+  `chunk-digest`: the provider never has the damaged bytes): [uploads](uploads.md).
 - Finish with ask or skip looks the name up first, so a conflict doesn't use up the provider's session; replace needs
   `files.delete`. The space's `Files:Uploads:MaxFileSizeMegabytes` is checked at start; free space is the
   provider's (413).

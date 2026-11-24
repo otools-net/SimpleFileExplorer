@@ -1,4 +1,4 @@
-import { HttpParams } from '@angular/common/http';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 
 /** A value of a request's query. */
 export type QueryValue = string | number | boolean | null | undefined;
@@ -17,4 +17,15 @@ export function params(values: Record<string, QueryValue>): HttpParams {
 export function withQuery(url: string, values: Record<string, QueryValue>): string {
     const query = params(values).toString();
     return query ? `${url}?${query}` : url;
+}
+
+/** A chunk of an upload and its `Content-Digest` (`files/chunk-digest.ts`), which the server checks. */
+export interface UploadChunk {
+    bytes: Blob;
+    digest: string;
+}
+
+/** The headers of an upload's chunk: raw bytes, and the digest the server checks them against. */
+export function chunkHeaders(headers: HttpHeaders, digest: string): HttpHeaders {
+    return headers.set('Content-Type', 'application/octet-stream').set('Content-Digest', digest);
 }

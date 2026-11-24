@@ -109,6 +109,23 @@ public sealed class UploadTests
     }
 
     [TestMethod]
+    public async Task AChunkDamagedOnTheWayIsSentAgain()
+    {
+        using var server = await TokenServer.StartAsync(Token);
+        DamagingHandler? damaging = null;
+        using var sfe = server.CreateClient(
+            options => options.UploadChunkBytes = SmallChunk,
+            inner => damaging = new DamagingHandler(inner)
+        );
+        var bytes = RandomNumberGenerator.GetBytes(2 * SmallChunk);
+
+        await sfe.Files.UploadAsync("checked.bin", new MemoryStream(bytes), cancellationToken: Token);
+
+        Assert.AreEqual(3, damaging!.Chunks, "The damaged chunk was sent a second time");
+        CollectionAssert.AreEqual(bytes, await File.ReadAllBytesAsync(server.Library.FullPath("checked.bin"), Token));
+    }
+
+    [TestMethod]
     public async Task ACancelledUploadIsRemovedFromTheServer()
     {
         using var server = await TokenServer.StartAsync(Token);
@@ -184,5 +201,30 @@ public sealed class UploadTests
     private sealed class SyncCallback(Action<long> report) : IProgress<long>
     {
         public void Report(long value) => report(value);
+    }
+
+    /// <summary>Changes a byte of the first chunk sent, its digest left as it was: a broken link on the way.</summary>
+    private sealed class DamagingHandler(HttpMessageHandler inner) : DelegatingHandler(inner)
+    {
+        public int Chunks { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            if (request.Method != HttpMethod.Put || request.Content is null)
+                return await base.SendAsync(request, cancellationToken);
+            if (++Chunks == 1)
+            {
+                var body = await request.Content.ReadAsByteArrayAsync(cancellationToken);
+                body[^1] ^= 0xFF;
+                var damaged = new ByteArrayContent(body);
+                foreach (var header in request.Content.Headers)
+                    damaged.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                request.Content = damaged;
+            }
+            return await base.SendAsync(request, cancellationToken);
+        }
     }
 }

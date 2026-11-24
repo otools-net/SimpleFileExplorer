@@ -55,6 +55,7 @@ public sealed class TenantHost : IAsyncDisposable
         services.AddSingleton<IHostedService, TrickplayWorker>();
         services.AddSingleton<IHostedService, TaskScheduleWorker>();
         services.AddSingleton<IHostedService, KeepAliveWorker>();
+        services.AddSingleton<IHostedService, UploadSweepWorker>();
         services.AddSingleton<IHostedService, ConnectionIndexWorker>();
         var provider = services.BuildServiceProvider();
 

@@ -81,6 +81,7 @@ list (`x-sfe-problem-types`), so the baseline refuses a word removed.
 | `access-gains` | 409 | a move would let more people see or change a folder of a connection: confirm first |
 | `archive-reading` | 409 | the archive's list is still being read: try again in a moment |
 | `archive-unreadable` | 422 | the archive (or an entry) can't be read |
+| `chunk-digest` | 400 | an upload's chunk doesn't match its `Content-Digest` (damaged on the way): send it again |
 | `connection-cache-busy` | 429 | the server downloads as many connection files into its cache as it may (for the caller, or in all) |
 | `connection-needs-reconnecting` | 409 | the provider no longer accepts the connection's sign-in |
 | `connection-not-indexed` | 409 | the library's index doesn't hold the connection's files yet (its sync started) |

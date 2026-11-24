@@ -113,6 +113,7 @@ their status.
 | `access-gains` | 409 | moving a folder of a connection would let more people see or change it: confirm first |
 | `archive-reading` | 409 | the archive's list is still being read: try again in a moment |
 | `archive-unreadable` | 422 | the archive, or one of its files, can't be read |
+| `chunk-digest` | 400 | a chunk of an upload doesn't match the `Content-Digest` it was sent with: nothing of it was kept, send it again |
 | `connection-cache-busy` | 429 | the server already downloads as many files of connections as it may for previews: try again in a moment (`Retry-After`) |
 | `connection-needs-reconnecting` | 409 | the connection's provider no longer accepts its sign-in: sign in again |
 | `connection-not-indexed` | 409 | the library hasn't indexed this connection's files yet: try again once its sync has run |

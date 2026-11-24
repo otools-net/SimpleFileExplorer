@@ -33,7 +33,9 @@ public static class UploadEndpoints
     private static readonly string SendUploadChunkDescription = $"""
         `offset` must be the bytes the server has: another one answers 409 with the upload, to resend from
         there (a reply lost on the way). A chunk passing the size, or {Uploads.MaxChunkBytes / 1024 / 1024} MB,
-        is refused (400). Answers the upload.
+        is refused (400). With `Content-Digest: sha-256=:…:` (RFC 9530) the bytes are checked against it
+        before they count: a chunk that doesn't match is dropped (400 `chunk-digest`), send it again; a digest
+        that can't be read is refused (400). Answers the upload.
         """;
 
     private static readonly string FinishUploadDescription = $"""
@@ -212,12 +214,15 @@ public static class UploadEndpoints
         var (uploads, _, _, _, current) = services;
         if (Mine(uploads.Find(id), await current.GetAsync()) is null)
             return TypedResults.NotFound();
-        var result = await uploads.AppendAsync(id, offset, request.Body, cancellationToken);
+        if (!ChunkDigest.TryParse(request.Headers[ChunkDigest.Header], out var sha256))
+            return DigestUnreadable();
+        var result = await uploads.AppendAsync(id, offset, request.Body, cancellationToken, sha256);
         return result.Status switch
         {
             FileOperationStatus.Done => TypedResults.Ok(result.Upload!),
             FileOperationStatus.Conflict => TypedResults.Conflict(result.Upload!),
             FileOperationStatus.NotFound => TypedResults.NotFound(),
+            _ when result.Damaged => Damaged(),
             _ => TypedResults.Problem(result.Message, statusCode: StatusCodes.Status400BadRequest),
         };
     }
@@ -301,4 +306,18 @@ public static class UploadEndpoints
 
         public bool IsProtected(string fullPath) => FileEndpoints.ProtectedFromWrites(fullPath, serverFiles, work);
     }
+
+    /// <summary>400 `chunk-digest`: the chunk's bytes don't match its digest; nothing of it was kept.</summary>
+    internal static ProblemHttpResult Damaged() =>
+        TypedResults.Problem(
+            ChunkDigest.Mismatch,
+            statusCode: StatusCodes.Status400BadRequest,
+            type: ProblemTypes.ChunkDigest
+        );
+
+    internal static ProblemHttpResult DigestUnreadable() =>
+        TypedResults.Problem(
+            $"The {ChunkDigest.Header} header's sha-256 can't be read.",
+            statusCode: StatusCodes.Status400BadRequest
+        );
 }

@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Otools.Net.Sfe.Client.Http;
@@ -12,11 +13,16 @@ namespace Otools.Net.Sfe.Client.Uploads;
 /// Sends an upload's bytes in chunks (<c>PUT files/uploads/{id}?offset=</c> of the library or a connection), one
 /// buffer in memory whatever the size (each chunk a byte array, so that no target streams a request body of unknown
 /// length). A chunk cut off on the way is sent again from what the server has; a chunk refused as too large (413, a
-/// proxy's limit) is halved, down to 256 KB, as the web page does.
+/// proxy's limit) is halved, down to 256 KB, as the web page does. Each chunk carries its SHA-256
+/// (<c>Content-Digest</c>), checked by the server before its bytes count: one damaged on the way (400
+/// <c>chunk-digest</c>) is sent again, as a try.
 /// </summary>
 internal sealed class UploadChunks(SfeTransport transport, FilePlace place, UploadInfo upload, int chunkBytes)
 {
     private const int SmallestChunk = 256 * 1024;
+
+    /// <summary>The problem of a chunk whose bytes don't match its digest.</summary>
+    private const string Damaged = "chunk-digest";
 
     private int _chunkBytes = chunkBytes;
     private int _failures;
@@ -103,6 +109,13 @@ internal sealed class UploadChunks(SfeTransport transport, FilePlace place, Uplo
             _chunkBytes = Math.Max(SmallestChunk, _chunkBytes / 2);
             return offset;
         }
+        catch (SfeApiException damaged)
+            when (damaged.ProblemType == Damaged && ++_failures <= transport.Options.MaxRetries)
+        {
+            var wait = RetryDelays.Backoff(_failures - 1, transport.Options.RetryDelay);
+            await Task.Delay(wait, cancellationToken).ConfigureAwait(false);
+            return offset;
+        }
         catch (Exception cut) when (IsCutOff(cut, cancellationToken) && ++_failures <= transport.Options.MaxRetries)
         {
             var wait = RetryDelays.Backoff(_failures - 1, transport.Options.RetryDelay);
@@ -121,14 +134,27 @@ internal sealed class UploadChunks(SfeTransport transport, FilePlace place, Uplo
     )
     {
         var route = place.Route($"files/uploads/{upload.Id}?offset={offset.ToString(CultureInfo.InvariantCulture)}");
+        var digest = Digest(buffer, index, count);
         var request = new SfeRequest(HttpMethod.Put, route)
         {
-            Content = () => new ByteArrayContent(buffer, index, count),
+            Content = () =>
+            {
+                var content = new ByteArrayContent(buffer, index, count);
+                content.Headers.TryAddWithoutValidation("Content-Digest", digest);
+                return content;
+            },
             // The server checks the offset: a chunk sent twice is refused (409), never written twice.
             CanRetry = true,
             AcceptedStatus = 409,
         };
         return await transport.ReadAsync<UploadInfo>(request, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>The <c>Content-Digest</c> of the chunk (RFC 9530).</summary>
+    private static string Digest(byte[] buffer, int index, int count)
+    {
+        using var sha256 = SHA256.Create();
+        return $"sha-256=:{Convert.ToBase64String(sha256.ComputeHash(buffer, index, count))}:";
     }
 
     private async Task<long> ReceivedAsync(CancellationToken cancellationToken)

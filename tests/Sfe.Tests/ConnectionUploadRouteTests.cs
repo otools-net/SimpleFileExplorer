@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
+using Otools.Net.Sfe.Api;
 using Otools.Net.Sfe.Api.Endpoints;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Connections;
@@ -135,6 +136,24 @@ public sealed class ConnectionUploadRouteTests
             Cancel
         );
         CollectionAssert.Contains(listing!.Listing.Items.Select(i => i.Name).ToArray(), "new.txt");
+    }
+
+    [TestMethod]
+    public async Task AChunkNotMatchingItsDigestNeverReachesTheProvider()
+    {
+        var upload = await StartAsync(new UploadStart("", "checked.txt", 10));
+
+        using var damaged = await PutAsync(_alice, upload.Id, 0, "abcde", ChunkDigest.Of("abcdX"u8));
+        var provider = _account.Locked(() => _account.Uploads.Values.Single().Length);
+        var first = await SendAsync(_alice, upload.Id, 0, "abcde", ChunkDigest.Of("abcde"u8));
+        await SendAsync(_alice, upload.Id, 5, "fghij");
+        using var finish = await FinishAsync(_alice, upload.Id, ConflictChoice.Ask);
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, damaged.StatusCode);
+        StringAssert.Contains(await damaged.Content.ReadAsStringAsync(Cancel), ProblemTypes.ChunkDigest);
+        Assert.AreEqual(0L, provider);
+        Assert.AreEqual(5, first.Received);
+        Assert.AreEqual("abcdefghij", _account.TextOf("Photos/checked.txt"));
     }
 
     [TestMethod]
@@ -314,17 +333,31 @@ public sealed class ConnectionUploadRouteTests
         return await ReadAsync<List<UploadInfo>>(answer);
     }
 
-    private async Task<UploadInfo> SendAsync(HttpClient client, string id, long offset, string text)
+    private async Task<UploadInfo> SendAsync(
+        HttpClient client,
+        string id,
+        long offset,
+        string text,
+        string? digest = null
+    )
     {
-        using var answer = await PutAsync(client, id, offset, text);
+        using var answer = await PutAsync(client, id, offset, text, digest);
         Assert.AreEqual(HttpStatusCode.OK, answer.StatusCode, await answer.Content.ReadAsStringAsync(Cancel));
         return await ReadAsync<UploadInfo>(answer);
     }
 
-    private Task<HttpResponseMessage> PutAsync(HttpClient client, string id, long offset, string text)
+    private Task<HttpResponseMessage> PutAsync(
+        HttpClient client,
+        string id,
+        long offset,
+        string text,
+        string? digest = null
+    )
     {
         var body = new ByteArrayContent(Encoding.UTF8.GetBytes(text));
         body.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        if (digest is not null)
+            body.Headers.TryAddWithoutValidation(ChunkDigest.Header, digest);
         return client.PutAsync($"{Base}/{id}?offset={offset}", body, Cancel);
     }
 

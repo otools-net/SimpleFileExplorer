@@ -401,6 +401,22 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   as a tool in `agents/tools/`), an end-to-end checksum (client sends a hash per chunk or for the whole file,
   server verifies before finishing), a background sweep of unfinished uploads (today only when listing/starting),
   connection uploads that survive a reload / server restart (records persisted). Fix what the load test finds.
+  **Split** (2026-11-24: four independent parts, `Uploads.cs` already 629 lines):
+  - [x] **4.3a background sweep and chunk checksums**. Done 2026-11-24: a refactoring first moved the records
+    (`UploadRecords`) and the place checks (`UploadPlaces`) out of `Uploads` (629 → 483 lines; 523 after this step); `UploadSweepWorker`
+    (per library, at start and every 10 minutes; an upload busy with a chunk or a finish skipped, read again under its
+    gate); `ChunkDigest` (`Content-Digest: sha-256=:…:`, RFC 9530, optional: old clients unchecked), checked while
+    the library writes (truncated back on a mismatch) and on the part in memory before a connection's provider gets
+    it, 400 `chunk-digest` (`ProblemTypes`); the page (`chunk-digest.ts`: `crypto.subtle`, `@noble/hashes` on
+    demand on plain http; `readChunk` sends the bytes it hashed) and Sfe.Client send it and retry a damaged chunk as
+    a try. No whole-file hash (a browser can't stream a digest). No screenshot (nothing visible). `api.service.ts`
+    kept at its baseline (`UploadChunk` and `chunkHeaders` in `core/api-query.ts`); `uploads.ts` 449 → 450 (an
+    import).
+  - [ ] **4.3b connection uploads kept across restarts**: `RemoteUploads` records written to the work folder (the
+    provider's session id is a secret: stored as the connection's credentials are), listed after a reload, swept in
+    the background.
+  - [ ] **4.3c load test** (`agents/tools/upload-load/`: 5,000 small files through `Sfe.Client`, one file of 100+ GB
+    on a scratch disk, timings) and fixes of what it finds.
 - [ ] **4.4 Ctrl+Z** (IDEA-026, S–M). Toast Undo exists for rename, batch rename, move, delete, duplicate removal.
   Add a session undo stack (last 20, this tab only): Ctrl+Z / Cmd+Z undoes the latest, outside text fields; an
   Undo entry in the ⋮ menu; add undo for create folder (to trash) and copy (copies to trash). Refused with a reason
@@ -518,12 +534,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-24):** 4.2 (previous versions) done, and a CI fix (`SecretFiles`: parent folders private
-  on Linux). Next: **4.3** (uploads at scale). Step 4.6 (read-only or writable shown) was added by the owner on
+- **Last session (2026-11-24):** 4.3 split in three; **4.3a** (upload sweep, chunk checksums) done. Next: **4.3b**
+  (connection uploads kept across restarts). Step 4.6 (read-only or writable shown) was added by the owner on
   2026-11-23.
-- Commits were not allowed in that session (the owner hadn't asked): its work may be uncommitted. To commit it apart:
-  the `SecretFiles` fix (its file and changelog line), then the refactoring (`core/api-query.ts`,
-  `library/listing-dialogs.ts`), then 4.2.
+- Commits were not allowed in that session (the owner hadn't asked): its work is uncommitted. To commit it apart:
+  first the refactoring (`UploadRecords.cs`, `UploadPlaces.cs`, `Uploads.cs` without the sweep's gate and
+  `WriteAsync`, the two `AddSingleton` lines; readability baseline written), then 4.3a (everything else). Doing it
+  needs `git add -p` on `Uploads.cs`; committing both together as one step is the simpler fallback.
+- `BackgroundService` (.NET 10) runs `ExecuteAsync` apart from `StartAsync`: a test of a worker waits for its effect.
+- Client specs that drive `UploadQueue` call `instantDigests()` (`testing/fakes.ts`): Node's `crypto.subtle`
+  answers after `settle()`.
 - `FileJobs.cs` is at its baseline again after 4.1 (1,087 lines): the extraction part (`ExtractAsync`, `PlaceAsync`)
   or the compression (`CompressAsync`) is the next candidate to move out before adding job code.
 - `measure.mjs` only measures files git tracks: write the baseline after `git add` of a new file, or its debt is

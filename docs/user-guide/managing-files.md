@@ -281,7 +281,9 @@ Before sending anything, SFE checks the names. When some are already taken there
 number is added to the new name); tick **The same for the other names taken** to answer once.
 
 The panel at the bottom right shows each upload with its progress and speed. Files are sent in pieces, two files at a
-time: **Pause** and **Resume** stop and go on, a piece that fails is sent again by itself, **Retry** goes on with a
+time, each with a checksum the server compares before keeping it, so a piece damaged on the way is sent again
+instead of spoiling the file. **Pause** and **Resume** stop and go on, a piece that fails is sent again by itself,
+**Retry** goes on with a
 file that failed, and **Cancel** stops (what was sent of an unfinished file is removed); a right click on an upload
 has them too, and the folder it goes into (also in a new tab). The browser warns you before
 you leave the page while files are being sent.

@@ -75,7 +75,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Uploads.Item
             return await RequestAdapter.SendAsync<global::Otools.Net.Sfe.Client.Generated.Models.UploadInfo>(requestInfo, global::Otools.Net.Sfe.Client.Generated.Models.UploadInfo.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// `offset` must be the bytes the server has: another one answers 409 with the upload, to resend fromthere (a reply lost on the way). A chunk passing the size, or 16 MB,is refused (400). Answers the upload.
+        /// `offset` must be the bytes the server has: another one answers 409 with the upload, to resend fromthere (a reply lost on the way). A chunk passing the size, or 16 MB,is refused (400). With `Content-Digest: sha-256=:…:` (RFC 9530) the bytes are checked against itbefore they count: a chunk that doesn&apos;t match is dropped (400 `chunk-digest`), send it again; a digestthat can&apos;t be read is refused (400). Answers the upload.
         /// </summary>
         /// <returns>A <see cref="global::Otools.Net.Sfe.Client.Generated.Models.UploadInfo"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -135,7 +135,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Uploads.Item
             return requestInfo;
         }
         /// <summary>
-        /// `offset` must be the bytes the server has: another one answers 409 with the upload, to resend fromthere (a reply lost on the way). A chunk passing the size, or 16 MB,is refused (400). Answers the upload.
+        /// `offset` must be the bytes the server has: another one answers 409 with the upload, to resend fromthere (a reply lost on the way). A chunk passing the size, or 16 MB,is refused (400). With `Content-Digest: sha-256=:…:` (RFC 9530) the bytes are checked against itbefore they count: a chunk that doesn&apos;t match is dropped (400 `chunk-digest`), send it again; a digestthat can&apos;t be read is refused (400). Answers the upload.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -163,7 +163,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files.Uploads.Item
             return new global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Uploads.Item.UploadsItemRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// `offset` must be the bytes the server has: another one answers 409 with the upload, to resend fromthere (a reply lost on the way). A chunk passing the size, or 16 MB,is refused (400). Answers the upload.
+        /// `offset` must be the bytes the server has: another one answers 409 with the upload, to resend fromthere (a reply lost on the way). A chunk passing the size, or 16 MB,is refused (400). With `Content-Digest: sha-256=:…:` (RFC 9530) the bytes are checked against itbefore they count: a chunk that doesn&apos;t match is dropped (400 `chunk-digest`), send it again; a digestthat can&apos;t be read is refused (400). Answers the upload.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class UploadsItemRequestBuilderPutQueryParameters 

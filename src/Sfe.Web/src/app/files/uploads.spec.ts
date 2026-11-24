@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ApiError } from '../core/api.service';
 import { DirectoryListing, LibraryItem } from '../core/models';
+import { UploadChunk } from '../core/api-query';
 import { UploadInfo } from './file.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
@@ -8,6 +9,7 @@ import {
     ApiMock,
     buttonNamed,
     fakeConfig,
+    instantDigests,
     item,
     limitedConfig,
     loadConfig,
@@ -65,6 +67,7 @@ function file(name: string, content = 'abcdefghij'): File {
 
 async function setUp(config = fakeConfig()): Promise<void> {
     api = mockApi();
+    instantDigests();
     TestBed.configureTestingModule({ providers: testProviders(api) });
     await loadConfig(api, config);
     store = TestBed.inject(ListingStore);
@@ -75,7 +78,10 @@ async function setUp(config = fakeConfig()): Promise<void> {
     await store.load();
 }
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+});
 
 describe('UploadQueue', () => {
     it('checks, starts, sends and finishes a file, which shows in the folder listed', async () => {
@@ -103,7 +109,9 @@ describe('UploadQueue', () => {
             null,
         );
         expect(api.sendUploadChunk.mock.calls.map((call) => call[1])).toEqual([0, 4]);
-        expect(await (api.sendUploadChunk.mock.calls[1][2] as Blob).text()).toBe('efghij');
+        const second = api.sendUploadChunk.mock.calls[1][2] as UploadChunk;
+        expect(await second.bytes.text()).toBe('efghij');
+        expect(second.digest).toMatch(/^sha-256=:.+:$/);
         expect(api.finishUpload).toHaveBeenCalledWith('a'.repeat(32), 'ask', null);
         expect(store.items().map((i) => i.name)).toContain('new.txt');
         expect(TestBed.inject(ToastService).toasts().at(-1)!.message).toBe('1 file uploaded to “Media”.');
@@ -315,6 +323,26 @@ describe('Dropping files from the computer', () => {
 });
 
 describe('UploadQueue behind a proxy', () => {
+    it('sends again a chunk the server found damaged, as a try', async () => {
+        await setUp();
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const queue = TestBed.inject(UploadQueue);
+        api.checkUploads.mockResolvedValue({ existing: [], canReplace: false });
+        api.startUpload.mockResolvedValue(upload());
+        api.sendUploadChunk
+            .mockRejectedValueOnce(new ApiError(400, 'Damaged.', null, 'chunk-digest'))
+            .mockResolvedValueOnce(upload({ received: 10 }));
+        api.finishUpload.mockResolvedValue(item('Media/new.txt'));
+
+        await queue.add([{ file: file('new.txt'), name: 'new.txt' }], 'Media');
+        await vi.advanceTimersByTimeAsync(1500);
+        vi.useRealTimers();
+        await settle();
+
+        expect(api.sendUploadChunk.mock.calls.map((call) => call[1])).toEqual([0, 0]);
+        expect(queue.batches()[0].items[0].state).toBe('done');
+    });
+
     it('sends smaller chunks when a chunk is refused as too large', async () => {
         await setUp();
         const queue = TestBed.inject(UploadQueue);
@@ -324,14 +352,14 @@ describe('UploadQueue behind a proxy', () => {
         api.sendUploadChunk
             .mockRejectedValueOnce(new ApiError(413, 'Request Entity Too Large'))
             .mockImplementation((_id, offset, chunk) =>
-                Promise.resolve(upload({ size, received: offset + chunk.size })),
+                Promise.resolve(upload({ size, received: offset + chunk.bytes.size })),
             );
         api.finishUpload.mockResolvedValue(item('Media/big.bin'));
 
         await queue.add([{ file: new File([new Uint8Array(size)], 'big.bin'), name: 'big.bin' }], 'Media');
         await settle();
 
-        const sizes = api.sendUploadChunk.mock.calls.map((call) => (call[2] as Blob).size);
+        const sizes = api.sendUploadChunk.mock.calls.map((call) => (call[2] as UploadChunk).bytes.size);
         expect(sizes[0]).toBe(8 * 1024 * 1024);
         expect(sizes.slice(1)).toEqual([4 * 1024 * 1024, 4 * 1024 * 1024, 1024 * 1024]);
         expect(queue.batches()[0].items[0].state).toBe('done');

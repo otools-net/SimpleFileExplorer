@@ -230,6 +230,14 @@ export function applyChange(
 }
 
 /** Lets pending promises and timers of `ms` run, then the change detection. */
+/**
+ * Upload chunks' digests answered at once (Node's `crypto.subtle` answers on another turn, after `settle()`); undone
+ * by `vi.unstubAllGlobals()`. Their value is `chunk-digest.spec.ts`'s.
+ */
+export function instantDigests(): void {
+    vi.stubGlobal('crypto', { subtle: { digest: () => Promise.resolve(new ArrayBuffer(32)) } });
+}
+
 export async function settle(ms = 0): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, ms));
     await TestBed.inject(ApplicationRef).whenStable();

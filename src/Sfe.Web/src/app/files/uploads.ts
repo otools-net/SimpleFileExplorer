@@ -6,6 +6,7 @@ import { ConflictChoice, UploadInfo } from './file.models';
 import { baseName } from '../core/paths';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
+import { isRefusedChunk, readChunk } from './chunk-digest';
 import { currentPosition } from '../library/items/listing-position';
 import { ListingStore } from '../library/listing.store';
 import { showsTarget, uploadConnection } from './upload-places';
@@ -288,7 +289,7 @@ export class UploadQueue {
                     const upload = await this.api.sendUploadChunk(
                         item.id,
                         item.sent,
-                        item.file!.slice(item.sent, item.sent + this.chunkBytes),
+                        await readChunk(item.file!, item.sent, this.chunkBytes),
                         abort.signal,
                         batch.connection,
                     );
@@ -306,7 +307,7 @@ export class UploadQueue {
                         this.chunkBytes = Math.max(MIN_CHUNK_BYTES, this.chunkBytes / 2);
                         continue;
                     }
-                    if (++item.tries >= TRIES || (error instanceof ApiError && error.status === 400)) throw error;
+                    if (++item.tries >= TRIES || isRefusedChunk(error)) throw error;
                     await delay(RETRY_DELAY * 2 ** (item.tries - 1));
                 } finally {
                     this.aborts.delete(item.key);

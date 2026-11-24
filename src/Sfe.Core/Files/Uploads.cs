@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using System.Text.Json;
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,7 +22,8 @@ namespace Otools.Net.Sfe.Core.Files;
 public sealed class Uploads(
     IDbContextFactory<SfeDbContext> dbFactory,
     LibraryPaths paths,
-    WorkFolder work,
+    UploadRecords records,
+    UploadPlaces places,
     LibraryBrowser browser,
     DirectoryIndexer indexer,
     ScanCoordinator scans,
@@ -31,7 +32,7 @@ public sealed class Uploads(
     ILogger<Uploads> logger
 )
 {
-    public const string FolderName = "uploads";
+    public const string FolderName = UploadRecords.FolderName;
 
     /// <summary>
     /// The largest chunk one request may carry (under Kestrel's 30 MB and most proxies' limits once lowered).
@@ -42,15 +43,11 @@ public sealed class Uploads(
     public const int MaxPerOwner = 200;
 
     /// <summary>Folders a folder upload may name on the way to its file.</summary>
-    public const int MaxDepth = 32;
+    public const int MaxDepth = UploadPlaces.MaxDepth;
 
-    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private static readonly TimeSpan SweepEvery = TimeSpan.FromMinutes(10);
 
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _gates = new();
-    private readonly Lock _loadGate = new();
-    private ConcurrentDictionary<string, UploadInfo>? _uploads;
-    private string? _loadedFrom;
     private DateTimeOffset _lastSweep;
 
     private FileManagementOptions Settings => options.CurrentValue.Files;
@@ -64,7 +61,7 @@ public sealed class Uploads(
     )
     {
         Sweep();
-        if (await PlaceAsync(start.Target, start.Name, access) is { Error: { } error })
+        if (await places.CheckAsync(start.Target, start.Name, access) is { Error: { } error })
             return new UploadChunkResult(error.Status, null, error.Message);
         if (start.Size < 0)
             return new UploadChunkResult(FileOperationStatus.Invalid, null, "The size is not valid.");
@@ -78,7 +75,7 @@ public sealed class Uploads(
             );
         }
 
-        if (FreeSpace(work.Get(FolderName)) is { } free && free - start.Size < Margin)
+        if (FreeSpace(records.Folder) is { } free && free - start.Size < Margin)
         {
             return new UploadChunkResult(
                 FileOperationStatus.Failed,
@@ -87,7 +84,7 @@ public sealed class Uploads(
             );
         }
 
-        var all = Load();
+        var all = records.All();
         if (all.Values.Count(u => u.OwnerId == actor.AccountId) >= MaxPerOwner)
         {
             return new UploadChunkResult(
@@ -113,8 +110,7 @@ public sealed class Uploads(
             now
         );
         await using (File.Create(PartPath(upload.Id))) { }
-        Save(upload);
-        all[upload.Id] = upload;
+        records.Save(upload);
         logger.LogInformation(
             "{Account} started uploading {Name} ({Size} bytes) to {Target}",
             actor.Name,
@@ -129,21 +125,23 @@ public sealed class Uploads(
     public IReadOnlyList<UploadInfo> List(int? ownerId, bool all = false)
     {
         Sweep();
-        return [.. Load().Values.Where(u => all || u.OwnerId == ownerId).OrderBy(u => u.Started)];
+        return [.. records.All().Values.Where(u => all || u.OwnerId == ownerId).OrderBy(u => u.Started)];
     }
 
-    public UploadInfo? Find(string? id) => id is not null && Load().TryGetValue(id, out var upload) ? upload : null;
+    public UploadInfo? Find(string? id) => records.Find(id);
 
     /// <summary>
     /// Appends <paramref name="body"/> at <paramref name="offset"/>: refused
     /// (<see cref="FileOperationStatus.Conflict"/>, with the upload) when the server has another offset, or when it
-    /// would pass the size.
+    /// would pass the size; dropped (<see cref="UploadChunkResult.Damaged"/>) when its bytes don't match
+    /// <paramref name="sha256"/> (<see cref="ChunkDigest"/>).
     /// </summary>
     public async Task<UploadChunkResult> AppendAsync(
         string id,
         long offset,
         Stream body,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        byte[]? sha256 = null
     )
     {
         var gate = _gates.GetOrAdd(id, _ => new SemaphoreSlim(1, 1));
@@ -168,56 +166,11 @@ public sealed class Uploads(
                 );
             }
 
-            var received = upload.Received;
-            var buffer = new byte[81920];
-            await using (
-                var part = new FileStream(
-                    PartPath(id),
-                    FileMode.Open,
-                    FileAccess.Write,
-                    FileShare.None,
-                    1,
-                    FileOptions.Asynchronous
-                )
-            )
-            {
-                // Bytes past what was stored (a write cut off before the record was saved) are dropped.
-                part.SetLength(received);
-                part.Position = received;
-                var chunk = 0;
-                int read;
-                try
-                {
-                    while ((read = await body.ReadAsync(buffer, cancellationToken)) > 0)
-                    {
-                        chunk += read;
-                        if (received + read > upload.Size || chunk > MaxChunkBytes)
-                        {
-                            part.SetLength(upload.Received);
-                            return new UploadChunkResult(
-                                FileOperationStatus.Invalid,
-                                upload,
-                                chunk > MaxChunkBytes
-                                    ? $"A chunk may carry {MaxChunkBytes / 1024 / 1024} MB at most."
-                                    : "This is more bytes than the size given at the start."
-                            );
-                        }
-                        await part.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
-                        received += read;
-                    }
-                    await part.FlushAsync(cancellationToken);
-                    part.Flush(flushToDisk: true);
-                }
-                catch
-                {
-                    // A connection lost mid-chunk: only what was stored before it counts.
-                    part.SetLength(upload.Received);
-                    throw;
-                }
-            }
+            var (received, refused) = await WriteAsync(upload, body, sha256, cancellationToken);
+            if (refused is not null)
+                return refused;
             upload = upload with { Received = received, LastActivity = DateTimeOffset.UtcNow };
-            Save(upload);
-            Load()[id] = upload;
+            records.Save(upload);
             return new UploadChunkResult(FileOperationStatus.Done, upload);
         }
         finally
@@ -260,7 +213,7 @@ public sealed class Uploads(
                 );
             }
             // The person's access now (it may have changed since the start), and the place still there.
-            if (await PlaceAsync(upload.Target, upload.Name, access) is { Error: { } error })
+            if (await places.CheckAsync(upload.Target, upload.Name, access) is { Error: { } error })
                 return error;
 
             var segments = upload.Name.Split('/');
@@ -408,17 +361,31 @@ public sealed class Uploads(
 
     /// <summary>
     /// Removes the uploads idle for longer than <c>Files:Uploads:KeepUnfinishedHours</c> (at <paramref name="now"/>);
-    /// how many.
+    /// how many. An upload busy with a chunk or a finish is left alone (its sender came back).
     /// </summary>
     public int RemoveAbandoned(DateTimeOffset? now = null)
     {
         var limit =
             (now ?? DateTimeOffset.UtcNow) - TimeSpan.FromHours(Math.Max(1, Settings.Uploads.KeepUnfinishedHours));
         var removed = 0;
-        foreach (var upload in Load().Values.Where(u => u.LastActivity < limit).ToList())
+        foreach (var idle in records.All().Values.Where(u => u.LastActivity < limit).ToList())
         {
-            Remove(upload);
-            removed++;
+            var gate = _gates.GetOrAdd(idle.Id, _ => new SemaphoreSlim(1, 1));
+            if (!gate.Wait(0))
+                continue;
+            try
+            {
+                // Read again under the gate: a chunk may have come since the list was made.
+                if (Find(idle.Id) is { } upload && upload.LastActivity < limit)
+                {
+                    Remove(upload);
+                    removed++;
+                }
+            }
+            finally
+            {
+                gate.Release();
+            }
         }
         if (removed > 0)
         {
@@ -432,90 +399,6 @@ public sealed class Uploads(
         return removed;
     }
 
-    /// <summary>
-    /// Why <paramref name="name"/> can't be uploaded into <paramref name="target"/> by the person: the folder, each
-    /// folder on the way and the name are checked (names as new names, no <c>..</c>, the work folder refused).
-    /// </summary>
-    private async Task<(FileOperationResult? Error, string? Path)> PlaceAsync(
-        string? target,
-        string? name,
-        IUploadAccess access
-    )
-    {
-        var notFound = (
-            FileOperationResult.Fail(FileOperationStatus.NotFound, "The folder was not found."),
-            (string?)null
-        );
-        if (
-            LibraryPaths.NormalizeRelative(target) is not { } normalized
-            || !paths.TryResolve(normalized, out var targetFull)
-            || !Directory.Exists(targetFull)
-            || access.IsProtected(targetFull)
-            || paths.ToRelative(targetFull) is not { } targetPath
-        )
-        {
-            return notFound;
-        }
-
-        if (!await access.MayAsync(targetPath, Rights.Browse))
-            return notFound;
-        if (string.IsNullOrEmpty(name))
-            return (FileOperationResult.Fail(FileOperationStatus.Invalid, "A name is needed."), null);
-        var segments = name.Replace('\\', '/').Split('/');
-        if (segments.Length > MaxDepth)
-        {
-            return (
-                FileOperationResult.Fail(
-                    FileOperationStatus.Invalid,
-                    $"“{name}” is more than {MaxDepth} folders deep."
-                ),
-                null
-            );
-        }
-
-        var path = targetPath;
-        foreach (var segment in segments)
-        {
-            if (FileNames.Check(segment, Settings.PortableNames) is { } message)
-                return (FileOperationResult.Fail(FileOperationStatus.Invalid, message), null);
-            path = Join(path, segment);
-            // SFE's work folder at the root, or a name the system would read as another one.
-            if (
-                !paths.TryResolve(path, out var full)
-                || !LibraryPaths.PathComparer.Equals(Path.GetFileName(full), segment)
-                || access.IsProtected(full)
-            )
-            {
-                return (
-                    FileOperationResult.Fail(
-                        FileOperationStatus.Invalid,
-                        $"“{segment}” is reserved for SFE's own files: pick another name."
-                    ),
-                    null
-                );
-            }
-        }
-        // Each folder made on the way, and the folder the file lands in, needs the right to upload there.
-        var place = targetPath;
-        if (!await access.MayAsync(place, Rights.UploadFiles))
-            return (FileOperationResult.Fail(FileOperationStatus.Forbidden, "You may not upload files there."), null);
-        foreach (var segment in segments[..^1])
-        {
-            place = Join(place, segment);
-            if (!await access.MayAsync(place, Rights.UploadFiles))
-            {
-                return (
-                    FileOperationResult.Fail(
-                        FileOperationStatus.Forbidden,
-                        $"You may not upload files into “{segment}”."
-                    ),
-                    null
-                );
-            }
-        }
-        return (null, path);
-    }
-
     private async Task<string?> TooLongForTheIndexAsync(string full, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -525,61 +408,78 @@ public sealed class Uploads(
             : null;
     }
 
-    /// <summary>The uploads recorded in the work folder, read once (again when the work folder moves).</summary>
-    private ConcurrentDictionary<string, UploadInfo> Load()
-    {
-        var folder = work.Get(FolderName);
-        lock (_loadGate)
-        {
-            if (_uploads is not null && _loadedFrom == folder)
-                return _uploads;
-            var uploads = new ConcurrentDictionary<string, UploadInfo>();
-            foreach (var record in Directory.EnumerateFiles(folder, "*.json"))
-            {
-                try
-                {
-                    if (
-                        JsonSerializer.Deserialize<UploadInfo>(File.ReadAllText(record), Json) is { } upload
-                        && upload.Id == Path.GetFileNameWithoutExtension(record)
-                    )
-                    {
-                        uploads[upload.Id] = upload;
-                    }
-                }
-                catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
-                {
-                    logger.LogWarning(ex, "Could not read the upload record {File}", Path.GetFileName(record));
-                }
-            }
-            _loadedFrom = folder;
-            return _uploads = uploads;
-        }
-    }
-
-    private void Save(UploadInfo upload)
-    {
-        var record = RecordPath(upload.Id);
-        var temporary = record + ".tmp";
-        File.WriteAllText(temporary, JsonSerializer.Serialize(upload, Json));
-        File.Move(temporary, record, overwrite: true);
-    }
-
     private void Remove(UploadInfo upload)
     {
-        Load().TryRemove(upload.Id, out _);
+        records.Remove(upload);
         _gates.TryRemove(upload.Id, out _);
-        foreach (var file in new[] { PartPath(upload.Id), RecordPath(upload.Id) })
+    }
+
+    /// <summary>
+    /// Writes a chunk after what the upload has, flushed to the disk: the bytes the upload has then, or why the chunk
+    /// was refused (too large, past the size, not matching <paramref name="sha256"/>: nothing of it kept).
+    /// </summary>
+    private async Task<(long Received, UploadChunkResult? Refused)> WriteAsync(
+        UploadInfo upload,
+        Stream body,
+        byte[]? sha256,
+        CancellationToken cancellationToken
+    )
+    {
+        var received = upload.Received;
+        var buffer = new byte[81920];
+        using var hash = sha256 is null ? null : IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        await using var part = new FileStream(
+            PartPath(upload.Id),
+            FileMode.Open,
+            FileAccess.Write,
+            FileShare.None,
+            1,
+            FileOptions.Asynchronous
+        );
+        // Bytes past what was stored (a write cut off before the record was saved) are dropped.
+        part.SetLength(received);
+        part.Position = received;
+        try
         {
-            try
+            int read;
+            while ((read = await body.ReadAsync(buffer, cancellationToken)) > 0)
             {
-                File.Delete(file);
+                if (received + read > upload.Size || received + read - upload.Received > MaxChunkBytes)
+                {
+                    part.SetLength(upload.Received);
+                    return (upload.Received, TooMuch(upload, received + read - upload.Received > MaxChunkBytes));
+                }
+                hash?.AppendData(buffer, 0, read);
+                await part.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+                received += read;
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            if (sha256 is not null && !ChunkDigest.Matches(sha256, hash!.GetHashAndReset()))
             {
-                logger.LogWarning(ex, "Could not remove {File}", Path.GetFileName(file));
+                part.SetLength(upload.Received);
+                logger.LogWarning("A chunk of the upload of {Name} was damaged on the way: asked again", upload.Name);
+                var damaged = new UploadChunkResult(FileOperationStatus.Invalid, upload, ChunkDigest.Mismatch, true);
+                return (upload.Received, damaged);
             }
+            await part.FlushAsync(cancellationToken);
+            part.Flush(flushToDisk: true);
+            return (received, null);
+        }
+        catch
+        {
+            // A connection lost mid-chunk: only what was stored before it counts.
+            part.SetLength(upload.Received);
+            throw;
         }
     }
+
+    private static UploadChunkResult TooMuch(UploadInfo upload, bool chunkTooLarge) =>
+        new(
+            FileOperationStatus.Invalid,
+            upload,
+            chunkTooLarge
+                ? $"A chunk may carry {MaxChunkBytes / 1024 / 1024} MB at most."
+                : "This is more bytes than the size given at the start."
+        );
 
     /// <summary>Removes abandoned uploads, at most every few minutes (when uploads are started or listed).</summary>
     private void Sweep()
@@ -593,13 +493,7 @@ public sealed class Uploads(
 
     private long Margin => Math.Max(0, Settings.MinimumFreeSpaceMegabytes) * 1024L * 1024;
 
-    private string PartPath(string id) => Path.Combine(work.Get(FolderName), $"{SafeId(id)}.part");
-
-    private string RecordPath(string id) => Path.Combine(work.Get(FolderName), $"{SafeId(id)}.json");
-
-    /// <summary>Ids are 32 hexadecimal digits: anything else never names a file.</summary>
-    private static string SafeId(string id) =>
-        id.Length == 32 && id.All(Uri.IsHexDigit) ? id : throw new ArgumentException("Not an upload id.", nameof(id));
+    private string PartPath(string id) => records.PartPath(id);
 
     private static long? FreeSpace(string folder)
     {

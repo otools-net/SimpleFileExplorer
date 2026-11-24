@@ -24,7 +24,8 @@ items were deleted; items deleted before they were indexed are counted apart.
 Everyone's unfinished uploads in the space (right `settings.files`): the file, who sends it, how much arrived and when
 the last piece came. **Cancel** stops one and removes what it received (also in its right-click menu, with the folder
 it goes into). Each person sees their own in the page's
-panel; uploads that receive nothing for **Keep unfinished uploads for** are removed by themselves.
+panel; uploads that receive nothing for **Keep unfinished uploads for** are removed by themselves (checked every 10
+minutes, and when the server starts).
 
 ![Administration › File management › Uploads](../images/admin-files-uploads.png)
 

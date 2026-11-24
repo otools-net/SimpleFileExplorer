@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Otools.Net.Sfe.Api;
 using Otools.Net.Sfe.Api.Endpoints;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Data;
@@ -318,6 +319,29 @@ public sealed class UploadRouteTests
         );
     }
 
+    [TestMethod]
+    public async Task AChunkIsCheckedAgainstItsContentDigest()
+    {
+        var upload = await StartAsync(_alice, new UploadStart("ChildDir", "digest.bin", 20));
+        byte[] chunk = [.. Enumerable.Range(0, 10).Select(i => (byte)i)];
+
+        using var damaged = await ChunkAsync(_alice, upload.Id, 0, chunk, ChunkDigest.Of(new byte[10]));
+        var problem = await damaged.Content.ReadFromJsonAsync<JsonElement>(Token);
+        using var unreadable = await ChunkAsync(_alice, upload.Id, 0, chunk, "sha-256=:not base64:");
+        using var otherAlgorithm = await ChunkAsync(_alice, upload.Id, 0, chunk, "sha-512=:AAAA:");
+        using var checkedChunk = await ChunkAsync(_alice, upload.Id, 10, chunk, ChunkDigest.Of(chunk));
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, damaged.StatusCode);
+        Assert.AreEqual(ProblemTypes.ChunkDigest, problem.GetProperty("type").GetString());
+        Assert.AreEqual(HttpStatusCode.BadRequest, unreadable.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, otherAlgorithm.StatusCode, "No sha-256: taken unchecked");
+        Assert.AreEqual(HttpStatusCode.OK, checkedChunk.StatusCode);
+        Assert.AreEqual(
+            20,
+            (await _alice.GetFromJsonAsync<UploadInfo>($"{V1}/files/uploads/{upload.Id}", Json, Token))!.Received
+        );
+    }
+
     private async Task<UploadInfo> StartAsync(HttpClient client, UploadStart start)
     {
         using var response = await client.PostAsJsonAsync($"{V1}/files/uploads", start, Json, Token);
@@ -325,10 +349,18 @@ public sealed class UploadRouteTests
         return (await response.Content.ReadFromJsonAsync<UploadInfo>(Json, Token))!;
     }
 
-    private Task<HttpResponseMessage> ChunkAsync(HttpClient client, string id, long offset, byte[] bytes)
+    private Task<HttpResponseMessage> ChunkAsync(
+        HttpClient client,
+        string id,
+        long offset,
+        byte[] bytes,
+        string? digest = null
+    )
     {
         var content = new ByteArrayContent(bytes);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        if (digest is not null)
+            content.Headers.TryAddWithoutValidation(ChunkDigest.Header, digest);
         return client.PutAsync($"{V1}/files/uploads/{id}?offset={offset}", content, Token);
     }
 }

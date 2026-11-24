@@ -31,7 +31,8 @@ public static class ConnectionUploadEndpoints
     private static readonly string ChunkDescription = $"""
         The body goes on to the provider at once. `offset` must be the bytes the provider has: another one answers
         409 with the upload, to resend from there. A chunk passing the size, {Uploads.MaxChunkBytes / 1024 / 1024}
-        MB or the provider's part limit is refused (400).
+        MB or the provider's part limit is refused (400). With `Content-Digest: sha-256=:…:` the bytes are
+        checked before the provider has them: a chunk that doesn't match is dropped (400 `chunk-digest`).
         """;
 
     private static readonly string FinishDescription = $"""

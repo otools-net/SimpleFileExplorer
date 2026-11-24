@@ -183,6 +183,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<Transfers.TransferTagSides>();
         services.AddSingleton<Transfers.TransferJobs>();
         AddConnectionIndex(services);
+        services.AddSingleton<UploadRecords>();
+        services.AddSingleton<UploadPlaces>();
         services.AddSingleton<Uploads>();
         services.AddSingleton<Archives>();
         // Shared by every library (the application's instance, handed to each one), like FfmpegLimits.

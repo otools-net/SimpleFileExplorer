@@ -3,7 +3,7 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ApiError, problemType, toApiError } from './api-error';
-import { params, QueryValue, withQuery } from './api-query';
+import { chunkHeaders, params, QueryValue, UploadChunk, withQuery } from './api-query';
 import {
     FolderAccessReport,
     FolderRuleView,
@@ -424,12 +424,12 @@ export class Api {
         this.post<UploadInfo>(uploadsRoute(connection), start);
     /** The session's unfinished uploads into the library (not a connection's); `all`: everyone's (`settings.files`). */
     uploads = (all = false) => this.get<UploadInfo[]>(uploadsRoute(), { all: all || null });
-    /** Sends `chunk` at `offset`; the upload also on a 409 (the server has another offset): go on from there. */
-    sendUploadChunk = (id: string, offset: number, chunk: Blob, signal?: AbortSignal, connection?: number | null) =>
+    /** Sends `chunk` at offset `at`; the upload also on a 409 (the server has another offset): go on from there. */
+    sendUploadChunk = (id: string, at: number, chunk: UploadChunk, signal?: AbortSignal, connection?: number | null) =>
         this.send(
-            this.http.put<UploadInfo>(API_BASE + `${uploadsRoute(connection)}/${id}`, chunk, {
-                params: params({ offset }),
-                headers: this.headers(true).set('Content-Type', 'application/octet-stream'),
+            this.http.put<UploadInfo>(API_BASE + `${uploadsRoute(connection)}/${id}`, chunk.bytes, {
+                params: params({ offset: at }),
+                headers: chunkHeaders(this.headers(true), chunk.digest),
             }),
             signal,
         );

@@ -19,6 +19,12 @@ public static class ProblemTypes
     public const string ArchiveUnreadable = "archive-unreadable";
 
     /// <summary>
+    /// 400: an upload's chunk doesn't match its <c>Content-Digest</c> (damaged on the way): nothing of it is kept,
+    /// send it again.
+    /// </summary>
+    public const string ChunkDigest = "chunk-digest";
+
+    /// <summary>
     /// 429 with <c>Retry-After</c>: the server already downloads as many files of connections as it may (for this
     /// caller, or in all) into its cache; try again in a moment.
     /// </summary>
@@ -117,6 +123,7 @@ public static class ProblemTypes
         AccessGains,
         ArchiveReading,
         ArchiveUnreadable,
+        ChunkDigest,
         ConnectionCacheBusy,
         ConnectionNeedsReconnecting,
         ConnectionNotIndexed,

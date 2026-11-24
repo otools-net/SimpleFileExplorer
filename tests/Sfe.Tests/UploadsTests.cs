@@ -1,4 +1,9 @@
+using System.IO.Pipelines;
+using System.Security.Cryptography;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+using Otools.Net.Sfe.Api;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Data;
 using Otools.Net.Sfe.Core.Files;
@@ -11,6 +16,7 @@ namespace Otools.Net.Sfe.Tests;
 public sealed class UploadsTests
 {
     private static readonly FileActor Me = new(7, "tester");
+    private static readonly JsonSerializerOptions JsonWeb = new(JsonSerializerDefaults.Web);
 
     private TestLibrary _library = null!;
     private CoreServices _services = null!;
@@ -271,6 +277,67 @@ public sealed class UploadsTests
         Assert.IsEmpty(Directory.GetFiles(Path.Combine(_library.Root, ".sfe", "uploads")));
     }
 
+    [TestMethod]
+    public async Task AChunkNotMatchingItsDigestIsDroppedAndSentAgain()
+    {
+        var content = Bytes(3000);
+        var upload = await StartAsync(new UploadStart("", "checked.bin", content.Length));
+        var other = Bytes(1000).Reverse().ToArray();
+
+        var first = await SendAsync(upload.Id, content, 0, 1000, Digest(content, 0, 1000));
+        var damaged = await SendAsync(upload.Id, content, 1000, 1000, Digest(other, 0, 1000));
+        var again = await SendAsync(upload.Id, content, 1000, 1000, Digest(content, 1000, 1000));
+        var withoutDigest = await SendAsync(upload.Id, content, 2000, 1000);
+        var done = await Uploads.FinishAsync(upload.Id, ConflictChoice.Ask, Me, new FakeAccess(), Token);
+
+        Assert.AreEqual(FileOperationStatus.Done, first.Status, first.Message);
+        Assert.IsTrue(damaged.Damaged);
+        Assert.AreEqual(1000, damaged.Upload!.Received, "Nothing of the damaged chunk counts");
+        Assert.AreEqual(2000, again.Upload!.Received);
+        Assert.AreEqual(3000, withoutDigest.Upload!.Received, "A chunk without a digest is taken as before");
+        Assert.AreEqual(FileOperationStatus.Done, done.Status, done.Message);
+        CollectionAssert.AreEqual(content, await File.ReadAllBytesAsync(_library.FullPath("checked.bin"), Token));
+    }
+
+    [TestMethod]
+    public async Task AnUploadBusyWithAChunkIsNotSweptAway()
+    {
+        var upload = await StartAsync(new UploadStart("", "slow.bin", 10));
+        var pipe = new Pipe();
+
+        var append = Uploads.AppendAsync(upload.Id, 0, pipe.Reader.AsStream(), Token);
+        var removedMeanwhile = Uploads.RemoveAbandoned(DateTimeOffset.UtcNow.AddHours(49));
+        await pipe.Writer.WriteAsync(Bytes(10), Token);
+        await pipe.Writer.CompleteAsync();
+        var appended = await append;
+
+        Assert.AreEqual(0, removedMeanwhile);
+        Assert.AreEqual(FileOperationStatus.Done, appended.Status, appended.Message);
+        Assert.AreEqual(10, Uploads.Find(upload.Id)!.Received);
+    }
+
+    [TestMethod]
+    public async Task TheSweepWorkerRemovesAbandonedUploadsWithoutAnyoneListingThem()
+    {
+        var upload = await StartAsync(new UploadStart("", "left.bin", 10));
+        var record = Path.Combine(_library.Root, ".sfe", "uploads", upload.Id + ".json");
+        var stale = upload with { LastActivity = DateTimeOffset.UtcNow.AddDays(-3) };
+        await File.WriteAllTextAsync(record, JsonSerializer.Serialize(stale, JsonWeb), Token);
+        // A server stopped with the upload unfinished and started again days later.
+        await _services.DisposeAsync();
+        _services = await CoreServices.CreateAsync(_library, InTheLibrary, _log.AddTo);
+
+        using var worker = new UploadSweepWorker(Uploads, NullLogger<UploadSweepWorker>.Instance);
+        await worker.StartAsync(Token);
+        // ExecuteAsync runs apart from StartAsync (.NET 10): its first sweep comes soon after.
+        for (var wait = 0; wait < 200 && Uploads.Find(upload.Id) is not null; wait++)
+            await Task.Delay(50, Token);
+        await worker.StopAsync(Token);
+
+        Assert.IsNull(Uploads.Find(upload.Id));
+        Assert.IsEmpty(Directory.GetFiles(Path.Combine(_library.Root, ".sfe", "uploads")));
+    }
+
     private async Task<UploadInfo> StartAsync(UploadStart start)
     {
         var started = await Uploads.StartAsync(start, Me, new FakeAccess(), Token);
@@ -278,8 +345,16 @@ public sealed class UploadsTests
         return started.Upload!;
     }
 
-    private Task<UploadChunkResult> SendAsync(string id, byte[] content, int offset, int count) =>
-        Uploads.AppendAsync(id, offset, new MemoryStream(content, offset, count), Token);
+    private Task<UploadChunkResult> SendAsync(
+        string id,
+        byte[] content,
+        int offset,
+        int count,
+        byte[]? sha256 = null
+    ) => Uploads.AppendAsync(id, offset, new MemoryStream(content, offset, count), Token, sha256);
+
+    private static byte[] Digest(byte[] content, int offset, int count) =>
+        SHA256.HashData(content.AsSpan(offset, count));
 
     private static byte[] Bytes(int count) => [.. Enumerable.Range(0, count).Select(i => (byte)(i * 7))];
 

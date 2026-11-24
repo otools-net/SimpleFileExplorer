@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Otools.Net.Sfe.Core.Connections;
 using Otools.Net.Sfe.Core.Files;
 
@@ -24,6 +25,8 @@ internal static class ConnectionUploadSteps
         if (offset != upload.Received)
             return TypedResults.Conflict(upload.ToInfo());
 
+        if (!ChunkDigest.TryParse(files.Context.Request.Headers[ChunkDigest.Header], out var sha256))
+            return UploadEndpoints.DigestUnreadable();
         var limit = Math.Min(Uploads.MaxChunkBytes, open.Capabilities.MaxUploadPart ?? long.MaxValue);
         await using var part = await ReadPartAsync(files.Context.Request, limit, cancellationToken);
         if (part is null || offset + part.Length > upload.Size)
@@ -33,6 +36,10 @@ internal static class ConnectionUploadSteps
                 statusCode: StatusCodes.Status400BadRequest
             );
         }
+        // Checked before the provider has it: a damaged part would land in the file for good.
+        var received = part.GetBuffer().AsSpan(0, (int)part.Length);
+        if (sha256 is not null && !ChunkDigest.Matches(sha256, SHA256.HashData(received)))
+            return UploadEndpoints.Damaged();
 
         // Read before the call: a provider may close the stream once sent (Dropbox's SDK does).
         var length = part.Length;

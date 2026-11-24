@@ -5,7 +5,16 @@ import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { ConnectionPlace } from '../core/connection.models';
 import { Rights } from '../core/rights';
-import { ApiMock, fakeConfig, item, loadConfig, mockApi, settle, testProviders } from '../../testing/fakes';
+import {
+    ApiMock,
+    fakeConfig,
+    instantDigests,
+    item,
+    loadConfig,
+    mockApi,
+    settle,
+    testProviders,
+} from '../../testing/fakes';
 import { enterPlace } from '../library/connection-pages';
 import { UploadInfo } from './file.models';
 import { UploadQueue } from './uploads';
@@ -34,6 +43,7 @@ describe('Uploads into a connection', () => {
 
     beforeEach(async () => {
         api = mockApi();
+        instantDigests();
         TestBed.configureTestingModule({ providers: testProviders(api) });
         config = await loadConfig(api, fakeConfig());
     });
@@ -41,6 +51,7 @@ describe('Uploads into a connection', () => {
     afterEach(() => {
         enterPlace(config, null);
         vi.restoreAllMocks();
+        vi.unstubAllGlobals();
     });
 
     /** Enters connection 7 as its first page would set it. */
@@ -128,7 +139,7 @@ describe('Upload routes', () => {
     function callAll(connection: number | null): void {
         void api.checkUploads('Docs', ['a.txt'], connection);
         void api.startUpload({ target: 'Docs', name: 'a.txt', size: 1, modified: null }, connection);
-        void api.sendUploadChunk(ID, 0, new Blob(['a']), undefined, connection);
+        void api.sendUploadChunk(ID, 0, { bytes: new Blob(['a']), digest: 'sha-256=:x:' }, undefined, connection);
         void api.finishUpload(ID, 'ask', connection);
         void api.cancelUpload(ID, connection);
     }
@@ -136,6 +147,14 @@ describe('Upload routes', () => {
     function requested(): string[] {
         return http.match(() => true).map((request) => `${request.request.method} ${request.request.url}`);
     }
+
+    it('send a chunk as raw bytes with its digest', () => {
+        void api.sendUploadChunk(ID, 0, { bytes: new Blob(['a']), digest: 'sha-256=:x:' });
+        const request = http.expectOne((r) => r.method === 'PUT');
+        expect(request.request.headers.get('Content-Digest')).toBe('sha-256=:x:');
+        expect(request.request.headers.get('Content-Type')).toBe('application/octet-stream');
+        request.flush({});
+    });
 
     it("reach the connection's routes, the same paths below them", () => {
         callAll(7);
