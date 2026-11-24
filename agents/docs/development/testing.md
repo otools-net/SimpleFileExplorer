@@ -14,6 +14,8 @@ phone-sized browsers): `tests/e2e/`, [testing-e2e.md](testing-e2e.md).
 - A change seen on phones (layout, touch, menus, dialogs, viewers) also runs `cd tests/e2e && npm run e2e -- --grep
   "@smoke|@reported"` and the specs of its area; a phone bug fix adds an end-to-end test that fails without it
   ([testing-e2e.md](testing-e2e.md)). The whole suite runs before `edge` is merged into `main`.
+- **No file over 8 GB** in any test or load tool run (owner's rule, 2026-11-24): this machine hasn't the resources.
+  Heavier runs (100+ GB) wait until there are: an open point in [release-2.0-plan](release-2.0-plan.md).
 
 ## Backend
 

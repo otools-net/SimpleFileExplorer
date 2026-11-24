@@ -397,7 +397,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   open, restore as a copy, restore over (the current one becomes a version). Technical names (`api/files/trash`,
   `TrashEntries`, `SfeTrash`) unchanged. Version-friendly reading of the trash page ("saved over …" exists).
 - [ ] **4.3 Uploads at scale** (IDEA-013, M). Resumable chunked uploads, folder trees, pause/resume/cancel, user
-  and admin lists already exist. Missing: a load test (5,000 small files; one file of 100+ GB on a scratch disk,
+  and admin lists already exist. Missing: a load test (5,000 small files; one large file, ≤ 8 GB, on a scratch disk,
   as a tool in `agents/tools/`), an end-to-end checksum (client sends a hash per chunk or for the whole file,
   server verifies before finishing), a background sweep of unfinished uploads (today only when listing/starting),
   connection uploads that survive a reload / server restart (records persisted). Fix what the load test finds.
@@ -420,8 +420,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     connections, skipping one whose gate is held. Client: `resume()` also lists each usable connection with write
     access, `findInterrupted` matches the connection. No migration (nothing was stored), no screenshot (the panel is
     unchanged). Readability baselines raised by the added lines: `api.service.ts` 779 → 780, `uploads.ts` 450 → 458.
-  - [ ] **4.3c load test** (`agents/tools/upload-load/`: 5,000 small files through `Sfe.Client`, one file of 100+ GB
-    on a scratch disk, timings) and fixes of what it finds.
+  - [ ] **4.3c load test** (`agents/tools/upload-load/`: 5,000 small files through `Sfe.Client`, one large file of
+    **at most 8 GB** on a scratch disk, timings) and fixes of what it finds. Owner's rule (2026-11-24): never upload
+    a file over 8 GB in a test, this machine hasn't the resources; the tool takes the size as a parameter so the
+    heavier run can be done later (open point below).
 - [ ] **4.4 Ctrl+Z** (IDEA-026, S–M). Toast Undo exists for rename, batch rename, move, delete, duplicate removal.
   Add a session undo stack (last 20, this tab only): Ctrl+Z / Cmd+Z undoes the latest, outside text fields; an
   Undo entry in the ⋮ menu; add undo for create folder (to trash) and copy (copies to trash). Refused with a reason
@@ -606,6 +608,14 @@ Defaults taken (change here if the owner disagrees): UK English; Windows-Explore
 dashboard fixed columns; home folder never auto-created; menus (2.9): greyed only for the rights of file actions
 (Scans and previews…, quick links, Copy full path hidden instead), the selection bar never greyed; scan-as-you-go not recursive, 10 minutes; storage bar
 thresholds 85/95 %; sync jobs for administrators only.
+
+## Open points (not blocking 2.0)
+
+Kept when this plan is deleted: move them to a lasting note or a new plan.
+
+- **Heavy load tests, once there are resources** (owner, 2026-11-24): uploads of files over 8 GB (100+ GB on a
+  scratch disk, library and connections), with the 4.3c tool and a larger size. Not run before: this machine hasn't
+  the disk, memory or time for them ([testing](testing.md): 8 GB at most per file).
 
 ## What the check found already done (don't redo)
 
