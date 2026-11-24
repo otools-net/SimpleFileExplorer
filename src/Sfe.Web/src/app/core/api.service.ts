@@ -1,8 +1,9 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ApiError, problemType, toApiError } from './api-error';
+import { params, QueryValue, withQuery } from './api-query';
 import {
     FolderAccessReport,
     FolderRuleView,
@@ -28,6 +29,8 @@ import {
     UploadInfo,
     UploadStart,
     TrashPage,
+    FileVersions,
+    VersionRestore,
 } from '../files/file.models';
 import { ArchiveAnswer, TextFile, TextPart, TextToSave } from '../formats/format.models';
 import {
@@ -144,24 +147,6 @@ export const TAB_ID = Math.random().toString(36).slice(2, 12);
 
 /** The token of the link SFE opened this browser with at its first start (setup-link.ts); null without it. */
 const SETUP_LINK = takeSetupLink();
-
-type QueryValue = string | number | boolean | null | undefined;
-
-/** Leaves out empty values (and `false`), as the API's defaults apply then. */
-function params(values: Record<string, QueryValue>): HttpParams {
-    let result = new HttpParams();
-    for (const [key, value] of Object.entries(values)) {
-        if (value !== undefined && value !== null && value !== '' && value !== false)
-            result = result.set(key, String(value));
-    }
-    return result;
-}
-
-/** `url` with the query of `values` (for requests with a body), nothing added when they are all empty. */
-function withQuery(url: string, values: Record<string, QueryValue>): string {
-    const query = params(values).toString();
-    return query ? `${url}?${query}` : url;
-}
 
 /**
  * The JSON API of the server. Routes are written below `API_BASE` (`config` is `api/v1/config`), relative, so the app
@@ -411,6 +396,11 @@ export class Api {
     /** Puts an item of the trash back. Resolves with the conflict (409: a scan runs there...). */
     restoreFromTrash = (id: number) => this.post<FileOperationResult>(`files/trash/${id}/restore`);
     purgeFromTrash = (id: number) => this.delete<void>(`files/trash/${id}`);
+    /** The previous versions of a file, kept in the trash when it was saved over. */
+    fileVersions = (path: string) => this.get<FileVersions>('files/versions', { path });
+    /** Copies a version next to its file, or puts it in place of the file. Resolves with the conflict (409). */
+    restoreVersionCopy = (id: number) => this.post<FileOperationResult>(`files/versions/${id}/copy`);
+    restoreVersion = (id: number) => this.post<VersionRestore>(`files/versions/${id}/restore`);
     emptyTrash = () => this.delete<{ purged: number }>('files/trash');
     /** Who would see or change more of the folders among `paths` once moved into `target`. */
     checkMove = (paths: string[], target: string) =>

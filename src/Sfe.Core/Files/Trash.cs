@@ -684,7 +684,7 @@ public sealed class Trash(
 
     /* ---------- Parts ---------- */
 
-    private string StoragePath(TrashEntry entry) =>
+    internal string StoragePath(TrashEntry entry) =>
         Path.Combine(
             entry.Location == WorkFolderLocation.Server ? work.ServerPath : work.LibraryPath,
             FolderName,
@@ -867,7 +867,7 @@ public sealed class Trash(
         }
     }
 
-    private static TrashItem ToItem(TrashEntry entry) =>
+    internal static TrashItem ToItem(TrashEntry entry) =>
         new(
             entry.Id,
             entry.Path,

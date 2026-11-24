@@ -10,8 +10,9 @@ import { ItemCommand, ItemCommandId, ItemMenuEntry, ItemScope, namesOf, refused 
 
 /**
  * The commands about listed items rather than their content (Tags…, quick links, Scans and previews…, Folder access…,
- * Copy full path, Properties), for `ItemCommands`. Quick links, copying paths, the scans and the rules of a folder are
- * hidden when the session has none (an account's own, a server setting, an administrator's right), not greyed out.
+ * Copy full path, Previous versions…, Properties), for `ItemCommands`. Quick links, copying paths, the scans and the
+ * rules of a folder are hidden when the session has none (an account's own, a server setting, an administrator's
+ * right), not greyed out.
  */
 @Injectable({ providedIn: 'root' })
 export class OrganisingCommands {
@@ -28,6 +29,7 @@ export class OrganisingCommands {
         exclusions: (scope) => this.exclusions(scope),
         folderAccess: (scope) => this.folderAccess(scope),
         copyPath: (scope) => this.copyPath(scope),
+        versions: (scope) => this.versions(scope),
         properties: (scope) => this.properties(scope),
     };
 
@@ -150,6 +152,24 @@ in the administration.`,
                     ? $localize`Copy where this folder is on the server.`
                     : $localize`Copy where it is on the server.`,
             run: () => void this.copyPaths.copy(item.path),
+        };
+    }
+
+    /** The previous versions of one library file, kept in the trash when it was saved over. */
+    private versions({ item, targets }: ItemScope): ItemMenuEntry | null {
+        const applies =
+            targets.length === 1 &&
+            item.kind !== 'directory' &&
+            this.config.place() === null &&
+            this.store.can(Rights.viewFiles, item) &&
+            Boolean(this.dialogs.versions());
+        if (!applies) return null;
+        return {
+            id: 'versions',
+            label: $localize`Previous versions…`,
+            icon: 'clock',
+            title: $localize`See the versions of “${item.name}:name:” kept when it was saved over, and restore one.`,
+            run: () => this.dialogs.versions()?.open(item),
         };
     }
 

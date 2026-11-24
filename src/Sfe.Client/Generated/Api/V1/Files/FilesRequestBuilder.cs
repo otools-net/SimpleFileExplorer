@@ -21,6 +21,7 @@ using Otools.Net.Sfe.Client.Generated.Api.V1.Files.Shared;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Files.Text;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Files.Trash;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Files.Uploads;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Files.Versions;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -127,6 +128,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Files
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Uploads.UploadsRequestBuilder Uploads
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Uploads.UploadsRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The versions property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Versions.VersionsRequestBuilder Versions
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.Versions.VersionsRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>
         /// Instantiates a new <see cref="global::Otools.Net.Sfe.Client.Generated.Api.V1.Files.FilesRequestBuilder"/> and sets the default values.

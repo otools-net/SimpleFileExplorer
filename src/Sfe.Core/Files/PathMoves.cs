@@ -102,6 +102,7 @@ public sealed class PathMoves(
         await Step("default tags of the new place", () =>
             defaultTags.ApplyAfterMoveAsync(from, to, isFolder, cancellationToken)
         );
+        await Step("previous versions", () => MoveVersionsAsync(fromRelative, toRelative, cancellationToken));
         if (quickLinks is not null && tenant.TenantId is { } tenantId)
         {
             await Step("quick links", () =>
@@ -236,6 +237,22 @@ public sealed class PathMoves(
         }
         if (await db.SaveChangesAsync(cancellationToken) is var changed and > 0)
             logger.LogInformation("{Count} task schedules follow {From} to {To}", changed, from, to);
+    }
+
+    /// <summary>
+    /// The previous versions kept in the trash (<see cref="PreviousVersions"/>) follow their file: they are few (the
+    /// trash is purged), so all are read and compared as the file system does. Deleted entries keep where they were.
+    /// </summary>
+    private async Task MoveVersionsAsync(string from, string to, CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var versions = await db
+            .TrashEntries.Where(t => t.Kind == TrashEntryKind.PreviousVersion)
+            .ToListAsync(cancellationToken);
+        foreach (var version in versions.Where(v => FolderPolicy.IsSameOrBelow(v.Path, from)))
+            version.Path = to + version.Path[from.Length..];
+        if (await db.SaveChangesAsync(cancellationToken) is var changed and > 0)
+            logger.LogInformation("{Count} previous versions follow {From} to {To}", changed, from, to);
     }
 
     private void QueueCacheMoves(string from, string to)

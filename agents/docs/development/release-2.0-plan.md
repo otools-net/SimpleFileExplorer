@@ -384,7 +384,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   (`FileJobs`, `LibraryClashes`) and transfers (`TransferRun`). Tests with the scratchpad's case
   (`root/folder1/text1.txt` + incoming `folder1/text1.txt`, `folder1/text2.txt`) and nested folders. Document
   today's behaviour first in move-and-copy.md.
-- [ ] **4.2 Previous versions of a file** (IDEA-018, M). Owner's choice: **keep "Trash"** for deleted items and add
+- [x] **4.2 Previous versions of a file** (IDEA-018, M). Done 2026-11-24: `PreviousVersions` (Core) and
+  `api/files/versions` (list by `path`, `{id}/content`, `{id}/copy`, `{id}/restore`); seen by whoever may open the
+  file; restore over with the rights of saving over (not in a space that deletes for good), the current content kept
+  as a version first, a new modification date; versions follow renames and moves (`PathMoves`); no migration (the
+  trash's `Kind` already existed). Client: **Previous versions…** (item menu, group `properties`), the sheet
+  `VersionsDialog`, a line in Properties; the listing's dialogs gathered in `library/listing-dialogs.ts` and the query
+  helpers of `api.service.ts` moved to `core/api-query.ts` to stay within the readability limits. Note
+  [previous-versions](../features/previous-versions.md); screenshot `previous-versions.png` (scene `versions`).
+  Sfe.Client leaves the routes to `Raw` (6.1). Was: Owner's choice: **keep "Trash"** for deleted items and add
   **Previous versions** on a file (menu + properties) listing its `TrashEntry.Kind = PreviousVersion` entries:
   open, restore as a copy, restore over (the current one becomes a version). Technical names (`api/files/trash`,
   `TrashEntries`, `SfeTrash`) unchanged. Version-friendly reading of the trash page ("saved over …" exists).
@@ -510,8 +518,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-24):** 4.1 (merge folders) done. Next: **4.2** (previous versions of a file).
-  Step 4.6 (read-only or writable shown) was added to the plan by the owner on 2026-11-23.
+- **Last session (2026-11-24):** 4.2 (previous versions) done, and a CI fix (`SecretFiles`: parent folders private
+  on Linux). Next: **4.3** (uploads at scale). Step 4.6 (read-only or writable shown) was added by the owner on
+  2026-11-23.
+- Commits were not allowed in that session (the owner hadn't asked): its work may be uncommitted. To commit it apart:
+  the `SecretFiles` fix (its file and changelog line), then the refactoring (`core/api-query.ts`,
+  `library/listing-dialogs.ts`), then 4.2.
 - `FileJobs.cs` is at its baseline again after 4.1 (1,087 lines): the extraction part (`ExtractAsync`, `PlaceAsync`)
   or the compression (`CompressAsync`) is the next candidate to move out before adding job code.
 - `measure.mjs` only measures files git tracks: write the baseline after `git add` of a new file, or its debt is

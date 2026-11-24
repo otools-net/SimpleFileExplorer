@@ -14,31 +14,16 @@ import { redirected } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { baseName, parentPath } from '../core/paths';
 import { ThemeService } from '../core/theme.service';
-import { ImageEditorDialog } from '../editor/image-editor.dialog';
 import { ItemMenu } from '../files/item-menu';
 import { usePageMenu } from '../menus/context-menu';
 import { FolderMenu } from './folder-menu';
-import { NameDialog } from '../files/name.dialog';
-import { DeleteDialog } from '../files/delete.dialog';
 import { FileActions } from '../files/file-actions';
 import { FileTransfers } from '../files/file-transfers';
 import { OperationsPanelComponent } from '../files/operations-panel.component';
-import { BatchRenameDialog } from '../files/batch-rename.dialog';
-import { PropertiesDialog } from '../files/properties.dialog';
 import { ChangeFeed } from './change-feed.service';
-import { TransferDialog } from '../files/transfer.dialog';
-import { ExtractDialog } from '../files/extract.dialog';
-import { CompressDialog } from '../files/compress.dialog';
 import { LibraryItem } from '../core/models';
 import { Rights } from '../core/rights';
 import { EmptyStateComponent } from '../shared/empty-state.component';
-import { FileTagsDialog } from '../tags/file-tags.dialog';
-import { FilesTagsDialog } from '../tags/files-tags.dialog';
-import { ScopeTagsDialog } from '../tags/scope-tags.dialog';
-import { TagEditorDialog } from '../tags/tag-editor.dialog';
-import { TagManagerDialog } from '../tags/tag-manager.dialog';
-import { RemoveFromIndexDialog } from './scan/remove-from-index.dialog';
-import { FolderExclusionsDialog } from './scan/folder-exclusions.dialog';
 import { ListingComponent } from './items/listing.component';
 import { currentPosition } from './items/listing-position';
 import { focusedListItem, focusItem, listedItems, MOVE_KEYS, neighbour } from './items/listing-keys';
@@ -53,6 +38,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { SidebarService } from './sidebar/sidebar.service';
 import { Popovers } from './topbar/popovers.service';
 import { Dialogs } from './dialogs.service';
+import { LISTING_DIALOGS } from './listing-dialogs';
 import { TopbarComponent } from './topbar/topbar.component';
 import { ViewerComponent } from './viewer/viewer.component';
 
@@ -78,21 +64,7 @@ let created = false;
         SelectionBarComponent,
         EmptyStateComponent,
         ViewerComponent,
-        FileTagsDialog,
-        FilesTagsDialog,
-        ScopeTagsDialog,
-        TagEditorDialog,
-        TagManagerDialog,
-        RemoveFromIndexDialog,
-        FolderExclusionsDialog,
-        ImageEditorDialog,
-        NameDialog,
-        DeleteDialog,
-        TransferDialog,
-        ExtractDialog,
-        CompressDialog,
-        PropertiesDialog,
-        BatchRenameDialog,
+        ...LISTING_DIALOGS,
         OperationsPanelComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -132,6 +104,7 @@ let created = false;
             <sfe-extract-dialog />
             <sfe-compress-dialog />
             <sfe-properties-dialog />
+            <sfe-versions-dialog />
             <sfe-batch-rename-dialog />
             <!-- After the viewer: it opens over it. -->
             <sfe-image-editor />

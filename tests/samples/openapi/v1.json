@@ -5320,7 +5320,7 @@
           "Files"
         ],
         "summary": "Moves or copies files and folders, in the background.",
-        "description": "Starts a job and answers its first state (202). `conflicts` says what to do when the target holds an\nitem of the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies),\n`replace` (needs the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth`\n(` (2)` added), `merge` (a folder meeting a folder goes into it, each name they share asked; other clashes\nasked; the result has `merged`). Moves keep tags, folder rules (`keepAccess` pins each group's current access), quick\nlinks and caches; copies never follow links, leave out folders the caller may not see, and get the tags\nof their originals with `keepTags`. Results per item in `results`.",
+        "description": "Starts a job and answers its first state (202). `conflicts` says what to do when the target holds an\nitem of the same name: `ask` (the job waits: `GET` shows the `conflict`, `POST /answer` replies),\n`replace` (needs the right to delete there: the replaced item goes to the trash), `skip`, `keepBoth`\n(` (2)` added), `merge` (a folder meeting a folder goes into it, each name they share asked; other\nclashes asked; the result has `merged`). Moves keep tags, folder rules (`keepAccess` pins each\ngroup's current access), quick links and caches; copies never follow links, leave out folders the caller\nmay not see, and get the tags of their originals with `keepTags`. Results per item in `results`.",
         "operationId": "StartFileJob",
         "requestBody": {
           "content": {
@@ -6705,6 +6705,169 @@
         "x-sfe-rights": [
           [
             "files.view"
+          ]
+        ]
+      }
+    },
+    "/api/v1/files/versions": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "The previous versions of a file, kept in the trash when it was saved over.",
+        "description": "The copies of the file's content kept in the trash before it was saved over (text editor, picture editor),\nnewest first: `deletedAt` is when it was saved over, `deletedBy` who saved it. `restoreOver`,\n`restoreCopy` and `download` say what the caller may do with them. A version follows its file when it is\nrenamed or moved in SFE; it is purged with the trash.",
+        "operationId": "ListFileVersions",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileVersions"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "files.view"
+          ]
+        ]
+      }
+    },
+    "/api/v1/files/versions/{id}/content": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Streams a previous version of a file.",
+        "description": "`download=true` asks the browser to save it, which needs the right `files.download`.",
+        "operationId": "GetFileVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "files.view"
+          ]
+        ]
+      }
+    },
+    "/api/v1/files/versions/{id}/copy": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Copies a previous version next to its file (\" (2)\" added to the name).",
+        "operationId": "RestoreFileVersionAsCopy",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryItem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "files.createFiles"
+          ]
+        ]
+      }
+    },
+    "/api/v1/files/versions/{id}/restore": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Puts a previous version in place of its file; the content it had becomes a version.",
+        "description": "Puts the version in place of the file, swapped in whole: the content the file has first becomes a version\nitself (`trashId`), the version restored leaves the list. The file keeps its tags. Needs the rights of\nsaving over the file (files.delete at it and its folder, files.createFiles in its folder), in a space that\nkeeps deleted files in the trash. 409 `scan-running` while a scan works there.",
+        "operationId": "RestoreFileVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestoredVersion"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "files.delete",
+            "files.deletePermanently"
           ]
         ]
       }
@@ -13016,6 +13179,32 @@
           }
         }
       },
+      "FileVersions": {
+        "required": [
+          "items",
+          "restoreOver",
+          "restoreCopy",
+          "download"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrashItem"
+            }
+          },
+          "restoreOver": {
+            "type": "boolean"
+          },
+          "restoreCopy": {
+            "type": "boolean"
+          },
+          "download": {
+            "type": "boolean"
+          }
+        }
+      },
       "FlashLink": {
         "required": [
           "url",
@@ -15556,6 +15745,27 @@
           "video": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "RestoredVersion": {
+        "required": [
+          "item",
+          "trashId"
+        ],
+        "type": "object",
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/LibraryItem"
+          },
+          "trashId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
               "integer",
               "string"
             ],

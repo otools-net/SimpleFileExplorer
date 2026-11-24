@@ -46,9 +46,10 @@ file. A file that is read-only on the server, or a link to another file, is neve
 ## The previous version, in the trash
 
 The first time you save over a file, its **previous version** goes to the [trash](managing-files.md#delete) (once each
-time you open the file to edit it, not at every save). It is listed there as **previous version**: **Restore** puts it
-back next to the file, with a number added to its name (`notes (2).txt`), so you can compare them or keep the one you
-want. In a space that deletes for good, no previous version is kept.
+time you open the file to edit it, not at every save). **Previous versions…** in the file's menu lists them: open one,
+restore it as a copy next to the file (`notes (2).txt`) to compare them, or restore it over the file
+([Previous versions](managing-files.md#previous-versions)). In the trash it is listed as **previous version**, and its
+**Restore** puts it back next to the file. In a space that deletes for good, no previous version is kept.
 
 The file itself keeps its tags, and the index (size, date, duplicates) follows its new content.
 

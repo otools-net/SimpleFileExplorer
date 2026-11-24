@@ -47,9 +47,22 @@ public static class SecretFiles
         if (Directory.Exists(path))
             return;
         if (OperatingSystem.IsWindows())
+        {
             Directory.CreateDirectory(path);
-        else
-            Directory.CreateDirectory(path, OwnerFolder);
+            return;
+        }
+        // CreateDirectory(path, mode) gives the mode to the last folder only: those above get the default mode.
+        foreach (var folder in MissingFolders(Path.GetFullPath(path)))
+            Directory.CreateDirectory(folder, OwnerFolder);
+    }
+
+    /// <summary>The folders of <paramref name="path"/> that do not exist, the highest first.</summary>
+    private static Stack<string> MissingFolders(string path)
+    {
+        var missing = new Stack<string>();
+        for (var folder = path; folder is not null && !Directory.Exists(folder); folder = Path.GetDirectoryName(folder))
+            missing.Push(folder);
+        return missing;
     }
 
     /// <summary>

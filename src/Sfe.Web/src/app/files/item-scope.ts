@@ -37,6 +37,7 @@ export type ItemCommandId =
     | 'download'
     | 'copyPath'
     | 'delete'
+    | 'versions'
     | 'properties';
 
 /** The entries grouping others in a submenu ("Open as ▸", "Archive ▸"). */

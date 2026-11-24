@@ -43,7 +43,7 @@ const LAYOUT: readonly { group: string; ids: readonly (ItemCommandId | Submenu)[
     { group: 'archive', ids: [ARCHIVE] },
     { group: 'save', ids: ['download', 'copyPath'] },
     { group: 'delete', ids: ['delete'] },
-    { group: 'properties', ids: ['properties'] },
+    { group: 'properties', ids: ['versions', 'properties'] },
 ];
 
 /**

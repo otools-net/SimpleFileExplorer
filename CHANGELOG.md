@@ -14,12 +14,23 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   offered into the folder holding the one coming, through links, or where you may not write. API: the conflict word
   `merge` (`conflicts` of a request answers folder clashes only), `canMerge` on a job's `conflict`, `merged` on an
   item's result; Sfe.Client: `SfeConflictChoice.Merge`, `SfeJobConflict.CanMerge`, `SfeJobItem.Merged`.
+- **Previous versions** of a file: **Previous versions…** in a file's menu (and **Show…** in its Properties) lists
+  the versions kept in the trash when it was saved over (text and picture editors), newest first: **Open** one in a
+  new tab, **Restore a copy** next to the file, or **Restore** it over the file (the content it had becomes a version
+  in turn). Whoever may open the file sees them; they follow the file when it is renamed or moved. API:
+  `GET api/files/versions?path=`, `GET api/files/versions/{id}/content`, `POST api/files/versions/{id}/copy`,
+  `POST api/files/versions/{id}/restore`.
 
 ### Changed
 
 - A "for all" answer to a name clash now holds apart for clashes of two folders that could be merged and for the
   others: answering **Replace** for every file no longer replaces such a folder without asking.
 - **Undo** after a move leaves out the folders merged (moving them back would take what the folder there held).
+
+### Fixed
+
+- Linux and macOS: the folders created above a folder of the server's secrets (when the data folder is new) were
+  readable by the other accounts of the computer; they are now for the server's account only, like that folder.
 
 ## 1.86.0
 

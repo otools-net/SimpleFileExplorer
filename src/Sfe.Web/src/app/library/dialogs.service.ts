@@ -7,6 +7,7 @@ import type { BatchRenameDialog } from '../files/batch-rename.dialog';
 import type { NameDialog } from '../files/name.dialog';
 import type { PropertiesDialog } from '../files/properties.dialog';
 import type { TransferDialog } from '../files/transfer.dialog';
+import type { VersionsDialog } from '../files/versions.dialog';
 import type { FileTagsDialog } from '../tags/file-tags.dialog';
 import type { FilesTagsDialog } from '../tags/files-tags.dialog';
 import type { ScopeTagsDialog } from '../tags/scope-tags.dialog';
@@ -44,6 +45,8 @@ export class Dialogs {
     /** Compress… of files and folders into a zip. */
     readonly compress = signal<CompressDialog | null>(null);
     readonly properties = signal<PropertiesDialog | null>(null);
+    /** Previous versions of a file. */
+    readonly versions = signal<VersionsDialog | null>(null);
     /** Several items renamed at once. */
     readonly batchRename = signal<BatchRenameDialog | null>(null);
 

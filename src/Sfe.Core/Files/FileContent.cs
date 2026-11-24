@@ -360,7 +360,7 @@ public sealed class FileContent(
     }
 
     /// <summary>The new content in place of the old, at once (retried while the file is in use).</summary>
-    private static async Task ReplaceAsync(string temporary, string full)
+    internal static async Task ReplaceAsync(string temporary, string full)
     {
         for (var attempt = 1; ; attempt++)
         {

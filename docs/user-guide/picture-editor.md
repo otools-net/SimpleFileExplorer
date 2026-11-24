@@ -36,7 +36,8 @@ and to create files in its folder (`files.delete`, or `files.deletePermanently` 
 good, and `files.createFiles`), with `files.edit` there too. Otherwise **Save a copy** is all there is.
 
 - The version before goes to the [trash](managing-files.md), once per opening of the editor, so it can be restored
-  (not in a space that always deletes for good). The picture keeps its tags.
+  from the picture's **Previous versions…** ([Previous versions](managing-files.md#previous-versions)); not in a space
+  that always deletes for good. The picture keeps its tags.
 - Only JPEG, PNG and WebP pictures, the formats the editor writes; others (GIF, BMP...) are saved as copies.
 - If the picture was changed elsewhere since the editor opened it, you are asked before it is saved over.
 - The listing and the viewer show the new picture at once, and the index has its new size.

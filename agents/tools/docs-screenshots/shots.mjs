@@ -887,6 +887,42 @@ const scenes = {
         await b.eval(post('api/v1/files/delete', { paths: ['Inbox/2024 Beach trip'], permanent: true }));
         await b.close();
     },
+    /**
+     * Previous versions: a new text file saved over twice (two editing sessions), its Previous versions… opened from
+     * its menu; then the file and its versions deleted for good, so that the library and the trash stay as they were.
+     */
+    async versions() {
+        const b = await session();
+        const file = 'Documents/Shopping list.txt';
+        const query = `path=${encodeURIComponent(file)}`;
+        const save = (text, session) => api('PUT', `api/v1/files/text?${query}`, { text, encoding: 'utf-8', lineEnding: 'lf', session })
+            .replace("'X-SFE-Request': '1'", "'X-SFE-Request': '1', 'If-Match': '*'");
+        await b.open('?path=Documents');
+        await b.eval(api('POST', 'api/v1/files/new-file', { path: 'Documents', name: 'Shopping list.txt' }));
+        await b.eval(save('Bread\nCheese\n', 'docs-1'));
+        await sleep(1500);
+        await b.eval(save('Bread\nCheese\nApples\n', 'docs-2'));
+        await sleep(1500);
+        await b.eval(save('Bread\nCheese\nApples\nTea\n', 'docs-3'));
+        // The oldest version is the new file's empty content: not worth showing.
+        const versions = `fetch('api/v1/files/versions?${query}').then(r => r.json()).then(v => v.items.map(i => i.id))`;
+        await b.eval(api('DELETE', `api/v1/files/trash/${(await b.eval(versions)).at(-1)}`));
+        await b.open('?path=Documents', 2000);
+        await b.eval(`document.querySelector('[data-path="${file}"]').scrollIntoView({ block: 'center' }); 1`);
+        await sleep(500);
+        const box = await b.rect(`[data-path="${file}"]`);
+        const x = box.x + box.width / 2, y = box.y + box.height / 3;
+        await b.mouse('mouseMoved', x, y);
+        await b.mouse('mousePressed', x, y, { button: 'right' });
+        await b.mouse('mouseReleased', x, y, { button: 'right' });
+        await sleep(500);
+        await b.eval(`document.querySelector('.item-menu [data-entry="versions"]').click(); 1`);
+        await sleep(1500);
+        await b.shot(OUT + 'previous-versions.png');
+        for (const id of await b.eval(versions)) await b.eval(api('DELETE', `api/v1/files/trash/${id}`));
+        await b.eval(api('POST', 'api/v1/files/delete', { paths: [file], permanent: true }));
+        await b.close();
+    },
     async properties() {
         const b = await session();
         /** Right click on the item `selector`, then Properties in its menu. */

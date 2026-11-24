@@ -45,5 +45,7 @@ Code: `src/Sfe.Core/Files/Trash.cs`, `FileTree.cs`, `FileOperations.DeleteAsync`
   (`Trash.CountAsync`: what `SeesInTrash` lets through, read newest first in batches of 200, stopping past
   `Trash.CountCap` = 99, shown "99+"). `SidebarService.trash`, read on init and again (300 ms debounce) on the feed's
   `trash` event.
+- Entries of `Kind = PreviousVersion` are a file's previous versions, also listed from the file:
+  [previous-versions.md](previous-versions.md).
 - `Trash.EntriesChanged` fires after an entry comes in (`MoveInAsync`, `CopyInAsync`) or leaves (`RestoreAsync`,
   `PurgeAsync`, so also Empty and the purge task); not for `ForgetAsync` (a failed delete, nothing told yet).

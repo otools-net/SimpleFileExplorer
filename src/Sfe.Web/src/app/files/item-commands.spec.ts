@@ -139,4 +139,27 @@ describe('ItemCommands', () => {
         const menu = await setUp(limitedConfig([Rights.browse, Rights.viewFiles], archives));
         expect(menu.entries(folder).some((entry) => entry.id === 'folderAccess')).toBe(false);
     });
+
+    it("opens a library file's previous versions, next to its properties", async () => {
+        const menu = await setUp();
+        const open = vi.fn();
+        TestBed.inject(Dialogs).versions.set({ open } as never);
+        const ids = menu.entries(photo).map((entry) => entry.id);
+        expect(ids.slice(-2)).toEqual(['versions', 'properties']);
+        const entry = entryOf(menu.entries(photo), 'versions');
+        expect(entry).toMatchObject({ label: 'Previous versions…', group: 'properties' });
+        expect(menu.entries(folder).some((candidate) => candidate.id === 'versions')).toBe(false);
+
+        entry.run!();
+        expect(open).toHaveBeenCalledWith(photo);
+
+        TestBed.inject(ConfigService).place.set({ id: 3 } as never);
+        expect(menu.entries(photo).some((candidate) => candidate.id === 'versions')).toBe(false);
+    });
+
+    it('leaves Previous versions… out for those who may not open files', async () => {
+        const menu = await setUp(limitedConfig([Rights.browse], archives));
+        TestBed.inject(Dialogs).versions.set({ open: vi.fn() } as never);
+        expect(menu.entries(photo).some((entry) => entry.id === 'versions')).toBe(false);
+    });
 });

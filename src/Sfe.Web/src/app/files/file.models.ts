@@ -1,4 +1,4 @@
-import type { DeleteStatus, FileJobConflict, FileJobState } from '../core/models';
+import type { DeleteStatus, FileConflict, FileJobConflict, FileJobState, LibraryItem } from '../core/models';
 import type { FolderLevel } from '../core/access.models';
 
 export type FileJobKind = 'move' | 'copy' | 'extract' | 'compress';
@@ -134,6 +134,25 @@ export interface TrashItem {
     /** The content of a file before a save over it (text editor); the file itself is still there. */
     previousVersion?: boolean;
 }
+
+/** The previous versions of a file (`api/files/versions`), newest first, and what the session may do with them. */
+export interface FileVersions {
+    items: TrashItem[];
+    /** Put one in place of the file (the content it has becomes a version). */
+    restoreOver: boolean;
+    /** Copy one next to the file. */
+    restoreCopy: boolean;
+    download: boolean;
+}
+
+/** A version restored over its file: the file now, and the version made of the content it had. */
+export interface RestoredVersion {
+    item: LibraryItem;
+    trashId: number | null;
+}
+
+/** The answer of a version restored: the file now, or why it was not done (409). */
+export type VersionRestore = RestoredVersion | FileConflict;
 
 export interface TrashPage {
     items: TrashItem[];

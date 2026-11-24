@@ -66,6 +66,18 @@
             @if (!p.details.isFolder && p.item.indexed === false) {
                 <dt i18n>Index</dt><dd i18n>Not indexed yet. No scan has seen it.</dd>
             }
+            @if (versions(); as versions) {
+                <dt i18n>Previous versions</dt>
+                <dd class="properties-versions">{{ versions }}
+                    <button
+                        type="button"
+                        class="button small ghost"
+                        title="See the versions kept when this file was saved over, and restore one."
+                        i18n-title
+                        (click)="openVersions()"
+                        i18n
+                    >Show…</button></dd>
+            }
             @if (showTags() && p.item.tags?.length) {
                 <dt i18n>Tags</dt>
                 <dd class="properties-tags">

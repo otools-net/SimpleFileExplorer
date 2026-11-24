@@ -1032,7 +1032,7 @@
         <note category="location">src/app/access/folder-access.component.html:40</note>
         <note category="location">src/app/connections/connect.dialog.html:49</note>
         <note category="location">src/app/files/properties-texts.ts:77</note>
-        <note category="location">src/app/files/properties.dialog.ts:79</note>
+        <note category="location">src/app/files/properties.dialog.ts:83</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:22,23</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:76,77</note>
         <note category="location">src/app/tasks/schedule-form.component.html:19,20</note>
@@ -1738,7 +1738,7 @@
     <unit id="8347622337729956542">
       <notes>
         <note category="location">src/app/access/space-detail.component.html:5</note>
-        <note category="location">src/app/files/properties.dialog.ts:82</note>
+        <note category="location">src/app/files/properties.dialog.ts:86</note>
         <note category="location">src/app/files/trash-section.component.ts:60</note>
         <note category="location">src/app/library/scan/remove-from-index.dialog.ts:103</note>
       </notes>
@@ -1802,6 +1802,7 @@
         <note category="location">src/app/files/file-transfers.ts:444</note>
         <note category="location">src/app/files/opening-commands.ts:43</note>
         <note category="location">src/app/files/opening-commands.ts:52</note>
+        <note category="location">src/app/files/versions.dialog.html:31</note>
         <note category="location">src/app/formats/archive/archive-texts.ts:78</note>
         <note category="location">src/app/formats/archive/archive-view.component.html:142,143</note>
         <note category="location">src/app/formats/json/json-texts.ts:25</note>
@@ -4865,7 +4866,7 @@ Space “Holiday photos”
     <unit id="7886570921510760899">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:234</note>
-        <note category="location">src/app/files/properties.dialog.html:70,71</note>
+        <note category="location">src/app/files/properties.dialog.html:82,83</note>
         <note category="location">src/app/library/selection-bar.component.html:145,146</note>
         <note category="location">src/app/library/topbar/search-box.component.ts:76</note>
         <note category="location">src/app/library/topbar/search-help.dialog.ts:61</note>
@@ -6562,7 +6563,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/connections/provider-setup.component.html:26,27</note>
         <note category="location">src/app/files/properties.dialog.html:42</note>
-        <note category="location">src/app/files/properties.dialog.html:153</note>
+        <note category="location">src/app/files/properties.dialog.html:165</note>
         <note category="location">src/app/files/transfer-commands.ts:69</note>
         <note category="location">src/app/files/transfer.dialog.ts:71</note>
         <note category="location">src/app/files/transfer.dialog.ts:108</note>
@@ -7168,7 +7169,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/editor/image-editor.dialog.html:84</note>
         <note category="location">src/app/files/operations-panel.component.ts:80</note>
-        <note category="location">src/app/files/properties.dialog.html:175,176</note>
+        <note category="location">src/app/files/properties.dialog.html:187,188</note>
         <note category="location">src/app/files/uploads-panel.component.html:42</note>
         <note category="location">src/app/files/uploads-panel.component.ts:82</note>
         <note category="location">src/app/formats/json/json-texts.ts:25</note>
@@ -8420,7 +8421,7 @@ Space “Holiday photos”
     <unit id="2369742814572661392">
       <notes>
         <note category="location">src/app/files/folder-browser.component.html:56,57</note>
-        <note category="location">src/app/files/properties.dialog.html:161,163</note>
+        <note category="location">src/app/files/properties.dialog.html:173,175</note>
         <note category="location">src/app/formats/archive/archive-view.component.html:96,98</note>
         <note category="location">src/app/formats/archive/archive-view.component.html:390,391</note>
         <note category="location">src/app/formats/csv/csv-view.component.html:120,122</note>
@@ -9290,7 +9291,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3732296122988145060">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:46</note>
+        <note category="location">src/app/files/organising-commands.ts:48</note>
       </notes>
       <segment>
         <source>Tag its files…</source>
@@ -9298,8 +9299,8 @@ Space “Holiday photos”
     </unit>
     <unit id="7735912362070060981">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:46</note>
-        <note category="location">src/app/files/organising-commands.ts:65</note>
+        <note category="location">src/app/files/organising-commands.ts:48</note>
+        <note category="location">src/app/files/organising-commands.ts:67</note>
       </notes>
       <segment>
         <source>Tags…</source>
@@ -9307,7 +9308,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2262907023411473169">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:49</note>
+        <note category="location">src/app/files/organising-commands.ts:51</note>
       </notes>
       <segment>
         <source>Add or remove tags on all the files of this folder (asks first).</source>
@@ -9315,7 +9316,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8469266716983346359">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:50</note>
+        <note category="location">src/app/files/organising-commands.ts:52</note>
         <note category="location">src/app/library/items/item-parts.ts:130</note>
       </notes>
       <segment>
@@ -9324,7 +9325,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2571039696049191049">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:69</note>
+        <note category="location">src/app/files/organising-commands.ts:71</note>
       </notes>
       <segment>
         <source>Add or remove tags on the selected files (the selected folders are left out).</source>
@@ -9332,7 +9333,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8759474433034893648">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:70</note>
+        <note category="location">src/app/files/organising-commands.ts:72</note>
       </notes>
       <segment>
         <source>Add or remove tags on the selected files.</source>
@@ -9340,8 +9341,8 @@ Space “Holiday photos”
     </unit>
     <unit id="6770258597457401656">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:84</note>
-        <note category="location">src/app/files/organising-commands.ts:92</note>
+        <note category="location">src/app/files/organising-commands.ts:86</note>
+        <note category="location">src/app/files/organising-commands.ts:94</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
       </notes>
       <segment>
@@ -9350,7 +9351,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6221291632365224698">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:86</note>
+        <note category="location">src/app/files/organising-commands.ts:88</note>
       </notes>
       <segment>
         <source>Add the selected items to your quick links (or drag them onto the sidebar).</source>
@@ -9358,7 +9359,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7011082534772609140">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:92</note>
+        <note category="location">src/app/files/organising-commands.ts:94</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:228</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
       </notes>
@@ -9368,7 +9369,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8753241111446069199">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:95</note>
+        <note category="location">src/app/files/organising-commands.ts:97</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:270</note>
       </notes>
       <segment>
@@ -9377,7 +9378,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3323091261970520456">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:96</note>
+        <note category="location">src/app/files/organising-commands.ts:98</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:271</note>
       </notes>
       <segment>
@@ -9386,7 +9387,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8834275305700439126">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:112</note>
+        <note category="location">src/app/files/organising-commands.ts:114</note>
         <note category="location">src/app/library/folder-menu.ts:287</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:120</note>
       </notes>
@@ -9396,7 +9397,7 @@ Space “Holiday photos”
     </unit>
     <unit id="672346442080462723">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:114,115</note>
+        <note category="location">src/app/files/organising-commands.ts:116,117</note>
         <note category="location">src/app/library/folder-menu.ts:289,290</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:116,117</note>
       </notes>
@@ -9406,7 +9407,7 @@ Space “Holiday photos”
     </unit>
     <unit id="995324173596329544">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:130</note>
+        <note category="location">src/app/files/organising-commands.ts:132</note>
       </notes>
       <segment>
         <source>Folder access…</source>
@@ -9414,7 +9415,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5961215801940873068">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:132,133</note>
+        <note category="location">src/app/files/organising-commands.ts:134,135</note>
       </notes>
       <segment>
         <source>Choose who may see “<ph id="0" equiv="name" disp="item.name"/>” and change its files: its folder rules, in the administration.</source>
@@ -9422,8 +9423,8 @@ Space “Holiday photos”
     </unit>
     <unit id="7096568485547149103">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:146</note>
-        <note category="location">src/app/files/properties.dialog.html:173,174</note>
+        <note category="location">src/app/files/organising-commands.ts:148</note>
+        <note category="location">src/app/files/properties.dialog.html:185,186</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:192</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:278</note>
         <note category="location">src/app/player/player-page.component.ts:96</note>
@@ -9435,7 +9436,7 @@ Space “Holiday photos”
     </unit>
     <unit id="878836548429609124">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:150</note>
+        <note category="location">src/app/files/organising-commands.ts:152</note>
       </notes>
       <segment>
         <source>Copy where this folder is on the server.</source>
@@ -9443,8 +9444,8 @@ Space “Holiday photos”
     </unit>
     <unit id="2296265600394386378">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:151</note>
-        <note category="location">src/app/files/properties.dialog.html:169,170</note>
+        <note category="location">src/app/files/organising-commands.ts:153</note>
+        <note category="location">src/app/files/properties.dialog.html:181,182</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:194</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:280</note>
         <note category="location">src/app/player/player-page.component.ts:98</note>
@@ -9454,9 +9455,25 @@ Space “Holiday photos”
         <source>Copy where it is on the server.</source>
       </segment>
     </unit>
+    <unit id="5520395257444457815">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:169</note>
+      </notes>
+      <segment>
+        <source>Previous versions…</source>
+      </segment>
+    </unit>
+    <unit id="375608930933459818">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:171</note>
+      </notes>
+      <segment>
+        <source>See the versions of “<ph id="0" equiv="name" disp="item.name"/>” kept when it was saved over, and restore one.</source>
+      </segment>
+    </unit>
     <unit id="8721861281513890587">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:160</note>
+        <note category="location">src/app/files/organising-commands.ts:180</note>
         <note category="location">src/app/files/properties.dialog.html:3,4</note>
         <note category="location">src/app/library/folder-menu.ts:358</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:200</note>
@@ -9467,7 +9484,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2762563923238266996">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:165</note>
+        <note category="location">src/app/files/organising-commands.ts:185</note>
       </notes>
       <segment>
         <source>Show its dates and what it holds (Alt+Enter).</source>
@@ -9475,7 +9492,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2658182095314133227">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:166</note>
+        <note category="location">src/app/files/organising-commands.ts:186</note>
       </notes>
       <segment>
         <source>Show its size, its dates, what the index knows of it and its checksum (Alt+Enter).</source>
@@ -9801,9 +9818,34 @@ Space “Holiday photos”
         <source>Not indexed yet. No scan has seen it.</source>
       </segment>
     </unit>
+    <unit id="425433629786422365">
+      <notes>
+        <note category="location">src/app/files/properties.dialog.html:70,71</note>
+        <note category="location">src/app/files/versions.dialog.html:3,4</note>
+      </notes>
+      <segment>
+        <source>Previous versions</source>
+      </segment>
+    </unit>
+    <unit id="4022163825289519861">
+      <notes>
+        <note category="location">src/app/files/properties.dialog.html:75,76</note>
+      </notes>
+      <segment>
+        <source>See the versions kept when this file was saved over, and restore one.</source>
+      </segment>
+    </unit>
+    <unit id="997071044551176417">
+      <notes>
+        <note category="location">src/app/files/properties.dialog.html:79</note>
+      </notes>
+      <segment>
+        <source>Show…</source>
+      </segment>
+    </unit>
     <unit id="311229431562352075">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:80</note>
+        <note category="location">src/app/files/properties.dialog.html:92</note>
       </notes>
       <segment>
         <source>What the folder holds</source>
@@ -9811,7 +9853,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7636342657429369982">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:81,82</note>
+        <note category="location">src/app/files/properties.dialog.html:93,94</note>
       </notes>
       <segment>
         <source>What it holds</source>
@@ -9819,7 +9861,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1096185129028315932">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:91,92</note>
+        <note category="location">src/app/files/properties.dialog.html:103,104</note>
       </notes>
       <segment>
         <source>Stop counting the folder.</source>
@@ -9827,8 +9869,8 @@ Space “Holiday photos”
     </unit>
     <unit id="3133539296286953705">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:95,96</note>
-        <note category="location">src/app/files/properties.dialog.html:131,132</note>
+        <note category="location">src/app/files/properties.dialog.html:107,108</note>
+        <note category="location">src/app/files/properties.dialog.html:143,144</note>
       </notes>
       <segment>
         <source>Stop</source>
@@ -9836,7 +9878,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6675778381235020497">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:100,101</note>
+        <note category="location">src/app/files/properties.dialog.html:112,113</note>
       </notes>
       <segment>
         <source>Count the folder on the server&apos;s disk now: exact, but slow for large folders.</source>
@@ -9844,7 +9886,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2701266518605541027">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:104,105</note>
+        <note category="location">src/app/files/properties.dialog.html:116,117</note>
       </notes>
       <segment>
         <source>Count on disk</source>
@@ -9852,9 +9894,9 @@ Space “Holiday photos”
     </unit>
     <unit id="6416811432811485385">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:109</note>
-        <note category="location">src/app/files/properties.dialog.html:110,111</note>
-        <note category="location">src/app/files/properties.dialog.ts:171</note>
+        <note category="location">src/app/files/properties.dialog.html:121</note>
+        <note category="location">src/app/files/properties.dialog.html:122,123</note>
+        <note category="location">src/app/files/properties.dialog.ts:177</note>
       </notes>
       <segment>
         <source>Checksum</source>
@@ -9862,7 +9904,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4824444844546691624">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:112,113</note>
+        <note category="location">src/app/files/properties.dialog.html:124,125</note>
       </notes>
       <segment>
         <source>Algorithm</source>
@@ -9870,7 +9912,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5266151911688371748">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:127,128</note>
+        <note category="location">src/app/files/properties.dialog.html:139,140</note>
       </notes>
       <segment>
         <source>Stop reading the file.</source>
@@ -9878,7 +9920,7 @@ Space “Holiday photos”
     </unit>
     <unit id="338874283493787172">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:136,137</note>
+        <note category="location">src/app/files/properties.dialog.html:148,149</note>
       </notes>
       <segment>
         <source>Read the whole file on the server to compute its checksum.</source>
@@ -9886,7 +9928,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1368650342006604903">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:140,141</note>
+        <note category="location">src/app/files/properties.dialog.html:152,153</note>
       </notes>
       <segment>
         <source>Compute</source>
@@ -9894,7 +9936,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4639736619259645888">
       <notes>
-        <note category="location">src/app/files/properties.dialog.html:149,150</note>
+        <note category="location">src/app/files/properties.dialog.html:161,162</note>
       </notes>
       <segment>
         <source>Copy the checksum to the clipboard.</source>
@@ -9902,7 +9944,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1647897767858444316">
       <notes>
-        <note category="location">src/app/files/properties.dialog.ts:90</note>
+        <note category="location">src/app/files/properties.dialog.ts:94</note>
       </notes>
       <segment>
         <source>The connection</source>
@@ -9910,7 +9952,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7183382082107440433">
       <notes>
-        <note category="location">src/app/files/properties.dialog.ts:112</note>
+        <note category="location">src/app/files/properties.dialog.ts:116</note>
       </notes>
       <segment>
         <source>Content hash</source>
@@ -9918,7 +9960,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5960658710064956044">
       <notes>
-        <note category="location">src/app/files/properties.dialog.ts:174</note>
+        <note category="location">src/app/files/properties.dialog.ts:180</note>
         <note category="description">a checksum copied</note>
       </notes>
       <segment>
@@ -9927,7 +9969,7 @@ Space “Holiday photos”
     </unit>
     <unit id="592603911046507636">
       <notes>
-        <note category="location">src/app/files/properties.dialog.ts:176</note>
+        <note category="location">src/app/files/properties.dialog.ts:182</note>
       </notes>
       <segment>
         <source>Could not copy it: the browser refused.</source>
@@ -9935,7 +9977,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2509935351535834407">
       <notes>
-        <note category="location">src/app/files/properties.dialog.ts:213</note>
+        <note category="location">src/app/files/properties.dialog.ts:234</note>
       </notes>
       <segment>
         <source>Could not start the count: <ph id="0" equiv="reason" disp="reason"/></source>
@@ -9943,7 +9985,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6544552490342475383">
       <notes>
-        <note category="location">src/app/files/properties.dialog.ts:214</note>
+        <note category="location">src/app/files/properties.dialog.ts:235</note>
       </notes>
       <segment>
         <source>Could not start the checksum: <ph id="0" equiv="reason" disp="reason"/></source>
@@ -10289,6 +10331,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/trash-section.component.html:58,59</note>
         <note category="location">src/app/files/trash-section.component.ts:118</note>
+        <note category="location">src/app/files/versions.dialog.html:51,52</note>
       </notes>
       <segment>
         <source>Restore</source>
@@ -10925,6 +10968,126 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Could not cancel the upload of “<ph id="0" equiv="name" disp="name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
+      </segment>
+    </unit>
+    <unit id="7871549450608872497">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:12</note>
+      </notes>
+      <segment>
+        <source>Each time this file is saved over in SFE (text editor, picture editor), the content it had is kept in the trash until the trash is purged. Restore one as a copy next to it, or over it: the file as it is now then becomes a version.</source>
+      </segment>
+    </unit>
+    <unit id="7660000038367913220">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:19</note>
+      </notes>
+      <segment>
+        <source>No previous versions: this file has not been saved over in SFE lately.</source>
+      </segment>
+    </unit>
+    <unit id="8922483928590909048">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:32</note>
+      </notes>
+      <segment>
+        <source>Saved over by <ph id="0" equiv="account" disp="who"/>.</source>
+      </segment>
+    </unit>
+    <unit id="5857677710263762524">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:39</note>
+      </notes>
+      <segment>
+        <source>Open this version in a new tab.</source>
+      </segment>
+    </unit>
+    <unit id="585542943497346208">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:40</note>
+      </notes>
+      <segment>
+        <source>Copy this version next to the file. A number is added to its name.</source>
+      </segment>
+    </unit>
+    <unit id="2771031288242223100">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:41</note>
+      </notes>
+      <segment>
+        <source>Put this version in place of the file (asks first). The file as it is now becomes a version.</source>
+      </segment>
+    </unit>
+    <unit id="1375543275553372281">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:47,48</note>
+      </notes>
+      <segment>
+        <source>Put the version of <ph id="0" equiv="date" disp="date"/> in place of “<ph id="1" equiv="name" disp="name"/>”? The file as it is now is kept as a version in the trash.</source>
+      </segment>
+    </unit>
+    <unit id="7154050662847287992">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:53</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="name" disp="name"/>” is back as it was. Its content before is a version now.</source>
+      </segment>
+    </unit>
+    <unit id="4127447736614462340">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:57</note>
+      </notes>
+      <segment>
+        <source>The version is restored as “<ph id="0" equiv="name" disp="copy"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="4881521880923132100">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:62</note>
+      </notes>
+      <segment>
+        <source>Could not restore the version: <ph id="0" equiv="reason" disp="reason"/></source>
+      </segment>
+    </unit>
+    <unit id="468027380436064774">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:63</note>
+      </notes>
+      <segment>
+        <source>Could not restore the version.</source>
+      </segment>
+    </unit>
+    <unit id="1887575716044538019">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:69</note>
+      </notes>
+      <segment>
+        <source>{count, plural, other {More than # versions}}</source>
+      </segment>
+    </unit>
+    <unit id="6464273016077599302">
+      <notes>
+        <note category="location">src/app/files/version-texts.ts:70</note>
+      </notes>
+      <segment>
+        <source>{count, plural, =0 {None} one {# version} other {# versions}}</source>
+      </segment>
+    </unit>
+    <unit id="3136980042796565547">
+      <notes>
+        <note category="location">src/app/files/versions.dialog.html:10,11</note>
+      </notes>
+      <segment>
+        <source>Could not read the previous versions: <ph id="0" equiv="INTERPOLATION" disp="{{ error }}"/></source>
+      </segment>
+    </unit>
+    <unit id="1156198940917665308">
+      <notes>
+        <note category="location">src/app/files/versions.dialog.html:40,41</note>
+      </notes>
+      <segment>
+        <source>Restore a copy</source>
       </segment>
     </unit>
     <unit id="509784379743889932">

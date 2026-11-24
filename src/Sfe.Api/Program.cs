@@ -163,6 +163,7 @@ api.MapArchiveEndpoints();
 api.MapPropertyEndpoints();
 api.MapStorageEndpoints();
 api.MapTextEndpoints();
+api.MapVersionEndpoints();
 api.MapEpubEndpoints();
 api.MapExploreEndpoints();
 api.MapFlashEndpoints();

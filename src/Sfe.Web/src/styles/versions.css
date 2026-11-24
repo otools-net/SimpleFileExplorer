@@ -1,0 +1,29 @@
+/* Previous versions of a file (files/versions.dialog.ts). */
+.versions-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.versions-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+}
+.versions-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.versions-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.versions-empty {
+    margin: 12px 0 0;
+}

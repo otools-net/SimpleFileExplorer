@@ -16,6 +16,7 @@ import { PlaceProperties } from '../core/connection.models';
 import { ItemProperties, LibraryItem } from '../core/models';
 import { ChecksumAlgorithm, FolderTotals, PropertyJob } from './file.models';
 import { placeProperties, providerName } from './place-properties';
+import { versionCount } from './version-texts';
 import {
     attributesText,
     checksumText,
@@ -28,7 +29,7 @@ import {
 } from './properties-texts';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { registerDialog } from '../library/dialogs.service';
+import { Dialogs, registerDialog } from '../library/dialogs.service';
 import { SheetComponent } from '../shared/sheet.component';
 import { TagChipComponent } from '../tags/tag-chip.component';
 
@@ -57,6 +58,7 @@ export class PropertiesDialog {
     private readonly config = inject(ConfigService);
     private readonly toasts = inject(ToastService);
     protected readonly copyPaths = inject(CopyPathService);
+    private readonly dialogs = inject(Dialogs);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
 
     protected readonly algorithms = ALGORITHMS;
@@ -69,6 +71,8 @@ export class PropertiesDialog {
     protected readonly count = signal<PropertyJob | null>(null);
     protected readonly checksum = signal<PropertyJob | null>(null);
     protected readonly algorithm = signal<ChecksumAlgorithm>('sha256');
+    /** How many previous versions a library file has ("2 versions"); null: not read (a folder, or refused). */
+    protected readonly versions = signal<string | null>(null);
 
     protected readonly counting = computed(() => Boolean(this.count() && !this.count()!.done));
     protected readonly summing = computed(() => Boolean(this.checksum() && !this.checksum()!.done));
@@ -131,6 +135,7 @@ export class PropertiesDialog {
         this.error.set(null);
         this.count.set(null);
         this.checksum.set(null);
+        this.versions.set(null);
         this.sheet().open();
         try {
             const place = this.config.place();
@@ -143,6 +148,7 @@ export class PropertiesDialog {
             if (generation !== this.generation) return;
             this.properties.set(properties);
             if (properties.details.isFolder) void this.loadTotals(item.path, generation);
+            else void this.loadVersions(item.path, generation);
         } catch (error) {
             if (generation === this.generation) this.error.set((error as Error).message);
         }
@@ -193,6 +199,21 @@ export class PropertiesDialog {
             if (generation === this.generation) this.totals.set(totals);
         } catch {
             if (generation === this.generation) this.totals.set({ indexed: false, files: 0, folders: 0, bytes: 0 });
+        }
+    }
+
+    protected openVersions(): void {
+        const item = this.item();
+        if (item) this.dialogs.versions()?.open(item);
+    }
+
+    private async loadVersions(path: string, generation: number): Promise<void> {
+        if (!this.dialogs.versions() || !this.config.can(Rights.viewFiles)) return;
+        try {
+            const { items } = await this.api.fileVersions(path);
+            if (generation === this.generation) this.versions.set(versionCount(items.length, items.length >= 100));
+        } catch {
+            // Not shown: the rest of the properties stands without it.
         }
     }
 

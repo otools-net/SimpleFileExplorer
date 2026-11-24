@@ -37,6 +37,7 @@ apart by a line, in the order of a desktop file browser:
 | **Download** / **Download as zip** | | Saves the file to your device; a folder, or several items selected, as one zip ([below](#download-several-files-or-a-folder)) |
 | **Copy full path** | | Where it is on the server, when [copying paths](browsing.md#copying-full-paths) is on |
 | **Delete…** | Delete | Moves it to the trash ([below](#delete)); with items selected, all of them |
+| **Previous versions…** | | The versions of a file kept when it was saved over: open one, or restore it ([below](#previous-versions)) |
 | **Properties** | Alt+Enter | Its size, dates and what SFE knows of it; a folder's size; a file's checksum ([below](#properties)) |
 
 What doesn't apply to the item isn't shown (no **Crop…** on a video, no **Extract…** on a picture). What your rights
@@ -149,6 +150,25 @@ that is taken there); a restored folder is scanned again. **Delete** and **Empty
 
 What stays in the trash longer than the space's **Days in the trash** (30 by default) is deleted for good by the
 **Trash purge** task ([Background tasks](../administration/background-tasks.md)).
+
+## Previous versions
+
+When a file is saved over in SFE (the [text editor](editing-text.md), the [picture editor](picture-editor.md)), the
+content it had is kept in the trash, marked **previous version**. **Previous versions…** in the menu of a file (or
+**Show…** next to **Previous versions** in its [Properties](#properties)) lists them, newest first: when the file was
+saved over, by whom, and the size of the version.
+
+![The previous versions of a text file](../images/previous-versions.png)
+
+- **Open** shows the version in a new tab (to download it, the right `files.download`).
+- **Restore a copy** copies it next to the file, with a number added to its name (`notes (2).txt`); the version
+  stays. You need the right to create files in the folder (`files.createFiles`).
+- **Restore** puts it in place of the file, after asking: the file as it is now becomes a version in turn, so nothing
+  is lost. The file keeps its tags. You need the rights of saving over the file (as for the editors); not in a space
+  that always deletes for good.
+
+Anyone who may open the file sees its versions. They follow the file when it is renamed or moved in SFE, and go
+with the trash's purge, like everything in it. A file of a connection has none: the storage service keeps its own.
 
 ## Move and copy
 
@@ -345,7 +365,8 @@ downloaded as it is.
 - its name, kind, the folder it is in, its size (exact, in bytes), when it was modified, created and last opened (as
   far as the server's disk keeps it), and whether it is hidden, read-only or a link to another place;
 - what the index knows: a picture's or video's resolution, a video's or song's length, its tags, or that no scan has
-  indexed it yet.
+  indexed it yet;
+- for a file of the library, how many [previous versions](#previous-versions) it has, with **Show…**.
 
 ![The properties of a picture, with its checksum](../images/properties-file.png)
 

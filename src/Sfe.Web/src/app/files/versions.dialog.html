@@ -1,0 +1,60 @@
+<sfe-sheet
+    #sheet
+    heading="Previous versions"
+    i18n-heading
+    [subtitle]="item()?.name ?? null"
+    variant="versions-dialog"
+>
+    <p class="settings-intro">{{ intro }}</p>
+    @if (error(); as error) {
+        <p class="form-error" i18n>Could not read the previous versions: {{ error }}</p>
+    } @else if (versions(); as v) {
+        @if (!v.items.length) {
+            <p class="muted versions-empty">{{ empty }}</p>
+        }
+        <ul class="versions-list">
+            @for (version of v.items; track version.id) {
+                <li class="versions-row" [attr.data-id]="version.id">
+                    <span class="versions-text">
+                        <strong>{{ title(version) }}</strong>
+                        <span class="muted">{{ details(version) }}</span>
+                    </span>
+                    <span class="versions-actions">
+                        <a
+                            class="button small ghost"
+                            target="_blank"
+                            rel="noopener"
+                            [href]="contentUrl(version)"
+                            [title]="hints.open"
+                            i18n
+                        >Open</a>
+                        @if (v.restoreCopy) {
+                            <button
+                                type="button"
+                                class="button small"
+                                [title]="hints.copy"
+                                [sfeBusy]="busy() === version.id + ':copy'"
+                                [disabled]="busy() !== null"
+                                (click)="restoreCopy(version)"
+                                i18n
+                            >Restore a copy</button>
+                        }
+                        @if (v.restoreOver) {
+                            <button
+                                type="button"
+                                class="button small primary"
+                                [title]="hints.over"
+                                [sfeBusy]="busy() === version.id + ':over'"
+                                [disabled]="busy() !== null"
+                                (click)="restoreOver(version)"
+                                i18n
+                            >Restore</button>
+                        }
+                    </span>
+                </li>
+            }
+        </ul>
+    } @else {
+        <p class="tag-loading"><span class="spinner"></span></p>
+    }
+</sfe-sheet>
