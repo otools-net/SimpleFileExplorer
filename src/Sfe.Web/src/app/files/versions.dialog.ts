@@ -77,7 +77,7 @@ export class VersionsDialog {
         await this.restore(version, 'copy', async () => {
             const result = await this.api.restoreVersionCopy(version.id);
             if (isFileConflict(result)) return result.detail ?? null;
-            this.toasts.show(restoredCopyText(result.name));
+            this.toasts.success(restoredCopyText(result.name));
             return undefined;
         });
     }
@@ -90,7 +90,7 @@ export class VersionsDialog {
             if (!('item' in result)) return result.detail ?? null;
             // Its pictures are fetched again where they show.
             if (result.item.modified) markSaved(result.item.path, result.item.modified);
-            this.toasts.show(restoredOverText(item.name));
+            this.toasts.success(restoredOverText(item.name));
             return undefined;
         });
     }

@@ -523,7 +523,7 @@
         <note category="location">src/app/access/group-editor.component.html:175</note>
         <note category="location">src/app/access/space-editor.component.html:206</note>
         <note category="location">src/app/account/account-section.component.html:73,74</note>
-        <note category="location">src/app/admin/admin-page.component.html:461,462</note>
+        <note category="location">src/app/admin/admin-page.component.html:462,463</note>
         <note category="location">src/app/admin/installation-section.component.html:57,58</note>
         <note category="location">src/app/connections/connections-section.component.html:48,49</note>
         <note category="location">src/app/editor/image-editor.dialog.html:64,65</note>
@@ -815,6 +815,7 @@
         <note category="location">src/app/access/space-members.component.html:111</note>
         <note category="location">src/app/connections/connections-section.component.html:220,221</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:125,126</note>
+        <note category="location">src/app/notifications/notifications.component.html:61</note>
         <note category="location">src/app/tracking/duplicate-group.component.html:16,17</note>
       </notes>
       <segment>
@@ -1798,8 +1799,8 @@
       <notes>
         <note category="location">src/app/access/space-detail.component.html:41</note>
         <note category="location">src/app/access/spaces-page.component.html:111</note>
-        <note category="location">src/app/files/file-transfers.ts:421</note>
-        <note category="location">src/app/files/file-transfers.ts:466</note>
+        <note category="location">src/app/files/file-transfers.ts:422</note>
+        <note category="location">src/app/files/file-transfers.ts:468</note>
         <note category="location">src/app/files/opening-commands.ts:43</note>
         <note category="location">src/app/files/opening-commands.ts:52</note>
         <note category="location">src/app/files/versions.dialog.html:31</note>
@@ -2905,7 +2906,7 @@ Space “Holiday photos”
     <unit id="3823219296477075982">
       <notes>
         <note category="location">src/app/account/account-section.component.html:82,83</note>
-        <note category="location">src/app/admin/admin-page.component.html:458,459</note>
+        <note category="location">src/app/admin/admin-page.component.html:459,460</note>
       </notes>
       <segment>
         <source>Discard</source>
@@ -3088,7 +3089,7 @@ Space “Holiday photos”
     <unit id="602821270955747507">
       <notes>
         <note category="location">src/app/account/installation-form.component.html:122</note>
-        <note category="location">src/app/admin/admin-page.component.html:63</note>
+        <note category="location">src/app/admin/admin-page.component.html:64</note>
         <note category="location">src/app/admin/system-section.component.html:49</note>
       </notes>
       <segment>
@@ -4022,10 +4023,10 @@ Space “Holiday photos”
     <unit id="7844706011418789951">
       <notes>
         <note category="location">src/app/admin/admin-page.component.html:23,24</note>
-        <note category="location">src/app/admin/admin-page.component.html:157,158</note>
-        <note category="location">src/app/admin/admin-page.component.html:220,221</note>
-        <note category="location">src/app/admin/admin-page.component.html:229,230</note>
-        <note category="location">src/app/admin/admin-page.component.ts:260</note>
+        <note category="location">src/app/admin/admin-page.component.html:158,159</note>
+        <note category="location">src/app/admin/admin-page.component.html:221,222</note>
+        <note category="location">src/app/admin/admin-page.component.html:230,231</note>
+        <note category="location">src/app/admin/admin-page.component.ts:262</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:156</note>
       </notes>
       <segment>
@@ -4034,7 +4035,7 @@ Space “Holiday photos”
     </unit>
     <unit id="458225083737472482">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:27</note>
+        <note category="location">src/app/admin/admin-page.component.html:28</note>
       </notes>
       <segment>
         <source>Administration sections</source>
@@ -4042,7 +4043,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4163916140875979763">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:33,34</note>
+        <note category="location">src/app/admin/admin-page.component.html:34,35</note>
       </notes>
       <segment>
         <source>Find a setting…</source>
@@ -4050,7 +4051,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8540188762229456175">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:35,36</note>
+        <note category="location">src/app/admin/admin-page.component.html:36,37</note>
       </notes>
       <segment>
         <source>Find a setting or a page</source>
@@ -4058,7 +4059,7 @@ Space “Holiday photos”
     </unit>
     <unit id="9059650888394249114">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:38,39</note>
+        <note category="location">src/app/admin/admin-page.component.html:39,40</note>
       </notes>
       <segment>
         <source>Find the settings and pages whose name or description has these words (Enter opens the first one, Esc clears the box)</source>
@@ -4066,7 +4067,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7318865687848137496">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:51,52</note>
+        <note category="location">src/app/admin/admin-page.component.html:52,53</note>
       </notes>
       <segment>
         <source>Clear the search</source>
@@ -4074,7 +4075,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8164474516211292983">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:53,54</note>
+        <note category="location">src/app/admin/admin-page.component.html:54,55</note>
       </notes>
       <segment>
         <source>Clear the search and show the sections again (Esc)</source>
@@ -4082,7 +4083,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4176219690298877452">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:158,159</note>
+        <note category="location">src/app/admin/admin-page.component.html:159,160</note>
       </notes>
       <segment>
         <source>Everything you can change or look at, by section.</source>
@@ -4090,7 +4091,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3845078135101348106">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:173,174</note>
+        <note category="location">src/app/admin/admin-page.component.html:174,175</note>
       </notes>
       <segment>
         <source>Open <ph id="0" equiv="INTERPOLATION" disp="{{ item.title }}"/></source>
@@ -4098,7 +4099,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7172610509240246759">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:209</note>
+        <note category="location">src/app/admin/admin-page.component.html:210</note>
       </notes>
       <segment>
         <source>Breadcrumb</source>
@@ -4106,7 +4107,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5396542763651228874">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:216,217</note>
+        <note category="location">src/app/admin/admin-page.component.html:217,218</note>
       </notes>
       <segment>
         <source>Show the list of sections</source>
@@ -4114,7 +4115,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2487938692370417981">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:226,227</note>
+        <note category="location">src/app/admin/admin-page.component.html:227,228</note>
       </notes>
       <segment>
         <source>Show every section</source>
@@ -4122,7 +4123,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3956758284297701768">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:241,242</note>
+        <note category="location">src/app/admin/admin-page.component.html:242,243</note>
       </notes>
       <segment>
         <source>Show the sections of <ph id="0" equiv="INTERPOLATION" disp="{{ groupTitle() }}"/></source>
@@ -4130,7 +4131,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2955662143270094602">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:253,254</note>
+        <note category="location">src/app/admin/admin-page.component.html:254,255</note>
       </notes>
       <segment>
         <source>Open the first page of <ph id="0" equiv="INTERPOLATION" disp="{{ section().title }}"/></source>
@@ -4138,8 +4139,8 @@ Space “Holiday photos”
     </unit>
     <unit id="2567928900463420486">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:293</note>
-        <note category="location">src/app/admin/admin-page.component.html:493</note>
+        <note category="location">src/app/admin/admin-page.component.html:294</note>
+        <note category="location">src/app/admin/admin-page.component.html:494</note>
       </notes>
       <segment>
         <source> (needs fixing)</source>
@@ -4147,7 +4148,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8032804866656253913">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:311,312</note>
+        <note category="location">src/app/admin/admin-page.component.html:312,313</note>
       </notes>
       <segment>
         <source>Settings of</source>
@@ -4155,7 +4156,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8329910461142884035">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:323,324</note>
+        <note category="location">src/app/admin/admin-page.component.html:324,325</note>
       </notes>
       <segment>
         <source>This space&apos;s own settings, used instead of the server&apos;s: they apply to this space only</source>
@@ -4163,7 +4164,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4349270100415141379">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:328,329</note>
+        <note category="location">src/app/admin/admin-page.component.html:329,330</note>
       </notes>
       <segment>
         <source>This space (<ph id="0" equiv="INTERPOLATION" disp="{{ tenant.name }}"/>)</source>
@@ -4171,8 +4172,8 @@ Space “Holiday photos”
     </unit>
     <unit id="3857924785932255369">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:330</note>
-        <note category="location">src/app/admin/admin-page.component.ts:76</note>
+        <note category="location">src/app/admin/admin-page.component.html:331</note>
+        <note category="location">src/app/admin/admin-page.component.ts:77</note>
         <note category="location">src/app/core/connection.models.ts:133</note>
       </notes>
       <segment>
@@ -4181,7 +4182,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1081733523517002856">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:345,346</note>
+        <note category="location">src/app/admin/admin-page.component.html:346,347</note>
       </notes>
       <segment>
         <source>The server&apos;s settings: the defaults of every space, and what the whole server shares</source>
@@ -4189,8 +4190,8 @@ Space “Holiday photos”
     </unit>
     <unit id="5552665062432999263">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:349</note>
-        <note category="location">src/app/admin/admin-page.component.ts:77</note>
+        <note category="location">src/app/admin/admin-page.component.html:350</note>
+        <note category="location">src/app/admin/admin-page.component.ts:78</note>
       </notes>
       <segment>
         <source>Whole server</source>
@@ -4198,7 +4199,7 @@ Space “Holiday photos”
     </unit>
     <unit id="536610637334312079">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:433,434</note>
+        <note category="location">src/app/admin/admin-page.component.html:434,435</note>
         <note category="location">src/app/settings/settings-panel.component.html:28,29</note>
       </notes>
       <segment>
@@ -4207,7 +4208,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2294727580763071220">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:440,441</note>
+        <note category="location">src/app/admin/admin-page.component.html:441,442</note>
         <note category="location">src/app/settings/settings-panel.component.html:32,33</note>
       </notes>
       <segment>
@@ -4216,7 +4217,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7773671942343493215">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:449,450</note>
+        <note category="location">src/app/admin/admin-page.component.html:450,451</note>
       </notes>
       <segment>
         <source>Reset to defaults</source>
@@ -4224,8 +4225,8 @@ Space “Holiday photos”
     </unit>
     <unit id="5261447906628082484">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:480,481</note>
-        <note category="location">src/app/admin/admin-page.component.html:497,498</note>
+        <note category="location">src/app/admin/admin-page.component.html:481,482</note>
+        <note category="location">src/app/admin/admin-page.component.html:498,499</note>
       </notes>
       <segment>
         <source>Changed settings, not saved yet</source>
@@ -4233,8 +4234,8 @@ Space “Holiday photos”
     </unit>
     <unit id="8472403611476670392">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:482</note>
-        <note category="location">src/app/admin/admin-page.component.html:499</note>
+        <note category="location">src/app/admin/admin-page.component.html:483</note>
+        <note category="location">src/app/admin/admin-page.component.html:500</note>
       </notes>
       <segment>
         <source> (not saved)</source>
@@ -4242,7 +4243,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6454231238185442756">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.html:491,492</note>
+        <note category="location">src/app/admin/admin-page.component.html:492,493</note>
       </notes>
       <segment>
         <source>Some settings here need fixing</source>
@@ -4250,7 +4251,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4576117176436794057">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:192</note>
+        <note category="location">src/app/admin/admin-page.component.ts:194</note>
       </notes>
       <segment>
         <source>Back to the sections</source>
@@ -4258,7 +4259,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7236929489494486140">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:192</note>
+        <note category="location">src/app/admin/admin-page.component.ts:194</note>
       </notes>
       <segment>
         <source>Back to the library</source>
@@ -4266,7 +4267,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3968962107389212895">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:208</note>
+        <note category="location">src/app/admin/admin-page.component.ts:210</note>
       </notes>
       <segment>
         <source>The first {limit, number} of {count, number} found: add words to narrow them down.</source>
@@ -4274,7 +4275,7 @@ Space “Holiday photos”
     </unit>
     <unit id="9077841280946532318">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:212</note>
+        <note category="location">src/app/admin/admin-page.component.ts:214</note>
       </notes>
       <segment>
         <source>{count, plural, =0 {Nothing found} one {# found} other {# found}}</source>
@@ -4282,7 +4283,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5853220976119511648">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:217</note>
+        <note category="location">src/app/admin/admin-page.component.ts:219</note>
       </notes>
       <segment>
         <source>Open <ph id="0" equiv="place" disp="where"/></source>
@@ -4290,7 +4291,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6073458638608131210">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:218</note>
+        <note category="location">src/app/admin/admin-page.component.ts:220</note>
       </notes>
       <segment>
         <source>Open <ph id="0" equiv="place" disp="where"/> at this setting</source>
@@ -4298,7 +4299,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5556628535331352229">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:227</note>
+        <note category="location">src/app/admin/admin-page.component.ts:229</note>
       </notes>
       <segment>
         <source>Not saved yet: <ph id="0" equiv="pages" disp="changed.join(&apos;, &apos;)"/>; also in <ph id="1" equiv="levels" disp="others.join(&apos;, &apos;)"/></source>
@@ -4306,7 +4307,7 @@ Space “Holiday photos”
     </unit>
     <unit id="9044466139427444392">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:228</note>
+        <note category="location">src/app/admin/admin-page.component.ts:230</note>
       </notes>
       <segment>
         <source>Not saved yet: <ph id="0" equiv="pages" disp="changed.join(&apos;, &apos;)"/></source>
@@ -4314,7 +4315,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2353952272869974278">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:229</note>
+        <note category="location">src/app/admin/admin-page.component.ts:231</note>
       </notes>
       <segment>
         <source>Not saved yet in <ph id="0" equiv="levels" disp="others.join(&apos;, &apos;)"/></source>
@@ -4322,7 +4323,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8087235969397973279">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:233</note>
+        <note category="location">src/app/admin/admin-page.component.ts:235</note>
       </notes>
       <segment>
         <source>This space has settings of its own</source>
@@ -4330,7 +4331,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3856601031694131542">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:234</note>
+        <note category="location">src/app/admin/admin-page.component.ts:236</note>
       </notes>
       <segment>
         <source>Following the server&apos;s settings</source>
@@ -4338,7 +4339,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7530901117333047547">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:235</note>
+        <note category="location">src/app/admin/admin-page.component.ts:237</note>
       </notes>
       <segment>
         <source>Using saved settings</source>
@@ -4346,7 +4347,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5433172809500112054">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:235</note>
+        <note category="location">src/app/admin/admin-page.component.ts:237</note>
       </notes>
       <segment>
         <source>Using the server&apos;s configuration</source>
@@ -4354,7 +4355,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1464515136037050555">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:240</note>
+        <note category="location">src/app/admin/admin-page.component.ts:242</note>
       </notes>
       <segment>
         <source>Undo the changes not saved yet, on every page of both tabs</source>
@@ -4362,7 +4363,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6774866820039145160">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:241</note>
+        <note category="location">src/app/admin/admin-page.component.ts:243</note>
       </notes>
       <segment>
         <source>Undo the changes not saved yet, on every page</source>
@@ -4370,7 +4371,7 @@ Space “Holiday photos”
     </unit>
     <unit id="410830363757343395">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:245</note>
+        <note category="location">src/app/admin/admin-page.component.ts:247</note>
       </notes>
       <segment>
         <source>Nothing saved yet</source>
@@ -4378,7 +4379,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5828595803093106490">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:247</note>
+        <note category="location">src/app/admin/admin-page.component.ts:249</note>
       </notes>
       <segment>
         <source>Forget the space&apos;s own settings and use the server&apos;s again (asks first)</source>
@@ -4386,7 +4387,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6421739913374575258">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:248</note>
+        <note category="location">src/app/admin/admin-page.component.ts:250</note>
       </notes>
       <segment>
         <source>Forget the saved settings and go back to the server&apos;s configuration (asks first)</source>
@@ -4394,7 +4395,7 @@ Space “Holiday photos”
     </unit>
     <unit id="598239863654032311">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:252</note>
+        <note category="location">src/app/admin/admin-page.component.ts:254</note>
       </notes>
       <segment>
         <source>Save and apply the settings changed in both tabs: the whole server&apos;s, then this space&apos;s</source>
@@ -4402,7 +4403,7 @@ Space “Holiday photos”
     </unit>
     <unit id="336490905177668092">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:254</note>
+        <note category="location">src/app/admin/admin-page.component.ts:256</note>
       </notes>
       <segment>
         <source>Save and apply the settings of every page, for everyone using this space</source>
@@ -4410,7 +4411,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3477804007741549894">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:255</note>
+        <note category="location">src/app/admin/admin-page.component.ts:257</note>
       </notes>
       <segment>
         <source>Save and apply the settings of every page, for everyone using this server</source>
@@ -4418,7 +4419,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2123805987941487613">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:263</note>
+        <note category="location">src/app/admin/admin-page.component.ts:265</note>
       </notes>
       <segment>
         <source>Administration – SFE</source>
@@ -4426,7 +4427,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4721602624937320440">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:267</note>
+        <note category="location">src/app/admin/admin-page.component.ts:269</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="page" disp="this.subpage().title"/> – <ph id="1" equiv="section" disp="section.title"/> – Administration – SFE</source>
@@ -4434,7 +4435,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7714903196521167137">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:268</note>
+        <note category="location">src/app/admin/admin-page.component.ts:270</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="section" disp="section.title"/> – Administration – SFE</source>
@@ -4442,7 +4443,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6647749126777119100">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:330</note>
+        <note category="location">src/app/admin/admin-page.component.ts:332</note>
       </notes>
       <segment>
         <source>Leave without saving? The settings you changed are lost.</source>
@@ -6841,7 +6842,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5775346636203685655">
       <notes>
-        <note category="location">src/app/core/undo-history.ts:59</note>
+        <note category="location">src/app/core/undo-history.ts:60</note>
         <note category="location">src/app/editor/image-editor.dialog.html:36</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:98</note>
       </notes>
@@ -6851,7 +6852,7 @@ Space “Holiday photos”
     </unit>
     <unit id="533257908284541366">
       <notes>
-        <note category="location">src/app/core/undo-history.ts:72</note>
+        <note category="location">src/app/core/undo-history.ts:77</note>
       </notes>
       <segment>
         <source>Undoing: <ph id="0" equiv="what" disp="entry.done"/></source>
@@ -6859,7 +6860,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8559249080448510532">
       <notes>
-        <note category="location">src/app/core/undo-history.ts:90</note>
+        <note category="location">src/app/core/undo-history.ts:95</note>
       </notes>
       <segment>
         <source>Could not undo it: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -6867,7 +6868,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6340036085868443211">
       <notes>
-        <note category="location">src/app/core/undo-history.ts:100</note>
+        <note category="location">src/app/core/undo-history.ts:105</note>
       </notes>
       <segment>
         <source>It was done in the library: open the library to undo it.</source>
@@ -6875,7 +6876,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5090692998067740795">
       <notes>
-        <note category="location">src/app/core/undo-history.ts:101</note>
+        <note category="location">src/app/core/undo-history.ts:106</note>
       </notes>
       <segment>
         <source>It was done in “<ph id="0" equiv="connection" disp="place.name"/>”: open it to undo it.</source>
@@ -8313,7 +8314,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8720083241279377641">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:286</note>
+        <note category="location">src/app/files/file-transfers.ts:287</note>
       </notes>
       <segment>
         <source>Could not send your answer: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -8321,7 +8322,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2184420994841626844">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:296</note>
+        <note category="location">src/app/files/file-transfers.ts:297</note>
       </notes>
       <segment>
         <source>Could not stop the operation: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -8329,7 +8330,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1877082256408805881">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:345</note>
+        <note category="location">src/app/files/file-transfers.ts:346</note>
       </notes>
       <segment>
         <source>Move them back where they were.</source>
@@ -8337,7 +8338,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6555802535094387331">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:364</note>
+        <note category="location">src/app/files/file-transfers.ts:365</note>
       </notes>
       <segment>
         <source>Stopped. No zip was made in <ph id="0" equiv="where" disp="where"/>.</source>
@@ -8345,7 +8346,7 @@ Space “Holiday photos”
     </unit>
     <unit id="365050093921350692">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:368</note>
+        <note category="location">src/app/files/file-transfers.ts:369</note>
       </notes>
       <segment>
         <source>Could not make the zip.</source>
@@ -8353,7 +8354,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4555538890082979599">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:372</note>
+        <note category="location">src/app/files/file-transfers.ts:373</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="zip" disp="quoted(baseName(zip))"/> made in <ph id="1" equiv="where" disp="where"/>.</source>
@@ -8361,7 +8362,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8461842260159597706">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:377</note>
+        <note category="location">src/app/files/file-transfers.ts:378</note>
         <note category="location">src/app/formats/archive/archive-view.component.html:135</note>
         <note category="location">src/app/formats/csv/csv-view.component.html:16</note>
         <note category="location">src/app/formats/json/json-view.component.html:28</note>
@@ -8375,7 +8376,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7893072212619491994">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:378</note>
+        <note category="location">src/app/files/file-transfers.ts:379</note>
       </notes>
       <segment>
         <source>Show <ph id="0" equiv="zip" disp="quoted(baseName(zip))"/> in its folder.</source>
@@ -8383,7 +8384,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6209735021162197397">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:389</note>
+        <note category="location">src/app/files/file-transfers.ts:390</note>
       </notes>
       <segment>
         <source>Stopped. Nothing was extracted to <ph id="0" equiv="where" disp="where"/>.</source>
@@ -8391,7 +8392,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3084211379894854792">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:394</note>
+        <note category="location">src/app/files/file-transfers.ts:395</note>
       </notes>
       <segment>
         <source>Could not extract <ph id="0" equiv="archive" disp="archive"/>: it is protected by a password.</source>
@@ -8399,7 +8400,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8876125281336377441">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:400</note>
+        <note category="location">src/app/files/file-transfers.ts:401</note>
         <note category="location">src/app/files/operations-panel.component.html:156,157</note>
       </notes>
       <segment>
@@ -8408,7 +8409,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6404255192971813326">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:401</note>
+        <note category="location">src/app/files/file-transfers.ts:402</note>
         <note category="location">src/app/files/operations-panel.component.html:152,153</note>
       </notes>
       <segment>
@@ -8417,7 +8418,7 @@ Space “Holiday photos”
     </unit>
     <unit id="694753618738721739">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:410</note>
+        <note category="location">src/app/files/file-transfers.ts:411</note>
       </notes>
       <segment>
         <source>Could not extract <ph id="0" equiv="archive" disp="quoted(baseName(job.target))"/>.</source>
@@ -8425,7 +8426,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1292303190674769981">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:427</note>
+        <note category="location">src/app/files/file-transfers.ts:429</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="archive" disp="quoted(baseName(result.path))"/> extracted to <ph id="1" equiv="where" disp="into"/>.</source>
@@ -12397,7 +12398,7 @@ Space “Holiday photos”
     <unit id="5474901734608805094">
       <notes>
         <note category="location">src/app/formats/epub/epub-view.component.html:37</note>
-        <note category="location">src/app/library/topbar/topbar.component.ts:50</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:51</note>
       </notes>
       <segment>
         <source>Layout</source>
@@ -14092,6 +14093,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/formats/text/text-edit.component.html:58,59</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:68</note>
+        <note category="location">src/app/notifications/notifications.component.ts:19</note>
         <note category="location">src/app/tags/file-tags.dialog.html:57,58</note>
         <note category="location">src/app/tags/files-tags.dialog.html:70,71</note>
         <note category="location">src/app/tags/scope-tags.dialog.html:195,196</note>
@@ -18390,7 +18392,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5737287568482767307">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:11</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:12</note>
       </notes>
       <segment>
         <source>Grid</source>
@@ -18398,7 +18400,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1549475824949822616">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:11</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:12</note>
       </notes>
       <segment>
         <source>Show the items as a grid of tiles.</source>
@@ -18406,7 +18408,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7906458871395232033">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:12</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:13</note>
       </notes>
       <segment>
         <source>List</source>
@@ -18414,7 +18416,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7723337699857422596">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:12</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:13</note>
       </notes>
       <segment>
         <source>Show the items as a list, one per line.</source>
@@ -18422,7 +18424,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7774389819688766923">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:16</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:17</note>
       </notes>
       <segment>
         <source>One per row</source>
@@ -18430,7 +18432,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4075763914308719155">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:17</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:18</note>
       </notes>
       <segment>
         <source>Show one item per row, with large previews.</source>
@@ -18438,7 +18440,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3982403428275430291">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:34</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:35</note>
         <note category="location">src/app/settings/tabs/library-settings.ts:103</note>
         <note category="description">the panel of quick links and tags</note>
       </notes>
@@ -18448,7 +18450,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8417177278759545638">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:41,42</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:42,43</note>
       </notes>
       <segment>
         <source>Go to the top of the library.</source>
@@ -18456,7 +18458,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="732713143617662315">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:67</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:69</note>
       </notes>
       <segment>
         <source>Hide the sidebar: quick links and tags.</source>
@@ -18464,7 +18466,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3092327461922072876">
       <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:68</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:70</note>
       </notes>
       <segment>
         <source>Show the sidebar: quick links and tags.</source>
@@ -18905,6 +18907,7 @@ The search index is updated in the background. This can take a while on large fo
     <unit id="6759205696902713848">
       <notes>
         <note category="location">src/app/logs/logs.ts:22</note>
+        <note category="location">src/app/notifications/notifications.component.ts:20</note>
         <note category="description">severity of a log entry</note>
       </notes>
       <segment>
@@ -18923,6 +18926,7 @@ The search index is updated in the background. This can take a while on large fo
     <unit id="1519954996184640001">
       <notes>
         <note category="location">src/app/logs/logs.ts:24</note>
+        <note category="location">src/app/notifications/notifications.component.ts:21</note>
         <note category="description">severity of a log entry</note>
       </notes>
       <segment>
@@ -19233,6 +19237,62 @@ The search index is updated in the background. This can take a while on large fo
       </notes>
       <segment>
         <source>Update the databases and settings to SFE <ph id="0" equiv="version" disp="info.appVersion"/>? Earlier versions cannot use them afterwards: this cannot be undone.</source>
+      </segment>
+    </unit>
+    <unit id="5851560788527570644">
+      <notes>
+        <note category="location">src/app/notifications/notifications.component.html:29,30</note>
+      </notes>
+      <segment>
+        <source>Notifications</source>
+      </segment>
+    </unit>
+    <unit id="5808524961280583399">
+      <notes>
+        <note category="location">src/app/notifications/notifications.component.html:34,35</note>
+      </notes>
+      <segment>
+        <source>Remove every notification kept by this browser.</source>
+      </segment>
+    </unit>
+    <unit id="2303489635985691360">
+      <notes>
+        <note category="location">src/app/notifications/notifications.component.html:38,39</note>
+      </notes>
+      <segment>
+        <source>Clear all</source>
+      </segment>
+    </unit>
+    <unit id="5389800554498230348">
+      <notes>
+        <note category="location">src/app/notifications/notifications.component.html:62,63</note>
+      </notes>
+      <segment>
+        <source>Remove this notification.</source>
+      </segment>
+    </unit>
+    <unit id="3462219181542969943">
+      <notes>
+        <note category="location">src/app/notifications/notifications.component.html:72</note>
+      </notes>
+      <segment>
+        <source> Nothing yet. The messages shown in the corner of the page are kept here for 30 days. </source>
+      </segment>
+    </unit>
+    <unit id="84706491458081951">
+      <notes>
+        <note category="location">src/app/notifications/notifications.component.ts:55</note>
+      </notes>
+      <segment>
+        <source>Notifications: <ph id="0" equiv="count" disp="unread"/> unread</source>
+      </segment>
+    </unit>
+    <unit id="8288798936372535451">
+      <notes>
+        <note category="location">src/app/notifications/notifications.component.ts:56</note>
+      </notes>
+      <segment>
+        <source>Notifications: the messages of the last 30 days</source>
       </segment>
     </unit>
     <unit id="5456004118682026312">

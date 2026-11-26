@@ -210,7 +210,7 @@ export class TextSession {
             this.editor.markSaved();
             this.dirty.set(this.editor.dirty);
             this.problem.set(null);
-            this.toasts.show(textEditTexts.saved(!!result.trashId), { timeout: 3000 });
+            this.toasts.success(textEditTexts.saved(!!result.trashId), { timeout: 3000 });
         } catch (error) {
             if (error instanceof ApiError && error.status === 412) this.problem.set({ kind: 'changed' });
             else if (error instanceof ApiError && error.status === 422)
@@ -316,7 +316,7 @@ export class TextSession {
             // Its changes are in the copy now: this file may be left without asking.
             this.discarded = true;
             this.problem.set(null);
-            this.toasts.show($localize`Saved as “${result.name}:name:”.`, { timeout: 4000 });
+            this.toasts.success($localize`Saved as “${result.name}:name:”.`, { timeout: 4000 });
             if (this.host.open) this.host.open(result, { edit: true });
             else location.assign(`${this.config.urls()!.view(result.path)}&edit=1`);
         } catch (error) {

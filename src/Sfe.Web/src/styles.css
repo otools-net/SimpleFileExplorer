@@ -35,5 +35,6 @@
 @import './styles/connections.css';
 @import './styles/access-tokens.css';
 @import './styles/toasts.css';
+@import './styles/notifications.css';
 @import './styles/responsive.css';
 @import './styles/phone-sheets.css';

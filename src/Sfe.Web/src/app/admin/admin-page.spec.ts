@@ -927,7 +927,7 @@ describe('AdminPageComponent by rights and levels', () => {
             'shows the level whose values are refused, with its errors and changes; ' +
                 'the one saved before stays saved',
             async () => {
-                const toast = vi.spyOn(TestBed.inject(ToastService), 'show');
+                const toast = vi.spyOn(TestBed.inject(ToastService), 'warning');
                 api.saveSettingChanges.mockImplementation(async (_, level) => {
                     if (level === 'tenant')
                         throw new ApiError(400, 'x', { 'player.seekSeconds': ['Too long a step.'] });

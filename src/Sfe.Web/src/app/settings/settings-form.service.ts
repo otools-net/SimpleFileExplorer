@@ -424,7 +424,7 @@ export class SettingsForm {
                     if (error instanceof ApiError && error.errors) {
                         await this.showLevel(level);
                         this.showErrors(error.errors);
-                        if (saved.length) this.toasts.show(partlySaved(level));
+                        if (saved.length) this.toasts.warning(partlySaved(level));
                         return 'invalid';
                     }
                     this.toasts.error($localize`Could not save the settings: ${(error as Error).message}:reason:`);
@@ -434,7 +434,7 @@ export class SettingsForm {
         } finally {
             this.saving.set(false);
         }
-        this.toasts.show(shown === 'user' ? $localize`Your settings saved.` : $localize`Settings saved.`);
+        this.toasts.success(shown === 'user' ? $localize`Your settings saved.` : $localize`Settings saved.`);
         if (saved.length) await this.applied();
         return 'saved';
     }

@@ -53,7 +53,7 @@ describe('canvas probe', () => {
         expect(check()).toBe(false);
 
         const toasts = TestBed.inject(ToastService).toasts();
-        expect(toasts.map((toast) => [toast.message, toast.error])).toEqual([[CANVAS_REFUSED, true]]);
+        expect(toasts.map((toast) => [toast.message, toast.level === 'error'])).toEqual([[CANVAS_REFUSED, true]]);
     });
 
     it('says nothing when canvases can be read', () => {

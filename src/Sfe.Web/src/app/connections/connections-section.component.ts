@@ -106,7 +106,7 @@ export class ConnectionsSectionComponent {
     }
 
     protected made(connection: ConnectionInfo): void {
-        this.toasts.show($localize`Connection “${connection.name}:name:” added.`);
+        this.toasts.success($localize`Connection “${connection.name}:name:” added.`);
         void this.load();
     }
 

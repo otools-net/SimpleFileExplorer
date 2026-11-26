@@ -6,7 +6,7 @@ file to open it in the [viewer](viewer.md).
 ![A folder in the grid layout](../images/library-grid.png)
 
 The top bar holds, from left to right: the sidebar's button ([quick links](#quick-links) and [tags](tags.md#the-tag-sidebar)), **SFE** (back to the library's top folder), the
-[search box](search.md), the three layouts and the [⋮ menu](signing-in.md#the--menu). Every button shows a hint (and
+[search box](search.md), the three layouts, the [notifications](#notifications) bell and the [⋮ menu](signing-in.md#the--menu). Every button shows a hint (and
 its keyboard shortcut, if any) when you rest the mouse on it.
 
 ## Layouts
@@ -161,6 +161,25 @@ click or **⋮**), and a button in the viewer for the file shown. Copying also w
 whose path you copied get a dashed outline in the listing, until the page is reloaded.
 
 It is off by default because it tells every visitor where the library lives on the server's disk.
+
+## Notifications
+
+The messages that show for a few seconds in the corner of the page ("3 items moved to …", "Could not …") are kept
+by the bell at the top right, on the library page and on the administration page. Its number counts what you haven't
+seen yet: warnings and errors, and anything that came while the page was in the background. Click it to see the list,
+newest first, which also marks them as seen (they stay highlighted until the list closes).
+
+![The notification centre: messages of the session, an error and a warning highlighted](../images/notifications.png)
+
+- **Open** (after a move, a copy, an extraction) goes to the folder the items went to, even after the page is
+  reloaded. **Undo** stays while the page is open, until that action is undone.
+- **×** removes one, **Clear all** removes them all.
+- Each browser keeps its own, for each account and space: the last 200, for 30 days. Another browser or device starts
+  empty, and signing out doesn't clear them, so on a shared computer use **Clear all** before leaving.
+
+On a phone the list opens at the bottom of the screen.
+
+<img src="../images/phone-notifications.png" alt="The notification centre on a phone" width="300">
 
 ## Light and dark
 

@@ -126,7 +126,7 @@ export class DeleteDialog {
         if (done.length) {
             const how = this.place() ? 'connection' : permanent || !trashed.length ? 'permanent' : 'trash';
             const text = deletedToast(done.length, how);
-            this.toasts.show(text, {
+            this.toasts.success(text, {
                 timeout: trashed.length ? 10000 : 4500,
                 action: trashed.length
                     ? this.undos.add({
@@ -171,7 +171,7 @@ export class DeleteDialog {
         }
         if (restored) {
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + restored });
-            this.toasts.show(putBack(restored));
+            this.toasts.success(putBack(restored));
         }
     }
 }

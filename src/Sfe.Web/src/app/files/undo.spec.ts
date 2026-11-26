@@ -125,9 +125,9 @@ describe('UndoHistory', () => {
         const action = undos.add(entry('Renamed to “b.jpg”.', run));
         expect(action).toEqual(expect.objectContaining({ label: 'Undo', title: 'Undo Renamed to “b.jpg”.' }));
 
-        action.run();
+        action.run!();
         expect(undos.undoLatest()).toBe(false);
-        action.run();
+        action.run!();
         await settle();
 
         expect(run).toHaveBeenCalledTimes(1);

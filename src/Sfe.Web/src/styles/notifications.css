@@ -1,0 +1,129 @@
+/* ---------- Notification centre (NotificationsComponent) ---------- */
+
+.notifications-button {
+    position: relative;
+}
+.notifications-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 9px;
+    background: var(--danger);
+    box-shadow: 0 0 0 2px var(--bg);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 17px;
+    text-align: center;
+    pointer-events: none;
+}
+
+/* The popover holding the list in the top layer: the whole window, letting the pointer through but to its content. */
+.notifications-layer {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    pointer-events: none;
+}
+.notifications-panel.popover {
+    position: fixed;
+    top: var(--pop-top, 60px);
+    right: var(--pop-right, 8px);
+    pointer-events: auto;
+}
+.notifications-panel {
+    display: flex;
+    flex-direction: column;
+    width: min(400px, calc(100vw - 24px));
+    max-height: min(70vh, 560px);
+}
+.notifications-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px 8px 16px;
+    border-bottom: 1px solid var(--border);
+}
+.notifications-head h2 {
+    margin: 0;
+    font-size: 15px;
+}
+.notifications-list {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 6px;
+}
+.notifications-empty {
+    margin: 0;
+    padding: 16px 10px;
+    color: var(--text-muted);
+}
+
+.notification {
+    position: relative;
+    padding: 8px 8px 6px 22px;
+    border-radius: var(--radius-sm);
+}
+.notification + .notification {
+    margin-top: 2px;
+}
+/* The level's mark: a dot in its colour (toasts.css). */
+.notification::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--level, var(--accent));
+}
+.notification.unread {
+    background: var(--surface-2);
+}
+.notification-message {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.notification-text {
+    white-space: pre-line;
+}
+.notification.unread .notification-text {
+    font-weight: 600;
+}
+.notification-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+.notification-foot time {
+    margin-right: auto;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+.notification-remove {
+    color: var(--text-muted);
+}
+
+/* On a phone the panel is a sheet (phone-sheets.css): its list scrolls within it. */
+@media (max-width: 640px) {
+    .notifications-panel.phone-sheet {
+        overflow-y: hidden;
+    }
+}
+
+.admin-topbar > .notifications {
+    margin-left: auto;
+}

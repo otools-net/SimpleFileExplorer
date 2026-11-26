@@ -217,7 +217,7 @@ describe('Extracting archives', () => {
         fixture.detectChanges();
 
         const toast = toasts.toasts().find((t) => t.message.includes("doesn't open"))!;
-        expect(toast.error).toBe(true);
+        expect(toast.level).toBe('error');
         toasts.act(toast, toast.actions[0]);
         expect(open).toHaveBeenCalledWith({
             path: zip.path,

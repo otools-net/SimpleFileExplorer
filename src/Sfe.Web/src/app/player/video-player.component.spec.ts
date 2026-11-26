@@ -726,7 +726,7 @@ describe('VideoPlayerComponent', () => {
 
             expect(HTMLCanvasElement.prototype.toBlob).not.toHaveBeenCalled();
             const toast = TestBed.inject(ToastService).toasts().at(-1)!;
-            expect(toast.error).toBe(true);
+            expect(toast.level).toBe('error');
             expect(toast.message).toContain('privacy.resistFingerprinting');
         });
     });

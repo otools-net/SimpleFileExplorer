@@ -21,6 +21,7 @@
         </button>
         <span class="brand"><svg sfeIcon="folder"></svg><span translate="no">SFE</span></span>
         <h1 class="admin-title" i18n>Administration</h1>
+        <sfe-notifications class="admin-notifications" />
     </header>
     <div class="admin-layout" [class.section-list]="sectionList()">
         @if (!phone() || sectionList()) {

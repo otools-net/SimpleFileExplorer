@@ -122,6 +122,8 @@ describe('CopyPathService', () => {
         await service.copy('y.jpg');
 
         expect([...service.copied()]).toEqual(['a/x.jpg', 'a']);
-        expect(localStorage.length + sessionStorage.length).toBe(0);
+        // The toasts are kept by the notification centre, not the paths.
+        const kept = Object.keys(localStorage).filter((key) => !key.startsWith('sfe.notifications.'));
+        expect(kept.length + sessionStorage.length).toBe(0);
     });
 });

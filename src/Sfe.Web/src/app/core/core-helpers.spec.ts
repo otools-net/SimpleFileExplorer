@@ -67,7 +67,7 @@ describe('ToastService', () => {
 
         toasts.show('Saved');
         toasts.error('Failed', 1000);
-        expect(toasts.toasts().map((t) => [t.message, t.error])).toEqual([
+        expect(toasts.toasts().map((t) => [t.message, t.level === 'error'])).toEqual([
             ['Saved', false],
             ['Failed', true],
         ]);

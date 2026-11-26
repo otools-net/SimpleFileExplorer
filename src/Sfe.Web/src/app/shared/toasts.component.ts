@@ -8,7 +8,7 @@ import { ToastService } from '../core/toast.service';
     host: { class: 'toasts', role: 'status', popover: 'manual' },
     template: `
         @for (toast of toasts(); track toast.id) {
-            <div class="toast" [class.error]="toast.error">
+            <div class="toast" [class]="toast.level">
                 <span>{{ toast.message }}</span>
                 @for (action of toast.actions; track action.label) {
                     <button

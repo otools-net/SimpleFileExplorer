@@ -335,7 +335,7 @@ export class SubtitlesViewComponent {
         const milliseconds = parseShift(box?.value ?? '');
         if (!editor || !this.session.editing()) return;
         if (milliseconds === null || milliseconds === 0) {
-            this.toasts.show(shiftRefused(), { error: true });
+            this.toasts.show(shiftRefused(), { level: 'error' });
             box?.focus();
             return;
         }

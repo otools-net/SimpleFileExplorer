@@ -1,8 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 
-export type Popover = 'menu';
+export type Popover = 'menu' | 'notifications';
 
-/** The top bar's popovers (the ⋮ menu): one open at a time. */
+/** The top bar's popovers (the ⋮ menu, the notification centre): one open at a time. */
 @Injectable({ providedIn: 'root' })
 export class Popovers {
     readonly open = signal<Popover | null>(null);

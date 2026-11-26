@@ -147,7 +147,7 @@ export class ScanService {
             this.status.set(status);
             if (status.state === 'running') this.later(() => this.poll(), 1000);
             else if (wasRunning && status.state === 'completed')
-                this.toasts.show($localize`Index updated: ${describeScan(status)}:counts:`);
+                this.toasts.success($localize`Index updated: ${describeScan(status)}:counts:`);
         } catch (error) {
             const reason = (error as Error).message;
             if (!quiet) this.toasts.error($localize`Could not read the scan's progress: ${reason}:reason:`);

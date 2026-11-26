@@ -119,7 +119,7 @@ export class DuplicateGroupComponent {
             const trashed = typeof trashId === 'number';
             const text = removedText(file.name, trashed, keepPath, result.kept.tags.length > 0);
             if (trashed)
-                this.toasts.show(text, {
+                this.toasts.success(text, {
                     timeout: 10000,
                     action: this.undos.add({
                         done: text,
@@ -127,7 +127,7 @@ export class DuplicateGroupComponent {
                         run: () => this.undo(file, trashId),
                     }),
                 });
-            else this.toasts.show(text);
+            else this.toasts.success(text);
             this.removed.emit({ file, keepPath, kept: result.kept, dissolved: this.count() < 2 });
         } catch (error) {
             const reason = (error as Error).message;
@@ -147,7 +147,7 @@ export class DuplicateGroupComponent {
             this.toasts.error(notPutBack(file.name, (error as Error).message));
             return;
         }
-        this.toasts.show($localize`“${file.name}:name:” is back.`);
+        this.toasts.success($localize`“${file.name}:name:” is back.`);
         if (this.destroyed || !this.removedPaths().has(file.path)) return;
         const revived = this.count() < 2;
         this.removedPaths.update((paths) => new Set([...paths].filter((path) => path !== file.path)));

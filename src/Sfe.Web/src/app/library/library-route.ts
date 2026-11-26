@@ -82,3 +82,15 @@ export function readRestoreState(state: unknown): RestoreState {
         anchorTop: typeof anchorTop === 'number' ? anchorTop : undefined,
     };
 }
+
+/**
+ * The app's address of a folder (`Router.navigateByUrl`), the library's or a connection's (`c`): an Open kept with a
+ * notification after a reload.
+ */
+export function folderLink(path: string, c: number | null = null): string {
+    const params = new URLSearchParams();
+    if (c) params.set('c', String(c));
+    if (path) params.set('path', path);
+    const query = params.toString();
+    return query ? `/?${query}` : '/';
+}

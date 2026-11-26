@@ -163,7 +163,7 @@ export class TrashSectionComponent implements OnInit {
                 return;
             }
             this.remove(item.id);
-            this.toasts.show(restoredText(item.name, result.path === item.path ? null : result.path));
+            this.toasts.success(restoredText(item.name, result.path === item.path ? null : result.path));
         } catch (error) {
             this.toasts.error(notRestored(item.name, (error as Error).message));
         } finally {

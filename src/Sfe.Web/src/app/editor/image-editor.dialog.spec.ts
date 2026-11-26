@@ -107,7 +107,7 @@ describe('ImageEditorDialog', () => {
         expect(loader).not.toHaveBeenCalled();
         expect(api.editedImageAccess).not.toHaveBeenCalled();
         const toast = TestBed.inject(ToastService).toasts().at(-1)!;
-        expect(toast.error).toBe(true);
+        expect(toast.level).toBe('error');
         expect(toast.message).toContain('privacy.resistFingerprinting');
     });
 
@@ -362,7 +362,7 @@ describe('ImageEditorDialog', () => {
 
         expect(dialog().open).toBe(true);
         expect(TestBed.inject(ToastService).toasts()[0]).toMatchObject({
-            error: true,
+            level: 'error',
             message: 'Could not save the picture: Disk full',
         });
         expect(element.querySelector('.editor-history')!.textContent).toContain('Crop to 1000 × 3000');

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NotificationsComponent } from '../../notifications/notifications.component';
 import { IconComponent } from '../../shared/icon.component';
 import { ListingStore, View, VIEWS } from '../listing.store';
 import { SidebarService } from '../sidebar/sidebar.service';
@@ -18,10 +19,10 @@ const VIEW_BUTTONS: { view: View; icon: string; label: string; title: string }[]
     },
 ];
 
-/** The bar at the top: sidebar toggle, library root, search, layout switch and the ⋮ menu. */
+/** The bar at the top: sidebar toggle, library root, search, layout switch, the notifications and the ⋮ menu. */
 @Component({
     selector: 'header[sfeTopbar]',
-    imports: [IconComponent, RouterLink, SearchBoxComponent, MainMenuComponent],
+    imports: [IconComponent, RouterLink, SearchBoxComponent, NotificationsComponent, MainMenuComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     // A press, not a click: iOS sends no click for a tap on what isn't clickable (the page's text, an empty area).
     host: { class: 'topbar', '(document:pointerdown)': 'closePopovers($event)' },
@@ -55,6 +56,7 @@ const VIEW_BUTTONS: { view: View; icon: string; label: string; title: string }[]
                     </button>
                 }
             </div>
+            <sfe-notifications />
             <sfe-main-menu />
         </div>
     `,

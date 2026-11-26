@@ -194,7 +194,7 @@ export class BatchRenameDialog {
         this.saving.set(false);
         if (done.length) {
             const text = renamedToast(done.length);
-            this.toasts.show(text, {
+            this.toasts.success(text, {
                 timeout: 10000,
                 action: this.undos.add({
                     done: text,

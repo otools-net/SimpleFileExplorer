@@ -264,7 +264,7 @@ export class ImageEditorDialog {
             );
             this.operations.set([]);
             this.close();
-            this.toasts.show(savedCopyToast(saved.path, saved, saved.size), { timeout: 8000 });
+            this.toasts.success(savedCopyToast(saved.path, saved, saved.size), { timeout: 8000 });
         } catch (error) {
             this.toasts.error(notSavedToast((error as Error).message));
         }
@@ -300,7 +300,7 @@ export class ImageEditorDialog {
             });
             this.operations.set([]);
             this.close();
-            this.toasts.show(savedOverToast(item.name, saved, saved.size, access.permanent), { timeout: 8000 });
+            this.toasts.success(savedOverToast(item.name, saved, saved.size, access.permanent), { timeout: 8000 });
         } catch (error) {
             if (error instanceof ApiError && error.status === 412) {
                 if (confirm(changedElsewhereQuestion())) await this.saveOver(true);

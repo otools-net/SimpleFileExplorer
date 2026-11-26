@@ -30,8 +30,21 @@
     animation: toast-in 0.2s ease-out;
 }
 
-.toast.error {
-    border-left-color: var(--danger);
+/* The levels (ToastLevel), also the marks of the notification centre (notifications.css). */
+.toast.success,
+.notification.success {
+    --level: #4caf7d;
+}
+.toast.warning,
+.notification.warning {
+    --level: #e0a800;
+}
+.toast.error,
+.notification.error {
+    --level: var(--danger);
+}
+.toast {
+    border-left-color: var(--level, var(--accent));
 }
 .toast:has(.toast-action) {
     display: flex;

@@ -371,7 +371,7 @@ export class ContextMenu {
             await copyText(href);
             this.toasts.show($localize`Link copied.`);
         } catch {
-            this.toasts.show($localize`Could not copy the link.`, { error: true });
+            this.toasts.show($localize`Could not copy the link.`, { level: 'error' });
         }
     }
 

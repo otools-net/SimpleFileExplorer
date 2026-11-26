@@ -24,6 +24,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   what it would undo: renames, deletes to the trash, moves, removed duplicates, and now also copies into the library and
   new folders and files (they go to the trash, unless they changed since). The tab keeps your last 20 actions; nothing
   is kept across reloads, tabs or devices. A rename made in a connection is undone only while that connection is open.
+- **Notifications**: the messages shown in the corner of the page are kept by a bell at the top right (library and
+  administration pages), newest first, with their buttons: **Open** goes to the folder items went to (also after a
+  reload), **Undo** while the page is open. The bell counts what you haven't seen: warnings, errors and what came while
+  the page was in the background. Each browser keeps its own for each account and space, the last 200 for 30 days.
+  Messages now have a level (done, warning, error) shown by their colour.
 
 - **Uploads checked piece by piece**: each piece of an upload carries its SHA-256 (`Content-Digest: sha-256=:…:`,
   RFC 9530), and the server compares it before keeping the piece (library and connections): a piece damaged on the way

@@ -84,7 +84,7 @@ describe('VersionsDialog', () => {
 
     it('restores a copy next to the file, then lists again', async () => {
         const { fixture, element } = await open();
-        const toast = vi.spyOn(TestBed.inject(ToastService), 'show');
+        const toast = vi.spyOn(TestBed.inject(ToastService), 'success');
         api.restoreVersionCopy.mockResolvedValue(item('Docs/notes (2).txt') satisfies LibraryItem);
 
         buttonNamed(element, 'Restore a copy')!.click();

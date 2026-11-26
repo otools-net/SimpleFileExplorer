@@ -18,6 +18,7 @@ import { UndoHistory } from '../core/undo-history';
 import { isExtractable } from '../formats/formats';
 import { Dialogs } from '../library/dialogs.service';
 import { currentPosition } from '../library/items/listing-position';
+import { folderLink } from '../library/library-route';
 import { ListingStore } from '../library/listing.store';
 import { FileClipboard } from './file-clipboard';
 import { jobPlaces, PlaceTransfers, TransferPlaces } from './place-transfers';
@@ -370,7 +371,7 @@ export class FileTransfers {
         }
         const zip = result.newPath;
         const made = $localize`${quoted(baseName(zip))}:zip: made in ${where}:where:.`;
-        this.toasts.show(`${made} ${result.message ?? ''}`.trim(), {
+        this.toasts.success(`${made} ${result.message ?? ''}`.trim(), {
             timeout: 8000,
             actions: [
                 {
@@ -393,7 +394,7 @@ export class FileTransfers {
             const archive = quoted(baseName(result.path));
             const locked = $localize`Could not extract ${archive}:archive:: it is protected by a password.`;
             this.toasts.show(result.message ?? locked, {
-                error: true,
+                level: 'error',
                 timeout: 12000,
                 actions: [
                     {
@@ -421,11 +422,12 @@ export class FileTransfers {
                           label: $localize`Open`,
                           title: openHint(into),
                           run: () => this.store.navigate({ path: opened }),
+                          link: folderLink(opened, this.store.route().c ?? null),
                       },
                   ]
                 : [];
         const extracted = $localize`${quoted(baseName(result.path))}:archive: extracted to ${into}:where:.`;
-        this.toasts.show(`${extracted} ${result.message ?? ''}`.trim(), { timeout: 8000, actions });
+        this.toasts.success(`${extracted} ${result.message ?? ''}`.trim(), { timeout: 8000, actions });
     }
 
     /** A job followed has ended: the listing shows its result, a toast says it. */
@@ -466,8 +468,9 @@ export class FileTransfers {
                     label: $localize`Open`,
                     title: openHint(where),
                     run: () => this.store.navigate({ path: job.target, c: places.to }),
+                    link: folderLink(job.target, places.to),
                 });
-            this.toasts.show(text, { timeout: 8000, actions });
+            this.toasts.success(text, { timeout: 8000, actions });
         }
         const failed = job.results.filter((result) => result.status !== 'done' && result.status !== 'skipped');
         if (failed.length) this.toasts.error(notDoneToast(job.kind, failed), 8000);

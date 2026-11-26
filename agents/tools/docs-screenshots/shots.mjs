@@ -145,6 +145,38 @@ const scenes = {
         await b.close();
     },
     /**
+     * The notification centre, on a computer and on a phone: a few messages written where the browser keeps them
+     * (`sfe.notifications.<space>.<account>`), as the toasts of a working session would have left them.
+     */
+    async notifications() {
+        const minutes = m => Date.now() - m * 60_000;
+        const kept = [
+            { id: 'd1', message: 'Could not move “Scan 12.pdf”: a file of this name is in use.', level: 'error', at: minutes(1), read: false, links: [] },
+            { id: 'd2', message: '3 items moved to “2024 Beach trip”.', level: 'success', at: minutes(4), read: true, links: [{ label: 'Open', title: 'Open “2024 Beach trip”.', link: '/?path=Photos%2F2024+Beach+trip' }] },
+            { id: 'd3', message: '“Holiday.zip” extracted to “Holiday”.', level: 'success', at: minutes(26), read: true, links: [{ label: 'Open', title: 'Open “Holiday”.', link: '/?path=Documents%2FHoliday' }] },
+            { id: 'd4', message: 'Settings of the whole server saved. Those of this space need fixing.', level: 'warning', at: minutes(95), read: false, links: [] },
+            { id: 'd5', message: 'Index updated: 12 folders scanned · 348 files indexed', level: 'success', at: minutes(60 * 26), read: true, links: [] },
+        ];
+        const seed = `fetch('api/v1/config').then(r => r.json()).then(c => { localStorage.setItem('sfe.notifications.' + (c.tenant?.id ?? 0) + '.' + (c.user?.id ?? 0), ${JSON.stringify(JSON.stringify(kept))}); return 1; })`;
+        const b = await session();
+        await b.open('?path=Photos');
+        await b.eval(seed);
+        await b.open('?path=Photos');
+        await b.clickTitle('Notifications');
+        await sleep(300);
+        const panel = await b.rect('#notifications');
+        await b.shot(OUT + 'notifications.png', { x: panel.x - 8, y: 0, width: panel.width + 16, height: panel.y + panel.height + 8 });
+        await b.close();
+        const phone = await session({ width: 390, height: 844, mobile: true });
+        await phone.open('?path=Photos');
+        await phone.eval(seed);
+        await phone.open('?path=Photos');
+        await phone.clickTitle('Notifications');
+        await sleep(400);
+        await phone.shot(OUT + 'phone-notifications.png');
+        await phone.close();
+    },
+    /**
      * The keep alive indicator of the ⋮ menu: keep alive turned on with a more folder that doesn't exist, so that its
      * ping fails (the yellow !); then turned off again for the other scenes.
      */

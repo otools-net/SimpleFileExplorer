@@ -246,7 +246,7 @@ describe('DuplicatesPanelComponent', () => {
     });
 
     it('puts a copy back from the trash with Undo, bringing its group back', async () => {
-        const show = vi.spyOn(toasts, 'show');
+        const show = vi.spyOn(toasts, 'success');
         await create(results([group(MB, 'a/x.jpg', 'b/x.jpg'), group(2 * MB, 'c', 'd')]));
         api.removeDuplicate.mockResolvedValue({ removed: 'a/x.jpg', kept: fileTags('b/x.jpg'), trashId: 3 });
         api.restoreFromTrash.mockResolvedValue(item('a/x.jpg'));
@@ -268,7 +268,7 @@ describe('DuplicatesPanelComponent', () => {
     });
 
     it('says a copy is deleted for good when the space deletes permanently', async () => {
-        const show = vi.spyOn(toasts, 'show');
+        const show = vi.spyOn(toasts, 'success');
         await create({ ...results([group(MB, 'a/x.jpg', 'b/x.jpg')]), removesPermanently: true });
         api.removeDuplicate.mockResolvedValue({ removed: 'a/x.jpg', kept: fileTags('b/x.jpg'), trashId: null });
 

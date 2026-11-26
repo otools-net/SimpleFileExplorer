@@ -62,6 +62,7 @@ import { SystemSectionComponent } from './system-section.component';
 import { TrashSectionComponent } from '../files/trash-section.component';
 import { UploadsSectionComponent } from '../files/uploads-section.component';
 import { VideoStreamsComponent } from './video-streams.component';
+import { NotificationsComponent } from '../notifications/notifications.component';
 import { ExclusionsSectionComponent } from '../library/scan/exclusions-section.component';
 
 /** History state of the entries of this page opened from the listing page: "back" returns there. */
@@ -131,6 +132,7 @@ export class ChipInViewDirective {
         TrashSectionComponent,
         UploadsSectionComponent,
         ExclusionsSectionComponent,
+        NotificationsComponent,
     ],
     providers: [SettingsForm],
     changeDetection: ChangeDetectionStrategy.OnPush,

@@ -178,7 +178,7 @@ export class NameDialog {
             this.renamed(mode.item.path, result);
             const renamed = result;
             const done = $localize`Renamed to ${quoted(renamed.name)}:name:.`;
-            this.toasts.show(done, {
+            this.toasts.success(done, {
                 timeout: 8000,
                 action: this.undos.add({
                     done,

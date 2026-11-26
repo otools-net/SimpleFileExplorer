@@ -1,0 +1,78 @@
+<button
+    type="button"
+    class="icon-button notifications-button"
+    aria-haspopup="dialog"
+    aria-controls="notifications"
+    [attr.aria-expanded]="isOpen()"
+    [attr.aria-label]="buttonLabel()"
+    [title]="buttonLabel()"
+    (click)="toggle()"
+>
+    <svg sfeIcon="bell"></svg>
+    @if (unread()) {
+        <span class="notifications-count" aria-hidden="true">{{ unread() > 99 ? '99+' : unread() }}</span>
+    }
+</button>
+@if (isOpen()) {
+    <!-- In the top layer: the top bar would hold the fixed sheet of phones. The layer lets the pointer through. -->
+    <div #layer class="notifications-layer" popover="manual">
+    <div class="sheet-backdrop" aria-hidden="true" (click)="close()"></div>
+    <section
+        class="popover notifications-panel phone-sheet"
+        id="notifications"
+        role="dialog"
+        aria-labelledby="notifications-title"
+        [style.--pop-top.px]="place().top"
+        [style.--pop-right.px]="place().right"
+    >
+        <header class="notifications-head">
+            <h2 id="notifications-title" i18n>Notifications</h2>
+            @if (list().length) {
+                <button
+                    type="button"
+                    class="button small ghost"
+                    title="Remove every notification kept by this browser."
+                    i18n-title
+                    (click)="notifications.clear()"
+                    i18n
+                >Clear all</button>
+            }
+        </header>
+        <div class="notifications-list">
+            @for (item of list(); track item.id) {
+                <article class="notification" [class]="item.level" [class.unread]="wasUnread.has(item.id)">
+                    <p class="notification-message">
+                        @if (levelNames[item.level]; as level) {
+                            <span class="visually-hidden">{{ level }}: </span>
+                        }
+                        <span class="notification-text">{{ item.message }}</span>
+                    </p>
+                    <div class="notification-foot">
+                        <time [attr.datetime]="iso(item.at)" [title]="exact(item.at)">{{ ago(item.at) }}</time>
+                        @for (action of usable(item); track action.label) {
+                            <button type="button" class="button small" [title]="action.title" (click)="perform(action)">
+                                {{ action.label }}
+                            </button>
+                        }
+                        <button
+                            type="button"
+                            class="icon-button ghost small notification-remove"
+                            aria-label="Remove"
+                            i18n-aria-label
+                            title="Remove this notification."
+                            i18n-title
+                            (click)="notifications.remove(item.id)"
+                        >
+                            <svg sfeIcon="close"></svg>
+                        </button>
+                    </div>
+                </article>
+            } @empty {
+                <p class="notifications-empty" i18n>
+                    Nothing yet. The messages shown in the corner of the page are kept here for 30 days.
+                </p>
+            }
+        </div>
+    </section>
+    </div>
+}

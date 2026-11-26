@@ -68,7 +68,7 @@ export class AccountSectionComponent {
             this.current.set('');
             this.password.set('');
             this.confirm.set('');
-            this.toasts.show($localize`Password changed.`);
+            this.toasts.success($localize`Password changed.`);
         } catch (error) {
             if (error instanceof ApiError && error.errors)
                 this.passwordErrors.set(

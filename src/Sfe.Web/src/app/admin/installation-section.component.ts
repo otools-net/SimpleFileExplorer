@@ -63,7 +63,7 @@ export class InstallationSectionComponent {
             const saved = await form.save();
             if (saved) {
                 this.restartRequired.set(saved.restartRequired);
-                this.toasts.show($localize`Installation settings saved.`);
+                this.toasts.success($localize`Installation settings saved.`);
             }
         } finally {
             this.busy.set(false);

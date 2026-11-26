@@ -130,7 +130,7 @@ export class PlaceTransfers {
         const taken = items.filter((item) => item.status === 'exists').map((item) => item.path);
         const failed = items.filter((item) => item.status !== 'done' && item.status !== 'exists');
         if (done.length) {
-            this.toasts.show(transferredToast(kind, done.length, where), { timeout: 8000 });
+            this.toasts.success(transferredToast(kind, done.length, where), { timeout: 8000 });
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + done.length });
         }
         if (taken.length) this.askTaken({ kind, paths: taken, target, connection }, where);

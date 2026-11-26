@@ -347,7 +347,9 @@ export class UploadQueue {
         if (done.some((item) => item.name.includes('/')) && shown)
             void this.store.load({ ...currentPosition(), loaded: this.store.items().length + 1 });
         if (done.length)
-            this.toasts.show(uploadedToast(done.length, quoted(baseName(batch.target) || this.config.libraryName())));
+            this.toasts.success(
+                uploadedToast(done.length, quoted(baseName(batch.target) || this.config.libraryName())),
+            );
     }
 
     private fail(item: UploadItem, message: string): void {

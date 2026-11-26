@@ -208,7 +208,7 @@ describe('ScanService', () => {
 
     it('starts the scan and follows it until it completes, then says so', async () => {
         vi.spyOn(window, 'confirm').mockReturnValue(true);
-        const show = vi.spyOn(TestBed.inject(ToastService), 'show');
+        const show = vi.spyOn(TestBed.inject(ToastService), 'success');
         api.startScan.mockResolvedValue(running());
         api.scanStatus.mockResolvedValueOnce(running()).mockResolvedValueOnce(completed);
 

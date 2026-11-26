@@ -166,6 +166,27 @@ test.describe('closing and turning', () => {
     });
 });
 
+// The top bar holds what is fixed inside it: the list is in the top layer so that it can be a sheet (found 2026-11-26).
+test('the notification centre: a sheet against the bottom, closed by the dimmed area', async ({ page }) => {
+    await openFolder(page, 'Photos/2025 Mountains');
+    await page.locator('.notifications-button').tap();
+    const panel = page.locator('#notifications');
+    await expect(panel).toBeVisible();
+    const box = (await panel.boundingBox())!;
+    const viewport = page.viewportSize()!;
+    if (isSheetWidth(page)) {
+        expect(box.x).toBe(0);
+        expect(Math.round(box.width)).toBe(viewport.width);
+        expect(Math.round(box.y + box.height)).toBe(viewport.height);
+        await page.locator('.notifications-layer .sheet-backdrop').tap({ position: { x: 20, y: 20 } });
+    } else {
+        expect(box.y, 'under the top bar').toBeGreaterThan(40);
+        expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+        await page.keyboard.press('Escape');
+    }
+    await expect(panel).toHaveCount(0);
+});
+
 // iOS sends no `contextmenu`: holding an element with a menu opens it all the same (the app's own hold).
 test.describe('holding a finger, as on an iPhone', () => {
     // Another test's scan panel coming in moved the page under the finger: the hold ended (CI).

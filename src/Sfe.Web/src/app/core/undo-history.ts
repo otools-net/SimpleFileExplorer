@@ -56,7 +56,12 @@ export class UndoHistory {
     /** Keeps `entry`, forgetting the oldest past the limit; returns the Undo button of its toast. */
     add(entry: UndoEntry): ToastAction {
         this.entries.update((list) => [...list, entry].slice(-UNDO_LIMIT));
-        return { label: $localize`Undo`, title: entry.hint, run: () => void this.undo(entry) };
+        return {
+            label: $localize`Undo`,
+            title: entry.hint,
+            run: () => void this.undo(entry),
+            gone: () => !this.entries().includes(entry),
+        };
     }
 
     /**
