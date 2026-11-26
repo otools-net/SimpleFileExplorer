@@ -42,6 +42,8 @@ Decided 2026-10-17: a live feed (not a refresh on focus).
   whose caller has `files.delete` or `files.deletePermanently`, at most once per write (emptying the trash fires once
   per entry); no origin filter, so the deleting tab hears it too. Client: `ChangeFeed.trashChanges` (a counter), which
   the sidebar watches to read the count again ([trash.md](trash.md)).
+- And `event: task` (a background task's run that ended: to its starter, failures to `tasks.view`; `?since=` for
+  those missed): [notifications.md](notifications.md#task-runs-that-ended-step-45b).
 - Proxies must not buffer it (`X-Accel-Buffering: no` for nginx); documented in `docs/installation.md`.
 - And `event: writing` (`{ path, items }`): how far the items being written in a library folder are, a few times a
   second at most per folder ([partial-files](partial-files.md)); the client keeps it in `WritingProgress` and

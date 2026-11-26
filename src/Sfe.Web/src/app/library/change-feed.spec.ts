@@ -5,6 +5,7 @@ import { ClientConfig } from '../core/config.models';
 import { ChangeFeed } from './change-feed.service';
 import { ListingStore } from './listing.store';
 import { SidebarService } from './sidebar/sidebar.service';
+import { TaskEnded, TaskNotices } from '../notifications/task-notices';
 
 /** A stand-in for the browser's EventSource that the test opens. */
 class FakeSource extends EventTarget {
@@ -99,6 +100,28 @@ describe('ChangeFeed and changes made outside SFE', () => {
         last().emit('open', FakeSource.OPEN);
 
         expect(named()).toEqual(['Media', 'Media']);
+    });
+
+    it('hands the runs of background tasks that ended to the notifications, and asks for those it missed', async () => {
+        await setUp();
+        const told = vi.spyOn(TestBed.inject(TaskNotices), 'told').mockImplementation(() => {});
+        const ended: TaskEnded = {
+            id: 7,
+            task: 'trashPurge',
+            path: null,
+            outcome: 'completed',
+            summary: null,
+            finished: '2026-11-26T10:00:00Z',
+            mine: true,
+        };
+        last().dispatchEvent(new MessageEvent('task', { data: JSON.stringify(ended) }));
+        expect(told).toHaveBeenCalledWith(ended);
+
+        // Opened again: what ended since the time kept (the first opening's) is asked for.
+        const since = localStorage.getItem('sfe.taskSince.1.1')!;
+        feed.stop();
+        feed.start();
+        expect(last().url).toBe(`api/v1/files/changes?tab=${TAB_ID}&since=${encodeURIComponent(since)}`);
     });
 
     it('refreshes the folder listed when it changed outside SFE, unless the user switched that off', async () => {

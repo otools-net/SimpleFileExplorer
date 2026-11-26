@@ -441,7 +441,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   Add a session undo stack (last 20, this tab only): Ctrl+Z / Cmd+Z undoes the latest, outside text fields; an
   Undo entry in the ⋮ menu; add undo for create folder (to trash) and copy (copies to trash). Refused with a reason
   when the item changed since. No redo, nothing across reloads or devices, no undo of other users' actions.
-- [ ] **4.5 Notification centre** (IDEA-022, M; split in two on 2026-11-26).
+- [x] **4.5 Notification centre** (IDEA-022, M; split in two on 2026-11-26; done 2026-11-26 with 4.5a–b).
   - [x] **4.5a client** (every toast kept, levels, bell). Done 2026-11-26: `Notifications` (`core/`) records every
     toast of `ToastService` in localStorage per space and account (200, 30 days; other tabs through `storage`);
     `ToastLevel` info / success / warning / error replaces the `error` flag (`toasts.success` on actions done);
@@ -451,9 +451,17 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     [notifications](../features/notifications.md); screenshots `notifications.png`, `phone-notifications.png` (scene
     `notifications`). Readability baselines raised by the added lines: `admin-page.component.ts` 530 → 532, its
     `.html` 501 → 502, `file-transfers.ts` 493 → 496, `uploads.ts` 458 → 460.
-  - [ ] **4.5b server events** through the change feed: a task finished or failed while away, for the user who
-    started it; administrators also get failed background tasks. Each a notification with a deep link to its run in
-    the task history (new: a link opening one run); a link to an upload (admin uploads) where it helps.
+  - [x] **4.5b server events** through the change feed. Done 2026-11-26: who started a run is kept in memory only
+    (`TaskStarter`, an `AsyncLocal` set by `TenantMiddleware`, read by `TaskHistory.Begin` for manual runs: no
+    column, no migration); `TaskEndings` (per library) tells each ended run and keeps the last 50; the feed's
+    `task` event goes to the starter and, for failures, to `tasks.view`; `?since=` sends those missed while the
+    feed was closed; transfers not told (their own toasts). Client `TaskNotices` (latest `finished` per space and
+    account, drops what isn't later), **Open** → `admin?section=tasks&page=history&run=<id>`. Uploads: no server
+    event (the uploading tab already tells them; left out). OpenAPI baseline and Sfe.Client regenerated (`since`).
+    Note [notifications](../features/notifications.md#task-runs-that-ended-step-45b).
+    Was: a task finished or failed while away, for the user who started it; administrators also get failed
+    background tasks. Each a notification with a deep link to its run in the task history (new: a link opening one
+    run); a link to an upload (admin uploads) where it helps.
 - [ ] **4.6 What I may do here: read-only or writable shown** (owner's request 2026-11-23, M; after 2.9). Show, for
   a folder and for a file, whether the user can only read it or can also change it, and **why**, from both sides:
   **SFE** (the space's rights, `Sfe:Rights:Disabled` and the space's **Files read-only** switch, folder rules;
@@ -562,10 +570,11 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-26):** **4.5a** (notification centre, client) done. Next: **4.5b** (server events): check
-  whether `TaskRuns` says who started a run before adding a column (migration on both providers); the feed's events
-  go through `ChangeFeedQueue`; the client keeps them with `Notifications.record` (no toast needed when the page is
-  hidden). Step 4.6 (read-only or writable shown) was added by the owner on 2026-11-23.
+- **Last session (2026-11-26):** **4.5a** and **4.5b** (notification centre) done, so 4.5 is ticked. Next: **4.6**
+  (read-only or writable shown, added by the owner on 2026-11-23; possibly split a library / b connections first).
+- `TaskHistory.cs` is at 400 lines (the limit) after 4.5b, `Program.cs` at 399: move something out before adding.
+- A change to an endpoint's OpenAPI description (even re-wrapping a line of it) changes `tests/samples/openapi/v1.json`:
+  write the baseline again and run `node agents/tools/client-generation/generate.mjs` in the same commit.
 - A spec spying on `ToastService.show` for a message now shown with `toasts.success` / `warning` sees a second
   argument (`{ level }`): spy on `success` / `warning` instead.
 - `file-transfers.ts` is over its 400-line limit (493): move the end-of-job toasts (`compressed`, `extracted`) out

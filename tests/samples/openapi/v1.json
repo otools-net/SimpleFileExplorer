@@ -3097,8 +3097,8 @@
         "tags": [
           "Files"
         ],
-        "summary": "Server-sent events: `changed` with `{ path, origin }` (and `connection` for a connection's) each time a folder is changed through SFE; `keepAlive` with `{ state }`; `trash`; `writing` with `{ path, items }`; `ping`.",
-        "description": "Open with `EventSource`; `origin` is the `X-SFE-Tab` header of the request that changed it (a tab\nskips its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or\nnothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete or\nfiles.deletePermanently) when something came into or left the trash: ask its count again. `writing` with\n`{ path, items: [{ name, finalName, bytesDone, bytesTotal }] }` when items being written in a folder the\ncaller sees moved on, started or ended (at most every 300 ms\nper folder, and every 3 s while some are; `name` ends with\n`.sfe-partial`, `bytesTotal` 0 when unknown, `items` empty once the last one ended). `changed` with\n`outside` true: a folder changed outside SFE (another program), told only for folders some tab watches\n(`PUT files/changes/watch`, naming the feed's `tab`). A `ping` event after\n25 s without anything keeps it open; it ends after\n10 minutes and the browser opens it again. 12 at once per\ncaller (429).",
+        "summary": "Server-sent events: `changed` with `{ path, origin }` (and `connection` for a connection's) each time a folder is changed through SFE; `keepAlive` with `{ state }`; `trash`; `writing` with `{ path, items }`; `task`; `ping`.",
+        "description": "Open with `EventSource`; `origin` is the `X-SFE-Tab` header of the request that changed it (a tab\nskips its own). `keepAlive` comes first, then each time keep alive's state changes: `none` (off, or\nnothing pinged), `ok`, `failing`; no folder nor error is named. `trash` (to callers with files.delete or\nfiles.deletePermanently) when something came into or left the trash: ask its count again. `writing` with\n`{ path, items: [{ name, finalName, bytesDone, bytesTotal }] }` when items being written in a folder the\ncaller sees moved on, started or ended (at most every 300 ms\nper folder, and every 3 s while some are; `name` ends with\n`.sfe-partial`, `bytesTotal` 0 when unknown, `items` empty once the last one ended). `changed` with\n`outside` true: a folder changed outside SFE (another program), told only for folders some tab watches\n(`PUT files/changes/watch`, naming the feed's `tab`). `task` with `{ id, task, path, outcome, summary,\nfinished, mine }` when a background task's run ended: to the account that started it (`mine`), and failed\nruns to callers with tasks.view; transfers are not told. `since` (the latest `finished` seen) also sends\nthose that ended since then, among the last 50 the server keeps in memory. A `ping` event\nafter 25 s without anything keeps it open; it ends after\n10 minutes and the browser opens it again. 12 at once per\ncaller (429).",
         "operationId": "FolderChanges",
         "parameters": [
           {
@@ -3106,6 +3106,14 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],

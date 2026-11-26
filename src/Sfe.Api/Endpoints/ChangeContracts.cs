@@ -1,5 +1,6 @@
 using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.KeepAlive;
+using Otools.Net.Sfe.Core.Tasks;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
 
@@ -30,6 +31,25 @@ internal sealed record WritingSignal(string Path);
 
 /// <param name="State">How keep alive goes in the space: `none` (off, or nothing pinged), `ok`, `failing`.</param>
 public sealed record KeepAliveSignal(KeepAliveState State);
+
+/// <param name="Id">The run, in the task history (`GET tasks/runs/{id}`); negative when it couldn't be written there.
+/// </param>
+/// <param name="Task">The task that ran.</param>
+/// <param name="Path">A scan's folder (root-relative), a connection sync's connection; null for the others.</param>
+/// <param name="Outcome">How it ended: `completed`, `cancelled` or `failed`.</param>
+/// <param name="Summary">What it did, or why it failed.</param>
+/// <param name="Finished">When it ended (the server's clock): pass the latest as `since` when opening the feed again.
+/// </param>
+/// <param name="Mine">The caller started it; false: a failure told to those who see the tasks.</param>
+public sealed record TaskEnded(
+    long Id,
+    BackgroundTaskKind Task,
+    string? Path,
+    TaskOutcome Outcome,
+    string? Summary,
+    DateTimeOffset? Finished,
+    bool Mine
+);
 
 /// <summary>Something came into or left the trash.</summary>
 public sealed record TrashSignal;

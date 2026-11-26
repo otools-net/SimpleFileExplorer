@@ -1,4 +1,5 @@
 using Otools.Net.Sfe.Api.Security;
+using Otools.Net.Sfe.Core.Tasks;
 
 namespace Otools.Net.Sfe.Api.Tenancy;
 
@@ -22,6 +23,8 @@ public sealed class TenantMiddleware(RequestDelegate next)
         }
 
         var state = await current.GetAsync();
+        // A task started by this request remembers who to tell when it ends.
+        TaskStarter.Current = state.User?.Id;
         if (
             context.Request.Headers.TryGetValue(Header, out var shown)
             && int.TryParse(shown, out var shownId)

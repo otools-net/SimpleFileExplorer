@@ -8,13 +8,15 @@ using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.KeepAlive;
 using Otools.Net.Sfe.Core.Library.Watching;
 using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Tasks;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// What one change feed listens to while it is open: folders changed in the library and in connections, keep alive's
 /// state, the trash (for callers who may open it), the progress of items being written, changes made outside SFE (in
-/// the folder its tab shows, <see cref="Watch"/> or <see cref="WatchAsync"/>, and those others watch). The events are
+/// the folder its tab shows, <see cref="Watch"/> or <see cref="WatchAsync"/>, and those others watch), the runs of
+/// background tasks that ended (<see cref="TellEndedSince"/> for those it missed). The events are
 /// only queued by the request (or job, or keep alive's loop) that raised them; the feed's own loop takes them as the
 /// text of server-sent events, keeping those the caller may see. Disposing it stops listening.
 /// </summary>
@@ -32,7 +34,8 @@ internal sealed class ChangeFeedQueue : IDisposable
     private IDisposable? _watch;
     private bool _closed;
 
-    // Holds a FolderChange, a ConnectionFolderChange, a KeepAliveSignal, a TrashSignal or a WritingSignal.
+    // Holds a FolderChange, a ConnectionFolderChange, a KeepAliveSignal, a TrashSignal, a WritingSignal or a
+    // TaskEnding.
     private readonly Channel<object> _changes = Channel.CreateBounded<object>(
         new BoundedChannelOptions(256) { FullMode = BoundedChannelFullMode.DropOldest, SingleReader = true }
     );
@@ -46,6 +49,7 @@ internal sealed class ChangeFeedQueue : IDisposable
         _connections = new ConnectionFeed(connections, state, _changes.Writer, services.Accessor);
         services.KeepAlive.StateChanged += OnKeepAlive;
         services.Writing.FolderProgressed += OnWriting;
+        services.TaskEndings.Ended += OnTaskEnded;
         // The trash's count is for those who may open it.
         if (state.Access.Rights.Contains(Rights.DeleteFiles) || state.Access.Rights.Contains(Rights.DeletePermanently))
             services.Trash.EntriesChanged += OnTrash;
@@ -99,6 +103,19 @@ internal sealed class ChangeFeedQueue : IDisposable
         return true;
     }
 
+    /// <summary>
+    /// Queues the runs that ended after <paramref name="since"/> (those the server still keeps), for a page that comes
+    /// back: what ended while its feed was closed. Nothing without a time.
+    /// </summary>
+    public void TellEndedSince(DateTimeOffset? since)
+    {
+        if (since is { } time)
+        {
+            foreach (var ending in _services.TaskEndings.Since(time))
+                _changes.Writer.TryWrite(ending);
+        }
+    }
+
     /// <summary>The `keepAlive` event with keep alive's state now (a feed's first event).</summary>
     public string KeepAliveNow => KeepAliveEvent(new KeepAliveSignal(_services.KeepAlive.State));
 
@@ -136,6 +153,7 @@ internal sealed class ChangeFeedQueue : IDisposable
         }
         _services.KeepAlive.StateChanged -= OnKeepAlive;
         _services.Writing.FolderProgressed -= OnWriting;
+        _services.TaskEndings.Ended -= OnTaskEnded;
         _services.Trash.EntriesChanged -= OnTrash;
         _connections.Dispose();
     }
@@ -166,6 +184,8 @@ internal sealed class ChangeFeedQueue : IDisposable
     {
         if (item is KeepAliveSignal signal)
             return KeepAliveEvent(signal);
+        if (item is TaskEnding ending)
+            return TaskEvent(ending);
         if (item is FolderChange change)
         {
             return _state.Check(_services.Paths, change.Path, Rights.Browse) == PathVerdict.Allowed
@@ -211,6 +231,23 @@ internal sealed class ChangeFeedQueue : IDisposable
         _changes.Writer.TryWrite(new KeepAliveSignal(keepAliveState));
 
     private void OnTrash() => _changes.Writer.TryWrite(new TrashSignal());
+
+    private void OnTaskEnded(TaskEnding ending) => _changes.Writer.TryWrite(ending);
+
+    /// <summary>
+    /// `task`: a run that ended, to the account that started it, and a failed one to those who see the tasks; null
+    /// for others, and for transfers (their job's own messages tell them).
+    /// </summary>
+    private string? TaskEvent(TaskEnding ending)
+    {
+        var run = ending.Run;
+        var mine = ending.StartedBy is { } account && account == _state.User?.Id;
+        var failed = run.Outcome == TaskOutcome.Failed && _state.Has(Rights.ViewTasks);
+        if (run.Task == BackgroundTaskKind.Transfer || !(mine || failed))
+            return null;
+        var told = new TaskEnded(run.Id, run.Task, run.Path, run.Outcome, run.Summary, run.Finished, mine);
+        return $"event: task\ndata: {JsonSerializer.Serialize(told, Json)}\n\n";
+    }
 
     /// <summary>`changed`, with a library folder (`path`, `origin`) or a connection's (and its `connection`).</summary>
     private static string ChangedEvent(object change) =>

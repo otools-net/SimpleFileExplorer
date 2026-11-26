@@ -205,6 +205,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<RelinkService>();
         services.AddSingleton<SettingsService>();
         services.AddSingleton<DatabaseInitializer>();
+        services.AddSingleton<TaskEndings>();
         services.AddSingleton<TaskHistory>();
         services.AddSingleton<BackgroundTasks>();
         services.AddSingleton<TaskScheduleService>();

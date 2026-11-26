@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { ApiError } from '../core/api.service';
 import { TaskInfo, TaskRunSummary } from '../core/task.models';
 import { TaskOverview, TaskRunDetails, TaskSchedule } from './task.models';
@@ -7,14 +8,7 @@ import { ApiMock, loadConfig, mockApi, settle, testProviders } from '../../testi
 import { ScheduleFormComponent } from './schedule-form.component';
 import { TaskHistoryComponent } from './task-history.component';
 import { TasksSectionComponent } from './tasks-section.component';
-import {
-    ALL_DAYS,
-    describeSchedule,
-    formatInterval,
-    fromLocalInputs,
-    nextRunOf,
-    toLocalInputs,
-} from './tasks';
+import { ALL_DAYS, describeSchedule, formatInterval, fromLocalInputs, nextRunOf, toLocalInputs } from './tasks';
 
 let api: ApiMock;
 
@@ -227,6 +221,14 @@ describe('TasksSectionComponent', () => {
 
         expect(selected).toEqual(['schedules', 'history']);
         expect(element.querySelector('sfe-schedule-form')).not.toBeNull();
+        expect(api.taskRun).toHaveBeenCalledWith(7);
+    });
+
+    it("opens the history on the run the address names (a notification's link)", async () => {
+        api.taskRun.mockResolvedValue({ ...run(), log: [], omitted: 0 });
+        await TestBed.inject(Router).navigateByUrl('/?run=7');
+        await create(overview(), 'history');
+
         expect(api.taskRun).toHaveBeenCalledWith(7);
     });
 

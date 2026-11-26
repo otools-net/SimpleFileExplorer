@@ -54,6 +54,9 @@ how it ended (completed, cancelled, failed, interrupted by a server stop, skippe
 - The list can be filtered by task.
 - Click a run for its log, live while it runs (the first and last 1,000 lines of a long one are kept).
 - **Clear history** deletes the finished runs.
+- Whoever started a run by hand is told when it ends, and those with `tasks.view` when a run fails, in the
+  [notifications](../user-guide/browsing.md#notifications); their **Open** button leads here, on that run
+  (`admin?section=tasks&page=history&run=<id>`).
 
 ## Settings
 

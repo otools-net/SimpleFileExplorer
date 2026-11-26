@@ -6,6 +6,7 @@ using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Connections;
 using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Tasks;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
 
@@ -54,8 +55,11 @@ public static class ChangeEndpoints
         per folder, and every {{ItemsBeingWritten.Heartbeat.TotalSeconds:N0}} s while some are; `name` ends with
         `.sfe-partial`, `bytesTotal` 0 when unknown, `items` empty once the last one ended). `changed` with
         `outside` true: a folder changed outside SFE (another program), told only for folders some tab watches
-        (`PUT files/changes/watch`, naming the feed's `tab`). A `ping` event after
-        {{KeepAlive.TotalSeconds:N0}} s without anything keeps it open; it ends after
+        (`PUT files/changes/watch`, naming the feed's `tab`). `task` with `{ id, task, path, outcome, summary,
+        finished, mine }` when a background task's run ended: to the account that started it (`mine`), and failed
+        runs to callers with tasks.view; transfers are not told. `since` (the latest `finished` seen) also sends
+        those that ended since then, among the last {{TaskEndings.Kept}} the server keeps in memory. A `ping` event
+        after {{KeepAlive.TotalSeconds:N0}} s without anything keeps it open; it ends after
         {{Lifetime.TotalMinutes:N0}} minutes and the browser opens it again. {{MaxStreamsPerCaller}} at once per
         caller (429).
         """;
@@ -78,7 +82,7 @@ public static class ChangeEndpoints
             .WithSummary(
                 "Server-sent events: `changed` with `{ path, origin }` (and `connection` for a connection's) each "
                     + "time a folder is changed through SFE; "
-                    + "`keepAlive` with `{ state }`; `trash`; `writing` with `{ path, items }`; `ping`."
+                    + "`keepAlive` with `{ state }`; `trash`; `writing` with `{ path, items }`; `task`; `ping`."
             )
             .WithDescription(FolderChangesDescription);
 
@@ -96,7 +100,8 @@ public static class ChangeEndpoints
         HttpContext context,
         [AsParameters] ChangeFeedServices services,
         [AsParameters] ChangeFeedConnections connections,
-        string? tab = null
+        string? tab = null,
+        DateTimeOffset? since = null
     )
     {
         var state = await services.Current.GetAsync();
@@ -113,6 +118,7 @@ public static class ChangeEndpoints
         }
 
         using var queue = new ChangeFeedQueue(services, connections, state);
+        queue.TellEndedSince(since);
         var named = ChangeFeedTabs.IsValid(tab);
         if (named)
             ChangeFeedTabs.Add(caller, tab!, queue);

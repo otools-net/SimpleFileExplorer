@@ -1810,6 +1810,7 @@
         <note category="location">src/app/formats/pdf/pdf-view.component.html:188,191</note>
         <note category="location">src/app/library/folder-menu.ts:156</note>
         <note category="location">src/app/menus/context-menu.ts:305</note>
+        <note category="location">src/app/notifications/task-notices.ts:63</note>
       </notes>
       <segment>
         <source>Open</source>
@@ -6282,7 +6283,7 @@ Space “Holiday photos”
         <note category="location">src/app/connections/connections-section.component.html:61,63</note>
         <note category="location">src/app/connections/connections-section.component.html:123,124</note>
         <note category="location">src/app/settings/tabs/system-settings.ts:109</note>
-        <note category="location">src/app/tasks/tasks-section.component.ts:49</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:51</note>
         <note category="location">src/app/tasks/tasks.ts:203</note>
         <note category="description">the connection is turned off</note>
       </notes>
@@ -13123,7 +13124,7 @@ Space “Holiday photos”
     <unit id="810888510148304696">
       <notes>
         <note category="location">src/app/formats/pdf/pdf-texts.ts:31</note>
-        <note category="location">src/app/tasks/tasks-section.component.ts:168</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:174</note>
         <note category="location">src/app/tasks/tasks.ts:68</note>
         <note category="description">zoom that suits the window</note>
       </notes>
@@ -16683,7 +16684,7 @@ The search index is updated in the background. This can take a while on large fo
     <unit id="462513164087289212">
       <notes>
         <note category="location">src/app/library/scan/scan.service.ts:130</note>
-        <note category="location">src/app/tasks/tasks-section.component.ts:54</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:56</note>
       </notes>
       <segment>
         <source>Cancel the scan? Folders already scanned stay indexed.</source>
@@ -19293,6 +19294,41 @@ The search index is updated in the background. This can take a while on large fo
       </notes>
       <segment>
         <source>Notifications: the messages of the last 30 days</source>
+      </segment>
+    </unit>
+    <unit id="8972313205598567583">
+      <notes>
+        <note category="location">src/app/notifications/task-notices.ts:64</note>
+      </notes>
+      <segment>
+        <source>Open this run and its log in the task history</source>
+      </segment>
+    </unit>
+    <unit id="3054907270921267113">
+      <notes>
+        <note category="location">src/app/notifications/task-notices.ts:83,86</note>
+        <note category="description">a background task ended</note>
+      </notes>
+      <segment>
+        <source>{kind, select, library {The index scan of the whole library is done.} scan {The index scan of “<ph id="0" equiv="path"/>” is done.} trickplay {Trickplay is up to date.} similarVideos {The search for similar videos is done.} trashPurge {The trash purge is done.} connectionIndex {The index of “<ph id="1" equiv="path"/>” is up to date.} other {A background task is done.}}</source>
+      </segment>
+    </unit>
+    <unit id="5001878744638212643">
+      <notes>
+        <note category="location">src/app/notifications/task-notices.ts:91,94</note>
+        <note category="description">a background task ended</note>
+      </notes>
+      <segment>
+        <source>{kind, select, library {The index scan of the whole library was cancelled.} scan {The index scan of “<ph id="0" equiv="path"/>” was cancelled.} trickplay {Making trickplay was cancelled.} similarVideos {The search for similar videos was cancelled.} trashPurge {The trash purge was cancelled.} connectionIndex {Bringing the index of “<ph id="1" equiv="path"/>” up to date was cancelled.} other {A background task was cancelled.}}</source>
+      </segment>
+    </unit>
+    <unit id="1679204218254718733">
+      <notes>
+        <note category="location">src/app/notifications/task-notices.ts:99,102</note>
+        <note category="description">a background task ended</note>
+      </notes>
+      <segment>
+        <source>{kind, select, library {The index scan of the whole library failed.} scan {The index scan of “<ph id="0" equiv="path"/>” failed.} trickplay {Making trickplay failed.} similarVideos {The search for similar videos failed.} trashPurge {The trash purge failed.} connectionIndex {The index of “<ph id="1" equiv="path"/>” could not be brought up to date.} other {A background task failed.}}</source>
       </segment>
     </unit>
     <unit id="5456004118682026312">
@@ -24289,7 +24325,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2616424795873364335">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:47</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:49</note>
         <note category="description">state of a background task</note>
       </notes>
       <segment>
@@ -24298,7 +24334,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2956098160626271284">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:48</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:50</note>
         <note category="location">src/app/tasks/tasks.ts:47</note>
         <note category="description">state of a background task</note>
       </notes>
@@ -24308,7 +24344,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5643561794785412000">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:50</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:52</note>
         <note category="description">state of a background task</note>
       </notes>
       <segment>
@@ -24317,7 +24353,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7564899460580617656">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:55</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:57</note>
       </notes>
       <segment>
         <source>Stop making trickplay? The videos waiting are left until the next check.</source>
@@ -24325,7 +24361,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5867622289725510899">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:96</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:100</note>
       </notes>
       <segment>
         <source>Turn this schedule off (it is kept but doesn&apos;t run)</source>
@@ -24333,7 +24369,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="672436372581754947">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:97</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:101</note>
       </notes>
       <segment>
         <source>Turn this schedule on</source>
@@ -24341,7 +24377,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1398169185453364354">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:136</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:140</note>
       </notes>
       <segment>
         <source>Running: <ph id="0" equiv="tasks" disp="list"/></source>
@@ -24349,7 +24385,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2595957878214203134">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:136</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:140</note>
       </notes>
       <segment>
         <source>Nothing running</source>
@@ -24357,7 +24393,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7063470657634861343">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:137</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:141</note>
       </notes>
       <segment>
         <source>Nothing planned</source>
@@ -24365,7 +24401,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6794930372954320506">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:170</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:176</note>
       </notes>
       <segment>
         <source>Automatic check, <ph id="0" equiv="interval" disp="every"/> (Trickplay › Settings)</source>
@@ -24373,7 +24409,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2831458545845469260">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:175</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:181</note>
       </notes>
       <segment>
         <source>From the schedule “<ph id="0" equiv="schedule" disp="when"/>”, scanning <ph id="1" equiv="folder" disp="where"/></source>
@@ -24381,7 +24417,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3028779631797518494">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:176</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:182</note>
       </notes>
       <segment>
         <source>From the schedule “<ph id="0" equiv="schedule" disp="when"/>”</source>
@@ -24389,7 +24425,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7774249371380200834">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:186</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:192</note>
       </notes>
       <segment>
         <source>It is already running.</source>
@@ -24397,7 +24433,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5199695120219177398">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:187</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:193</note>
       </notes>
       <segment>
         <source>It is turned off, or ffmpeg is missing.</source>
@@ -24405,7 +24441,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1528266021531355615">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:189</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:195</note>
       </notes>
       <segment>
         <source>Scan the folder browsed last and its sub-folders (asks first)</source>
@@ -24413,7 +24449,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3303205619454851715">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:190</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:196</note>
       </notes>
       <segment>
         <source>Start the task “<ph id="0" equiv="task" disp="TASK_NAMES[task.task]"/>” now</source>
@@ -24421,7 +24457,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6753390850377143273">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:196</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:202</note>
       </notes>
       <segment>
         <source>Stop the task “<ph id="0" equiv="task" disp="name"/>” (asks first)</source>
@@ -24429,7 +24465,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7991231813592400304">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:197</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:203</note>
       </notes>
       <segment>
         <source>Stop the task “<ph id="0" equiv="task" disp="name"/>”</source>
@@ -24437,7 +24473,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="14377876625881960">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:201</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:207</note>
       </notes>
       <segment>
         <source>Plan runs of the task “<ph id="0" equiv="task" disp="TASK_NAMES[task.task]"/>” at set times</source>
@@ -24445,7 +24481,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7423053306716420120">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:218</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:224</note>
       </notes>
       <segment>
         <source>Could not start the task “<ph id="0" equiv="task" disp="name"/>”: it is turned off, or ffmpeg is missing.</source>
@@ -24453,7 +24489,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4306935204840033197">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:223</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:229</note>
       </notes>
       <segment>
         <source>A new check starts when the one running has finished.</source>
@@ -24461,7 +24497,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2127900760887756297">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:224</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:230</note>
       </notes>
       <segment>
         <source>The task “<ph id="0" equiv="task" disp="name"/>” is already running.</source>
@@ -24469,7 +24505,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2424936927016600587">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:227</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:233</note>
       </notes>
       <segment>
         <source>Could not start the task “<ph id="0" equiv="task" disp="name"/>”: <ph id="1" equiv="reason" disp="error as Error).message"/></source>
@@ -24477,7 +24513,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1378128956005362817">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:242</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:248</note>
       </notes>
       <segment>
         <source>Could not stop the task “<ph id="0" equiv="task" disp="name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -24485,7 +24521,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3759944717858588835">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:268</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:274</note>
       </notes>
       <segment>
         <source>Schedule of “<ph id="0" equiv="task" disp="name"/>” saved. Next run <ph id="1" equiv="when" disp="formatMoment(schedule.nextRun)"/>.</source>
@@ -24493,7 +24529,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8259699453380869843">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:269</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:275</note>
       </notes>
       <segment>
         <source>Schedule of “<ph id="0" equiv="task" disp="name"/>” saved.</source>
@@ -24501,7 +24537,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8553251465285979961">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:278</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:284</note>
       </notes>
       <segment>
         <source>Could not change the schedule: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -24509,7 +24545,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5083440820638919590">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:287,288</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:293,294</note>
       </notes>
       <segment>
         <source>Delete the schedule “<ph id="0" equiv="task" disp="name"/>: <ph id="1" equiv="when" disp="when"/>”? Its past runs stay in the history. This cannot be undone.</source>
@@ -24517,7 +24553,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="9110281020758733844">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:296</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:302</note>
       </notes>
       <segment>
         <source>Could not delete the schedule: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -24525,7 +24561,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8978792193885106752">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:326</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:332</note>
       </notes>
       <segment>
         <source>Next: <ph id="0" equiv="task" disp="name"/>, <ph id="1" equiv="moment" disp="when"/></source>
@@ -24533,7 +24569,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4089869072298847927">
       <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:327</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:333</note>
       </notes>
       <segment>
         <source>Next: <ph id="0" equiv="task" disp="name"/> of <ph id="1" equiv="folder" disp="target(&apos;scan&apos;, next.schedule.path)"/>, <ph id="2" equiv="moment" disp="when"/></source>

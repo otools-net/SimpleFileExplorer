@@ -11,6 +11,8 @@ import {
     untracked,
     viewChild,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import { Api } from '../core/api.service';
 import { formatDate, formatElapsed, joinParts } from '../core/format';
 import { textLocale } from '../core/i18n/icu';
@@ -80,6 +82,8 @@ export class TasksSectionComponent {
     private readonly store = inject(ListingStore);
     private readonly scan = inject(ScanService);
     private readonly history = viewChild.required(TaskHistoryComponent);
+    /** `run=` of the address: the run the history opens on (a notification's link). */
+    private readonly linkedRun = toSignal(inject(ActivatedRoute).queryParamMap, { requireSync: true });
 
     protected readonly names = TASK_NAMES;
     protected readonly purposes = TASK_PURPOSES;
@@ -153,9 +157,11 @@ export class TasksSectionComponent {
     constructor() {
         void this.refresh();
         inject(DestroyRef).onDestroy(visibleInterval(() => void this.refresh(), REFRESH_MS));
-        // The runs are read when their tab is shown, then with each refresh.
+        // The runs are read when their tab is shown, then with each refresh; a linked run is opened.
         effect(() => {
-            if (this.tab() === 'history') untracked(() => void this.history().refresh());
+            if (this.tab() !== 'history') return;
+            const run = Number(this.linkedRun().get('run'));
+            untracked(() => void (run > 0 ? this.history().show(run) : this.history().refresh()));
         });
     }
 
@@ -304,7 +310,7 @@ Its past runs stay in the history. This cannot be undone.`,
 
     protected showRun(run: TaskRunSummary): void {
         this.selectTab.emit('history');
-        void this.history().show(run);
+        void this.history().show(run.id);
     }
 
     private async refresh(): Promise<void> {

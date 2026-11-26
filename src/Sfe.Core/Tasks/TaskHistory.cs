@@ -17,6 +17,7 @@ namespace Otools.Net.Sfe.Core.Tasks;
 public sealed class TaskHistory(
     IDbContextFactory<SfeDbContext> dbFactory,
     IOptionsMonitor<SfeOptions> options,
+    TaskEndings endings,
     ILogger<TaskHistory> logger
 )
 {
@@ -47,7 +48,8 @@ public sealed class TaskHistory(
                 Outcome = TaskOutcome.Running,
             }
         );
-        var run = new Run(this, id, task, path, trigger, scheduleId, started);
+        var startedBy = trigger == TaskTrigger.Manual ? TaskStarter.Current : null;
+        var run = new Run(this, id, task, path, trigger, scheduleId, started) { StartedBy = startedBy };
         _active[id] = run;
         _last[task] = run.Summary(TaskOutcome.Running, null, null);
         TaskLogProvider.Current = run.Log;
@@ -313,8 +315,9 @@ public sealed class TaskHistory(
             }
         }
 
-        _last[run.Task] = run.Summary(outcome, summary, finished);
+        var ended = _last[run.Task] = run.Summary(outcome, summary, finished);
         _active.TryRemove(run.Id, out _);
+        endings.Add(new TaskEnding(ended, run.StartedBy));
         await PurgeAsync();
     }
 
@@ -358,6 +361,9 @@ public sealed class TaskHistory(
         public TaskTrigger Trigger { get; }
         public int? ScheduleId { get; }
         public DateTime Started { get; }
+
+        /// <summary>The account that started it by hand (<see cref="TaskStarter"/>); null otherwise.</summary>
+        public int? StartedBy { get; init; }
         public TaskRunLog Log { get; } = new();
 
         /// <summary>Ends the run (once) and stops collecting the flow's log entries.</summary>

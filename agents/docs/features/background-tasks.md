@@ -15,6 +15,10 @@ wording). Schedules: [schedules.md](schedules.md).
 - `Transfer` runs (one per transfer job, [connections](connections.md)) are only in the history: `BackgroundTasks.
   IsListed` keeps them out of the list, start and cancel routes (404), `CanSchedule` out of schedules.
 - A new job: give it a trigger + `Begin`/`CompleteAsync` and a case in `BackgroundTasks`.
+- A run begun with `TaskTrigger.Manual` keeps who started it (in memory, `TaskStarter`); its end goes to
+  `TaskEndings`, told by the change feed as a notification
+  ([notifications.md](notifications.md#task-runs-that-ended-step-45b)). The history opens on one run with
+  `admin?section=tasks&page=history&run=<id>` (`TaskHistoryComponent.show(id)`).
 - Bodyless start routes take inputs from the query (`POST api/tasks/{task}/start?path=`,
   [api-routes.md](../development/api-routes.md)).
 - `ConnectionIndex` (2026-11-15): one run per connection synced (`ConnectionIndexes`, `ConnectionIndexJob`); Path =

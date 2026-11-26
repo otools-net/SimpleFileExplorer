@@ -29,6 +29,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   reload), **Undo** while the page is open. The bell counts what you haven't seen: warnings, errors and what came while
   the page was in the background. Each browser keeps its own for each account and space, the last 200 for 30 days.
   Messages now have a level (done, warning, error) shown by their colour.
+- **Background tasks in the notifications**: a scan, trickplay check, similar-video search, trash purge or connection
+  index you started by hand tells you when it ends (done, cancelled or failed), also when it ended while the library
+  page was closed or in the background; those who may see the background tasks are also told of every failed run.
+  **Open** shows the run with its log in Administration › Background tasks › History (which now opens on a run from
+  its address, `run=`). API: the change feed's `task` event, and `since` on `GET api/files/changes` for the runs
+  that ended meanwhile (the server keeps the last 50 in memory).
 
 - **Uploads checked piece by piece**: each piece of an upload carries its SHA-256 (`Content-Digest: sha-256=:…:`,
   RFC 9530), and the server compares it before keeping the piece (library and connections): a piece damaged on the way

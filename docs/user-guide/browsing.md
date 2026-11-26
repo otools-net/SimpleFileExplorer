@@ -173,6 +173,10 @@ newest first, which also marks them as seen (they stay highlighted until the lis
 
 - **Open** (after a move, a copy, an extraction) goes to the folder the items went to, even after the page is
   reloaded. **Undo** stays while the page is open, until that action is undone.
+- A background task you started by hand (a scan, a trickplay check, a search for similar videos, a trash purge, a
+  connection index) tells you here when it ends, even if it ended while the library page was closed or in the
+  background (as long as the server hasn't restarted since). If you may see the background tasks, every run that
+  fails is told too. **Open** shows the run and its log in the task history.
 - **×** removes one, **Clear all** removes them all.
 - Each browser keeps its own, for each account and space: the last 200, for 30 days. Another browser or device starts
   empty, and signing out doesn't clear them, so on a shared computer use **Clear all** before leaving.

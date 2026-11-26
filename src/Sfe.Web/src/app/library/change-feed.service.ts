@@ -5,6 +5,7 @@ import { KeepAliveState } from './library.models';
 import { Rights } from '../core/rights';
 import { ListingStore } from './listing.store';
 import { FolderWriting, WritingProgress } from '../files/writing-progress';
+import { TaskEnded, TaskNotices } from '../notifications/task-notices';
 
 /** Changes close together (a move touches two folders, a folder upload many) make one reload. */
 const SETTLE = 400;
@@ -35,7 +36,8 @@ export interface FolderChange {
  * (the library's or a connection's, named to the server: `watchFolder`); the folder listed is then refreshed in place.
  * The browser opens the feed again by itself when it ends or drops. It also tells how keep alive goes (`keepAlive`)
  * and whether the server answers (`serverLost`), for the indicator of the ⋮ menu, that the trash changed
- * (`trashChanges`), for the sidebar's Trash link, and how far items being written are (`WritingProgress`).
+ * (`trashChanges`), for the sidebar's Trash link, how far items being written are (`WritingProgress`), and the runs of
+ * background tasks that ended (`TaskNotices`; those that ended while the feed was closed when it opens again).
  */
 @Injectable({ providedIn: 'root' })
 export class ChangeFeed {
@@ -43,6 +45,7 @@ export class ChangeFeed {
     private readonly store = inject(ListingStore);
     private readonly progress = inject(WritingProgress);
     private readonly api = inject(Api);
+    private readonly tasks = inject(TaskNotices);
     /** The folder last named to the server for this feed (`watchedKey`); `undefined`: none since it opened. */
     private watched: string | null | undefined;
     private source: EventSource | null = null;
@@ -131,7 +134,9 @@ export class ChangeFeed {
     }
 
     private open(): void {
-        const source = (this.source = new EventSource(`${API_BASE}files/changes?tab=${TAB_ID}`));
+        const since = this.tasks.since();
+        const query = `tab=${TAB_ID}` + (since ? `&since=${encodeURIComponent(since)}` : '');
+        const source = (this.source = new EventSource(`${API_BASE}files/changes?${query}`));
         source.addEventListener('open', () => this.opened());
         source.addEventListener('error', () => this.dropped(source));
         source.addEventListener('ping', () => this.heard());
@@ -146,6 +151,10 @@ export class ChangeFeed {
         source.addEventListener('trash', () => {
             this.heard();
             this.trashChanges.update((n) => n + 1);
+        });
+        source.addEventListener('task', (event) => {
+            this.heard();
+            this.tasks.told(JSON.parse((event as MessageEvent<string>).data) as TaskEnded);
         });
         source.addEventListener('keepAlive', (event) => {
             this.heard();

@@ -69,14 +69,14 @@ export class TaskHistoryComponent {
             void this.loadDetails(open.id);
     }
 
-    /** Opens the history on one run (e.g. a task's last run). */
-    async show(run: TaskRunSummary): Promise<void> {
+    /** Opens the history on one run (a task's last run, a notification's link). */
+    async show(id: number): Promise<void> {
         this.filter.set(null);
         this.paged = false;
         await this.load();
-        this.openId.set(run.id);
+        this.openId.set(id);
         this.details.set(null);
-        void this.loadDetails(run.id);
+        void this.loadDetails(id);
     }
 
     protected setFilter(value: string): void {
