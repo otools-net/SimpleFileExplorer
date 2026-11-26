@@ -26,6 +26,7 @@ ARG TARGETARCH
 ARG SFE_COMMIT=
 WORKDIR /src
 COPY Directory.Build.props Sfe.slnx CHANGELOG.md ./
+COPY changelog/ changelog/
 COPY src/Sfe.Core/Sfe.Core.csproj src/Sfe.Core/
 COPY src/Sfe.Api/Sfe.Api.csproj src/Sfe.Api/
 RUN rid="linux-$( [ "$TARGETARCH" = arm64 ] && echo arm64 || echo x64 )" \

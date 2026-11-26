@@ -1,7 +1,7 @@
 # Versioning and changelog
 
-Files: `Directory.Build.props` (`<Version>`), `CHANGELOG.md`. How the version is read at run time:
-[app-version.md](../architecture/app-version.md).
+Files: `Directory.Build.props` (`<Version>`), `CHANGELOG.md`, `changelog/<major>.x.md`. How the version is read at
+run time: [app-version.md](../architecture/app-version.md).
 
 ## Branches
 
@@ -33,8 +33,17 @@ merged into `main`**, once for everything merged, from the `## Unreleased` secti
 - Each commit on `edge` with a user-visible change adds its lines under `## Unreleased` at the top of `CHANGELOG.md`
   (created when missing): `### Added` / `### Changed` / `### Fixed`, one short user-facing line per item. Not for
   docs, tests or build scripts alone.
+- Keep items short (two or three lines): what the user gets and the setting or route to look for; how it works goes
+  in `docs/`. The 1.86.0 section alone was 400 lines, a third of the file.
+- **One file per major version**: `CHANGELOG.md` holds `## Unreleased` and the versions of the newest major;
+  each earlier major is in `changelog/<major>.x.md` (1.x: 1.33.0 to 1.86.0, moved there 2026-11-26 before 2.0.0).
+  When the next major starts, move the previous major's sections into its own file and add it to the
+  `## Earlier versions` list at the end of `CHANGELOG.md`. Links in those files start with `../`.
+  `TheChangelogFilesHoldOneMajorVersionEach` checks no version is in the wrong file.
 - The merge into `main` renames `## Unreleased` to `## x.y.z` (the new version). The parser skips headings that aren't
   versions, so the update page never shows `Unreleased` and `TheShippedChangelogHasTheRunningVersion` holds on `edge` too.
-- The file is embedded in Sfe.Api and shown on the update page (`TheShippedChangelogHasTheRunningVersion` checks the
-  top section is the running version); items may use `` `code` `` and `**bold**` only.
+- All the files are embedded in Sfe.Api (`changelog\*.md` as `changelog/<name>`; the Dockerfile copies the folder)
+  and read together by `MigrationEndpoints.LoadChangelog`, so an install upgrading from 1.x still sees each version
+  it skips. `TheShippedChangelogHasTheRunningVersion` checks the newest version of all files is the running one and
+  no version is in two files; items may use `` `code` `` and `**bold**` only.
 - What an upgrade does to an install stays in `docs/upgrading.md`.

@@ -17,7 +17,7 @@ migration path: [production-upgrades.md](../development/production-upgrades.md).
   polls `GET api/migration`.
 - `Sfe:Database:MigrateOnStartup=false` skips the check.
 - The client's `Api` opens `/migration` on any 503 `migration-required`, even for calls with redirects off.
-- The update page shows the embedded `CHANGELOG.md` ([versioning-and-changelog.md](../development/versioning-and-changelog.md))
-  and offers a backup ([backups.md](backups.md)).
+- The update page shows the embedded `CHANGELOG.md` and `changelog/*.md`
+  ([versioning-and-changelog.md](../development/versioning-and-changelog.md)) and offers a backup ([backups.md](backups.md)).
 - Tests that make a database before starting the server: `ApiClients.MigrateAsync(factory)` first
   ([testing.md](../development/testing.md)).

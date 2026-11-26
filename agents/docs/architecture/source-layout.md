@@ -72,7 +72,8 @@ build/                  build.ps1 / build.sh (portable packages), portable/appse
 agents/docs/            these notes for agents, one small file per topic, indexed by AGENTS.md
 agents/tools/           reusable helpers for agents, one folder per job, each with a README.md
   docs-screenshots/     regenerates docs/images (run.mjs = everything; cdp.mjs = headless Edge driver) + check-links.mjs
-CHANGELOG.md            what each version added or fixed (1.33.0 on; earlier versions are not recorded)
+CHANGELOG.md            what each version of the newest major added or fixed, and Unreleased
+changelog/              the earlier majors, one file each (1.x.md: 1.33.0 on; earlier versions are not recorded)
 docs/                   end-user documentation: installation, first-start, configuration, upgrading, user-guide/,
                         administration/ (one page per admin section), reference/, images/ (screenshots)
 Directory.Build.props   the app version (all projects)

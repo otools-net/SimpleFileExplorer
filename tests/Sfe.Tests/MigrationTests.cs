@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http.Json;
@@ -421,16 +422,43 @@ public sealed class MigrationTests
     [TestMethod]
     public void TheShippedChangelogHasTheRunningVersion()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "CHANGELOG.md");
-        var entries = Changelog.Parse(File.ReadAllText(path));
+        var files = OlderChangelogs().Append(Path.Combine(RepositoryRoot, "CHANGELOG.md"));
+        var entries = files.SelectMany(f => Changelog.Parse(File.ReadAllText(f))).ToList();
+        var newest = Changelog.Between(entries, null, MigrationCoordinator.AppVersion);
 
         Assert.AreEqual(
             MigrationCoordinator.AppVersion.ToString(),
-            entries[0].Version,
+            newest[0].Version,
             "Each version bump adds its section to CHANGELOG.md"
         );
         Assert.IsTrue(entries.All(e => SemanticVersion.TryParse(e.Version, out _) && e.Sections.Count > 0));
+        Assert.AreEqual(entries.Count, entries.Select(e => e.Version).Distinct().Count(), "A version in two files");
     }
+
+    [TestMethod]
+    public void TheChangelogFilesHoldOneMajorVersionEach()
+    {
+        // changelog/1.x.md holds the 1.x versions only; CHANGELOG.md the newer ones (and Unreleased).
+        var older = OlderChangelogs();
+        Assert.IsNotEmpty(older);
+        var newestOlder = 0;
+        foreach (var file in older)
+        {
+            var major = int.Parse(Path.GetFileName(file).Split('.')[0], CultureInfo.InvariantCulture);
+            Assert.IsTrue(MajorsIn(file).All(m => m == major), $"{file} holds another major version");
+            newestOlder = Math.Max(newestOlder, major);
+        }
+        Assert.IsTrue(MajorsIn(Path.Combine(RepositoryRoot, "CHANGELOG.md")).All(m => m > newestOlder));
+    }
+
+    private static string RepositoryRoot => Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..");
+
+    private static string[] OlderChangelogs() => Directory.GetFiles(Path.Combine(RepositoryRoot, "changelog"), "*.md");
+
+    private static IEnumerable<int> MajorsIn(string file) =>
+        Changelog
+            .Parse(File.ReadAllText(file))
+            .Select(e => SemanticVersion.TryParse(e.Version, out var v) ? v.Major : -1);
 
     /// <summary>
     /// An install as an earlier version left it: set up and stopped, its recorded version replaced (null: none, as

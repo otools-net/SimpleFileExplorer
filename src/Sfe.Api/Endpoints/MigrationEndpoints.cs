@@ -227,13 +227,25 @@ public static class MigrationEndpoints
         );
     }
 
-    /// <summary>CHANGELOG.md, built into the application (Sfe.Api.csproj).</summary>
+    /// <summary>
+    /// CHANGELOG.md and the earlier major versions' files (changelog/1.x.md...), built into the application
+    /// (Sfe.Api.csproj). In no particular order: <see cref="Core.Upgrades.Changelog.Between"/> sorts them.
+    /// </summary>
     private static IReadOnlyList<ChangelogEntry> LoadChangelog()
     {
-        using var stream = typeof(MigrationEndpoints).Assembly.GetManifestResourceStream("CHANGELOG.md");
-        if (stream is null)
-            return [];
-        using var reader = new StreamReader(stream);
-        return Core.Upgrades.Changelog.Parse(reader.ReadToEnd());
+        var assembly = typeof(MigrationEndpoints).Assembly;
+        var names = assembly
+            .GetManifestResourceNames()
+            .Where(n => n == "CHANGELOG.md" || n.StartsWith("changelog/", StringComparison.Ordinal));
+        var entries = new List<ChangelogEntry>();
+        foreach (var name in names)
+        {
+            using var stream = assembly.GetManifestResourceStream(name);
+            if (stream is null)
+                continue;
+            using var reader = new StreamReader(stream);
+            entries.AddRange(Core.Upgrades.Changelog.Parse(reader.ReadToEnd()));
+        }
+        return entries;
     }
 }

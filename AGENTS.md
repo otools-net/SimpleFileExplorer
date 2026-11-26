@@ -72,7 +72,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | Note | Covers | Code |
 |---|---|---|
 | [production-upgrades](agents/docs/development/production-upgrades.md) | migration paths, upgrade steps | `MigrationCoordinator`, `Core/Upgrades/Steps/` |
-| [versioning-and-changelog](agents/docs/development/versioning-and-changelog.md) | version bumps, `CHANGELOG.md` | `Directory.Build.props` |
+| [versioning-and-changelog](agents/docs/development/versioning-and-changelog.md) | version bumps, `CHANGELOG.md`, older majors in `changelog/` | `Directory.Build.props` |
 | [database](agents/docs/development/database.md) | SQL Server migrations + SQLite path, schema | `Core/Data/` |
 | [scale](agents/docs/development/scale.md) | paging, batches, snapshots | |
 | [paths](agents/docs/development/paths.md) | root-relative paths, case | `Core/Paths/LibraryPaths` |
