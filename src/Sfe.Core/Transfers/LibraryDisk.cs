@@ -62,17 +62,4 @@ internal static class LibraryDisk
             yield return entries.Current;
         }
     }
-
-    /// <summary>Free bytes of the drive of <paramref name="folder"/>; null when it doesn't tell.</summary>
-    public static long? FreeSpace(string folder)
-    {
-        try
-        {
-            return new DriveInfo(Path.GetPathRoot(Path.GetFullPath(folder))!).AvailableFreeSpace;
-        }
-        catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
-        {
-            return null;
-        }
-    }
 }

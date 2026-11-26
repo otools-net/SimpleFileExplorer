@@ -481,7 +481,7 @@ public sealed class FileJobs(
     {
         var needed = SizeOf(source);
         var margin = Math.Max(0, options.CurrentValue.Files.MinimumFreeSpaceMegabytes) * 1024L * 1024;
-        if (FreeSpace(Path.GetDirectoryName(destination)!) is { } free && free - needed < margin)
+        if (DiskSpace.FreeBytes(Path.GetDirectoryName(destination)!) is { } free && free - needed < margin)
         {
             return new FileJobItem(
                 path,
@@ -643,7 +643,7 @@ public sealed class FileJobs(
                     if (unchecked_ < FreeSpaceStep && size < FreeSpaceStep)
                         return;
                     unchecked_ = 0;
-                    if (FreeSpace(partial) is { } free && free - size < margin)
+                    if (DiskSpace.FreeBytes(partial) is { } free && free - size < margin)
                     {
                         throw new NoRoomException(
                             $"“{name}” was not extracted: the drive would keep less than {margin / 1024 / 1024:N0} MB "
@@ -869,7 +869,7 @@ public sealed class FileJobs(
         // The index's sizes: an upper bound of the zip (files already compressed are stored, the rest shrinks).
         var margin = Math.Max(0, settings.Files.MinimumFreeSpaceMegabytes) * 1024L * 1024;
         var bound = await archives.IndexedSizeAsync(chosen, token);
-        if (FreeSpace(targetFull) is { } free && free - bound < margin)
+        if (DiskSpace.FreeBytes(targetFull) is { } free && free - bound < margin)
         {
             return new FileJobItem(
                 label,
@@ -916,7 +916,7 @@ public sealed class FileJobs(
                         if (length - checkedAt < FreeSpaceStep)
                             return;
                         checkedAt = length;
-                        if (FreeSpace(targetFull) is { } left && left < margin)
+                        if (DiskSpace.FreeBytes(targetFull) is { } left && left < margin)
                         {
                             throw new NoRoomException(
                                 $"“{name}” was not made: the drive would keep less than {margin / 1024 / 1024:N0} MB "
@@ -1052,18 +1052,6 @@ public sealed class FileJobs(
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return 0;
-        }
-    }
-
-    private static long? FreeSpace(string folder)
-    {
-        try
-        {
-            return new DriveInfo(Path.GetPathRoot(Path.GetFullPath(folder))!).AvailableFreeSpace;
-        }
-        catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
-        {
-            return null;
         }
     }
 

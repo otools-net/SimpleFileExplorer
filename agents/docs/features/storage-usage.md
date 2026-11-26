@@ -22,8 +22,14 @@ Code: `Core/Files/DiskSpace.cs`, `StorageUsage.cs`, `TrashSize.cs`, `Trash.SizeA
   on `\\server\share`; this takes shares and folders a drive is mounted on. Free = available to the caller (quotas).
 - Elsewhere: `new DriveInfo(folder)` on the folder itself. On Unix .NET passes the name to `statvfs`, which answers
   for the file system holding it (a Docker volume on `/data`), where `Path.GetPathRoot` would give `/`.
-- `LibraryDisk.FreeSpace`, `FileJobs.FreeSpace`, `Uploads.FreeSpace` still use `DriveInfo` of the path root for their
-  margins (unchanged: a wrong answer there only skips the check).
+- Both follow junctions, mounted folders and links to the volume they lead to.
+- The free-space margins (`Files:MinimumFreeSpaceMegabytes`) of copies, moves, extractions, compressions, uploads and
+  transfers all read `DiskSpace.FreeBytes(path)`: the closest folder that exists (the path, a file's folder, or a
+  parent of folders not made yet), measured as above. Never `DriveInfo(Path.GetPathRoot(...))`: the drive letter of
+  the path is the wrong volume behind a junction, throws on a share (check skipped) and is `/` on Linux.
+- An upload checks two volumes at start: the work folder holding its parts and its target folder (the part is moved
+  there at the end, a copy when they differ). Tests: `DiskSpaceTests` (a junction to another fixed drive; inconclusive
+  when the machine has only one).
 
 ## The sidebar's bar
 

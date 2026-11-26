@@ -75,7 +75,9 @@ public sealed class Uploads(
             );
         }
 
-        if (FreeSpace(records.Folder) is { } free && free - start.Size < Margin)
+        if (!paths.TryResolve(start.Target, out var targetFull))
+            return new UploadChunkResult(FileOperationStatus.NotFound, null, "The folder was not found.");
+        if (!HasRoom(records.Folder, start.Size) || !HasRoom(targetFull, start.Size))
         {
             return new UploadChunkResult(
                 FileOperationStatus.Failed,
@@ -95,8 +97,6 @@ public sealed class Uploads(
         }
 
         var now = DateTimeOffset.UtcNow;
-        if (!paths.TryResolve(start.Target, out var targetFull))
-            return new UploadChunkResult(FileOperationStatus.NotFound, null, "The folder was not found.");
         var upload = new UploadInfo(
             Guid.NewGuid().ToString("N"),
             paths.ToRelative(targetFull)!,
@@ -495,17 +495,9 @@ public sealed class Uploads(
 
     private string PartPath(string id) => records.PartPath(id);
 
-    private static long? FreeSpace(string folder)
-    {
-        try
-        {
-            return new DriveInfo(Path.GetPathRoot(Path.GetFullPath(folder))!).AvailableFreeSpace;
-        }
-        catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
-        {
-            return null;
-        }
-    }
+    // The part grows in the work folder, then moves to its target folder: each may be on another volume.
+    private bool HasRoom(string folder, long size) =>
+        DiskSpace.FreeBytes(folder) is not { } free || free - size >= Margin;
 
     private static FileOperationResult ScanRunning() =>
         FileOperationResult.Fail(

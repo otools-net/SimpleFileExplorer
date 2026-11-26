@@ -198,8 +198,8 @@ public sealed class LibraryTransferEndpoint : ITransferEndpoint
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-    /// <summary>Bytes the drive of <paramref name="full"/> takes above the minimum; null when unknown.</summary>
-    internal long? RoomLeft(string full) => LibraryDisk.FreeSpace(full) is { } free ? free - MarginBytes : null;
+    /// <summary>Bytes the volume of <paramref name="full"/> takes above the minimum; null when unknown.</summary>
+    internal long? RoomLeft(string full) => DiskSpace.FreeBytes(full) is { } free ? free - MarginBytes : null;
 
     internal long MarginBytes => Math.Max(0, _library.Files.MinimumFreeSpaceMegabytes) * 1024L * 1024;
 

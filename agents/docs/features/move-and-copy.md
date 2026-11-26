@@ -32,8 +32,8 @@ Extractions are jobs of the same kind: [archive-extraction](archive-extraction.m
   `CompleteAsync` of the folder rules (`keepAccess` pins levels). Already in the target = skipped.
 - Copies: written as `name.sfe-partial` (a file or the whole folder) shown in listings with their progress, renamed
   when whole ([partial-files](partial-files.md)); streams with 1 MB buffers counting bytes; modified time kept; a
-  cancelled or failed item deletes its partial file/folder; leftovers of a stopped job in the target are removed first. Links and work folders are never copied (reported). Free space: refused when the drive would keep less
-  than `Files:MinimumFreeSpaceMegabytes`. Then the originals' thumbnail/trickplay caches are copied, files indexed at
+  cancelled or failed item deletes its partial file/folder; leftovers of a stopped job in the target are removed first. Links and work folders are never copied (reported). Free space: refused when the volume would keep less
+  than `Files:MinimumFreeSpaceMegabytes` (the volume the target really is on: [storage-usage](storage-usage.md)). Then the originals' thumbnail/trickplay caches are copied, files indexed at
   once (`IndexFilesAsync`), folders by a scan of each (`ScanCoordinator.TryStart`, skipped while another scan runs).
 - Clash: see [Name clashes](#name-clashes).
 - Scan gate: each item takes `ScanCoordinator.TryBeginOperation` (source and destination); a scan over it = that item

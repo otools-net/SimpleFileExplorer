@@ -45,6 +45,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 - Linux and macOS: the folders created above a folder of the server's secrets (when the data folder is new) were
   readable by the other accounts of the computer; they are now for the server's account only, like that folder.
+- The free space kept by copies, moves, extractions, uploads and transfers is checked on the volume the files really
+  go to: a folder that is a junction, a mounted folder or a link to another disk is measured on that disk, not on the
+  drive letter of its path. Libraries on a network share are checked too (they weren't), and on Linux and in Docker
+  the library's own file system is checked, not the system's root. An upload is also checked on its target folder's
+  volume, not only where its parts are kept.
 
 ## Earlier versions
 
