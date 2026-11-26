@@ -189,6 +189,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [new-folder-and-rename](agents/docs/features/new-folder-and-rename.md) | new folder, rename, item menu, F2 / Shift+N | `FileOperations`, `FileEndpoints`, `app/files/` |
 | [trash](agents/docs/features/trash.md) | delete, trash, restore, purge task, links as links | `Trash`, `FileTree`, `app/files/delete.dialog.ts` |
 | [previous-versions](agents/docs/features/previous-versions.md) | a file's versions kept in the trash when saved over: listed, opened, restored as a copy or over the file, rights, following renames | `PreviousVersions`, `VersionEndpoints`, `files/versions.dialog.ts` |
+| [undo](agents/docs/features/undo.md) | Ctrl+Z and the ⋮ menu's Undo: the tab's history of actions (20), entries shared with the toasts' Undo, actions on a place undone only there, new folders / files and copies to the trash unless changed since | `UndoHistory`, `MadeUndo`, `app.ts` |
 | [move-and-copy](agents/docs/features/move-and-copy.md) | move/copy jobs, name clashes (replace, skip, keep both, merging folders), clipboard, drops, operations panel | `FileJobs`, `FileJobAccess`, `app/files/file-transfers.ts` |
 | [uploads](agents/docs/features/uploads.md) | resumable chunked uploads, folder uploads, desktop drops, admin list | `Uploads`, `UploadEndpoints`, `app/files/uploads.ts` |
 | [archives](agents/docs/features/archives.md) | several files or a folder downloaded as one streamed zip, one-time links | `Archives`, `ArchiveEndpoints`, `ArchiveLinks`, `app/files/downloads.ts` |

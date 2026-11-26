@@ -430,7 +430,14 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     settings file is saved (`ServerLevelCacheTests`); small files 13 → 42 a second. 1 GB and 8 GB (on D:) at ~71
     MB/s, SHA-256 equal, memory flat. What is left per small file is durable writes (kept). Numbers in the tool's
     README and uploads.md.
-- [ ] **4.4 Ctrl+Z** (IDEA-026, S–M). Toast Undo exists for rename, batch rename, move, delete, duplicate removal.
+- [x] **4.4 Ctrl+Z** (IDEA-026, S–M). Done 2026-11-26: `UndoHistory` (`core/`, root, 20 entries, a promise queue)
+  shared by the toasts' Undo, Ctrl+Z (`app.ts`, every page; left to fields, `contenteditable`, `<dialog>`) and the ⋮
+  menu's **Undo** (what it undoes under it); an entry on `PlaceFiles` (rename, batch rename) keeps its place and is
+  refused elsewhere (greyed with the reason); `MadeUndo` moves new folders / files and copies into the library to the
+  trash unless their date is later than the action's end (+2 s), only with `files.delete` and a trash; operations only
+  of this tab (`startedHere`). Client only. Note [undo](../features/undo.md); screenshot `undo-menu.png` (scene
+  `undo`). Readability baselines raised by the added lines: `file-transfers.ts` 471 → 493, `top-bar.css` 440 → 443.
+  Was: Toast Undo exists for rename, batch rename, move, delete, duplicate removal.
   Add a session undo stack (last 20, this tab only): Ctrl+Z / Cmd+Z undoes the latest, outside text fields; an
   Undo entry in the ⋮ menu; add undo for create folder (to trash) and copy (copies to trash). Refused with a reason
   when the item changed since. No redo, nothing across reloads or devices, no undo of other users' actions.
@@ -547,8 +554,11 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-26):** **4.3c** (upload load test) done, so 4.3 is done. Next: **4.4** (Ctrl+Z). Step 4.6
-  (read-only or writable shown) was added by the owner on 2026-11-23.
+- **Last session (2026-11-26):** **4.4** (Ctrl+Z) done. Next: **4.5** (notification centre): toasts already carry
+  their actions; `UndoHistory` entries are what a kept notification's Undo would call. Step 4.6 (read-only or
+  writable shown) was added by the owner on 2026-11-23.
+- `file-transfers.ts` is over its 400-line limit (493): move the end-of-job toasts (`compressed`, `extracted`) out
+  before adding to it.
 - Measuring the server without a profiler (installing `dotnet-trace` was refused here): ASP.NET's debug log with a
   millisecond timestamp (`Logging__Console__FormatterOptions__TimestampFormat`, `Microsoft.AspNetCore=Debug`) shows
   the gaps between routing, the first query and the endpoint; then temporary stopwatches (reverted) narrow them down.

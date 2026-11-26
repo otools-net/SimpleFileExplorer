@@ -128,6 +128,22 @@ const scenes = {
         await b.shot(OUT + 'main-menu.png');
         await b.close();
     },
+    /** Undo in the ⋮ menu after a new folder (Shift+N); the folder deleted for good after, for the other scenes. */
+    async undo() {
+        const b = await session();
+        await b.open('?path=Documents');
+        await b.key('N', 'KeyN', 78, 8);
+        await sleep(500);
+        await b.type('Receipts');
+        await b.click('button[form="name-dialog-form"]');
+        await sleep(1000);
+        await b.clickTitle('Scanning, administration');
+        await sleep(300);
+        const menu = await b.rect('#menu');
+        await b.shot(OUT + 'undo-menu.png', { x: menu.x - 8, y: 0, width: menu.width + 16, height: menu.y + 220 });
+        await b.eval(api('POST', 'api/v1/files/delete', { paths: ['Documents/Receipts'], permanent: true }));
+        await b.close();
+    },
     /**
      * The keep alive indicator of the ⋮ menu: keep alive turned on with a more folder that doesn't exist, so that its
      * ping fails (the yellow !); then turned off again for the other scenes.

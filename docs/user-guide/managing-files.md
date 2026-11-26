@@ -189,7 +189,8 @@ Moves and copies run on the server in the background: you can go on browsing. A 
 one with its progress; **Cancel** stops it (what is done stays, nothing half copied does). When it is over, the panel
 says what was done and what was not, and why; close it with ×. A right click on it gives the same (Cancel, or Close)
 and opens the folder it puts things into, also in a new tab. After a move, a message offers **Undo** for a few
-seconds: the items go back into the folders they came from.
+seconds: the items go back into the folders they came from. After a copy into the library, **Undo** moves the copies to
+the trash (see [Undo](#undo)).
 
 When the folder already holds an item with the same name, the panel asks, showing the size and date of both:
 **Replace** (the one there goes to the trash: you need the right to delete there), **Skip** (leave this one out) or
@@ -300,6 +301,31 @@ An uploaded file keeps its date from your computer and is added to the index at 
   and uploads** (1 GB by default).
 - Behind a reverse proxy, SFE sends smaller pieces by itself when the proxy refuses large requests
   ([Installation](../installation.md#reaching-it-from-outside-https-and-a-reverse-proxy)).
+
+## Undo
+
+**Ctrl+Z** (⌘Z on a Mac) undoes your latest action, as the **Undo** in its message would, even once the message is
+gone; press it again for the one before. **Undo** in the ⋮ menu does the same and shows, under it, what it would undo.
+
+![Undo in the ⋮ menu, after a new folder](../images/undo-menu.png)
+
+| What you did | What Undo does |
+|---|---|
+| Rename, rename several | gives the old names back |
+| Delete (to the trash) | puts the items back |
+| Move | moves the items back into the folders they came from |
+| Copy into the library | moves the copies to the trash |
+| New folder, new file | moves it to the trash |
+| Remove a duplicate | puts the copy back |
+
+- A copy, new folder or new file that changed since (a file saved over, something added to the folder) stays where it
+  is: a message says so. Nothing is ever deleted for good by Undo.
+- Each browser tab remembers your last 20 actions until it is reloaded or closed. What you did in another tab, on
+  another device, or what other people did, is not undone.
+- A rename in a [connection](../administration/connections.md) is undone only while that connection is open: Undo in
+  the ⋮ menu is greyed and says where to go.
+- Ctrl+Z in a text field, in the text editor or in the picture editor undoes the typing or the edit there, not a file
+  action. There is no redo.
 
 ## Seeing changes made elsewhere
 

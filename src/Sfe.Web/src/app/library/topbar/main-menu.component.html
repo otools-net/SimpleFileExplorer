@@ -84,6 +84,20 @@
             </p>
         }
     }
+    @if (undos.latest(); as latest) {
+        <hr>
+        <button
+            type="button"
+            role="menuitem"
+            class="menu-undo"
+            [disabled]="undos.blocked() !== null"
+            [title]="undoTitle()"
+            (click)="run(undo)"
+        >
+            <svg sfeIcon="undo"></svg>
+            <span><ng-container i18n>Undo</ng-container><small>{{ undos.blocked() ?? latest.done }}</small></span>
+        </button>
+    }
     @if (canScan() || canRemove() || canExclude()) {
         <hr>
     }

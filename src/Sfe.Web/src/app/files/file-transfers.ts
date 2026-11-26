@@ -13,7 +13,8 @@ import {
 } from './file.models';
 import { baseName, parentPath } from '../core/paths';
 import { Rights } from '../core/rights';
-import { ToastService } from '../core/toast.service';
+import { ToastAction, ToastService } from '../core/toast.service';
+import { UndoHistory } from '../core/undo-history';
 import { isExtractable } from '../formats/formats';
 import { Dialogs } from '../library/dialogs.service';
 import { currentPosition } from '../library/items/listing-position';
@@ -21,6 +22,8 @@ import { ListingStore } from '../library/listing.store';
 import { FileClipboard } from './file-clipboard';
 import { jobPlaces, PlaceTransfers, TransferPlaces } from './place-transfers';
 import { itemCount, quoted } from './file-dialog-texts';
+import { MadeUndo } from './undo-made';
+import { copiedHint } from './undo-texts';
 import {
     couldNotStart,
     keptToast,
@@ -49,6 +52,8 @@ export class FileTransfers {
     private readonly toasts = inject(ToastService);
     private readonly dialogs = inject(Dialogs);
     private readonly places = inject(PlaceTransfers);
+    private readonly undos = inject(UndoHistory);
+    private readonly made = inject(MadeUndo);
     /** Extractions this page started, by job: one failing on its password is asked again (never the password). */
     private readonly extractions = new Map<number, ExtractRequest>();
 
@@ -63,6 +68,8 @@ export class FileTransfers {
 
     /** Jobs closed in the panel. */
     private readonly dismissed = new Set<number>();
+    /** Jobs this tab started: their end may be undone here. */
+    private readonly startedHere = new Set<number>();
     /** Jobs seen running: their end updates the listing once. */
     private readonly following = new Set<number>();
     private timer: ReturnType<typeof setTimeout> | undefined;
@@ -266,6 +273,7 @@ export class FileTransfers {
             return null;
         }
         this.following.add(job.id);
+        this.startedHere.add(job.id);
         this.jobs.update((jobs) => [job, ...jobs.filter((j) => j.id !== job.id)]);
         this.poll(0);
         return job;
@@ -324,10 +332,29 @@ export class FileTransfers {
         if (jobs.some((job) => !finished(job))) this.poll();
     }
 
+    /**
+     * The Undo of a move or copy this tab started (kept in the tab's undo history): a move goes back, copies in the
+     * library go to the trash. Null when it can't be undone (another tab's, nothing left to undo).
+     */
+    private undoOf(job: FileJobView, undoable: FileJobItem[], done: string): ToastAction | null {
+        if (!this.startedHere.has(job.id) || !undoable.length) return null;
+        const places = jobPlaces(job);
+        if (job.kind === 'move')
+            return this.undos.add({
+                done,
+                hint: $localize`Move them back where they were.`,
+                run: () => this.undoMove(undoable, places),
+            });
+        if (job.kind !== 'copy' || places.to !== null || !this.made.possible()) return null;
+        const copies = undoable.map((result) => result.newPath).filter((path): path is string => !!path);
+        const since = job.finished ?? new Date().toISOString();
+        return this.undos.add({ done, hint: copiedHint(), run: () => this.made.trash(copies, since) });
+    }
+
     /** Undo of a move: the items go back into the folders they came from (in the place they came from). */
-    private undoMove(done: FileJobItem[], { from, to }: TransferPlaces): void {
+    private async undoMove(done: FileJobItem[], { from, to }: TransferPlaces): Promise<void> {
         for (const [origin, paths] of groupByOrigin(done))
-            void this.transfer('move', paths, origin, { from: to, to: from });
+            await this.transfer('move', paths, origin, { from: to, to: from });
     }
 
     /** A compression has ended: its toast says the ratio and shows the zip in its folder. */
@@ -432,20 +459,15 @@ export class FileTransfers {
         }
         if (job.state === 'cancelled') this.toasts.show(stoppedToast(job.kind, done.length, where));
         else if (done.length) {
-            const actions = [];
-            if (job.kind === 'move' && undoable.length)
-                actions.push({
-                    label: $localize`Undo`,
-                    title: $localize`Move them back where they were.`,
-                    run: () => this.undoMove(undoable, places),
-                });
+            const text = transferredToast(job.kind, done.length, where);
+            const actions = [this.undoOf(job, undoable, text)].filter((action) => action !== null);
             if (job.target !== listed || places.to !== here)
                 actions.push({
                     label: $localize`Open`,
                     title: openHint(where),
                     run: () => this.store.navigate({ path: job.target, c: places.to }),
                 });
-            this.toasts.show(transferredToast(job.kind, done.length, where), { timeout: 8000, actions });
+            this.toasts.show(text, { timeout: 8000, actions });
         }
         const failed = job.results.filter((result) => result.status !== 'done' && result.status !== 'skipped');
         if (failed.length) this.toasts.error(notDoneToast(job.kind, failed), 8000);

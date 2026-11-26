@@ -480,7 +480,7 @@
         <note category="location">src/app/files/compress.dialog.html:102,103</note>
         <note category="location">src/app/files/delete.dialog.html:26,27</note>
         <note category="location">src/app/files/extract.dialog.html:44,45</note>
-        <note category="location">src/app/files/name.dialog.ts:59,60</note>
+        <note category="location">src/app/files/name.dialog.ts:62,63</note>
         <note category="location">src/app/files/operations-panel.component.html:70,71</note>
         <note category="location">src/app/files/operations-panel.component.ts:150</note>
         <note category="location">src/app/files/transfer.dialog.html:43,44</note>
@@ -510,7 +510,7 @@
         <note category="location">src/app/access/account-editor.component.html:280</note>
         <note category="location">src/app/access/group-editor.component.html:173</note>
         <note category="location">src/app/access/space-editor.component.html:204</note>
-        <note category="location">src/app/files/name.dialog.ts:88</note>
+        <note category="location">src/app/files/name.dialog.ts:93</note>
         <note category="location">src/app/tokens/token-create.component.html:147,148</note>
       </notes>
       <segment>
@@ -827,7 +827,7 @@
         <note category="location">src/app/access/space-groups.component.html:87,88</note>
         <note category="location">src/app/access/space-members.component.html:109</note>
         <note category="location">src/app/access/spaces-page.component.html:59,60</note>
-        <note category="location">src/app/files/delete.dialog.ts:62</note>
+        <note category="location">src/app/files/delete.dialog.ts:64</note>
         <note category="location">src/app/library/selection-bar.component.html:72,73</note>
         <note category="location">src/app/tags/tag-editor.dialog.html:128,129</note>
         <note category="location">src/app/tasks/tasks-section.component.html:208</note>
@@ -1449,7 +1449,7 @@
         <note category="location">src/app/connections/connect.dialog.html:39</note>
         <note category="location">src/app/files/batch-rename.dialog.html:46,47</note>
         <note category="location">src/app/files/compress.dialog.html:23,24</note>
-        <note category="location">src/app/files/name.dialog.ts:38,39</note>
+        <note category="location">src/app/files/name.dialog.ts:41,42</note>
         <note category="location">src/app/files/properties.dialog.html:13</note>
         <note category="location">src/app/files/properties.dialog.html:47</note>
         <note category="location">src/app/formats/archive/archive-view.component.html:187,188</note>
@@ -1798,8 +1798,8 @@
       <notes>
         <note category="location">src/app/access/space-detail.component.html:41</note>
         <note category="location">src/app/access/spaces-page.component.html:111</note>
-        <note category="location">src/app/files/file-transfers.ts:394</note>
-        <note category="location">src/app/files/file-transfers.ts:444</note>
+        <note category="location">src/app/files/file-transfers.ts:421</note>
+        <note category="location">src/app/files/file-transfers.ts:466</note>
         <note category="location">src/app/files/opening-commands.ts:43</note>
         <note category="location">src/app/files/opening-commands.ts:52</note>
         <note category="location">src/app/files/versions.dialog.html:31</note>
@@ -3259,7 +3259,7 @@ Space “Holiday photos”
         <note category="location">src/app/account/local-only-page.component.ts:63,64</note>
         <note category="location">src/app/account/login-page.component.html:8</note>
         <note category="location">src/app/account/login-page.component.html:135,136</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:167</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:181</note>
       </notes>
       <segment>
         <source>Sign in</source>
@@ -4026,7 +4026,7 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-page.component.html:220,221</note>
         <note category="location">src/app/admin/admin-page.component.html:229,230</note>
         <note category="location">src/app/admin/admin-page.component.ts:260</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:142</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:156</note>
       </notes>
       <segment>
         <source>Administration</source>
@@ -6325,9 +6325,9 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/connections/connections-section.component.html:104,105</note>
         <note category="location">src/app/files/batch-rename.dialog.html:1</note>
-        <note category="location">src/app/files/batch-rename.dialog.ts:139</note>
-        <note category="location">src/app/files/name.dialog.ts:21</note>
-        <note category="location">src/app/files/name.dialog.ts:88</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:141</note>
+        <note category="location">src/app/files/name.dialog.ts:24</note>
+        <note category="location">src/app/files/name.dialog.ts:93</note>
         <note category="location">src/app/library/selection-bar.component.html:60,61</note>
       </notes>
       <segment>
@@ -6839,6 +6839,48 @@ Space “Holiday photos”
         <source>Only in External mode: this server is in Local mode.</source>
       </segment>
     </unit>
+    <unit id="5775346636203685655">
+      <notes>
+        <note category="location">src/app/core/undo-history.ts:59</note>
+        <note category="location">src/app/editor/image-editor.dialog.html:36</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:98</note>
+      </notes>
+      <segment>
+        <source>Undo</source>
+      </segment>
+    </unit>
+    <unit id="533257908284541366">
+      <notes>
+        <note category="location">src/app/core/undo-history.ts:72</note>
+      </notes>
+      <segment>
+        <source>Undoing: <ph id="0" equiv="what" disp="entry.done"/></source>
+      </segment>
+    </unit>
+    <unit id="8559249080448510532">
+      <notes>
+        <note category="location">src/app/core/undo-history.ts:90</note>
+      </notes>
+      <segment>
+        <source>Could not undo it: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
+      </segment>
+    </unit>
+    <unit id="6340036085868443211">
+      <notes>
+        <note category="location">src/app/core/undo-history.ts:100</note>
+      </notes>
+      <segment>
+        <source>It was done in the library: open the library to undo it.</source>
+      </segment>
+    </unit>
+    <unit id="5090692998067740795">
+      <notes>
+        <note category="location">src/app/core/undo-history.ts:101</note>
+      </notes>
+      <segment>
+        <source>It was done in “<ph id="0" equiv="connection" disp="place.name"/>”: open it to undo it.</source>
+      </segment>
+    </unit>
     <unit id="5891064527381218201">
       <notes>
         <note category="location">src/app/editor/crop.ts:32</note>
@@ -7115,19 +7157,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Undo the last edit (Ctrl+Z).</source>
-      </segment>
-    </unit>
-    <unit id="5775346636203685655">
-      <notes>
-        <note category="location">src/app/editor/image-editor.dialog.html:36</note>
-        <note category="location">src/app/files/batch-rename.dialog.ts:197</note>
-        <note category="location">src/app/files/delete.dialog.ts:134</note>
-        <note category="location">src/app/files/file-transfers.ts:438</note>
-        <note category="location">src/app/files/name.dialog.ts:178</note>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:123</note>
-      </notes>
-      <segment>
-        <source>Undo</source>
       </segment>
     </unit>
     <unit id="5145810439464723756">
@@ -7520,7 +7549,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7390142039940506218">
       <notes>
-        <note category="location">src/app/files/batch-rename.dialog.ts:73</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:74</note>
       </notes>
       <segment>
         <source>No name would be left.</source>
@@ -7528,7 +7557,7 @@ Space “Holiday photos”
     </unit>
     <unit id="226128629247358401">
       <notes>
-        <note category="location">src/app/files/batch-rename.dialog.ts:74</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:75</note>
       </notes>
       <segment>
         <source>A name can&apos;t hold / or \.</source>
@@ -7536,7 +7565,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8835718245369439386">
       <notes>
-        <note category="location">src/app/files/batch-rename.dialog.ts:76</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:77</note>
       </notes>
       <segment>
         <source>Two items would get this name.</source>
@@ -7544,7 +7573,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4631987937125573174">
       <notes>
-        <note category="location">src/app/files/batch-rename.dialog.ts:77</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:78</note>
       </notes>
       <segment>
         <source>This name is taken in this folder.</source>
@@ -7552,7 +7581,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7998832372742770760">
       <notes>
-        <note category="location">src/app/files/batch-rename.dialog.ts:79</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:80</note>
       </notes>
       <segment>
         <source>Another item renamed has this name now. Rename in two steps.</source>
@@ -7560,7 +7589,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1264235855275725686">
       <notes>
-        <note category="location">src/app/files/batch-rename.dialog.ts:139</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:141</note>
       </notes>
       <segment>
         <source>Rename <ph id="0" equiv="count" disp="count"/></source>
@@ -7568,7 +7597,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5904511897931856863">
       <notes>
-        <note category="location">src/app/files/batch-rename.dialog.ts:182</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:184</note>
       </notes>
       <segment>
         <source>It was not renamed.</source>
@@ -7576,8 +7605,8 @@ Space “Holiday photos”
     </unit>
     <unit id="1000935341271301554">
       <notes>
-        <note category="location">src/app/files/batch-rename.dialog.ts:183</note>
-        <note category="location">src/app/files/batch-rename.dialog.ts:189</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:185</note>
+        <note category="location">src/app/files/batch-rename.dialog.ts:191</note>
       </notes>
       <segment>
         <source>“<ph id="0" equiv="name" disp="line.item.name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -7823,7 +7852,7 @@ Space “Holiday photos”
     <unit id="2508083421321389619">
       <notes>
         <note category="location">src/app/files/delete.dialog.html:39,40</note>
-        <note category="location">src/app/files/delete.dialog.ts:62</note>
+        <note category="location">src/app/files/delete.dialog.ts:64</note>
       </notes>
       <segment>
         <source>Delete permanently</source>
@@ -7831,7 +7860,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3567697336794018309">
       <notes>
-        <note category="location">src/app/files/delete.dialog.ts:65</note>
+        <note category="location">src/app/files/delete.dialog.ts:67</note>
       </notes>
       <segment>
         <source>Delete them for good.</source>
@@ -7839,7 +7868,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2090847153026295581">
       <notes>
-        <note category="location">src/app/files/delete.dialog.ts:65</note>
+        <note category="location">src/app/files/delete.dialog.ts:67</note>
       </notes>
       <segment>
         <source>Move them to the trash.</source>
@@ -7847,7 +7876,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5933351381904957522">
       <notes>
-        <note category="location">src/app/files/delete.dialog.ts:76</note>
+        <note category="location">src/app/files/delete.dialog.ts:78</note>
       </notes>
       <segment>
         <source>The connection keeps deleted files in its own trash for a while.</source>
@@ -7855,7 +7884,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6789434317417078602">
       <notes>
-        <note category="location">src/app/files/delete.dialog.ts:77</note>
+        <note category="location">src/app/files/delete.dialog.ts:79</note>
       </notes>
       <segment>
         <source>This can&apos;t be undone.</source>
@@ -8284,7 +8313,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8720083241279377641">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:278</note>
+        <note category="location">src/app/files/file-transfers.ts:286</note>
       </notes>
       <segment>
         <source>Could not send your answer: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -8292,15 +8321,23 @@ Space “Holiday photos”
     </unit>
     <unit id="2184420994841626844">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:288</note>
+        <note category="location">src/app/files/file-transfers.ts:296</note>
       </notes>
       <segment>
         <source>Could not stop the operation: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
       </segment>
     </unit>
+    <unit id="1877082256408805881">
+      <notes>
+        <note category="location">src/app/files/file-transfers.ts:345</note>
+      </notes>
+      <segment>
+        <source>Move them back where they were.</source>
+      </segment>
+    </unit>
     <unit id="6555802535094387331">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:337</note>
+        <note category="location">src/app/files/file-transfers.ts:364</note>
       </notes>
       <segment>
         <source>Stopped. No zip was made in <ph id="0" equiv="where" disp="where"/>.</source>
@@ -8308,7 +8345,7 @@ Space “Holiday photos”
     </unit>
     <unit id="365050093921350692">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:341</note>
+        <note category="location">src/app/files/file-transfers.ts:368</note>
       </notes>
       <segment>
         <source>Could not make the zip.</source>
@@ -8316,7 +8353,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4555538890082979599">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:345</note>
+        <note category="location">src/app/files/file-transfers.ts:372</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="zip" disp="quoted(baseName(zip))"/> made in <ph id="1" equiv="where" disp="where"/>.</source>
@@ -8324,7 +8361,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8461842260159597706">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:350</note>
+        <note category="location">src/app/files/file-transfers.ts:377</note>
         <note category="location">src/app/formats/archive/archive-view.component.html:135</note>
         <note category="location">src/app/formats/csv/csv-view.component.html:16</note>
         <note category="location">src/app/formats/json/json-view.component.html:28</note>
@@ -8338,7 +8375,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7893072212619491994">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:351</note>
+        <note category="location">src/app/files/file-transfers.ts:378</note>
       </notes>
       <segment>
         <source>Show <ph id="0" equiv="zip" disp="quoted(baseName(zip))"/> in its folder.</source>
@@ -8346,7 +8383,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6209735021162197397">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:362</note>
+        <note category="location">src/app/files/file-transfers.ts:389</note>
       </notes>
       <segment>
         <source>Stopped. Nothing was extracted to <ph id="0" equiv="where" disp="where"/>.</source>
@@ -8354,7 +8391,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3084211379894854792">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:367</note>
+        <note category="location">src/app/files/file-transfers.ts:394</note>
       </notes>
       <segment>
         <source>Could not extract <ph id="0" equiv="archive" disp="archive"/>: it is protected by a password.</source>
@@ -8362,7 +8399,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8876125281336377441">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:373</note>
+        <note category="location">src/app/files/file-transfers.ts:400</note>
         <note category="location">src/app/files/operations-panel.component.html:156,157</note>
       </notes>
       <segment>
@@ -8371,7 +8408,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6404255192971813326">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:374</note>
+        <note category="location">src/app/files/file-transfers.ts:401</note>
         <note category="location">src/app/files/operations-panel.component.html:152,153</note>
       </notes>
       <segment>
@@ -8380,7 +8417,7 @@ Space “Holiday photos”
     </unit>
     <unit id="694753618738721739">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:383</note>
+        <note category="location">src/app/files/file-transfers.ts:410</note>
       </notes>
       <segment>
         <source>Could not extract <ph id="0" equiv="archive" disp="quoted(baseName(job.target))"/>.</source>
@@ -8388,18 +8425,10 @@ Space “Holiday photos”
     </unit>
     <unit id="1292303190674769981">
       <notes>
-        <note category="location">src/app/files/file-transfers.ts:400</note>
+        <note category="location">src/app/files/file-transfers.ts:427</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="archive" disp="quoted(baseName(result.path))"/> extracted to <ph id="1" equiv="where" disp="into"/>.</source>
-      </segment>
-    </unit>
-    <unit id="1877082256408805881">
-      <notes>
-        <note category="location">src/app/files/file-transfers.ts:439</note>
-      </notes>
-      <segment>
-        <source>Move them back where they were.</source>
       </segment>
     </unit>
     <unit id="5423210188043289653">
@@ -8567,8 +8596,8 @@ Space “Holiday photos”
     </unit>
     <unit id="276577335650445066">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:19</note>
-        <note category="location">src/app/files/name.dialog.ts:111</note>
+        <note category="location">src/app/files/name.dialog.ts:22</note>
+        <note category="location">src/app/files/name.dialog.ts:116</note>
         <note category="location">src/app/library/location/location.component.html:87,88</note>
         <note category="description">dialog title</note>
       </notes>
@@ -8578,7 +8607,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5695157036278702587">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:20</note>
+        <note category="location">src/app/files/name.dialog.ts:23</note>
         <note category="location">src/app/library/location/location.component.html:74,75</note>
         <note category="description">dialog title</note>
       </notes>
@@ -8588,7 +8617,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2568690710200598740">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:42,43</note>
+        <note category="location">src/app/files/name.dialog.ts:45,46</note>
       </notes>
       <segment>
         <source>A name starting with a dot makes a hidden item. Listings show it only where hidden items are shown.</source>
@@ -8596,7 +8625,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6481490674395885366">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:55,56</note>
+        <note category="location">src/app/files/name.dialog.ts:58,59</note>
       </notes>
       <segment>
         <source>Close without changing anything (Esc)</source>
@@ -8604,7 +8633,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2432137937496839254">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:85</note>
+        <note category="location">src/app/files/name.dialog.ts:90</note>
         <note category="location">src/app/library/topbar/search-scope.ts:43</note>
       </notes>
       <segment>
@@ -8613,7 +8642,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2708566978214767901">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:85</note>
+        <note category="location">src/app/files/name.dialog.ts:90</note>
       </notes>
       <segment>
         <source>At the top of the library</source>
@@ -8621,7 +8650,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7005113435936608736">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:93</note>
+        <note category="location">src/app/files/name.dialog.ts:98</note>
       </notes>
       <segment>
         <source>Give the item this name (Enter).</source>
@@ -8629,7 +8658,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1483998147163588278">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:95</note>
+        <note category="location">src/app/files/name.dialog.ts:100</note>
       </notes>
       <segment>
         <source>Create the empty file (Enter).</source>
@@ -8637,7 +8666,7 @@ Space “Holiday photos”
     </unit>
     <unit id="399232300397358021">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:96</note>
+        <note category="location">src/app/files/name.dialog.ts:101</note>
       </notes>
       <segment>
         <source>Create the folder (Enter).</source>
@@ -8645,7 +8674,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4169633069440086520">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:116</note>
+        <note category="location">src/app/files/name.dialog.ts:121</note>
         <note category="description">name given to a new file, its extension kept</note>
       </notes>
       <segment>
@@ -8654,7 +8683,7 @@ Space “Holiday photos”
     </unit>
     <unit id="827814265857833869">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:162</note>
+        <note category="location">src/app/files/name.dialog.ts:167</note>
       </notes>
       <segment>
         <source>It isn&apos;t there any more: it may have been moved or deleted.</source>
@@ -8662,7 +8691,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4424881770669073221">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:168</note>
+        <note category="location">src/app/files/name.dialog.ts:173</note>
       </notes>
       <segment>
         <source>It could not be done.</source>
@@ -8670,7 +8699,7 @@ Space “Holiday photos”
     </unit>
     <unit id="9181195753282395827">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:175</note>
+        <note category="location">src/app/files/name.dialog.ts:180</note>
       </notes>
       <segment>
         <source>Renamed to <ph id="0" equiv="name" disp="quoted(renamed.name)"/>.</source>
@@ -8678,7 +8707,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3183743098524426860">
       <notes>
-        <note category="location">src/app/files/name.dialog.ts:179</note>
+        <note category="location">src/app/files/name.dialog.ts:185</note>
       </notes>
       <segment>
         <source>Give it back its name <ph id="0" equiv="name" disp="quoted(mode.item.name)"/>.</source>
@@ -9389,7 +9418,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/organising-commands.ts:114</note>
         <note category="location">src/app/library/folder-menu.ts:287</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:120</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:134</note>
       </notes>
       <segment>
         <source>Scans and previews…</source>
@@ -9399,7 +9428,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/files/organising-commands.ts:116,117</note>
         <note category="location">src/app/library/folder-menu.ts:289,290</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:116,117</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:130,131</note>
       </notes>
       <segment>
         <source>Keep this folder out of scans, trickplay or thumbnails, for everyone using this space.</source>
@@ -10356,7 +10385,7 @@ Space “Holiday photos”
     <unit id="33149636091572968">
       <notes>
         <note category="location">src/app/files/trash-section.component.html:88,89</note>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:202,203</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:204,205</note>
         <note category="location">src/app/tracking/missing-panel.component.html:110,111</note>
         <note category="location">src/app/tracking/similar-panel.component.html:75,76</note>
       </notes>
@@ -10607,6 +10636,70 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>{count, plural, one {# item deleted for good.} other {# items deleted for good.}}</source>
+      </segment>
+    </unit>
+    <unit id="7481317963519233900">
+      <notes>
+        <note category="location">src/app/files/undo-made.ts:67</note>
+      </notes>
+      <segment>
+        <source>it isn&apos;t there any more.</source>
+      </segment>
+    </unit>
+    <unit id="8920918897361014214">
+      <notes>
+        <note category="location">src/app/files/undo-texts.ts:11</note>
+      </notes>
+      <segment>
+        <source>Folder <ph id="0" equiv="name" disp="quoted(name)"/> created.</source>
+      </segment>
+    </unit>
+    <unit id="6938999949448112607">
+      <notes>
+        <note category="location">src/app/files/undo-texts.ts:12</note>
+      </notes>
+      <segment>
+        <source>File <ph id="0" equiv="name" disp="quoted(name)"/> created.</source>
+      </segment>
+    </unit>
+    <unit id="3675055421662611036">
+      <notes>
+        <note category="location">src/app/files/undo-texts.ts:18</note>
+      </notes>
+      <segment>
+        <source>Move the folder <ph id="0" equiv="name" disp="quoted(name)"/> to the trash, unless something changed in it since.</source>
+      </segment>
+    </unit>
+    <unit id="692769234690929897">
+      <notes>
+        <note category="location">src/app/files/undo-texts.ts:19</note>
+      </notes>
+      <segment>
+        <source>Move the file <ph id="0" equiv="name" disp="quoted(name)"/> to the trash, unless it changed since.</source>
+      </segment>
+    </unit>
+    <unit id="8741097334260395774">
+      <notes>
+        <note category="location">src/app/files/undo-texts.ts:24</note>
+      </notes>
+      <segment>
+        <source>Move the copies to the trash, unless they changed since.</source>
+      </segment>
+    </unit>
+    <unit id="1709314050195913622">
+      <notes>
+        <note category="location">src/app/files/undo-texts.ts:29</note>
+      </notes>
+      <segment>
+        <source>Could not move <ph id="0" equiv="name" disp="quoted(name)"/> to the trash: it changed since it was made.</source>
+      </segment>
+    </unit>
+    <unit id="4939750465775418579">
+      <notes>
+        <note category="location">src/app/files/undo-texts.ts:34</note>
+      </notes>
+      <segment>
+        <source>Could not move <ph id="0" equiv="name" disp="quoted(name)"/> to the trash: <ph id="1" equiv="reason" disp="reason"/></source>
       </segment>
     </unit>
     <unit id="1355561718756975760">
@@ -12482,7 +12575,7 @@ Space “Holiday photos”
     <unit id="4088802997354529592">
       <notes>
         <note category="location">src/app/formats/flash/flash-view.component.html:68,69</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:151</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:165</note>
         <note category="location">src/app/player/player-texts.ts:22</note>
       </notes>
       <segment>
@@ -17618,7 +17711,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4484271963368011559">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:98</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:112</note>
       </notes>
       <segment>
         <source>Scan this folder</source>
@@ -17626,7 +17719,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3152531052287042537">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:109</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:123</note>
       </notes>
       <segment>
         <source>Remove from index…</source>
@@ -17634,7 +17727,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2076163243174576914">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:129,130</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:143,144</note>
       </notes>
       <segment>
         <source>Switch to the space “<ph id="0" equiv="INTERPOLATION" disp="{{ tenant.name }}"/>”: its own library, tags and settings.</source>
@@ -17642,7 +17735,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7444103529530945506">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:140,141</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:154,155</note>
       </notes>
       <segment>
         <source>Open the administration: settings, tags, duplicates, tasks, spaces, accounts, your account and more.</source>
@@ -17650,7 +17743,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7511633018413962253">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:148,149</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:162,163</note>
       </notes>
       <segment>
         <source>Show the page full screen, or leave full screen.</source>
@@ -17658,7 +17751,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5391547839460262973">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:156,157</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:170,171</note>
       </notes>
       <segment>
         <source>Sign out on this browser.</source>
@@ -17666,7 +17759,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2949848596707725099">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:159</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:173</note>
       </notes>
       <segment>
         <source>Sign out</source>
@@ -17674,7 +17767,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7796345692884547147">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:164,165</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:178,179</note>
       </notes>
       <segment>
         <source>Sign in with an account.</source>
@@ -17682,7 +17775,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8038549977004386948">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:75</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:77</note>
       </notes>
       <segment>
         <source>Network folder not answering</source>
@@ -17690,7 +17783,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4880366220057855644">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:75</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:77</note>
       </notes>
       <segment>
         <source>Network folder answering</source>
@@ -17698,7 +17791,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6580335002142664714">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:80</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:82</note>
       </notes>
       <segment>
         <source>Scanning, administration, your account and more. The server isn&apos;t answering.</source>
@@ -17706,7 +17799,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1795336273073681165">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:82</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:84</note>
       </notes>
       <segment>
         <source>Scanning, administration, your account and more. The network folder isn&apos;t answering.</source>
@@ -17714,7 +17807,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7120700138984782826">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:84</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:86</note>
       </notes>
       <segment>
         <source>Scanning, administration, your account and more. The network folder is answering.</source>
@@ -17722,7 +17815,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7606552201934391683">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:85</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:87</note>
       </notes>
       <segment>
         <source>Scanning, administration, your account and more.</source>
@@ -17730,7 +17823,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="9073837285264700749">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:89</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:91</note>
       </notes>
       <segment>
         <source>More (server not answering)</source>
@@ -17738,7 +17831,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5199580876731394972">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:91</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:93</note>
       </notes>
       <segment>
         <source>More (network folder not answering)</source>
@@ -17746,7 +17839,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5937251202465808296">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:92</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:94</note>
       </notes>
       <segment>
         <source>More</source>
@@ -17754,8 +17847,8 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5841525798799437277">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:96</note>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:101</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:98</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:103</note>
       </notes>
       <segment>
         <source>A scan is in progress.</source>
@@ -17763,7 +17856,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6945611625735267266">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:97</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:99</note>
       </notes>
       <segment>
         <source>Bring the index of this folder and its sub-folders up to date, for search (asks first).</source>
@@ -17771,7 +17864,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1871527591521751416">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:102,103</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:104,105</note>
       </notes>
       <segment>
         <source>Take this folder and its sub-folders out of the index; the files stay on the disk (asks first).</source>
@@ -17779,7 +17872,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1104712005000603856">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:108</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:110</note>
       </notes>
       <segment>
         <source>Version <ph id="0" equiv="version" disp="config.version"/>, commit <ph id="1" equiv="commit" disp="config.commit"/></source>
@@ -17787,15 +17880,23 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2512296993220019688">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:109</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:111</note>
       </notes>
       <segment>
         <source>Version <ph id="0" equiv="version" disp="config?.version"/></source>
       </segment>
     </unit>
+    <unit id="7445918153818710913">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:122</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="hint" disp="hint"/> Shortcut: Ctrl+Z.</source>
+      </segment>
+    </unit>
     <unit id="8116680209439535893">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:134</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:143</note>
       </notes>
       <segment>
         <source>Could not sign out: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -17803,7 +17904,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8138985905765663489">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.ts:151</note>
+        <note category="location">src/app/library/topbar/main-menu.component.ts:160</note>
       </notes>
       <segment>
         <source>Could not switch to another space: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
@@ -25256,7 +25357,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2548485743409442386">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:77</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:79</note>
       </notes>
       <segment>
         <source>{count, plural, one {# copy} other {# copies}}</source>
@@ -25264,7 +25365,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1302369558286676608">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:82</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:84</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="size" disp="each"/> each · <ph id="1" equiv="extra" disp="extra"/> extra</source>
@@ -25272,7 +25373,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="375616451848908449">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:87</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:89</note>
       </notes>
       <segment>
         <source>Delete this copy for good, keeping another one (asks first).</source>
@@ -25280,7 +25381,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="701227920465091910">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:88</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:90</note>
       </notes>
       <segment>
         <source>Move this copy to the trash, keeping another one (asks first).</source>
@@ -25288,7 +25389,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6387755355702847875">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:92</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:94</note>
       </notes>
       <segment>
         <source>Delete this file from the disk now. It can&apos;t be put back.</source>
@@ -25296,7 +25397,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4187054003101761960">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:93</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:95</note>
       </notes>
       <segment>
         <source>Move this file to the trash now. It can be put back from there.</source>
@@ -25304,7 +25405,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2389345757831582429">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:97</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:99</note>
       </notes>
       <segment>
         <source>Remove “<ph id="0" equiv="name" disp="file.name"/>”</source>
@@ -25312,7 +25413,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4598642184946742970">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:124</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:126</note>
       </notes>
       <segment>
         <source>Put it back where it was.</source>
@@ -25320,7 +25421,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2077858573523685634">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:132</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:134</note>
       </notes>
       <segment>
         <source>Could not remove “<ph id="0" equiv="name" disp="file.name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -25328,7 +25429,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="270371840308488789">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:148</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:150</note>
       </notes>
       <segment>
         <source>“<ph id="0" equiv="name" disp="file.name"/>” is back.</source>
@@ -25336,7 +25437,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1008782845639963226">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:166,167</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:168,169</note>
       </notes>
       <segment>
         <source>Files of the index with the same size and the same fingerprint, the biggest first. Only indexed files are compared: scan a folder to include its latest files.</source>
@@ -25344,7 +25445,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="963667428950315495">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:171,172</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:173,174</note>
       </notes>
       <segment>
         <source>Only in “<ph id="0" equiv="INTERPOLATION" disp="{{ folder() }}"/>”</source>
@@ -25352,7 +25453,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6371144928335208366">
       <notes>
-        <note category="location">src/app/tracking/duplicates-panel.component.ts:195,196</note>
+        <note category="location">src/app/tracking/duplicates-panel.component.ts:197,198</note>
         <note category="location">src/app/tracking/similar-panel.component.html:68,69</note>
       </notes>
       <segment>

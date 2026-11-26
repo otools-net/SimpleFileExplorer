@@ -4,6 +4,7 @@ import { FileOperationResult, isFileConflict, LibraryItem } from '../core/models
 import { PlaceFiles } from '../core/place-files';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
+import { UndoHistory } from '../core/undo-history';
 import { formatOf } from '../formats/formats';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { SheetComponent } from '../shared/sheet.component';
@@ -11,6 +12,8 @@ import { Dialogs, registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
 import { nameNotBack, quoted } from './file-dialog-texts';
+import { MadeUndo } from './undo-made';
+import { createdHint, createdText } from './undo-texts';
 
 type Mode =
     { kind: 'folder'; parent: string } | { kind: 'file'; parent: string } | { kind: 'rename'; item: LibraryItem };
@@ -69,6 +72,8 @@ export class NameDialog {
     private readonly quickLinks = inject(QuickLinksService);
     private readonly toasts = inject(ToastService);
     private readonly dialogs = inject(Dialogs);
+    private readonly undos = inject(UndoHistory);
+    private readonly made = inject(MadeUndo);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
     private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
 
@@ -172,21 +177,38 @@ export class NameDialog {
         if (mode.kind === 'rename') {
             this.renamed(mode.item.path, result);
             const renamed = result;
-            this.toasts.show($localize`Renamed to ${quoted(renamed.name)}:name:.`, {
+            const done = $localize`Renamed to ${quoted(renamed.name)}:name:.`;
+            this.toasts.show(done, {
                 timeout: 8000,
-                action: {
-                    label: $localize`Undo`,
-                    title: $localize`Give it back its name ${quoted(mode.item.name)}:name:.`,
-                    run: () => void this.undoRename(renamed, mode.item.name),
-                },
+                action: this.undos.add({
+                    done,
+                    hint: $localize`Give it back its name ${quoted(mode.item.name)}:name:.`,
+                    run: () => this.undoRename(renamed, mode.item.name),
+                    place: this.undos.here(),
+                }),
             });
         } else {
             this.store.applyAdded(result);
+            this.offerUndoOfNew(mode.kind, result);
             const format = mode.kind === 'file' ? formatOf(result) : null;
             // Text (a format of its own, not a picture or video, which an empty file can't be).
             if (format?.edits && this.store.can(Rights.viewFiles, result))
                 this.dialogs.viewer()?.open(result, { edit: true });
         }
+    }
+
+    /**
+     * A new folder or file of the library can be undone (Ctrl+Z, the ⋮ menu; no toast says it was made: the listing
+     * shows it): it goes to the trash unless something changed in it since.
+     */
+    private offerUndoOfNew(kind: 'folder' | 'file', item: LibraryItem): void {
+        if (this.undos.here().id !== null || !this.made.possible()) return;
+        const since = item.modified ?? new Date().toISOString();
+        this.undos.add({
+            done: createdText(kind, item.name),
+            hint: createdHint(kind, item.name),
+            run: () => this.made.trash([item.path], since),
+        });
     }
 
     /** The listing (and the quick links, which the server moved too) take the new name. */

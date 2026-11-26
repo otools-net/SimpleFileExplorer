@@ -7,6 +7,7 @@ import { FileTags } from '../core/tag.models';
 import { DuplicateGroup, DuplicateResults } from './tracking.models';
 import { readPreference, writePreference } from '../core/preferences';
 import { ToastService } from '../core/toast.service';
+import { UndoHistory } from '../core/undo-history';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { checkedOf, valueOf } from '../shared/events';
 import { StatusBoxComponent, TrackingFileComponent } from './tracking-parts';
@@ -53,6 +54,7 @@ export class DuplicateGroupComponent {
 
     private readonly api = inject(Api);
     private readonly toasts = inject(ToastService);
+    private readonly undos = inject(UndoHistory);
     private readonly removedPaths = signal<ReadonlySet<string>>(new Set());
     private readonly keptTags = signal<ReadonlyMap<string, FileTags['tags']>>(new Map());
     protected readonly confirming = signal<string | null>(null);
@@ -119,11 +121,11 @@ export class DuplicateGroupComponent {
             if (trashed)
                 this.toasts.show(text, {
                     timeout: 10000,
-                    action: {
-                        label: $localize`Undo`,
-                        title: $localize`Put it back where it was.`,
-                        run: () => void this.undo(file, trashId),
-                    },
+                    action: this.undos.add({
+                        done: text,
+                        hint: $localize`Put it back where it was.`,
+                        run: () => this.undo(file, trashId),
+                    }),
                 });
             else this.toasts.show(text);
             this.removed.emit({ file, keepPath, kept: result.kept, dissolved: this.count() < 2 });

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild
 import { PlaceFiles } from '../core/place-files';
 import { isFileConflict, LibraryItem } from '../core/models';
 import { ToastService } from '../core/toast.service';
+import { UndoHistory } from '../core/undo-history';
 import { registerDialog } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { BusyDirective } from '../shared/busy.directive';
@@ -96,6 +97,7 @@ export class BatchRenameDialog {
     private readonly files = inject(PlaceFiles);
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
+    private readonly undos = inject(UndoHistory);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
 
     protected readonly items = signal<LibraryItem[]>([]);
@@ -190,15 +192,18 @@ export class BatchRenameDialog {
             }
         }
         this.saving.set(false);
-        if (done.length)
-            this.toasts.show(renamedToast(done.length), {
+        if (done.length) {
+            const text = renamedToast(done.length);
+            this.toasts.show(text, {
                 timeout: 10000,
-                action: {
-                    label: $localize`Undo`,
-                    title: undoRenameHint(done.length),
-                    run: () => void this.undo(done),
-                },
+                action: this.undos.add({
+                    done: text,
+                    hint: undoRenameHint(done.length),
+                    run: () => this.undo(done),
+                    place: this.undos.here(),
+                }),
             });
+        }
         if (failures.length) {
             // Those left are shown again, under their new names.
             this.items.update((items) => items.map((item) => done.find((d) => d.from.path === item.path)?.to ?? item));

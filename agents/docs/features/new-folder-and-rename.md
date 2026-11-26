@@ -52,5 +52,6 @@ Code: `src/Sfe.Core/Files/FileOperations.cs`, `src/Sfe.Api/Endpoints/FileEndpoin
   up to its extension), the location bar's file-plus button. No editor.
 - **Undo** (1.62.0): after a rename, a toast's Undo renames back (`NameDialog.undoRename`); after a move job,
   `FileTransfers.undoMove` moves each item back into its old folder (one `transfer` per folder: the gains check runs).
-  `ToastService.show` takes `actions` (several buttons); `toast.action` is the first.
+  `ToastService.show` takes `actions` (several buttons); `toast.action` is the first. Since 2.0 every Undo goes
+  through the tab's undo history (Ctrl+Z, the ⋮ menu; new folders and files too): [undo.md](undo.md).
 - Several items: [batch-rename.md](batch-rename.md).

@@ -6,6 +6,7 @@ import { ConfigService } from '../../core/config.service';
 import { Rights } from '../../core/rights';
 import { modeName, modeSummary } from '../../core/server-modes';
 import { ToastService } from '../../core/toast.service';
+import { UndoHistory } from '../../core/undo-history';
 import { IconComponent } from '../../shared/icon.component';
 import { ChangeFeed } from '../change-feed.service';
 import { Dialogs } from '../dialogs.service';
@@ -14,12 +15,12 @@ import { ScanService } from '../scan/scan.service';
 import { Popovers } from './popovers.service';
 
 /**
- * The ⋮ menu: who is signed in, scanning the folder browsed or taking it out of the index, the other spaces of the
- * account, full screen, the administration page (settings, tags, duplicates, background tasks, people...), signing
- * out, the version and the server's mode. Each entry shows only with its right. While keep alive pings the library
- * folder, a dot on the button says how it goes: green, or a yellow ! when the folder doesn't answer (and a line in
- * the menu, a link for `settings.keepAlive`). The yellow ! also shows, for everyone, while the server doesn't answer
- * (`ChangeFeed.serverLost`), with its own line.
+ * The ⋮ menu: who is signed in, Undo (the tab's latest action that can be undone, as Ctrl+Z), scanning the folder
+ * browsed or taking it out of the index, the other spaces of the account, full screen, the administration page
+ * (settings, tags, duplicates, background tasks, people...), signing out, the version and the server's mode. Each
+ * entry shows only with its right. While keep alive pings the library folder, a dot on the button says how it goes:
+ * green, or a yellow ! when the folder doesn't answer (and a line in the menu, a link for `settings.keepAlive`). The
+ * yellow ! also shows, for everyone, while the server doesn't answer (`ChangeFeed.serverLost`), with its own line.
  */
 @Component({
     selector: 'sfe-main-menu',
@@ -37,6 +38,7 @@ export class MainMenuComponent {
     private readonly router = inject(Router);
     private readonly toasts = inject(ToastService);
     protected readonly config = this.configService.config;
+    protected readonly undos = inject(UndoHistory);
 
     protected readonly isOpen = computed(() => this.popovers.open() === 'menu');
     protected readonly user = this.configService.user;
@@ -114,6 +116,13 @@ export class MainMenuComponent {
         return mode ? { id: mode, name: modeName(mode), summary: modeSummary(mode) } : null;
     });
 
+    /** Undo's hint: what it does and its key, or why it can't be done here. */
+    protected readonly undoTitle = computed(() => {
+        const hint = this.undos.blocked() ?? this.undos.latest()?.hint ?? '';
+        return $localize`${hint}:hint: Shortcut: Ctrl+Z.`;
+    });
+
+    protected readonly undo = () => this.undos.undoLatest();
     protected readonly startScan = () => this.scan.start();
     protected readonly removeFromIndex = () => this.dialogs.removeFromIndex()?.open();
     protected readonly excludeFolder = () => {

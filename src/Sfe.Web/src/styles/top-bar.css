@@ -216,13 +216,16 @@
     height: 20px;
     color: var(--text-muted);
 }
-.menu-account span {
+/* Undo in the ⋮ menu: what it would undo under its label, as the space under the account's name. */
+.menu-account span,
+.menu-undo span {
     display: flex;
     flex-direction: column;
     min-width: 0;
     overflow-wrap: anywhere;
 }
-.menu-account small {
+.menu-account small,
+.menu-undo small {
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 400;

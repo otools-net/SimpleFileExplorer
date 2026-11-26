@@ -4,6 +4,7 @@ import { ConfigService } from '../core/config.service';
 import { DeletedItem, isFileConflict, LibraryItem } from '../core/models';
 import { PlaceFiles } from '../core/place-files';
 import { ToastService } from '../core/toast.service';
+import { UndoHistory } from '../core/undo-history';
 import { BusyDirective, whileBusy } from '../shared/busy.directive';
 import { SheetComponent } from '../shared/sheet.component';
 import { registerDialog } from '../library/dialogs.service';
@@ -44,6 +45,7 @@ export class DeleteDialog {
     private readonly store = inject(ListingStore);
     private readonly toasts = inject(ToastService);
     private readonly actions = inject(FileActions);
+    private readonly undos = inject(UndoHistory);
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
 
     protected readonly items = signal<LibraryItem[]>([]);
@@ -121,23 +123,20 @@ export class DeleteDialog {
         const done = results.filter((result) => result.status === 'done');
         this.store.applyRemoved(done.map((result) => result.path));
         const trashed = done.map((result) => result.trashId).filter((id): id is number => typeof id === 'number');
-        if (done.length)
-            this.toasts.show(
-                deletedToast(
-                    done.length,
-                    this.place() ? 'connection' : permanent || !trashed.length ? 'permanent' : 'trash',
-                ),
-                {
-                    timeout: trashed.length ? 10000 : 4500,
-                    action: trashed.length
-                        ? {
-                              label: $localize`Undo`,
-                              title: undoDeleteHint(trashed.length),
-                              run: () => void this.undo(trashed),
-                          }
-                        : undefined,
-                },
-            );
+        if (done.length) {
+            const how = this.place() ? 'connection' : permanent || !trashed.length ? 'permanent' : 'trash';
+            const text = deletedToast(done.length, how);
+            this.toasts.show(text, {
+                timeout: trashed.length ? 10000 : 4500,
+                action: trashed.length
+                    ? this.undos.add({
+                          done: text,
+                          hint: undoDeleteHint(trashed.length),
+                          run: () => this.undo(trashed),
+                      })
+                    : undefined,
+            });
+        }
 
         const unavailable = results
             .filter((result) => result.status === 'trashUnavailable')

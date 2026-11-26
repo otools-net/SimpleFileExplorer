@@ -20,6 +20,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   in turn). Whoever may open the file sees them; they follow the file when it is renamed or moved. API:
   `GET api/files/versions?path=`, `GET api/files/versions/{id}/content`, `POST api/files/versions/{id}/copy`,
   `POST api/files/versions/{id}/restore`.
+- **Undo with Ctrl+Z**: Ctrl+Z (⌘Z on a Mac) undoes your latest action in the tab, and **Undo** in the ⋮ menu shows
+  what it would undo: renames, deletes to the trash, moves, removed duplicates, and now also copies into the library and
+  new folders and files (they go to the trash, unless they changed since). The tab keeps your last 20 actions; nothing
+  is kept across reloads, tabs or devices. A rename made in a connection is undone only while that connection is open.
 
 - **Uploads checked piece by piece**: each piece of an upload carries its SHA-256 (`Content-Digest: sha-256=:…:`,
   RFC 9530), and the server compares it before keeping the piece (library and connections): a piece damaged on the way
