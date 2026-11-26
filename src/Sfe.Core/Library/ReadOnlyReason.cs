@@ -29,4 +29,7 @@ public enum ReadOnlyReason
 
     /// <summary>The server's account may not write in the folder.</summary>
     DiskRefused,
+
+    /// <summary>The disk marks the file read-only: it can't be saved over (Properties only).</summary>
+    FileReadOnly,
 }

@@ -78,7 +78,7 @@ public static class PropertyEndpoints
         CancellationToken cancellationToken
     )
     {
-        var (properties, _, paths, serverFiles, work, current, _, logger) = services;
+        var (properties, _, paths, serverFiles, work, current, _, logger, options) = services;
         var state = await current.GetAsync();
         if (
             Find(state, paths, serverFiles, work, path) is not { } found
@@ -101,11 +101,13 @@ public static class PropertyEndpoints
         }
         if (found.Path.Length == 0)
             item = item with { Name = paths.RootName };
+        var access = new ItemAccessReport(state, paths, options.CurrentValue.Rights.Disabled, serverFiles, work);
         return TypedResults.Ok(
             new ItemProperties(
                 item,
                 details,
-                !details.IsFolder && state.Check(paths, found.Path, Rights.Download) == PathVerdict.Allowed
+                !details.IsFolder && state.Check(paths, found.Path, Rights.Download) == PathVerdict.Allowed,
+                access.Of(found.Path, details)
             )
         );
     }
@@ -116,7 +118,7 @@ public static class PropertyEndpoints
         CancellationToken cancellationToken
     )
     {
-        var (properties, _, paths, serverFiles, work, current, _, _) = services;
+        var (properties, _, paths, serverFiles, work, current, _, _, _) = services;
         var state = await current.GetAsync();
         if (Find(state, paths, serverFiles, work, path) is not { } found || !Directory.Exists(found.Full))
             return TypedResults.NotFound();
@@ -128,7 +130,7 @@ public static class PropertyEndpoints
         CountRequest request
     )
     {
-        var (_, jobs, paths, serverFiles, work, current, context, _) = services;
+        var (_, jobs, paths, serverFiles, work, current, context, _, _) = services;
         var state = await current.GetAsync();
         if (Find(state, paths, serverFiles, work, request.Path) is not { } found || !Directory.Exists(found.Full))
             return TypedResults.NotFound();
@@ -147,7 +149,7 @@ public static class PropertyEndpoints
         ChecksumRequest request
     )
     {
-        var (_, jobs, paths, serverFiles, work, current, context, _) = services;
+        var (_, jobs, paths, serverFiles, work, current, context, _, _) = services;
         var state = await current.GetAsync();
         if (Find(state, paths, serverFiles, work, request.Path) is not { } found || !File.Exists(found.Full))
             return TypedResults.NotFound();

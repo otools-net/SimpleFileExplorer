@@ -394,7 +394,15 @@ downloaded as it is.
   far as the server's disk keeps it), and whether it is hidden, read-only or a link to another place;
 - what the index knows: a picture's or video's resolution, a video's or song's length, its tags, or that no scan has
   indexed it yet;
-- for a file of the library, how many [previous versions](#previous-versions) it has, with **Show…**.
+- for a file of the library, how many [previous versions](#previous-versions) it has, with **Show…**;
+- **Access**: what you may do with it (open, download, save changes over a file, add files and folders to a folder,
+  rename, move, move to the trash), with a ✓ or, for what you can't, the reason under it: the server's or the space's
+  switch, a visitor or guest account, your rights, a folder rule, a link the server keeps read-only, the disk (mounted
+  read-only, or the server not allowed to write there), a file the disk marks read-only. **Folder rule** names the
+  folder whose rule decides here (ask an administrator to change it), **Disk** says whether the disk takes changes
+  where the item is.
+
+![The Access section of a file's properties](../images/properties-access.png)
 
 ![The properties of a picture, with its checksum](../images/properties-file.png)
 

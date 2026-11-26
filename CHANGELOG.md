@@ -47,6 +47,14 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   now, once per folder (kept 30 s), without writing anything. API: `readOnly` on `GET api/browse` (a reason word),
   on its items (a file the disk marks read-only) and on `access` and its `children`; Sfe.Client: the same in
   `Raw` models.
+- **Access in Properties**: the properties of a file or folder of the library have an **Access** section: what you
+  may do with it (open, download, save over, add files to a folder, rename, move, move to the trash), each refused one
+  with its reason (the server's or the space's switch, visitor, your rights, a folder rule, a read-only link, the disk
+  read-only or refusing the server, a file the disk marks read-only), the folder the rule deciding there is set on,
+  and what the disk allows. In a folder the disk refuses (or behind a read-only link), the menu entries writing there
+  (Cut, Rename…, Move to…, Delete…, the archive's, New folder…, New file…, uploads, Paste) are greyed out with that
+  reason. API: `access` on `GET api/files/properties` (`actions`, `ruleFolder`, `disk`), the reason word
+  `fileReadOnly`; Sfe.Client: the same in `Raw` models.
 
 ### Changed
 

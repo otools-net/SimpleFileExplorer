@@ -24,6 +24,8 @@ client `app/files/properties.dialog.ts` (`PropertiesDialog`, slot `Dialogs.prope
   after the end. The count walks with a stack (no recursion), skips links (`leftOut`), protected real paths (work
   folder, server files), folders the caller doesn't see (access read when it started), and stops at 2 000 000 entries
   (`capped`). The checksum reads with `IncrementalHash`, progress in `bytes`/`total`.
+- `access` on the same answer: the **Access** section (what the caller may do, why not, the folder a rule is set on,
+  what the disk allows): [item-access](item-access.md#what-properties-says-access-on-get-apifilesproperties).
 - The client polls every 400 ms while a job runs; closing the sheet (or opening another item) cancels its jobs.
 
 ## Gotchas

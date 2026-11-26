@@ -1,0 +1,29 @@
+/* Properties' Access section: what the session may do, each refused action with its reason under it. */
+.access-lines {
+    display: grid;
+    gap: 4px;
+    margin: 0 0 10px;
+    padding: 0;
+    list-style: none;
+}
+.access-lines li {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    column-gap: 8px;
+    align-items: baseline;
+}
+.access-lines svg {
+    width: 14px;
+    height: 14px;
+    align-self: center;
+    color: var(--accent);
+}
+.access-lines li.refused svg,
+.access-lines li.refused .access-label {
+    color: var(--text-muted);
+}
+.access-reason {
+    grid-column: 2;
+    color: var(--text-muted);
+    font-size: 12px;
+}

@@ -18,7 +18,7 @@ namespace Otools.Net.Sfe.Core.Access;
 public sealed class FolderPolicy
 {
     /// <summary>No folder rule applies: the subject's rights apply everywhere.</summary>
-    public static FolderPolicy Unrestricted { get; } = new(null, LibraryPaths.PathComparison);
+    public static FolderPolicy Unrestricted { get; } = new(null, LibraryPaths.PathComparison, false);
 
     /// <summary>Rights by path (compared by <see cref="_comparer"/>); null when unrestricted.</summary>
     private readonly Dictionary<string, IReadOnlySet<string>>? _entries;
@@ -26,9 +26,17 @@ public sealed class FolderPolicy
     private readonly StringComparison _comparison;
     private readonly StringComparer _comparer;
 
-    private FolderPolicy(Dictionary<string, IReadOnlySet<string>>? entries, StringComparison comparison)
+    /// <summary>Some principal has a rule on the root itself (the root is in the table either way).</summary>
+    private readonly bool _ruleAtRoot;
+
+    private FolderPolicy(
+        Dictionary<string, IReadOnlySet<string>>? entries,
+        StringComparison comparison,
+        bool ruleAtRoot
+    )
     {
         _entries = entries;
+        _ruleAtRoot = ruleAtRoot;
         _comparison = comparison;
         _comparer = StringComparer.FromComparison(comparison);
     }
@@ -59,7 +67,8 @@ public sealed class FolderPolicy
             paths.UnionWith(principal.Rules.Keys);
         return new FolderPolicy(
             paths.ToDictionary(path => path, IReadOnlySet<string> (path) => RightsAt(normalized, path), comparer),
-            comparison
+            comparison,
+            normalized.Any(p => p.Rules.ContainsKey(string.Empty))
         );
     }
 
@@ -73,6 +82,18 @@ public sealed class FolderPolicy
             return new FolderAccess(granted, null, false);
         var rights = Nearest(path);
         return new FolderAccess(granted, rights, IsPathOnly(path, rights, granted));
+    }
+
+    /// <summary>
+    /// The folder whose rule decides what the subject may do at <paramref name="path"/>: the nearest at or above it
+    /// that some principal has a rule on. Null without folder rules, or when only default levels apply there.
+    /// </summary>
+    public string? RuleFolder(string path)
+    {
+        if (_entries is null)
+            return null;
+        var nearest = SelfAndAncestors(path).First(_entries.ContainsKey);
+        return nearest.Length > 0 || _ruleAtRoot ? nearest : null;
     }
 
     /// <summary>

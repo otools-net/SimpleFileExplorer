@@ -497,8 +497,14 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     `sfe-lock-mark`. Note [item-access](../features/item-access.md); screenshot `read-only-folder.png` (scene
     `read-only`: the space's switch turned on and back, Local mode signs in administrators only). OpenAPI baseline
     and Sfe.Client regenerated. Baselines: `LibraryEndpoints.cs` 555 → 557, `LibraryBrowser.cs` 480 → 481.
-  - [ ] **4.6b Properties and menus:** the **Access** section (what the user may do, what the disk allows, each with
-    its source and the folder a rule is set on); menu actions the disk refuses greyed with that reason.
+  - [x] **4.6b Properties and menus:** the **Access** section (what the user may do, what the disk allows, each with
+    its source and the folder a rule is set on); menu actions the disk refuses greyed with that reason. Done
+    2026-11-26: `ItemProperties.Access` (`ItemAccessReport`: actions open / download / saveOver / createInside /
+    rename / move / delete with the first reason, `ruleFolder` from `FolderPolicy.RuleFolder`, `disk` asked
+    whatever the rights), reason word `fileReadOnly` (additive). Client `files/access-texts.ts`, the sheet's Access
+    section; `placeRefusal` greys the item menu's writes (cut, rename, move, delete, archive, paste but not for
+    `diskRefused`) and the background menu's New… / uploads / Paste. Screenshot `properties-access.png` (scene
+    `properties`, the space's switch for the shot through `filesReadOnly`). Location bar buttons not greyed.
   - [ ] **4.6c connections:** the level, the connection's `ReadOnly` cap and its folder rules, folders the provider
     reports read-only, in the same chip, locks and Properties.
 
@@ -583,11 +589,14 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-26):** 4.6 split in three; **4.6a** (library listings: Read only chip, item locks, the
-  disk probe) done. Next: **4.6b** (Properties' Access section: what the user may do and what the disk allows, with
-  sources and the folder a rule is set on; menu actions the disk refuses greyed), then **4.6c** (connections).
-- 4.6b: `ListingAccess.SfeReason` and `DiskWrites.Of` are the pieces to reuse for Properties; the folder a rule is
-  set on isn't computed yet (`FolderPolicy` has no "nearest rule" query: add one).
+- **Last session (2026-11-26):** **4.6a** (library listings) and **4.6b** (Properties' Access section, menus greyed
+  by the disk) done. Next: **4.6c** (connections: the level, the connection's `ReadOnly` cap, its folder rules,
+  folders the provider reports read-only, in the same chip, locks and Properties).
+- 4.6c: `ItemAccessReport` (library) is the shape to follow for a connection's Properties (`place-properties.ts`
+  shows the remote sheet: no Access section yet); `ConnectionPolicies` has a `FolderPolicy` per connection
+  (`RuleFolder` works on it, paths compared as the provider does).
+- The docs-screenshots helper `filesReadOnly(b)` (`shots.mjs`) turns the space's Files read-only switch on and
+  answers what puts it back: reuse it for shots of what a read-only user sees.
 - Docs-screenshots scenes can't sign in other accounts: the app runs in Local mode (administrators only). Show what
   another user sees by switching the space's rights for the shot and back (scene `read-only`).
 - `TaskHistory.cs` is at 400 lines (the limit) after 4.5b, `Program.cs` at 399: move something out before adding.

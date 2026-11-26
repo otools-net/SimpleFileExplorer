@@ -13,6 +13,7 @@ const REASONS: Record<ReadOnlyReason, string> = {
     link: $localize`Read only: this folder is behind a link leaving the library, which the server keeps read-only.`,
     diskReadOnly: $localize`Read only: the disk refuses changes here, it is mounted read-only.`,
     diskRefused: $localize`Read only: the server isn't allowed to write in this folder on the disk.`,
+    fileReadOnly: $localize`Read only: the disk marks this file read-only.`,
 };
 
 /** Why the session can't change the files of the folder listed; null when it can, and for searches. */
@@ -23,6 +24,18 @@ export function readOnlyReason(page: ListingPage | null): ReadOnlyReason | null 
 /** The hint of the chip: why, in one sentence. */
 export function readOnlyText(reason: ReadOnlyReason): string {
     return REASONS[reason] ?? REASONS.rights;
+}
+
+/** What changes the folder listed on the disk: greyed in the menus when the disk refuses it. */
+const PLACE_REASONS: readonly ReadOnlyReason[] = ['link', 'diskReadOnly', 'diskRefused'];
+
+/**
+ * Why the folder listed takes no change although the rights allow it: a link the server keeps read-only, or the disk.
+ * Null when it takes them, when the rights already refuse (the menus say so), and for searches.
+ */
+export function placeRefusal(page: ListingPage | null): ReadOnlyReason | null {
+    const reason = readOnlyReason(page);
+    return reason && PLACE_REASONS.includes(reason) ? reason : null;
 }
 
 /**

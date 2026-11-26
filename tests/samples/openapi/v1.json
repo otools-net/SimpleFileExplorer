@@ -10242,6 +10242,32 @@
           }
         }
       },
+      "ActionAccess": {
+        "required": [
+          "action",
+          "allowed",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/ItemAction"
+          },
+          "allowed": {
+            "type": "boolean"
+          },
+          "reason": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ReadOnlyReason"
+              }
+            ]
+          }
+        }
+      },
       "AppearanceSettings": {
         "type": "object",
         "properties": {
@@ -14322,6 +14348,49 @@
           }
         }
       },
+      "ItemAccess": {
+        "required": [
+          "actions",
+          "ruleFolder",
+          "disk"
+        ],
+        "type": "object",
+        "properties": {
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionAccess"
+            }
+          },
+          "ruleFolder": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "disk": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ReadOnlyReason"
+              }
+            ]
+          }
+        }
+      },
+      "ItemAction": {
+        "enum": [
+          "open",
+          "download",
+          "saveOver",
+          "createInside",
+          "rename",
+          "move",
+          "delete"
+        ]
+      },
       "ItemDetails": {
         "required": [
           "path",
@@ -14409,6 +14478,16 @@
           },
           "canChecksum": {
             "type": "boolean"
+          },
+          "access": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ItemAccess"
+              }
+            ]
           }
         }
       },
@@ -15521,6 +15600,7 @@
           "link",
           "diskReadOnly",
           "diskRefused",
+          "fileReadOnly",
           null
         ]
       },

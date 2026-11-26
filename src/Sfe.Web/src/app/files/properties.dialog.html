@@ -88,6 +88,30 @@
             }
         </dl>
 
+        @if (access(); as a) {
+            <section class="properties-section properties-access" aria-label="Access" i18n-aria-label>
+                <h3 i18n>Access</h3>
+                <ul class="access-lines">
+                    @for (line of a.lines; track line.action) {
+                        <li [class.refused]="!line.allowed" [attr.data-action]="line.action">
+                            <svg [sfeIcon]="line.allowed ? 'check' : 'close'"></svg>
+                            <span class="visually-hidden">{{ line.allowed ? yes : no }}</span>
+                            <span class="access-label">{{ line.label }}</span>
+                            @if (line.reason) {
+                                <span class="access-reason">{{ line.reason }}</span>
+                            }
+                        </li>
+                    }
+                </ul>
+                <dl class="properties">
+                    @if (a.rule) {
+                        <dt i18n>Folder rule</dt><dd class="access-rule">{{ a.rule }}</dd>
+                    }
+                    <dt i18n>Disk</dt><dd class="access-disk">{{ a.disk }}</dd>
+                </dl>
+            </section>
+        }
+
         @if (p.details.isFolder) {
             <section class="properties-section" aria-label="What the folder holds" i18n-aria-label>
                 <h3 i18n>What it holds</h3>

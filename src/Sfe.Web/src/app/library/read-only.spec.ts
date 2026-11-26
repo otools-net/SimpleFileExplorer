@@ -7,6 +7,10 @@ import { FolderItemComponent } from './items/folder-item.component';
 import { ListingStore } from './listing.store';
 import { LocationComponent } from './location/location.component';
 import { itemLock, readOnlyText } from './read-only';
+import { entryOf, greyedIds } from '../../testing/menus';
+import { FileTransfers } from '../files/file-transfers';
+import { ItemMenu } from '../files/item-menu';
+import { FolderMenu } from './folder-menu';
 import { SidebarService } from './sidebar/sidebar.service';
 
 /* A folder the session can't change, and the items that differ from their folder (item-access.md). */
@@ -87,6 +91,7 @@ describe('Read-only folders', () => {
             'link',
             'diskReadOnly',
             'diskRefused',
+            'fileReadOnly',
         ];
         const texts = reasons.map(readOnlyText);
 
@@ -139,5 +144,42 @@ describe('Locks on items', () => {
                 ruled,
             ),
         ).toBeNull();
+    });
+});
+
+describe('Menus on a folder the disk refuses', () => {
+    const photo = item('Media/photo.jpg');
+    const sub = item('Media/Old', { kind: 'directory' });
+
+    it('grey what writes in it, with the reason, and leave the rest', async () => {
+        await show(page([photo, sub], { readOnly: 'diskReadOnly' }));
+        TestBed.inject(FileTransfers).keep('copy', [photo]);
+
+        const entries = TestBed.inject(ItemMenu).entries(photo);
+        const greyed = greyedIds(entries);
+        const background = greyedIds(TestBed.inject(FolderMenu).entries());
+
+        expect(greyed).toEqual(expect.arrayContaining(['cut', 'rename', 'moveTo', 'delete']));
+        expect(greyed).not.toContain('copy');
+        expect(greyed).not.toContain('download');
+        expect(entryOf(entries, 'rename').title).toBe(readOnlyText('diskReadOnly'));
+        expect(background).toEqual(expect.arrayContaining(['newFolder', 'upload', 'paste']));
+        expect(greyedIds(TestBed.inject(ItemMenu).entries(sub))).toContain('paste');
+    });
+
+    it('let a paste into a sub-folder through when only the folder itself is refused', async () => {
+        await show(page([sub], { readOnly: 'diskRefused' }));
+        TestBed.inject(FileTransfers).keep('copy', [photo]);
+
+        expect(greyedIds(TestBed.inject(ItemMenu).entries(sub))).not.toContain('paste');
+        expect(greyedIds(TestBed.inject(ItemMenu).entries(sub))).toContain('rename');
+    });
+
+    it('stay as the rights say when the folder takes changes, or the rights already refuse', async () => {
+        await show(page([photo]));
+        expect(greyedIds(TestBed.inject(ItemMenu).entries(photo))).toEqual([]);
+
+        await show(page([photo], { readOnly: 'space' }));
+        expect(greyedIds(TestBed.inject(ItemMenu).entries(photo)), 'the rights grey, not the disk').toEqual([]);
     });
 });

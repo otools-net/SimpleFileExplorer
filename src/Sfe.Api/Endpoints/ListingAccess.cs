@@ -64,7 +64,7 @@ internal static class ListingAccess
     /// Why the place itself takes no changes: a link the server keeps read-only, then what the file system says
     /// (<see cref="DiskWrites"/>, kept briefly per folder).
     /// </summary>
-    private static ReadOnlyReason? DiskReason(string full, ServerFiles serverFiles, WorkFolder workFolder)
+    internal static ReadOnlyReason? DiskReason(string full, ServerFiles serverFiles, WorkFolder workFolder)
     {
         if (FileEndpoints.ProtectedFromWrites(full, serverFiles, workFolder))
             return ReadOnlyReason.Link;

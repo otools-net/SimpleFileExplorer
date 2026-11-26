@@ -137,6 +137,42 @@ describe('PropertiesDialog', () => {
         expect(element.textContent).toContain('1 link or unreadable folder was left out.');
     });
 
+    it('tells what the session may do, why not, the folder a rule is set on and what the disk allows', async () => {
+        const access: ItemProperties['access'] = {
+            actions: [
+                { action: 'open', allowed: true },
+                { action: 'saveOver', allowed: false, reason: 'fileReadOnly' },
+                { action: 'rename', allowed: false, reason: 'rule' },
+            ],
+            ruleFolder: 'Media',
+            disk: null,
+        };
+        const { element } = await open(photo, properties(photo, { access }));
+
+        const lines = [...element.querySelectorAll('.access-lines li')];
+        expect(lines.map((line) => line.getAttribute('data-action'))).toEqual(['open', 'saveOver', 'rename']);
+        expect(lines[0].classList.contains('refused')).toBe(false);
+        expect(lines[1].querySelector('.access-reason')!.textContent).toBe('The disk marks the file read-only.');
+        expect(lines[2].querySelector('.access-reason')!.textContent).toBe("A folder rule doesn't allow it here.");
+        expect(element.querySelector('.access-rule')!.textContent).toBe('Set on Root / Media.');
+        expect(element.querySelector('.access-disk')!.textContent).toBe("Takes changes in the file's folder.");
+    });
+
+    it("tells a folder the disk refuses, without a rule's line when no rule applies", async () => {
+        const access: ItemProperties['access'] = {
+            actions: [{ action: 'createInside', allowed: false, reason: 'diskReadOnly' }],
+            ruleFolder: null,
+            disk: 'diskReadOnly',
+        };
+        const { element } = await open(folder, properties(folder, { access }), (mock) =>
+            mock.folderTotals.mockResolvedValue({ indexed: true, files: 0, folders: 0, bytes: 0 }),
+        );
+
+        expect(element.querySelector('.access-rule')).toBeNull();
+        expect(element.querySelector('.access-disk')!.textContent).toBe('The disk is mounted read-only.');
+        expect(element.querySelector('.access-lines')!.textContent).toContain('Add files and folders to it');
+    });
+
     it('stops what runs when it closes', async () => {
         const { fixture, element } = await open(photo);
         api.startChecksum.mockResolvedValue(

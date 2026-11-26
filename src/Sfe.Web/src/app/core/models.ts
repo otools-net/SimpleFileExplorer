@@ -38,10 +38,10 @@ export interface LibraryItem {
 /**
  * Why the session can't change the files of a folder listed (agents/docs/features/item-access.md): the server's or
  * the space's switch, a visitor, its rights, a folder rule, a read-only link, a read-only volume, the server's account
- * refused writing.
+ * refused writing; in Properties also a file the disk marks read-only.
  */
 export type ReadOnlyReason =
-    'server' | 'space' | 'visitor' | 'rights' | 'rule' | 'link' | 'diskReadOnly' | 'diskRefused';
+    'server' | 'space' | 'visitor' | 'rights' | 'rule' | 'link' | 'diskReadOnly' | 'diskRefused' | 'fileReadOnly';
 
 /**
  * What a folder is kept out of, for the whole space (`index.exclude`): for each, the listed folder it is excluded
@@ -175,6 +175,20 @@ export interface ItemProperties {
     details: ItemDetails;
     /** May read the file whole for a checksum (right to download it). */
     canChecksum: boolean;
+    /** What the session may do with it and what the disk allows (the Access section). */
+    access?: ItemAccess | null;
+}
+
+/** What Properties tells the session it may do with an item (agents/docs/features/item-access.md). */
+export type ItemAction = 'open' | 'download' | 'saveOver' | 'createInside' | 'rename' | 'move' | 'delete';
+
+export interface ItemAccess {
+    /** The actions that apply to the item, each with the first reason refusing it (SFE's before the disk's). */
+    actions: { action: ItemAction; allowed: boolean; reason?: ReadOnlyReason | null }[];
+    /** The folder whose rule decides here (empty: the top); null without folder rules. */
+    ruleFolder?: string | null;
+    /** Why the disk takes no change where the item is; null when it takes them. */
+    disk?: ReadOnlyReason | null;
 }
 
 /** A zip of several files or folders: the browser downloads it once from `url`, soon. */

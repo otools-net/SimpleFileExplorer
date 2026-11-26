@@ -17,6 +17,7 @@ import { ItemProperties, LibraryItem } from '../core/models';
 import { ChecksumAlgorithm, FolderTotals, PropertyJob } from './file.models';
 import { placeProperties, providerName } from './place-properties';
 import { versionCount } from './version-texts';
+import { accessLines, diskText, ruleFolderText } from './access-texts';
 import {
     attributesText,
     checksumText,
@@ -32,6 +33,7 @@ import { ToastService } from '../core/toast.service';
 import { Dialogs, registerDialog } from '../library/dialogs.service';
 import { SheetComponent } from '../shared/sheet.component';
 import { TagChipComponent } from '../tags/tag-chip.component';
+import { IconComponent } from '../shared/icon.component';
 
 /** How often (ms) a running count or checksum is asked for. */
 const POLL = 400;
@@ -49,7 +51,7 @@ const ALGORITHMS: [ChecksumAlgorithm, string][] = [
  */
 @Component({
     selector: 'sfe-properties-dialog',
-    imports: [SheetComponent, TagChipComponent],
+    imports: [SheetComponent, TagChipComponent, IconComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './properties.dialog.html',
 })
@@ -62,6 +64,8 @@ export class PropertiesDialog {
     private readonly sheet = viewChild.required<SheetComponent>('sheet');
 
     protected readonly algorithms = ALGORITHMS;
+    protected readonly yes = $localize`:an action allowed, for screen readers:Allowed:`;
+    protected readonly no = $localize`:an action refused, for screen readers:Not allowed:`;
     protected readonly item = signal<LibraryItem | null>(null);
     protected readonly properties = signal<ItemProperties | null>(null);
     /** The answer on a connection (`config.place()`), instead of `properties`. */
@@ -108,6 +112,19 @@ export class PropertiesDialog {
                   item.duration ? formatDuration(item.duration) : null,
               ])
             : '';
+    });
+    /** The Access section: what the session may do with it, the folder a rule is set on, what the disk allows. */
+    protected readonly access = computed(() => {
+        const p = this.properties();
+        if (!p?.access) return null;
+        const folder = p.details.isFolder;
+        const rule = p.access.ruleFolder;
+        const root = this.config.config()?.rootName ?? $localize`The library`;
+        return {
+            lines: accessLines(p.access, folder),
+            rule: rule === null || rule === undefined ? null : ruleFolderText(rule, root),
+            disk: diskText(p.access, folder),
+        };
     });
     protected readonly totalsText = computed(() => totalsText(this.totals()));
     protected readonly countText = computed(() => countText(this.count()));

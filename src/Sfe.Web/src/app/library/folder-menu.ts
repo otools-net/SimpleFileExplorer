@@ -14,6 +14,7 @@ import { MenuEntry, MenuTarget } from '../menus/context-menu';
 import { Dialogs } from './dialogs.service';
 import { routeParams } from './library-route';
 import { ListingStore } from './listing.store';
+import { placeRefusal, readOnlyText } from './read-only';
 import { SearchScopeMenu } from './topbar/search-scope-menu';
 
 /**
@@ -292,7 +293,17 @@ for everyone using this space.`,
                 group: 'organise',
             });
         entries.push(...this.shared(path), ...this.properties(path));
-        return entries;
+        return this.onDisk(entries);
+    }
+
+    /** What makes something in the folder greyed out when the disk takes no change there (item-access.md). */
+    private onDisk(entries: MenuEntry[]): MenuEntry[] {
+        const reason = placeRefusal(this.store.listing());
+        if (!reason) return entries;
+        const title = readOnlyText(reason);
+        return entries.map((entry) =>
+            entry.group === 'new' || entry.id === 'paste' ? { ...entry, disabled: true, title } : entry,
+        );
     }
 
     /** Making something in the folder listed: New folder…, New file…, uploads. */

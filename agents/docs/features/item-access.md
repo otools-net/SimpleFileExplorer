@@ -1,13 +1,17 @@
 # Item access: read-only or writable shown
 
-Code: `src/Sfe.Api/Endpoints/ListingAccess.cs` (`SfeReason`, `DiskReason`, `AccessView`),
+Code: `src/Sfe.Api/Endpoints/ListingAccess.cs` (`SfeReason`, `DiskReason`, `AccessView`), `ItemAccessReport.cs`
+(Properties), `FolderPolicy.RuleFolder`,
 `src/Sfe.Core/Files/DiskWrites.cs` (`DiskWrite`), `src/Sfe.Core/Library/ReadOnlyReason.cs`,
 `EffectiveAccess.SpaceDisabled` (`RightsEvaluator`), `LibraryBrowser.ToItem` (`LibraryItem.ReadOnly`); client
 `library/read-only.ts` (`readOnlyReason`, `readOnlyText`, `itemLock`), `LockMarkComponent` (`items/item-parts.ts`),
 the chip in `location/location.component.html`, `.read-only-chip` (`styles/location.css`), `.lock-mark`
-(`styles/items.css`). Tests: `ListingReadOnlyRouteTests`, `DiskWritesTests`, `read-only.spec.ts`; on Linux through WSL with
+(`styles/items.css`); `placeRefusal` with `ItemCommands.onDisk` and `FolderMenu.onDisk` (menus);
+`files/access-texts.ts` and the Access section of `properties.dialog.html` (`styles/item-access.css`). Tests:
+`ListingReadOnlyRouteTests`, `ItemAccessRouteTests`, `FolderPolicyTests.TheFolderARuleIsSetOnIsTold`,
+`DiskWritesTests`, `read-only.spec.ts`, `properties.spec.ts`; on Linux through WSL with
 `agents/tools/linux-tests/run.sh --readonly-mount` (`access(2)` refused and `EROFS` checked there, 2026-11-26). Plan steps 4.6a
-(library listings, done), 4.6b (Properties and menus), 4.6c (connections):
+(library listings, done), 4.6b (Properties and menus, done), 4.6c (connections):
 [release-2.0-plan](../development/release-2.0-plan.md).
 
 ## What a listing says (`GET api/browse`)
@@ -26,6 +30,39 @@ the chip in `location/location.component.html`, `.read-only-chip` (`styles/locat
 - `readOnly: true` on a **file** item: the disk marks it read-only (`FileInfo.IsReadOnly`, read from what the
   enumeration already has: on Windows the attribute, on Unix .NET's check of the mode bits against the process's
   user and group). Null otherwise; never on folders (see gotchas). Search results (from the index) don't have it.
+
+## What Properties says (`access` on `GET api/files/properties`)
+
+- `actions`: the actions that apply, in this order, each `allowed` or with the first `reason` refusing it (SFE's
+  before the disk's): a file `open` (`files.view`), `download`, `saveOver` (the Replace rule: `files.delete` at
+  it, `files.createFiles` in its folder, then its folder's disk, then `fileReadOnly`), `rename`, `move`, `delete`
+  (to the trash); a folder `open` (`library.browse`), `download` (a zip), `createInside` (any of
+  `files.createFolders` / `createFiles` / `upload`, then the folder's own disk), `rename`, `move`, `delete`; the
+  top has no `rename` / `move` / `delete`.
+- Rights are checked at the item (`FolderChecks.At`: links and their targets, the stricter); a refused right says
+  `server` (`Sfe:Rights:Disabled`), `space` (its disabled rights), `visitor` (a guest and the right isn't
+  `GuestAllowed`), `rights` (the groups), or `rule` (the asker has it, not here). A folder deleted or moved also needs
+  the rights below it (`AllowsThroughout`): only checked when it is done, not told here.
+- Renaming, moving and deleting change the item's **parent** folder: its disk is asked; adding inside asks the
+  folder's own. One probe per folder per request (`ItemAccessReport` keeps them), `DiskWrites` keeps them 30 s.
+- `disk`: the item's place (a folder itself, a file's folder) as the disk sees it, **whatever the asker's rights**
+  (Properties is one item: no cost to save; listings ask only when SFE allows writing).
+- `ruleFolder`: `FolderPolicy.RuleFolder`, the nearest folder at or above the item with some principal's rule (the
+  table's entries); empty for a rule on the top; null without rules, or at the top when only default levels apply.
+  Canonical path, not the real one behind a link.
+- `fileReadOnly` is a reason word of `ReadOnlyReason` that listings never send (added in 4.6b; additive).
+
+## Menus greyed by the disk
+
+- `placeRefusal(listing)`: the folder listed's `readOnly` when it is `link`, `diskReadOnly` or `diskRefused` (the
+  disk is only asked when the rights allow writing, so the rights' own greying is never covered over).
+- Item menus (`ItemCommands.entry`, also the selection bar): `cut`, `rename`, `moveTo`, `delete`, the archive's
+  `extractBeside` / `extractEach` / `compress`, and `paste` into a sub-folder except for `diskRefused` (the
+  sub-folder may take writes), greyed with `readOnlyText(reason)`. Edit entries stay: the editors also save a copy
+  elsewhere or download.
+- The background menu (`FolderMenu.onDisk`): the `new` group (New folder…, New file…, uploads) and Paste.
+- Searches never grey (no listing reason); the location bar's buttons (upload, new folder) aren't greyed (left for
+  now: the server's error says it).
 
 ## The disk probe (`DiskWrites`)
 

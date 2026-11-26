@@ -44,6 +44,21 @@ public sealed class FolderPolicyTests
     }
 
     [TestMethod]
+    public void TheFolderARuleIsSetOnIsTold()
+    {
+        var policy = FolderPolicy.Compile([
+            Group([Rights.Browse], ("Private", FolderLevel.Hidden), ("Private/Shared", FolderLevel.Read)),
+        ]);
+        var atRoot = FolderPolicy.Compile([Group([Rights.Browse], ("", FolderLevel.Read))]);
+
+        Assert.IsNull(FolderPolicy.Unrestricted.RuleFolder("Private"));
+        Assert.IsNull(policy.RuleFolder("Public/a.jpg"), "No rule above it");
+        Assert.AreEqual("Private", policy.RuleFolder("Private/Other/b.jpg"));
+        Assert.AreEqual("Private/Shared", policy.RuleFolder("Private/Shared/c.jpg"));
+        Assert.AreEqual("", atRoot.RuleFolder("Public/a.jpg"), "A rule on the top itself");
+    }
+
+    [TestMethod]
     public void GroupsAddUp()
     {
         var kids = Group([Rights.Browse], ("Adult", FolderLevel.Hidden));

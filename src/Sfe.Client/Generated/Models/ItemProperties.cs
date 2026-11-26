@@ -12,6 +12,14 @@ namespace Otools.Net.Sfe.Client.Generated.Models
     public partial class ItemProperties : IAdditionalDataHolder, IParsable
     #pragma warning restore CS1591
     {
+        /// <summary>The access property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::Otools.Net.Sfe.Client.Generated.Models.ItemAccess? Access { get; set; }
+#nullable restore
+#else
+        public global::Otools.Net.Sfe.Client.Generated.Models.ItemAccess Access { get; set; }
+#endif
         /// <summary>Stores additional data not described in the OpenAPI description found when deserializing. Can be used for serialization as well.</summary>
         public IDictionary<string, object> AdditionalData { get; set; }
         /// <summary>The canChecksum property</summary>
@@ -57,6 +65,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         {
             return new Dictionary<string, Action<IParseNode>>
             {
+                { "access", n => { Access = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ItemAccess>(global::Otools.Net.Sfe.Client.Generated.Models.ItemAccess.CreateFromDiscriminatorValue); } },
                 { "canChecksum", n => { CanChecksum = n.GetBoolValue(); } },
                 { "details", n => { Details = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ItemDetails>(global::Otools.Net.Sfe.Client.Generated.Models.ItemDetails.CreateFromDiscriminatorValue); } },
                 { "item", n => { Item = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.LibraryItem>(global::Otools.Net.Sfe.Client.Generated.Models.LibraryItem.CreateFromDiscriminatorValue); } },
@@ -69,6 +78,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public virtual void Serialize(ISerializationWriter writer)
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
+            writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ItemAccess>("access", Access);
             writer.WriteBoolValue("canChecksum", CanChecksum);
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ItemDetails>("details", Details);
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.LibraryItem>("item", Item);

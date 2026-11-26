@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Options;
 using Otools.Net.Sfe.Api.Security;
 using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Options;
 using Otools.Net.Sfe.Core.Paths;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
@@ -16,5 +18,6 @@ internal sealed record PropertyServices(
     WorkFolder Work,
     CurrentAccess Current,
     HttpContext Context,
-    ILogger<Properties> Logger
+    ILogger<Properties> Logger,
+    IOptionsMonitor<SfeOptions> Options
 );

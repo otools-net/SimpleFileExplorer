@@ -67,6 +67,19 @@ async function mask(b) {
 const admin = (section, page) => `admin?section=${section}` + (page ? `&page=${page}` : '');
 const api = (method, url, data) => `fetch('${url}', { method: '${method}', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: ${data === undefined ? 'undefined' : `JSON.stringify(${JSON.stringify(data)})`} }).then(r => r.status)`;
 
+/**
+ * Turns the default space's Files read-only switch on (Local mode signs in administrators only: what another user
+ * sees is shown this way); answers what puts it back.
+ */
+async function filesReadOnly(b) {
+    const space = JSON.parse(await b.eval(`fetch('api/v1/tenants', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(t => JSON.stringify(t.find(x => x.isDefault)))`));
+    const catalog = JSON.parse(await b.eval(`fetch('api/v1/access/rights', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(c => JSON.stringify(c.rights))`));
+    const files = catalog.filter(r => r.scope === 'tenant' && r.atFolder === 'write').map(r => r.id);
+    const input = off => ({ name: space.name, slug: space.slug, root: space.root, guestAccess: space.guestAccess, disabled: false, disabledRights: off });
+    await b.eval(api('PUT', `api/v1/tenants/${space.id}`, input([...new Set([...space.disabledRights, ...files])])));
+    return () => b.eval(api('PUT', `api/v1/tenants/${space.id}`, input(space.disabledRights)));
+}
+
 const scenes = {
     async login() {
         const b = await session({ user: null });
@@ -642,11 +655,7 @@ const scenes = {
     async 'read-only'() {
         const b = await session();
         await b.goto(BASE, 1500);
-        const space = JSON.parse(await b.eval(`fetch('api/v1/tenants', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(t => JSON.stringify(t.find(x => x.isDefault)))`));
-        const catalog = JSON.parse(await b.eval(`fetch('api/v1/access/rights', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(c => JSON.stringify(c.rights))`));
-        const files = catalog.filter(r => r.scope === 'tenant' && r.atFolder === 'write').map(r => r.id);
-        const input = off => ({ name: space.name, slug: space.slug, root: space.root, guestAccess: space.guestAccess, disabled: false, disabledRights: off });
-        await b.eval(api('PUT', `api/v1/tenants/${space.id}`, input([...new Set([...space.disabledRights, ...files])])));
+        const putBack = await filesReadOnly(b);
         await b.open('?path=Photos');
         // A hint (title) isn't drawn in a screenshot: it is shown as the browser would, under the chip.
         await b.eval(`(() => {
@@ -662,7 +671,7 @@ const scenes = {
         })()`);
         await sleep(300);
         await b.shot(OUT + 'read-only-folder.png');
-        await b.eval(api('PUT', `api/v1/tenants/${space.id}`, input(space.disabledRights)));
+        await putBack();
         await b.close();
     },
     /** Folders kept out of scans and previews: the chips in the listing, then the dialog; put back after. */
@@ -1019,6 +1028,9 @@ const scenes = {
         await properties('[data-path="Photos/2024 Beach trip/Dunes.jpg"]');
         await b.eval(`document.querySelector('sfe-properties-dialog .checksum-button').click(); 1`);
         await sleep(2000);
+        // The Access section pushes the checksum down: shown in the sheet's scrolled body.
+        await b.eval(`document.querySelector('sfe-properties-dialog .properties-checksum').scrollIntoView({ block: 'nearest' }); 1`);
+        await sleep(300);
         await b.shot(OUT + 'properties-file.png');
         await b.key('Escape', 'Escape', 27);
         await sleep(400);
@@ -1028,6 +1040,16 @@ const scenes = {
         await b.eval(`document.querySelector('sfe-properties-dialog .count-button').click(); 1`);
         await sleep(2000);
         await b.shot(OUT + 'properties-folder.png');
+        await b.key('Escape', 'Escape', 27);
+        await sleep(400);
+        // The Access section of a file in a space whose files are read-only (switched on for the shot).
+        const putBack = await filesReadOnly(b);
+        await b.open('?path=Photos%2F2024%20Beach%20trip');
+        await properties('[data-path="Photos/2024 Beach trip/Dunes.jpg"]');
+        await b.eval(`document.querySelector('sfe-properties-dialog .properties-access').scrollIntoView({ block: 'nearest' }); 1`);
+        await sleep(400);
+        await b.shot(OUT + 'properties-access.png');
+        await putBack();
         await b.close();
     },
     async admin() {

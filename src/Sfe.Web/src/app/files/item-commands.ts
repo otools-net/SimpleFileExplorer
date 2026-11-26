@@ -1,4 +1,6 @@
 import { inject, Injectable } from '@angular/core';
+import { ListingStore } from '../library/listing.store';
+import { placeRefusal, readOnlyText } from '../library/read-only';
 import { ArchiveCommands } from './archive-commands';
 import { ItemCommand, ItemCommandId, ItemMenuEntry, ItemScope, ItemSubmenuId } from './item-scope';
 import { OpeningCommands } from './opening-commands';
@@ -32,6 +34,22 @@ const ARCHIVE: Submenu = {
 };
 
 /**
+ * The commands writing in the folder listed (renaming, moving or deleting its items, an archive put beside them):
+ * greyed out with the disk's reason when it takes no change there. Pasting into a sub-folder too, unless only the
+ * folder itself is refused (the server's account may write in the sub-folder).
+ */
+const WRITES_HERE: ReadonlySet<ItemCommandId> = new Set<ItemCommandId>([
+    'cut',
+    'rename',
+    'moveTo',
+    'delete',
+    'extractBeside',
+    'extractEach',
+    'compress',
+    'paste',
+]);
+
+/**
  * The menu of listed items, group by group (a line between groups), in the order of a desktop file browser: opening,
  * editing, the clipboard, organising, archives, saving elsewhere, deleting, properties.
  */
@@ -53,6 +71,7 @@ const LAYOUT: readonly { group: string; ids: readonly (ItemCommandId | Submenu)[
  */
 @Injectable({ providedIn: 'root' })
 export class ItemCommands {
+    private readonly store = inject(ListingStore);
     private readonly commands: Partial<Record<ItemCommandId, ItemCommand>> = {
         ...inject(OpeningCommands).commands,
         ...inject(TransferCommands).commands,
@@ -62,7 +81,8 @@ export class ItemCommands {
 
     /** The entry of command `id` for `scope`; null where it doesn't apply. */
     entry(id: ItemCommandId, scope: ItemScope): ItemMenuEntry | null {
-        return this.commands[id]?.(scope) ?? null;
+        const entry = this.commands[id]?.(scope) ?? null;
+        return entry && !entry.disabled && WRITES_HERE.has(id) ? this.onDisk(id, entry) : entry;
     }
 
     /** The whole menu for `scope`, grouped; only what a partial item keeps while it is being written. */
@@ -74,6 +94,13 @@ export class ItemCommands {
                 if (entry) entries.push({ ...entry, group });
             }
         return partialEntries(scope.item, entries);
+    }
+
+    /** `entry` greyed out when the folder listed takes no change on the disk (item-access.md). */
+    private onDisk(id: ItemCommandId, entry: ItemMenuEntry): ItemMenuEntry {
+        const reason = placeRefusal(this.store.listing());
+        if (!reason || (id === 'paste' && reason === 'diskRefused')) return entry;
+        return { ...entry, disabled: true, title: readOnlyText(reason) };
     }
 
     private submenu(submenu: Submenu, scope: ItemScope): ItemMenuEntry | null {
