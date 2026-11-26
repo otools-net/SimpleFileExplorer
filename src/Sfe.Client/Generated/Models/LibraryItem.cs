@@ -74,6 +74,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public string Path { get; set; }
 #endif
+        /// <summary>The readOnly property</summary>
+        public bool? ReadOnly { get; set; }
         /// <summary>The size property</summary>
         public long? Size { get; set; }
         /// <summary>The tags property</summary>
@@ -123,6 +125,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "modified", n => { Modified = n.GetDateTimeOffsetValue(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "path", n => { Path = n.GetStringValue(); } },
+                { "readOnly", n => { ReadOnly = n.GetBoolValue(); } },
                 { "size", n => { Size = n.GetLongValue(); } },
                 { "tags", n => { Tags = n.GetCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagSummary>(global::Otools.Net.Sfe.Client.Generated.Models.TagSummary.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "width", n => { Width = n.GetIntValue(); } },
@@ -147,6 +150,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteDateTimeOffsetValue("modified", Modified);
             writer.WriteStringValue("name", Name);
             writer.WriteStringValue("path", Path);
+            writer.WriteBoolValue("readOnly", ReadOnly);
             writer.WriteLongValue("size", Size);
             writer.WriteCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagSummary>("tags", Tags);
             writer.WriteIntValue("width", Width);

@@ -61,6 +61,23 @@ layout. Hover the number for its meaning.
   <kbd>Space</kbd> selects it and <kbd>Shift</kbd>+arrows select the items passed. Until an item has the focus, the
   arrows scroll the page as usual.
 
+## Read-only folders and files
+
+![A folder you can't change: the Read only chip and its hint](../images/read-only-folder.png)
+
+When you can open the files of a folder but not change them, a **Read only** chip follows the counts under the path;
+its hint says why, in one sentence:
+
+- this server, or this space, is set so that nobody changes files;
+- you are a visitor or use a guest account;
+- your rights in this space, or a folder rule on this folder, let you open files only (ask an administrator);
+- the folder is behind a link leaving the library, which the server keeps read-only;
+- the disk refuses changes: it is mounted read-only, or the server isn't allowed to write in this folder.
+
+When you can change the folder, nothing is shown, but a small **lock** marks the files and folders inside that you
+can't change: a folder rule makes them read-only for you, or the disk marks the file read-only (it opens, but can't be
+saved over). The buttons and menu entries for what you can't do are hidden or greyed, as before.
+
 ## Quick links
 
 ![The quick links at the top of the sidebar](../images/quick-links.png)

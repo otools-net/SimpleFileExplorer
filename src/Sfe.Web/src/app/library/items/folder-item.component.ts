@@ -14,7 +14,7 @@ import { FolderCoverComponent } from './folder-cover.component';
 import { ItemActions } from './item-actions.service';
 import { DefaultTagsBadgeComponent } from '../../tags/default-tags-badge.component';
 import { exclusionChip, exclusionTitle } from './exclusions';
-import { NOT_INDEXED, PartialMarkComponent, SelectBoxComponent } from './item-parts';
+import { LockMarkComponent, NOT_INDEXED, PartialMarkComponent, SelectBoxComponent } from './item-parts';
 import { BEING_WRITTEN_TITLE, isPartial, shownName } from '../../files/partial-files';
 
 /**
@@ -31,6 +31,7 @@ import { BEING_WRITTEN_TITLE, isPartial, shownName } from '../../files/partial-f
         SelectBoxComponent,
         DefaultTagsBadgeComponent,
         PartialMarkComponent,
+        LockMarkComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {

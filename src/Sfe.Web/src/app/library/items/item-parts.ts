@@ -13,6 +13,7 @@ import { ListingStore } from '../listing.store';
 import { ContextMenuDirective } from '../../menus/context-menu';
 import { FolderMenu } from '../folder-menu';
 import { ItemActions } from './item-actions.service';
+import { itemLock } from '../read-only';
 
 /* The small parts shared by the tiles and rows of the listing. */
 
@@ -161,4 +162,25 @@ export class ItemFolderComponent {
     private readonly config = inject(ConfigService);
     protected readonly name = computed(() => this.item().directory || this.config.config()?.rootName || '');
     protected readonly title = computed(() => $localize`Open the folder “${this.name()}:name:”.`);
+}
+
+/**
+ * A lock on a file or folder the session can't change while it can change its folder (`itemLock`): its hint says
+ * why. Nothing otherwise (agents/docs/features/item-access.md).
+ */
+@Component({
+    selector: 'sfe-lock-mark',
+    imports: [IconComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { style: 'display: contents' },
+    template: `
+        @if (lock(); as lock) {
+            <span class="lock-mark" role="img" [title]="lock" [attr.aria-label]="lock"><svg sfeIcon="lock"></svg></span>
+        }
+    `,
+})
+export class LockMarkComponent {
+    readonly item = input.required<LibraryItem>();
+    private readonly store = inject(ListingStore);
+    protected readonly lock = computed(() => itemLock(this.store.listing(), this.item()));
 }

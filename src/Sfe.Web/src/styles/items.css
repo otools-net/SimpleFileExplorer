@@ -90,6 +90,21 @@ mark {
     opacity: 1;
 }
 
+/* A file or folder the session can't change while it can change its folder: why in its hint (item-access.md). */
+.lock-mark {
+    display: inline-flex;
+    flex: none;
+    align-self: center;
+    color: var(--text-muted);
+    cursor: help;
+}
+.lock-mark svg {
+    width: 12px;
+    height: 12px;
+}
+.folder > .lock-mark {
+    margin-left: 4px;
+}
 /* A file or folder still being written (name.sfe-partial): marked, faded, and its link opens nothing. */
 .partial-mark {
     flex: none;

@@ -4,12 +4,15 @@ namespace Otools.Net.Sfe.Core.Access;
 /// <param name="IsGuest">A visitor without an account or a guest account: the guest limit applies.</param>
 /// <param name="IsMember">Belongs to the library (a group there, or a server administrator); visitors never do.</param>
 /// <param name="Folders">Where it may use its rights (folder rules); null = everywhere.</param>
+/// <param name="SpaceDisabled">The rights the library switches off for everyone (its <b>Files read-only</b> and
+/// <b>Read-only</b> switches); null when unknown.</param>
 public sealed record EffectiveAccess(
     IReadOnlySet<string> Rights,
     bool IsGuest,
     bool IsServerAdmin,
     bool IsMember,
-    FolderPolicy? Folders = null
+    FolderPolicy? Folders = null,
+    IReadOnlySet<string>? SpaceDisabled = null
 )
 {
     public static readonly EffectiveAccess None = new(new HashSet<string>(), true, false, false);

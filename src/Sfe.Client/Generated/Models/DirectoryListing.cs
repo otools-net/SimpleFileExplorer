@@ -86,6 +86,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public string Path { get; set; }
 #endif
+        /// <summary>The readOnly property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Models.ReadOnlyReason? ReadOnly { get; set; }
         /// <summary>The total property</summary>
         public int? Total { get; set; }
         /// <summary>
@@ -125,6 +127,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "offset", n => { Offset = n.GetIntValue(); } },
                 { "parentPath", n => { ParentPath = n.GetStringValue(); } },
                 { "path", n => { Path = n.GetStringValue(); } },
+                { "readOnly", n => { ReadOnly = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ReadOnlyReason>(); } },
                 { "total", n => { Total = n.GetIntValue(); } },
             };
         }
@@ -147,6 +150,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteIntValue("offset", Offset);
             writer.WriteStringValue("parentPath", ParentPath);
             writer.WriteStringValue("path", Path);
+            writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ReadOnlyReason>("readOnly", ReadOnly);
             writer.WriteIntValue("total", Total);
             writer.WriteAdditionalData(AdditionalData);
         }

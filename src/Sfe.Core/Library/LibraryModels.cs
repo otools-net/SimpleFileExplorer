@@ -57,6 +57,10 @@ public enum SortField
 /// Browsing only, for a folder: the default tags set on it (<see cref="FolderDefaultTags"/>, not the inherited ones);
 /// null when it has none.
 /// </param>
+/// <param name="ReadOnly">
+/// Browsing only, for a file: true when the disk marks it read-only (the attribute on Windows; elsewhere the mode bits
+/// leave the server's account no write), so it can't be saved over; null otherwise.
+/// </param>
 public sealed record LibraryItem(
     string Name,
     string Path,
@@ -72,7 +76,8 @@ public sealed record LibraryItem(
     bool? Indexed = null,
     int? IndexedItems = null,
     FolderExclusionState? Excluded = null,
-    IReadOnlyList<TagSummary>? DefaultTags = null
+    IReadOnlyList<TagSummary>? DefaultTags = null,
+    bool? ReadOnly = null
 );
 
 public sealed record Breadcrumb(string Name, string Path);
@@ -81,6 +86,8 @@ public sealed record Breadcrumb(string Name, string Path);
 /// space).</param>
 /// <param name="Exclusions">What the folder is kept out of (scans, trickplay, thumbnails); null when nothing.</param>
 /// <param name="DefaultTags">The default tags of the folder, its own and its parents'; null when none.</param>
+/// <param name="ReadOnly">Why the asker can't change the folder's files (SFE's reasons first, then the disk's);
+/// null when it can.</param>
 public sealed record DirectoryListing(
     string Path,
     string Name,
@@ -94,7 +101,8 @@ public sealed record DirectoryListing(
     int FileCount,
     FolderAccessView? Access = null,
     FolderExclusionState? Exclusions = null,
-    FolderDefaults? DefaultTags = null
+    FolderDefaults? DefaultTags = null,
+    ReadOnlyReason? ReadOnly = null
 );
 
 /// <summary>What folder rules let the asker do in a folder (agents/docs/features/folder-access.md).</summary>
@@ -105,11 +113,13 @@ public sealed record DirectoryListing(
 /// <param name="Start">Where the asker's library starts when not at the top: the folders above it only lead there,
 /// one way (agents/docs/features/folder-access.md, "Start folder"). Null when it starts at the top, and on
 /// children.</param>
+/// <param name="ReadOnly">None of its rights changes files (agents/docs/features/item-access.md).</param>
 public sealed record FolderAccessView(
     IReadOnlyList<string> Rights,
     bool PathOnly,
     IReadOnlyDictionary<string, FolderAccessView>? Children = null,
-    string? Start = null
+    string? Start = null,
+    bool ReadOnly = false
 );
 
 /// <param name="Previous">The folder listed before this one in its parent; null for the first one or the root.</param>

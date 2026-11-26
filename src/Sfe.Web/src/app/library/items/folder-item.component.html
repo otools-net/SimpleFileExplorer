@@ -9,6 +9,7 @@
         <sfe-folder-cover [path]="item().path" />
         <span class="folder-caption"><svg sfeIcon="folder"></svg><span class="item-name">{{ name() }}</span>
             <sfe-partial-mark [item]="item()" />
+            <sfe-lock-mark [item]="item()" />
             @if (exclusion(); as exclusion) {
                 <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
             }
@@ -16,6 +17,7 @@
     } @else {
         <svg sfeIcon="folder"></svg><span class="item-name">{{ name() }}</span>
         <sfe-partial-mark [item]="item()" />
+        <sfe-lock-mark [item]="item()" />
         @if (exclusion(); as exclusion) {
             <span class="exclusion-chip" [title]="exclusionTitle()">{{ exclusion }}</span>
         }

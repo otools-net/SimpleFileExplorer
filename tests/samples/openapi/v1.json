@@ -12149,6 +12149,16 @@
                 "$ref": "#/components/schemas/FolderDefaults"
               }
             ]
+          },
+          "readOnly": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ReadOnlyReason"
+              }
+            ]
           }
         }
       },
@@ -13367,6 +13377,10 @@
               "null",
               "string"
             ]
+          },
+          "readOnly": {
+            "type": "boolean",
+            "default": false
           }
         }
       },
@@ -14678,6 +14692,12 @@
             "items": {
               "$ref": "#/components/schemas/TagSummary"
             }
+          },
+          "readOnly": {
+            "type": [
+              "null",
+              "boolean"
+            ]
           }
         }
       },
@@ -15490,6 +15510,19 @@
             "type": "boolean"
           }
         }
+      },
+      "ReadOnlyReason": {
+        "enum": [
+          "server",
+          "space",
+          "visitor",
+          "rights",
+          "rule",
+          "link",
+          "diskReadOnly",
+          "diskRefused",
+          null
+        ]
       },
       "RecoveryCompletion": {
         "required": [

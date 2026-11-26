@@ -25,6 +25,7 @@ import { SearchBoxState, SearchExplainComponent } from '../search-explain/search
 import { PinButtonComponent } from '../quick-links/pin-button.component';
 import { FolderNavComponent } from './folder-nav.component';
 import { LocationLinks } from './location-links.service';
+import { READ_ONLY_LABEL, readOnlyReason, readOnlyText } from '../read-only';
 
 const SORT_OPTIONS: [SortField, string][] = [
     ['name', $localize`:sort by:Name`],
@@ -102,6 +103,12 @@ export class LocationComponent {
         this.store.route().path ? `“${this.folderName()}”` : $localize`the top of the library`,
     );
     protected readonly canExclude = this.folder.canExclude;
+    /** Why the session can't change the folder browsed, the chip's hint; null when it can (no chip). */
+    protected readonly readOnly = computed(() => {
+        const reason = readOnlyReason(this.store.listing());
+        return reason && this.store.status() === 'ready' ? readOnlyText(reason) : null;
+    });
+    protected readonly readOnlyLabel = READ_ONLY_LABEL;
 
     protected openExclusions(): void {
         this.folder.openExclusions();

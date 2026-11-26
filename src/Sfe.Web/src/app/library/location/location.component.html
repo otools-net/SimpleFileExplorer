@@ -123,7 +123,10 @@
     <sfe-search-explain id="search-explain" />
 }
 <div class="location-bar">
-    <p class="summary">{{ summary() }}@if (defaultTags(); as defaults) {
+    <p class="summary">{{ summary() }}@if (readOnly(); as readOnly) {
+            <!-- The folder can't be changed by the session: why, in its hint (item-access.md); nothing when it can. -->
+            <span class="read-only-chip" [title]="readOnly"><svg sfeIcon="lock"></svg>{{ readOnlyLabel }}</span>
+        }@if (defaultTags(); as defaults) {
             <!-- The tags the files put here get, listed in its panel; Change… opens the folder's tags for those who may. -->
             <sfe-default-tags-badge [own]="defaults.own" [inherited]="defaults.inherited" [folder]="folderLabel()"
                                     [editable]="canTag()" (edit)="openScopeTags()" />

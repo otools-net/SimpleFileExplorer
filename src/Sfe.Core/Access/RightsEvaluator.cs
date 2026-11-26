@@ -96,7 +96,8 @@ public sealed class RightsEvaluator(
                 IsGuest: true,
                 IsServerAdmin: false,
                 IsMember: false,
-                guestFolders
+                guestFolders,
+                tenantDisabled
             );
         }
 
@@ -109,7 +110,8 @@ public sealed class RightsEvaluator(
                 RightCatalog.All.Select(r => r.Id).Where(r => !tenantDisabled.Contains(r)).ToHashSet(),
                 false,
                 true,
-                true
+                true,
+                SpaceDisabled: tenantDisabled
             );
         }
 
@@ -120,7 +122,7 @@ public sealed class RightsEvaluator(
             .ToListAsync(cancellationToken);
         var rights = await GroupRightsAsync(db, memberOf, tenantDisabled, user.IsGuest, cancellationToken);
         var folders = await FoldersAsync(db, tenant.Id, rights, userId, cancellationToken);
-        return new EffectiveAccess(Union(rights), user.IsGuest, false, memberOf.Count > 0, folders);
+        return new EffectiveAccess(Union(rights), user.IsGuest, false, memberOf.Count > 0, folders, tenantDisabled);
     }
 
     /// <summary>The rights each group grants, those the library or the guest limit takes away left out.</summary>

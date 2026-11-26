@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Net.Http.Headers;
 using Otools.Net.Sfe.Api.Security;
 using Otools.Net.Sfe.Core.Access;
+using Otools.Net.Sfe.Core.Files;
 using Otools.Net.Sfe.Core.Library;
 using Otools.Net.Sfe.Core.Paths;
 using Otools.Net.Sfe.Core.Search;
@@ -165,6 +166,7 @@ public static class LibraryEndpoints
         [AsParameters] BrowseIndex index,
         [AsParameters] LibraryRequest library,
         [AsParameters] BrowseQuery query,
+        WorkFolder workFolder,
         CancellationToken cancellationToken
     )
     {
@@ -197,7 +199,7 @@ public static class LibraryEndpoints
                 : TypedResults.NotFound();
         }
 
-        listing = ListingAccess.Mark(listing, state, paths, path);
+        listing = ListingAccess.Mark(listing, state, library, workFolder, path);
         // Shown to everyone: it tells why a folder has no thumbnails or isn't found by searches.
         listing = FolderExclusions.Of(options.CurrentValue).Mark(listing);
 

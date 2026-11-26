@@ -29,6 +29,7 @@ import { ItemActions } from './item-actions.service';
 import {
     ItemFolderComponent,
     ItemTagsComponent,
+    LockMarkComponent,
     NOT_INDEXED,
     PartialMarkComponent,
     SelectBoxComponent,
@@ -142,6 +143,7 @@ function sameStrings(a: string[], b: string[]): boolean {
         ItemFolderComponent,
         ItemMenuButtonComponent,
         PartialMarkComponent,
+        LockMarkComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -217,6 +219,7 @@ export class FileTileComponent extends FileItemBase {
         ItemFolderComponent,
         ItemMenuButtonComponent,
         PartialMarkComponent,
+        LockMarkComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {

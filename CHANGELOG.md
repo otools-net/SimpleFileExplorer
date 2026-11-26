@@ -40,6 +40,13 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   RFC 9530), and the server compares it before keeping the piece (library and connections): a piece damaged on the way
   is sent again instead of landing in the file. The page and Sfe.Client send it; a piece without it is taken as
   before. API: problem type `chunk-digest` (400).
+- **Read only shown**: a folder you can open but not change shows a **Read only** chip next to its counts, whose hint
+  says why (the server's or the space's switch, a visitor or guest account, your rights, a folder rule, a read-only
+  link, a read-only disk, or the server not allowed to write there); a lock marks the files and folders inside a
+  writable folder that you can't change (a folder rule, or a file the disk marks read-only). The disk is asked as it is
+  now, once per folder (kept 30 s), without writing anything. API: `readOnly` on `GET api/browse` (a reason word),
+  on its items (a file the disk marks read-only) and on `access` and its `children`; Sfe.Client: the same in
+  `Raw` models.
 
 ### Changed
 

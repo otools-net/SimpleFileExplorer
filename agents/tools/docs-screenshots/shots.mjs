@@ -635,6 +635,36 @@ const scenes = {
         await b.shot(OUT + 'remove-from-index.png');
         await b.close();
     },
+    /**
+     * A folder nobody may change: the space's Files read-only switch turned on for the shot (Local mode signs in
+     * administrators only), the Read only chip and its hint under it; the switch put back after.
+     */
+    async 'read-only'() {
+        const b = await session();
+        await b.goto(BASE, 1500);
+        const space = JSON.parse(await b.eval(`fetch('api/v1/tenants', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(t => JSON.stringify(t.find(x => x.isDefault)))`));
+        const catalog = JSON.parse(await b.eval(`fetch('api/v1/access/rights', { headers: { 'X-SFE-Request': '1' } }).then(r => r.json()).then(c => JSON.stringify(c.rights))`));
+        const files = catalog.filter(r => r.scope === 'tenant' && r.atFolder === 'write').map(r => r.id);
+        const input = off => ({ name: space.name, slug: space.slug, root: space.root, guestAccess: space.guestAccess, disabled: false, disabledRights: off });
+        await b.eval(api('PUT', `api/v1/tenants/${space.id}`, input([...new Set([...space.disabledRights, ...files])])));
+        await b.open('?path=Photos');
+        // A hint (title) isn't drawn in a screenshot: it is shown as the browser would, under the chip.
+        await b.eval(`(() => {
+            const chip = document.querySelector('.read-only-chip');
+            const r = chip.getBoundingClientRect();
+            const tip = document.createElement('div');
+            tip.textContent = chip.title;
+            tip.style.cssText = 'position:fixed;z-index:9999;padding:4px 8px;font:12px system-ui;color:#222;background:#f5f5f5;border:1px solid #999;box-shadow:0 2px 4px #0005';
+            tip.style.left = r.left + 'px';
+            tip.style.top = (r.bottom + 6) + 'px';
+            document.body.append(tip);
+            return 1;
+        })()`);
+        await sleep(300);
+        await b.shot(OUT + 'read-only-folder.png');
+        await b.eval(api('PUT', `api/v1/tenants/${space.id}`, input(space.disabledRights)));
+        await b.close();
+    },
     /** Folders kept out of scans and previews: the chips in the listing, then the dialog; put back after. */
     async exclusions() {
         const b = await session();

@@ -485,9 +485,22 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     the facts the enumeration already gives. Problem `type` words unchanged.
   - **Menus (2.9):** actions blocked by the disk are greyed with that reason too, as rights already are.
   Gotchas to settle in the note: on Windows a folder's read-only attribute means "customised folder" to Explorer,
-  not "can't write" (don't show it as such); share permissions are only known by trying. Possibly split **a**
-  library, **b** connections. Feature note (folder-access.md or a new `item-access.md`), user docs with a
-  screenshot of the mark and of Properties.
+  not "can't write" (don't show it as such); share permissions are only known by trying. Feature note
+  `item-access.md`, user docs with a screenshot of the mark and of Properties. Split on 2026-11-26:
+  - [x] **4.6a library listings:** the server's reason per listed folder (SFE first: server switch, space switch,
+    visitor, rights, folder rule, read-only link; then the disk, probed and kept briefly per folder), the file's
+    read-only attribute on items, children's access flagged read-only; the location bar's **Read only** chip with
+    the reason, a lock on items that differ. Done 2026-11-26: `DirectoryListing.ReadOnly` (`ReadOnlyReason`, from
+    `ListingAccess`), `DiskWrites` (Windows `CreateFile` with `FILE_ADD_FILE` / `FILE_ADD_SUBDIRECTORY` after
+    the volume's read-only flag, Unix `access(2)`; 30 s per folder; never writes), `LibraryItem.ReadOnly`,
+    `FolderAccessView.ReadOnly`, `EffectiveAccess.SpaceDisabled` (no migration). Client `library/read-only.ts`,
+    `sfe-lock-mark`. Note [item-access](../features/item-access.md); screenshot `read-only-folder.png` (scene
+    `read-only`: the space's switch turned on and back, Local mode signs in administrators only). OpenAPI baseline
+    and Sfe.Client regenerated. Baselines: `LibraryEndpoints.cs` 555 → 557, `LibraryBrowser.cs` 480 → 481.
+  - [ ] **4.6b Properties and menus:** the **Access** section (what the user may do, what the disk allows, each with
+    its source and the folder a rule is set on); menu actions the disk refuses greyed with that reason.
+  - [ ] **4.6c connections:** the level, the connection's `ReadOnly` cap and its folder rules, folders the provider
+    reports read-only, in the same chip, locks and Properties.
 
 ### Phase 5: guidance
 
@@ -570,8 +583,13 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-26):** **4.5a** and **4.5b** (notification centre) done, so 4.5 is ticked. Next: **4.6**
-  (read-only or writable shown, added by the owner on 2026-11-23; possibly split a library / b connections first).
+- **Last session (2026-11-26):** 4.6 split in three; **4.6a** (library listings: Read only chip, item locks, the
+  disk probe) done. Next: **4.6b** (Properties' Access section: what the user may do and what the disk allows, with
+  sources and the folder a rule is set on; menu actions the disk refuses greyed), then **4.6c** (connections).
+- 4.6b: `ListingAccess.SfeReason` and `DiskWrites.Of` are the pieces to reuse for Properties; the folder a rule is
+  set on isn't computed yet (`FolderPolicy` has no "nearest rule" query: add one).
+- Docs-screenshots scenes can't sign in other accounts: the app runs in Local mode (administrators only). Show what
+  another user sees by switching the space's rights for the shot and back (scene `read-only`).
 - `TaskHistory.cs` is at 400 lines (the limit) after 4.5b, `Program.cs` at 399: move something out before adding.
 - A change to an endpoint's OpenAPI description (even re-wrapping a line of it) changes `tests/samples/openapi/v1.json`:
   write the baseline again and run `node agents/tools/client-generation/generate.mjs` in the same commit.

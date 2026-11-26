@@ -417,7 +417,8 @@ public sealed class LibraryBrowser(
                 classifier.Classify(file.Extension),
                 NormalizeExtension(file.Extension),
                 file.Length,
-                file.LastWriteTimeUtc
+                file.LastWriteTimeUtc,
+                ReadOnly: file.IsReadOnly ? true : null
             ),
             _ => null,
         };

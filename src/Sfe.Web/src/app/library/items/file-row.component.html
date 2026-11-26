@@ -32,6 +32,7 @@
             <span class="item-name"><sfe-highlight [text]="name()" [pattern]="pattern()" /></span>
         </a>
         <sfe-partial-mark [item]="item()" />
+        <sfe-lock-mark [item]="item()" />
         <span class="row-meta">@if (item().extension) {<span class="row-meta-type">{{ item().extension }}</span> ·
         }{{ meta() }}</span>
         <sfe-item-folder [item]="item()" [pattern]="pattern()" />

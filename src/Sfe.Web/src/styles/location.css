@@ -124,6 +124,26 @@
     color: var(--text-muted);
     overflow-wrap: anywhere;
 }
+/* The session can't change the folder browsed: why in its hint (agents/docs/features/item-access.md). */
+.read-only-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 8px;
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 16px;
+    white-space: nowrap;
+    vertical-align: 1px;
+    cursor: help;
+}
+.read-only-chip svg {
+    width: 11px;
+    height: 11px;
+}
 /* What the folder browsed is kept out of (folders.css › .exclusion-chip); a button for those who may change it. */
 .summary .exclusion-chip {
     margin-left: 8px;

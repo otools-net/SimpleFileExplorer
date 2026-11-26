@@ -31,7 +31,17 @@ export interface LibraryItem {
     excluded?: FolderExclusions | null;
     /** Browsing only, for a folder: the default tags set on it (not inherited ones); absent when it has none. */
     defaultTags?: TagSummary[] | null;
+    /** Browsing only, for a file: the disk marks it read-only (it can't be saved over); absent otherwise. */
+    readOnly?: boolean | null;
 }
+
+/**
+ * Why the session can't change the files of a folder listed (agents/docs/features/item-access.md): the server's or
+ * the space's switch, a visitor, its rights, a folder rule, a read-only link, a read-only volume, the server's account
+ * refused writing.
+ */
+export type ReadOnlyReason =
+    'server' | 'space' | 'visitor' | 'rights' | 'rule' | 'link' | 'diskReadOnly' | 'diskRefused';
 
 /**
  * What a folder is kept out of, for the whole space (`index.exclude`): for each, the listed folder it is excluded
@@ -119,6 +129,8 @@ export interface DirectoryListing {
     exclusions?: FolderExclusions | null;
     /** The default tags of the folder, its own and its parents'; absent or null when none. */
     defaultTags?: FolderDefaults | null;
+    /** Why the session can't change the folder's files; absent or null when it can. */
+    readOnly?: ReadOnlyReason | null;
 }
 
 /** What folder rules let the session do in a folder. */
@@ -133,6 +145,8 @@ export interface FolderAccessView {
      * starts at the top (and on children).
      */
     start?: string | null;
+    /** None of its rights changes files. */
+    readOnly?: boolean;
 }
 
 export type KeepAliveMode = 'off' | 'auto' | 'always';

@@ -24,6 +24,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #endif
         /// <summary>The pathOnly property</summary>
         public bool? PathOnly { get; set; }
+        /// <summary>The readOnly property</summary>
+        public bool? ReadOnly { get; set; }
         /// <summary>The rights property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -46,6 +48,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public FolderAccessView()
         {
             AdditionalData = new Dictionary<string, object>();
+            ReadOnly = false;
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -67,6 +70,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             {
                 { "children", n => { Children = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.FolderAccessView_children>(global::Otools.Net.Sfe.Client.Generated.Models.FolderAccessView_children.CreateFromDiscriminatorValue); } },
                 { "pathOnly", n => { PathOnly = n.GetBoolValue(); } },
+                { "readOnly", n => { ReadOnly = n.GetBoolValue(); } },
                 { "rights", n => { Rights = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
                 { "start", n => { Start = n.GetStringValue(); } },
             };
@@ -80,6 +84,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.FolderAccessView_children>("children", Children);
             writer.WriteBoolValue("pathOnly", PathOnly);
+            writer.WriteBoolValue("readOnly", ReadOnly);
             writer.WriteCollectionOfPrimitiveValues<string>("rights", Rights);
             writer.WriteStringValue("start", Start);
             writer.WriteAdditionalData(AdditionalData);
