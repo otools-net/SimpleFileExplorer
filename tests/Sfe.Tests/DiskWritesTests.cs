@@ -54,6 +54,20 @@ public sealed class DiskWritesTests
         Assert.AreEqual(DiskWrite.Refused, DiskWrites.Probe(_root));
     }
 
+    /// <summary>
+    /// A folder on a read-only mount, named by <c>SFE_TEST_READONLY_FOLDER</c> (agents/tools/linux-tests/ makes one in
+    /// WSL without sudo); skipped otherwise.
+    /// </summary>
+    [TestMethod]
+    public void AReadOnlyMountIsTold()
+    {
+        var folder = Environment.GetEnvironmentVariable("SFE_TEST_READONLY_FOLDER");
+        if (string.IsNullOrEmpty(folder))
+            Assert.Inconclusive("SFE_TEST_READONLY_FOLDER names no folder on a read-only mount.");
+
+        Assert.AreEqual(DiskWrite.ReadOnlyVolume, DiskWrites.Probe(folder));
+    }
+
     [TestMethod]
     public void AnAnswerIsKeptForItsFolder()
     {

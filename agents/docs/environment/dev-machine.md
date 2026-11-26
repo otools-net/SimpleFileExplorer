@@ -7,7 +7,8 @@
 - ffmpeg is at `C:/Portables/ffmpeg/bin/ffmpeg.exe` (2026-10-12 full build, not on PATH; checked 2026-10-13): set
   `SFE_TEST_FFMPEG` for the ffmpeg tests, else they are skipped.
 - Docker Desktop is installed but not running by default (`docker` then fails on `docker_engine`): start it, see
-  [docker.md](docker.md). WSL Ubuntu exists but has no .NET SDK nor docker integration.
+  [docker.md](docker.md). WSL Ubuntu 24.04 has the .NET 10 SDK (10.0.114 in `/usr/lib/dotnet`, checked
+  2026-11-26) but no docker integration: server tests on Linux with `agents/tools/linux-tests/` (from PowerShell).
 - PowerShell 5.1 turns native stderr into errors under `ErrorActionPreference=Stop`, and a function's native output
   becomes its return value: `Invoke-Native` in `build.ps1` handles both.
 - Line endings and git noise: [line-endings.md](line-endings.md).

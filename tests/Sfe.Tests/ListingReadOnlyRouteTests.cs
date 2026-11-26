@@ -45,6 +45,8 @@ public sealed class ListingReadOnlyRouteTests
             new FileInfo(file).IsReadOnly = false;
         if (_denied is not null && OperatingSystem.IsWindows())
             ChangeRule(_denied, add: false);
+        else if (_denied is not null)
+            File.SetUnixFileMode(_denied, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         _factory?.Dispose();
         _library.Dispose();
     }
@@ -150,11 +152,15 @@ public sealed class ListingReadOnlyRouteTests
     [TestMethod]
     public async Task AFolderTheDiskRefusesIsTold()
     {
-        if (!OperatingSystem.IsWindows())
-            Assert.Inconclusive("Denying the server's account is tested with a Windows ACL.");
+        if (!OperatingSystem.IsWindows() && Environment.UserName == "root")
+            Assert.Inconclusive("root writes everywhere but on read-only mounts.");
         var admin = await ApiClients.SetUpAsync(Factory(), Token);
         _denied = _library.FullPath("ChildDir");
-        ChangeRule(_denied, add: true);
+        // A Windows ACL denying additions; elsewhere the folder's mode without write.
+        if (OperatingSystem.IsWindows())
+            ChangeRule(_denied, add: true);
+        else
+            File.SetUnixFileMode(_denied, UnixFileMode.UserRead | UnixFileMode.UserExecute);
 
         Assert.AreEqual(ReadOnlyReason.DiskRefused, (await BrowseAsync(admin, "ChildDir")).ReadOnly);
         Assert.IsNull((await BrowseAsync(admin, "Media")).ReadOnly);

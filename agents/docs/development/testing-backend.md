@@ -33,5 +33,8 @@ Rules and infrastructure: [testing.md](testing.md). Search expectations: [search
   leaked by test servers: a `JsonConfigurationSource` given its own provider (`ResolveFileProvider`) is not disposed
   with the configuration, `Program.cs` disposes them at `ApplicationStopped`. `ConfigurationWatcherTests` counts them
   (Linux only; WSL Ubuntu has .NET 10: `dotnet test -p:SfeSkipWebClient=true` on a copy outside `/mnt/c`).
+- **Linux paths of server code** (P/Invoke into libc, Unix modes, read-only mounts): run their tests in WSL with
+  `agents/tools/linux-tests/run.sh` ([README](../../tools/linux-tests/README.md)); `--readonly-mount` adds the tests
+  needing a read-only mount (user namespace, no sudo).
 - User's app running → locked DLLs: build/test with `--artifacts-path <scratch dir>`; there,
   `TheShippedChangelogHasTheRunningVersion` fails ([build.md](../environment/build.md)).

@@ -5,7 +5,8 @@ Code: `src/Sfe.Api/Endpoints/ListingAccess.cs` (`SfeReason`, `DiskReason`, `Acce
 `EffectiveAccess.SpaceDisabled` (`RightsEvaluator`), `LibraryBrowser.ToItem` (`LibraryItem.ReadOnly`); client
 `library/read-only.ts` (`readOnlyReason`, `readOnlyText`, `itemLock`), `LockMarkComponent` (`items/item-parts.ts`),
 the chip in `location/location.component.html`, `.read-only-chip` (`styles/location.css`), `.lock-mark`
-(`styles/items.css`). Tests: `ListingReadOnlyRouteTests`, `DiskWritesTests`, `read-only.spec.ts`. Plan steps 4.6a
+(`styles/items.css`). Tests: `ListingReadOnlyRouteTests`, `DiskWritesTests`, `read-only.spec.ts`; on Linux through WSL with
+`agents/tools/linux-tests/run.sh --readonly-mount` (`access(2)` refused and `EROFS` checked there, 2026-11-26). Plan steps 4.6a
 (library listings, done), 4.6b (Properties and menus), 4.6c (connections):
 [release-2.0-plan](../development/release-2.0-plan.md).
 
