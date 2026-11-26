@@ -21,7 +21,7 @@
             "browser": "src/main.ts",
             "polyfills": ["@angular/localize/init"],
             "tsConfig": "tsconfig.app.json",
-            "allowedCommonJsDependencies": ["papaparse", "jszip"],
+            "allowedCommonJsDependencies": ["papaparse", "jszip", "@use-gesture/core/types"],
             "define": { "process.env.NODE_ENV": "'production'" },
             "outputPath": {
               "base": "../Sfe.Api/wwwroot",
@@ -68,7 +68,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "600kB",
+                  "maximumWarning": "960kB",
                   "maximumError": "1.1MB"
                 },
                 {

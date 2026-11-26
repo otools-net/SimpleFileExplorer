@@ -274,3 +274,7 @@ sfe-library-page,
 sfe-listing {
     display: block;
 }
+/* Only holds the listing page's dialogs. */
+sfe-listing-dialogs {
+    display: contents;
+}

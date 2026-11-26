@@ -18,6 +18,8 @@ Code: `src/Sfe.Web/src/app/`, styles in `src/Sfe.Web/src/styles/`. Build mechani
   styles its own over it (forms, toolbars, the sort box). Never leave one with the browser's box: it stood out beside
   the buttons of a row (folder rules, 2026-11-23).
 - Icons: `<svg sfeIcon="name">` from `IconSpriteComponent`.
+- New pages are lazy routes, new dialogs of the listing go in `ListingDialogsComponent` (deferred): the initial
+  bundle has a budget ([bundle-size.md](bundle-size.md)).
 - Per-browser preferences through `core/preferences.ts`.
 - Every button (and icon link) gets a `title` hint saying what it does, with its shortcut if any.
 - A template event handler whose expression evaluates to `false` makes Angular call `preventDefault()`:

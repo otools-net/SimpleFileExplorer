@@ -38,7 +38,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { SidebarService } from './sidebar/sidebar.service';
 import { Popovers } from './topbar/popovers.service';
 import { Dialogs } from './dialogs.service';
-import { LISTING_DIALOGS } from './listing-dialogs';
+import { ListingDialogsComponent } from './listing-dialogs.component';
 import { TopbarComponent } from './topbar/topbar.component';
 import { ViewerComponent } from './viewer/viewer.component';
 
@@ -64,7 +64,7 @@ let created = false;
         SelectionBarComponent,
         EmptyStateComponent,
         ViewerComponent,
-        ...LISTING_DIALOGS,
+        ListingDialogsComponent,
         OperationsPanelComponent,
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -91,23 +91,10 @@ let created = false;
                 </main>
             </div>
             <sfe-viewer />
-            <sfe-file-tags />
-            <sfe-files-tags />
-            <sfe-scope-tags />
-            <sfe-tag-editor />
-            <sfe-tag-manager />
-            <sfe-remove-from-index />
-            <sfe-folder-exclusions />
-            <sfe-name-dialog />
-            <sfe-delete-dialog />
-            <sfe-transfer-dialog />
-            <sfe-extract-dialog />
-            <sfe-compress-dialog />
-            <sfe-properties-dialog />
-            <sfe-versions-dialog />
-            <sfe-batch-rename-dialog />
-            <!-- After the viewer: it opens over it. -->
-            <sfe-image-editor />
+            <!-- A chunk of their own, loaded right after the page is shown: the app's first download is smaller. -->
+            @defer (on immediate) {
+                <sfe-listing-dialogs />
+            }
         }
     `,
 })

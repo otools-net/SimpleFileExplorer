@@ -3,14 +3,12 @@ import { leaveAdminPage } from './admin/leave-admin-page';
 import { connectionsLanding } from './connections/connections-landing';
 import { LibraryPageComponent } from './library/library-page.component';
 import { leaveViewer, leaveViewPage } from './library/viewer/leave-viewer';
-import { PlayerPageComponent } from './player/player-page.component';
 
 /**
  * The listing page at the root (its query string says what it lists), the administration page, the video player
  * alone, a file in its viewer (`view`: text...), the sign-in page, the setup page (the first administrator) and the
  * update page (after an upgrade). All are one level deep, so the relative <base href="./"> holds under a virtual
- * directory. The administration, view, sign-in, setup and update pages load when first opened: the listing doesn't
- * need them.
+ * directory. The pages other than the listing load when first opened: the listing doesn't need them.
  */
 export const routes: Routes = [
     // Its query changes ask too, as the viewer may hold unsaved changes.
@@ -29,7 +27,10 @@ export const routes: Routes = [
     { path: 'connections', canActivate: [connectionsLanding], children: [] },
     // Its earlier address, still in bookmarks.
     { path: 'config', redirectTo: 'admin' },
-    { path: 'player', component: PlayerPageComponent },
+    {
+        path: 'player',
+        loadComponent: () => import('./player/player-page.component').then((m) => m.PlayerPageComponent),
+    },
     // A file in its viewer, on a page of its own (text...): loaded when first opened.
     {
         path: 'view',

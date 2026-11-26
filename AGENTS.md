@@ -84,6 +84,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [readability-refactoring-plan](agents/docs/development/readability-refactoring-plan.md) | plan: bringing existing code to the readability rules, phase by phase (starting numbers, checks per step, traps, final checks in CI) | `agents/tools/readability/` |
 | [release-2.0-plan](agents/docs/development/release-2.0-plan.md) | plan: release 2.0 from the owner's ideas scratchpad, in one-session steps by phase (bugs, texts and menus, getting around, files, guidance, connections, sync, release), owner's decisions and defaults taken | |
 | [namespaces](agents/docs/development/namespaces.md) | C# namespaces `Otools.Net.Sfe.*` (projects and assemblies keep `Sfe.*`), strings that keep the old text, old log-level keys | `LegacyLogCategories`, `agents/tools/namespace-rename/` |
+| [bundle-size](agents/docs/development/bundle-size.md) | the client's initial download: budget, what is lazy (routes, `@defer` listing dialogs) and what stays eager, tools finding why a file is in it | `angular.json`, `listing-dialogs.component.ts`, `agents/tools/bundle-size/` |
 | [frontend](agents/docs/development/frontend.md) | Angular conventions, CSS, icons, phone sheets (popups at the bottom on phones) | `src/Sfe.Web/src/`, `styles/phone-sheets.css` |
 | [fully-local](agents/docs/development/fully-local.md) | no external resources | `ApiTests` |
 | [security](agents/docs/development/security.md) | security rules, audit findings and status, attack vectors to test | `Sfe.Api/Security/`, `LibraryEndpoints` |

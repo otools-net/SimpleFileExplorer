@@ -37,6 +37,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 - A "for all" answer to a name clash now holds apart for clashes of two folders that could be merged and for the
   others: answering **Replace** for every file no longer replaces such a folder without asking.
 - **Undo** after a move leaves out the folders merged (moving them back would take what the folder there held).
+- **The page loads less before showing**: the dialogs of the listing (tags, rename, properties, compress…) and the
+  video player page are downloaded separately, right after the page shows or when first opened (first download
+  1.08 MB → 944 kB, 253 → 231 kB compressed).
 
 ### Fixed
 
