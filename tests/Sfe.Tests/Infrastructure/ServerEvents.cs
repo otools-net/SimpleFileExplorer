@@ -11,7 +11,9 @@ public static class ServerEvents
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
 
-    /// <summary>The name and data of the next event, whatever it is; fails after 10 s or when the stream ends.</summary>
+    /// <summary>
+    /// The name and data of the next event, whatever it is; fails after 10 s or when the stream ends.
+    /// </summary>
     public static async Task<(string Name, string Data)> NextAsync(StreamReader reader, CancellationToken token)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);

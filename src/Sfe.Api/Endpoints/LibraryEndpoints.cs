@@ -185,8 +185,6 @@ public static class LibraryEndpoints
             desc,
             folder.Filter
         );
-        if (listing is not null && !state.Access.FolderPolicy.IsUnrestricted && state.At(paths, path) is { } here)
-            listing = listing with { Access = AccessView(state, paths, listing.Path, here) };
         if (listing is null)
         {
             // Said apart from a missing sub-folder: the whole library is gone, and an administrator can pick another.
@@ -199,6 +197,7 @@ public static class LibraryEndpoints
                 : TypedResults.NotFound();
         }
 
+        listing = ListingAccess.Mark(listing, state, paths, path);
         // Shown to everyone: it tells why a folder has no thumbnails or isn't found by searches.
         listing = FolderExclusions.Of(options.CurrentValue).Mark(listing);
 
@@ -243,29 +242,6 @@ public static class LibraryEndpoints
         }
         var siblings = browser.Siblings(path, sortField, desc, filter);
         return siblings is null ? TypedResults.NotFound() : TypedResults.Ok(siblings);
-    }
-
-    /// <summary>
-    /// What a subject restricted by folder rules may do in <paramref name="folder"/> and on its entries, and where its
-    /// library starts: the client shows only what the asker may do here (tag, download, edit...).
-    /// </summary>
-    private static FolderAccessView AccessView(AccessState state, LibraryPaths paths, string folder, FolderAccess here)
-    {
-        var children = state
-            .Access.FolderPolicy.ChildrenWithRules(folder, state.Access.Rights)
-            .Where(c => c.Value.IsVisible)
-            .ToDictionary(
-                c => c.Key,
-                c => new FolderAccessView([.. c.Value.Allowed.Order(StringComparer.Ordinal)], c.Value.PathOnly),
-                LibraryPaths.PathComparer
-            );
-        var start = state.StartFolder(paths);
-        return new FolderAccessView(
-            [.. here.Allowed.Order(StringComparer.Ordinal)],
-            here.PathOnly,
-            children,
-            start.Length == 0 ? null : start
-        );
     }
 
     /// <summary>The path as the file system names it, root-relative; null when not a path of the library.</summary>
