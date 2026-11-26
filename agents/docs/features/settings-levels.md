@@ -12,6 +12,11 @@ key: [settings-new-key.md](settings-new-key.md).
   a non-editable key is a validation error.
 - A library's `SfeOptions` = config + `SettingLayers.ApplyTo(options, tenantId)` (post-configure; `SettingLayers` is
   also a change-token source).
+- `SettingLayers.ServerLevel()` (the server's own services: access tokens on every bearer request, logs,
+  connections) is **kept** until the configuration reloads (`GetReloadToken`; `InstallationSettings` reloading its
+  provider fires it) or `SettingsStore` saves or resets: resolving it costs ~1.5 ms, and before 2.0 each token request
+  paid it twice ([upload-load](../../tools/upload-load/README.md) found it). The answer is shared: read it, never
+  change it. Configuration written without a reload (`configuration[key] = …` alone) is not seen.
 - Routes: `api/settings?level=server|tenant` (default: server for `server.settings`), `PUT api/settings/locks?level=`,
   `api/me/preferences`. `PATCH` on both (`SettingChanges`: `values` by flat key, `lock`, `unlock`) =
   `SettingsService.SaveChangesAsync`: writes only the keys sent over the level's stored layer (a value equal to the

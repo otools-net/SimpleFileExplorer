@@ -43,6 +43,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **Requests made with an access token** (Sfe.Client, scripts) answer several milliseconds sooner: the server's
+  settings were worked out again twice for each of them. Many small files uploaded through Sfe.Client go about three
+  times as fast (13 to 42 files a second on a test computer).
 - Linux and macOS: the folders created above a folder of the server's secrets (when the data folder is new) were
   readable by the other accounts of the computer; they are now for the server's account only, like that folder.
 - The free space kept by copies, moves, extractions, uploads and transfers is checked on the volume the files really

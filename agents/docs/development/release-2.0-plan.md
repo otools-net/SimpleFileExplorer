@@ -396,7 +396,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   **Previous versions** on a file (menu + properties) listing its `TrashEntry.Kind = PreviousVersion` entries:
   open, restore as a copy, restore over (the current one becomes a version). Technical names (`api/files/trash`,
   `TrashEntries`, `SfeTrash`) unchanged. Version-friendly reading of the trash page ("saved over …" exists).
-- [ ] **4.3 Uploads at scale** (IDEA-013, M). Resumable chunked uploads, folder trees, pause/resume/cancel, user
+- [x] **4.3 Uploads at scale** (IDEA-013, M; done 2026-11-26 with 4.3a–c). Resumable chunked uploads, folder trees, pause/resume/cancel, user
   and admin lists already exist. Missing: a load test (5,000 small files; one large file, ≤ 8 GB, on a scratch disk,
   as a tool in `agents/tools/`), an end-to-end checksum (client sends a hash per chunk or for the whole file,
   server verifies before finishing), a background sweep of unfinished uploads (today only when listing/starting),
@@ -420,10 +420,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     connections, skipping one whose gate is held. Client: `resume()` also lists each usable connection with write
     access, `findInterrupted` matches the connection. No migration (nothing was stored), no screenshot (the panel is
     unchanged). Readability baselines raised by the added lines: `api.service.ts` 779 → 780, `uploads.ts` 450 → 458.
-  - [ ] **4.3c load test** (`agents/tools/upload-load/`: 5,000 small files through `Sfe.Client`, one large file of
+  - [x] **4.3c load test** (`agents/tools/upload-load/`: 5,000 small files through `Sfe.Client`, one large file of
     **at most 8 GB** on a scratch disk, timings) and fixes of what it finds. Owner's rule (2026-11-24): never upload
     a file over 8 GB in a test, this machine hasn't the resources; the tool takes the size as a parameter so the
-    heavier run can be done later (open point below).
+    heavier run can be done later (open point below). Done 2026-11-26: a file-based app (`#:project` Sfe.Client)
+    starting a Release build on a scratch library (or `--url`/`--token`), timings per request kind, server memory,
+    checks (listed back, server SHA-256, nothing unfinished). Found: every bearer request resolved the server
+    settings twice (`SettingLayers.ServerLevel`, ~1.5 ms each): now kept until the configuration reloads or the
+    settings file is saved (`ServerLevelCacheTests`); small files 13 → 42 a second. 1 GB and 8 GB (on D:) at ~71
+    MB/s, SHA-256 equal, memory flat. What is left per small file is durable writes (kept). Numbers in the tool's
+    README and uploads.md.
 - [ ] **4.4 Ctrl+Z** (IDEA-026, S–M). Toast Undo exists for rename, batch rename, move, delete, duplicate removal.
   Add a session undo stack (last 20, this tab only): Ctrl+Z / Cmd+Z undoes the latest, outside text fields; an
   Undo entry in the ⋮ menu; add undo for create folder (to trash) and copy (copies to trash). Refused with a reason
@@ -541,8 +547,11 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-24):** **4.3b** (connection uploads kept across restarts) done. Next: **4.3c** (upload
-  load test). Step 4.6 (read-only or writable shown) was added by the owner on 2026-11-23.
+- **Last session (2026-11-26):** **4.3c** (upload load test) done, so 4.3 is done. Next: **4.4** (Ctrl+Z). Step 4.6
+  (read-only or writable shown) was added by the owner on 2026-11-23.
+- Measuring the server without a profiler (installing `dotnet-trace` was refused here): ASP.NET's debug log with a
+  millisecond timestamp (`Logging__Console__FormatterOptions__TimestampFormat`, `Microsoft.AspNetCore=Debug`) shows
+  the gaps between routing, the first query and the endpoint; then temporary stopwatches (reverted) narrow them down.
 - A restart is tested for real in `ConnectionUploadRouteTests.AnUploadGoesOnAfterARestart`: dispose the factory and
   make another over the same `TestLibrary` (its keys folder persists, so protected text unprotects).
 - `BackgroundService` (.NET 10) runs `ExecuteAsync` apart from `StartAsync`: a test of a worker waits for its effect.

@@ -42,6 +42,15 @@ Code: `src/Sfe.Core/Files/Uploads.cs` (`IUploadAccess`; records in `UploadRecord
   whole-file hash: a browser can't hash a file in parts with `crypto.subtle` (no streaming digest) without reading it
   twice; checked chunks cover the way, and each is flushed to the disk.
 
+## Load (2.0)
+
+- `agents/tools/upload-load/` ([README](../../tools/upload-load/README.md)) sends 5,000 small files and one large file
+  (8 GB at most) through Sfe.Client and checks them (listed back, SHA-256 read by the server, nothing unfinished).
+  2026-11-26: 42 small files a second two at a time (each: list, check, start, chunk, finish; finish the dearest,
+  ~13 ms: the index row and the move), 1 GB at 72 MB/s, server memory flat during the large file.
+- A small file costs five requests and three durable writes (record, part flushed, record again): kept, a crash
+  loses nothing; a folder of thousands of tiny files is bound by that, not by bandwidth.
+
 ## Client
 
 - `UploadQueue`: batches per drop/pick; check (≤ 1000 names per request) → `asking`/`queued`; two files at a time;

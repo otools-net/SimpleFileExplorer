@@ -23,6 +23,15 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
     private readonly ILogger<SettingLayers> _logger;
     private CancellationTokenSource _changed = new();
 
+    /// <summary>
+    /// <see cref="ServerLevel"/> as last resolved (about a millisecond and a half of work, asked on every request made
+    /// with an access token), with the <see cref="_serverVersion"/> it was resolved at. Shared: never changed.
+    /// </summary>
+    private Tuple<long, SfeOptions>? _serverLevel;
+
+    /// <summary>Moves when the configuration reloads or the server settings page saves.</summary>
+    private long _serverVersion;
+
     public SettingLayers(
         IConfiguration configuration,
         SettingsStore server,
@@ -36,6 +45,8 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
         _rows = rows;
         _logger = logger;
         changes.TenantSettingsChanged += _ => NotifyChanged();
+        ChangeToken.OnChange(configuration.GetReloadToken, ServerLevelChanged);
+        ChangeToken.OnChange(server.GetChangeToken, ServerLevelChanged);
     }
 
     public SettingsStore Server => _server;
@@ -90,8 +101,20 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
     /// <summary>
     /// The settings in effect for the whole server: the configuration's, then the server settings page's, without
     /// reading the database (what the server's own services use, e.g. the log, also while the database is down).
+    /// Kept until the configuration reloads or the server settings are saved; the answer is shared: read it only.
     /// </summary>
     public SfeOptions ServerLevel()
+    {
+        // Read before resolving: a change while it resolves leaves an older version, resolved again next time.
+        var version = Interlocked.Read(ref _serverVersion);
+        if (Volatile.Read(ref _serverLevel) is { } kept && kept.Item1 == version)
+            return kept.Item2;
+        var options = ResolveServerLevel();
+        Volatile.Write(ref _serverLevel, Tuple.Create(version, options));
+        return options;
+    }
+
+    private SfeOptions ResolveServerLevel()
     {
         var options = Configured();
         try
@@ -346,6 +369,8 @@ public sealed class SettingLayers : IOptionsChangeTokenSource<SfeOptions>
     /// Signals the libraries' options after a save of the server level (the libraries' own saves signal through
     /// <see cref="AccessChanges"/>).
     /// </summary>
+    private void ServerLevelChanged() => Interlocked.Increment(ref _serverVersion);
+
     public void NotifyChanged()
     {
         var previous = Interlocked.Exchange(ref _changed, new CancellationTokenSource());
