@@ -396,53 +396,10 @@ public sealed class TagService(
         PathFilter? visible = null
     )
     {
-        var count = Math.Max(1, Settings.SidebarCount);
-        var history = Settings.RecordHistory;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
         var counts = await FileCountsAsync(db, cancellationToken, visible);
-
-        TagUsage Usage(int id) => new(graph.Summary(id)!, counts.GetValueOrDefault(id));
-
-        var popular = counts
-            .Where(c => c.Value > 0 && graph.Contains(c.Key))
-            .OrderByDescending(c => c.Value)
-            .ThenBy(c => graph.Find(c.Key)!.Name, StringComparer.CurrentCultureIgnoreCase)
-            .Take(count)
-            .Select(c => c.Key)
-            .ToList();
-        var searched = !history
-            ? []
-            : await db
-                .TagActivity.Where(a => a.LastSearchedAt != null)
-                .OrderByDescending(a => a.LastSearchedAt)
-                .Select(a => a.TagId)
-                .Take(count)
-                .ToListAsync(cancellationToken);
-        var viewed = !history
-            ? []
-            : await db
-                .TagActivity.Where(a => a.LastViewedAt != null)
-                .OrderByDescending(a => a.LastViewedAt)
-                .Select(a => a.TagId)
-                .Take(count)
-                .ToListAsync(cancellationToken);
-
-        var shown = popular.Concat(searched).Concat(viewed).ToHashSet();
-        var lucky = graph
-            .Nodes.Where(n => !shown.Contains(n.Id))
-            .Select(n => n.Id)
-            .OrderBy(_ => Random.Shared.Next())
-            .Take(count)
-            .ToList();
-
-        return new TagSidebar(
-            popular.Select(Usage).ToList(),
-            searched.Where(graph.Contains).Select(Usage).ToList(),
-            viewed.Where(graph.Contains).Select(Usage).ToList(),
-            lucky.Select(Usage).ToList(),
-            history
-        );
+        return await TagSidebarLists.BuildAsync(db, graph, counts, Settings, cancellationToken);
     }
 
     /// <summary>Forgets the searched and viewed tags.</summary>
