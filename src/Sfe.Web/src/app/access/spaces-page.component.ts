@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { TenantDetails } from './access.models';
@@ -65,7 +65,7 @@ export class AccessModelComponent {}
  */
 @Component({
     selector: 'sfe-spaces-page',
-    imports: [IconComponent, AccessModelComponent, SpaceDetailComponent, SpaceEditorComponent],
+    imports: [IconComponent, RouterLink, AccessModelComponent, SpaceDetailComponent, SpaceEditorComponent],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'access-page' },
     templateUrl: './spaces-page.component.html',

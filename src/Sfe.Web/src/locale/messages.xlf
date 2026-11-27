@@ -114,6 +114,7 @@
         <note category="location">src/app/access/space-editor.component.html:79</note>
         <note category="location">src/app/account/installation-form.component.html:119</note>
         <note category="location">src/app/account/setup-page.component.html:184</note>
+        <note category="location">src/app/wizards/new-space/new-space-name.step.ts:29</note>
       </notes>
       <segment>
         <source>(optional)</source>
@@ -429,7 +430,7 @@
         <note category="location">src/app/access/space-editor.component.html:115</note>
         <note category="location">src/app/access/space-members.component.html:78,79</note>
         <note category="location">src/app/access/spaces-page.component.html:38,39</note>
-        <note category="location">src/app/access/spaces-page.component.html:96,97</note>
+        <note category="location">src/app/access/spaces-page.component.html:104,105</note>
       </notes>
       <segment>
         <source>Disabled</source>
@@ -500,6 +501,7 @@
         <note category="location">src/app/tasks/tasks-section.component.html:33,35</note>
         <note category="location">src/app/tokens/token-create.component.html:132,133</note>
         <note category="location">src/app/tracking/duplicate-group.component.html:59,60</note>
+        <note category="location">src/app/wizards/wizard.component.html:107,108</note>
       </notes>
       <segment>
         <source>Cancel</source>
@@ -1037,6 +1039,7 @@
         <note category="location">src/app/library/scan/exclusions-section.component.html:22,23</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:76,77</note>
         <note category="location">src/app/tasks/schedule-form.component.html:19,20</note>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:35</note>
       </notes>
       <segment>
         <source>Folder</source>
@@ -1458,6 +1461,9 @@
         <note category="location">src/app/library/location/location.component.ts:31</note>
         <note category="location">src/app/tags/tag-editor.dialog.html:5,6</note>
         <note category="location">src/app/tokens/token-create.component.html:37,38</note>
+        <note category="location">src/app/wizards/new-space/new-space-name.step.ts:12,13</note>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:39</note>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:48</note>
       </notes>
       <segment>
         <source>Name</source>
@@ -1800,7 +1806,7 @@
     <unit id="7593555694782789615">
       <notes>
         <note category="location">src/app/access/space-detail.component.html:41</note>
-        <note category="location">src/app/access/spaces-page.component.html:111</note>
+        <note category="location">src/app/access/spaces-page.component.html:119</note>
         <note category="location">src/app/files/file-transfers.ts:422</note>
         <note category="location">src/app/files/file-transfers.ts:468</note>
         <note category="location">src/app/files/opening-commands.ts:43</note>
@@ -1873,6 +1879,8 @@
         <note category="location">src/app/access/space-detail.component.ts:45</note>
         <note category="location">src/app/access/spaces-page.component.ts:53,54</note>
         <note category="location">src/app/admin/admin-sections.ts:347</note>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:54</note>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:63</note>
       </notes>
       <segment>
         <source>Visitors</source>
@@ -1897,6 +1905,7 @@
     <unit id="4622281176121407368">
       <notes>
         <note category="location">src/app/access/space-editor.component.html:14,15</note>
+        <note category="location">src/app/wizards/new-space/new-space-name.step.ts:17,18</note>
       </notes>
       <segment>
         <source>For example Family, Work, Holiday photos</source>
@@ -1905,6 +1914,7 @@
     <unit id="532530028633603414">
       <notes>
         <note category="location">src/app/access/space-editor.component.html:16,17</note>
+        <note category="location">src/app/wizards/new-space/new-space-name.step.ts:22,23</note>
       </notes>
       <segment>
         <source>Shown in the ⋮ menu and on the sign-in page.</source>
@@ -1917,6 +1927,7 @@
         <note category="location">src/app/admin/keep-alive-status.component.html:31,32</note>
         <note category="location">src/app/admin/system-section.component.html:43</note>
         <note category="location">src/app/admin/system-section.component.html:66</note>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:27</note>
       </notes>
       <segment>
         <source>Library folder</source>
@@ -1957,6 +1968,7 @@
     <unit id="1984535602796088797">
       <notes>
         <note category="location">src/app/access/space-editor.component.html:41,42</note>
+        <note category="location">src/app/wizards/new-space/new-space-folder.step.ts:17,18</note>
       </notes>
       <segment>
         <source>Pick a folder below</source>
@@ -1973,6 +1985,8 @@
     <unit id="2729682662981362859">
       <notes>
         <note category="location">src/app/access/space-editor.component.html:78</note>
+        <note category="location">src/app/wizards/new-space/new-space-name.step.ts:28</note>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:49</note>
       </notes>
       <segment>
         <source>Short name</source>
@@ -1981,6 +1995,8 @@
     <unit id="2775161701985087263">
       <notes>
         <note category="location">src/app/access/space-editor.component.html:86,87</note>
+        <note category="location">src/app/wizards/new-space/new-space-name.step.ts:35,36</note>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:49</note>
       </notes>
       <segment>
         <source>Made from the name</source>
@@ -1989,6 +2005,7 @@
     <unit id="4532599727663135425">
       <notes>
         <note category="location">src/app/access/space-editor.component.html:91,92</note>
+        <note category="location">src/app/wizards/new-space/new-space-name.step.ts:41,42</note>
       </notes>
       <segment>
         <source>Lowercase letters, digits and “-”. It names the space&apos;s index and cache folders on the server, and can&apos;t change later.</source>
@@ -1997,6 +2014,7 @@
     <unit id="2005538175640046323">
       <notes>
         <note category="location">src/app/access/space-editor.component.html:103</note>
+        <note category="location">src/app/wizards/new-space/new-space-visitors.step.ts:18</note>
       </notes>
       <segment>
         <source>Let visitors in without an account</source>
@@ -2005,6 +2023,7 @@
     <unit id="6365648531973014461">
       <notes>
         <note category="location">src/app/access/space-editor.component.html:104,105</note>
+        <note category="location">src/app/wizards/new-space/new-space-visitors.step.ts:19,20</note>
       </notes>
       <segment>
         <source>They get the rights of the space&apos;s Guests group. You can change this later on the space&apos;s page.</source>
@@ -2103,6 +2122,8 @@
       <notes>
         <note category="location">src/app/access/space-editor.component.ts:54</note>
         <note category="location">src/app/access/spaces-page.component.html:75,76</note>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:21</note>
+        <note category="location">src/app/wizards/wizard-registry.ts:30</note>
       </notes>
       <segment>
         <source>New space</source>
@@ -2255,7 +2276,7 @@
     <unit id="5759940579622302765">
       <notes>
         <note category="location">src/app/access/space-groups.component.html:64,65</note>
-        <note category="location">src/app/access/spaces-page.component.html:102,103</note>
+        <note category="location">src/app/access/spaces-page.component.html:110,111</note>
       </notes>
       <segment>
         <source>{VAR_PLURAL, plural, one {<ph id="0" equiv="INTERPOLATION"/> account} other {<ph id="1" equiv="INTERPOLATION"/> accounts}}</source>
@@ -2636,7 +2657,7 @@
     <unit id="1395559157596537283">
       <notes>
         <note category="location">src/app/access/spaces-page.component.html:30,31</note>
-        <note category="location">src/app/access/spaces-page.component.html:93,94</note>
+        <note category="location">src/app/access/spaces-page.component.html:101,102</note>
       </notes>
       <segment>
         <source>You are here</source>
@@ -2682,9 +2703,25 @@
         <source>Create a space on a folder of the server</source>
       </segment>
     </unit>
+    <unit id="390205279889362384">
+      <notes>
+        <note category="location">src/app/access/spaces-page.component.html:81,82</note>
+      </notes>
+      <segment>
+        <source>Create a space step by step, with an explanation at each step</source>
+      </segment>
+    </unit>
+    <unit id="3420937822138906940">
+      <notes>
+        <note category="location">src/app/access/spaces-page.component.html:84,85</note>
+      </notes>
+      <segment>
+        <source>Step by step</source>
+      </segment>
+    </unit>
     <unit id="6785740372526345440">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.html:85,86</note>
+        <note category="location">src/app/access/spaces-page.component.html:93,94</note>
       </notes>
       <segment>
         <source>Open <ph id="0" equiv="INTERPOLATION" disp="{{ space.name }}"/>: its groups, accounts and visitors</source>
@@ -2692,7 +2729,7 @@
     </unit>
     <unit id="3117228864183443170">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.html:100,101</note>
+        <note category="location">src/app/access/spaces-page.component.html:108,109</note>
       </notes>
       <segment>
         <source>{VAR_PLURAL, plural, one {<ph id="0" equiv="INTERPOLATION"/> group} other {<ph id="1" equiv="INTERPOLATION"/> groups}}</source>
@@ -2700,7 +2737,7 @@
     </unit>
     <unit id="8587768211414527193">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.html:106,107</note>
+        <note category="location">src/app/access/spaces-page.component.html:114,115</note>
       </notes>
       <segment>
         <source>Visitors let in</source>
@@ -2708,7 +2745,7 @@
     </unit>
     <unit id="31451707082210233">
       <notes>
-        <note category="location">src/app/access/spaces-page.component.html:108,109</note>
+        <note category="location">src/app/access/spaces-page.component.html:116,117</note>
       </notes>
       <segment>
         <source>No visitors</source>
@@ -3366,6 +3403,7 @@ Space “Holiday photos”
         <note category="location">src/app/account/setup-page.component.html:278,279</note>
         <note category="location">src/app/menus/context-menu.html:28,29</note>
         <note category="location">src/app/menus/context-menu.ts:338</note>
+        <note category="location">src/app/wizards/wizard.component.html:118,119</note>
       </notes>
       <segment>
         <source>Back</source>
@@ -3688,6 +3726,7 @@ Space “Holiday photos”
     <unit id="7102075992666089988">
       <notes>
         <note category="location">src/app/account/setup-page.component.html:12,14</note>
+        <note category="location">src/app/wizards/wizard.component.html:4,6</note>
       </notes>
       <segment>
         <source>Step <ph id="0" equiv="INTERPOLATION" disp="{{ number }}"/> of <ph id="1" equiv="INTERPOLATION_1" disp="{{ stepCount() }}"/></source>
@@ -3834,6 +3873,7 @@ Space “Holiday photos”
         <note category="location">src/app/account/setup-page.component.html:113,114</note>
         <note category="location">src/app/account/setup-page.component.html:147,148</note>
         <note category="location">src/app/formats/text/text-texts.ts:86</note>
+        <note category="location">src/app/wizards/wizard.component.html:139,140</note>
       </notes>
       <segment>
         <source>Next</source>
@@ -3858,7 +3898,7 @@ Space “Holiday photos”
     <unit id="2286701403166501273">
       <notes>
         <note category="location">src/app/account/setup-page.component.html:134,135</note>
-        <note category="location">src/app/account/setup-page.component.ts:85</note>
+        <note category="location">src/app/account/setup-page.component.ts:86</note>
       </notes>
       <segment>
         <source>Go back to the setup code</source>
@@ -3979,7 +4019,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6250956828258186744">
       <notes>
-        <note category="location">src/app/account/setup-page.component.ts:86</note>
+        <note category="location">src/app/account/setup-page.component.ts:87</note>
       </notes>
       <segment>
         <source>Go back to the library folder</source>
@@ -3987,7 +4027,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1212505886683106745">
       <notes>
-        <note category="location">src/app/account/setup-page.component.ts:89</note>
+        <note category="location">src/app/account/setup-page.component.ts:90</note>
       </notes>
       <segment>
         <source>Give the administrator the new password and sign in</source>
@@ -3995,7 +4035,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4247972180573441311">
       <notes>
-        <note category="location">src/app/account/setup-page.component.ts:90</note>
+        <note category="location">src/app/account/setup-page.component.ts:91</note>
       </notes>
       <segment>
         <source>Create the administrator and sign in</source>
@@ -4003,19 +4043,10 @@ Space “Holiday photos”
     </unit>
     <unit id="6621089620894465664">
       <notes>
-        <note category="location">src/app/account/setup-page.component.ts:97</note>
+        <note category="location">src/app/account/setup-page.component.ts:98</note>
       </notes>
       <segment>
         <source>Setup – SFE</source>
-      </segment>
-    </unit>
-    <unit id="3317586253347147483">
-      <notes>
-        <note category="location">src/app/account/setup-page.component.ts:198</note>
-        <note category="location">src/app/admin/installation-section.component.ts:49</note>
-      </notes>
-      <segment>
-        <source>Too many attempts: wait a minute, then try again.</source>
       </segment>
     </unit>
     <unit id="5268577827874422507">
@@ -4048,7 +4079,7 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-page.component.html:158,159</note>
         <note category="location">src/app/admin/admin-page.component.html:221,222</note>
         <note category="location">src/app/admin/admin-page.component.html:230,231</note>
-        <note category="location">src/app/admin/admin-page.component.ts:265</note>
+        <note category="location">src/app/admin/admin-page.component.ts:269</note>
         <note category="location">src/app/help/help-search.ts:59</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:156</note>
       </notes>
@@ -4204,7 +4235,7 @@ Space “Holiday photos”
     <unit id="3857924785932255369">
       <notes>
         <note category="location">src/app/admin/admin-page.component.html:334</note>
-        <note category="location">src/app/admin/admin-page.component.ts:78</note>
+        <note category="location">src/app/admin/admin-page.component.ts:79</note>
         <note category="location">src/app/core/connection.models.ts:133</note>
       </notes>
       <segment>
@@ -4222,7 +4253,7 @@ Space “Holiday photos”
     <unit id="5552665062432999263">
       <notes>
         <note category="location">src/app/admin/admin-page.component.html:353</note>
-        <note category="location">src/app/admin/admin-page.component.ts:79</note>
+        <note category="location">src/app/admin/admin-page.component.ts:80</note>
       </notes>
       <segment>
         <source>Whole server</source>
@@ -4282,7 +4313,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4576117176436794057">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:197</note>
+        <note category="location">src/app/admin/admin-page.component.ts:198</note>
       </notes>
       <segment>
         <source>Back to the sections</source>
@@ -4290,7 +4321,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7236929489494486140">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:197</note>
+        <note category="location">src/app/admin/admin-page.component.ts:198</note>
       </notes>
       <segment>
         <source>Back to the library</source>
@@ -4298,7 +4329,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3968962107389212895">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:213</note>
+        <note category="location">src/app/admin/admin-page.component.ts:217</note>
       </notes>
       <segment>
         <source>The first {limit, number} of {count, number} found: add words to narrow them down.</source>
@@ -4306,7 +4337,7 @@ Space “Holiday photos”
     </unit>
     <unit id="9077841280946532318">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:217</note>
+        <note category="location">src/app/admin/admin-page.component.ts:221</note>
       </notes>
       <segment>
         <source>{count, plural, =0 {Nothing found} one {# found} other {# found}}</source>
@@ -4314,7 +4345,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5853220976119511648">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:222</note>
+        <note category="location">src/app/admin/admin-page.component.ts:226</note>
       </notes>
       <segment>
         <source>Open <ph id="0" equiv="place" disp="where"/></source>
@@ -4322,7 +4353,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6073458638608131210">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:223</note>
+        <note category="location">src/app/admin/admin-page.component.ts:227</note>
       </notes>
       <segment>
         <source>Open <ph id="0" equiv="place" disp="where"/> at this setting</source>
@@ -4330,7 +4361,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5556628535331352229">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:232</note>
+        <note category="location">src/app/admin/admin-page.component.ts:236</note>
       </notes>
       <segment>
         <source>Not saved yet: <ph id="0" equiv="pages" disp="changed.join(&apos;, &apos;)"/>; also in <ph id="1" equiv="levels" disp="others.join(&apos;, &apos;)"/></source>
@@ -4338,7 +4369,7 @@ Space “Holiday photos”
     </unit>
     <unit id="9044466139427444392">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:233</note>
+        <note category="location">src/app/admin/admin-page.component.ts:237</note>
       </notes>
       <segment>
         <source>Not saved yet: <ph id="0" equiv="pages" disp="changed.join(&apos;, &apos;)"/></source>
@@ -4346,7 +4377,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2353952272869974278">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:234</note>
+        <note category="location">src/app/admin/admin-page.component.ts:238</note>
       </notes>
       <segment>
         <source>Not saved yet in <ph id="0" equiv="levels" disp="others.join(&apos;, &apos;)"/></source>
@@ -4354,7 +4385,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8087235969397973279">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:238</note>
+        <note category="location">src/app/admin/admin-page.component.ts:242</note>
       </notes>
       <segment>
         <source>This space has settings of its own</source>
@@ -4362,7 +4393,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3856601031694131542">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:239</note>
+        <note category="location">src/app/admin/admin-page.component.ts:243</note>
       </notes>
       <segment>
         <source>Following the server&apos;s settings</source>
@@ -4370,7 +4401,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7530901117333047547">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:240</note>
+        <note category="location">src/app/admin/admin-page.component.ts:244</note>
       </notes>
       <segment>
         <source>Using saved settings</source>
@@ -4378,7 +4409,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5433172809500112054">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:240</note>
+        <note category="location">src/app/admin/admin-page.component.ts:244</note>
       </notes>
       <segment>
         <source>Using the server&apos;s configuration</source>
@@ -4386,7 +4417,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1464515136037050555">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:245</note>
+        <note category="location">src/app/admin/admin-page.component.ts:249</note>
       </notes>
       <segment>
         <source>Undo the changes not saved yet, on every page of both tabs</source>
@@ -4394,7 +4425,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6774866820039145160">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:246</note>
+        <note category="location">src/app/admin/admin-page.component.ts:250</note>
       </notes>
       <segment>
         <source>Undo the changes not saved yet, on every page</source>
@@ -4402,7 +4433,7 @@ Space “Holiday photos”
     </unit>
     <unit id="410830363757343395">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:250</note>
+        <note category="location">src/app/admin/admin-page.component.ts:254</note>
       </notes>
       <segment>
         <source>Nothing saved yet</source>
@@ -4410,7 +4441,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5828595803093106490">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:252</note>
+        <note category="location">src/app/admin/admin-page.component.ts:256</note>
       </notes>
       <segment>
         <source>Forget the space&apos;s own settings and use the server&apos;s again (asks first)</source>
@@ -4418,7 +4449,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6421739913374575258">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:253</note>
+        <note category="location">src/app/admin/admin-page.component.ts:257</note>
       </notes>
       <segment>
         <source>Forget the saved settings and go back to the server&apos;s configuration (asks first)</source>
@@ -4426,7 +4457,7 @@ Space “Holiday photos”
     </unit>
     <unit id="598239863654032311">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:257</note>
+        <note category="location">src/app/admin/admin-page.component.ts:261</note>
       </notes>
       <segment>
         <source>Save and apply the settings changed in both tabs: the whole server&apos;s, then this space&apos;s</source>
@@ -4434,7 +4465,7 @@ Space “Holiday photos”
     </unit>
     <unit id="336490905177668092">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:259</note>
+        <note category="location">src/app/admin/admin-page.component.ts:263</note>
       </notes>
       <segment>
         <source>Save and apply the settings of every page, for everyone using this space</source>
@@ -4442,7 +4473,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3477804007741549894">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:260</note>
+        <note category="location">src/app/admin/admin-page.component.ts:264</note>
       </notes>
       <segment>
         <source>Save and apply the settings of every page, for everyone using this server</source>
@@ -4450,7 +4481,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2123805987941487613">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:268</note>
+        <note category="location">src/app/admin/admin-page.component.ts:272</note>
       </notes>
       <segment>
         <source>Administration – SFE</source>
@@ -4458,7 +4489,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4721602624937320440">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:272</note>
+        <note category="location">src/app/admin/admin-page.component.ts:276</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="page" disp="this.subpage().title"/> – <ph id="1" equiv="section" disp="section.title"/> – Administration – SFE</source>
@@ -4466,7 +4497,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7714903196521167137">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:273</note>
+        <note category="location">src/app/admin/admin-page.component.ts:277</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="section" disp="section.title"/> – Administration – SFE</source>
@@ -4474,10 +4505,19 @@ Space “Holiday photos”
     </unit>
     <unit id="6647749126777119100">
       <notes>
-        <note category="location">src/app/admin/admin-page.component.ts:335</note>
+        <note category="location">src/app/admin/admin-page.component.ts:339</note>
       </notes>
       <segment>
         <source>Leave without saving? The settings you changed are lost.</source>
+      </segment>
+    </unit>
+    <unit id="4397159745325787278">
+      <notes>
+        <note category="location">src/app/admin/admin-search.ts:110</note>
+        <note category="description">administration search</note>
+      </notes>
+      <segment>
+        <source>Wizards</source>
       </segment>
     </unit>
     <unit id="3532447128426313609">
@@ -5452,6 +5492,15 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Save the installation settings</source>
+      </segment>
+    </unit>
+    <unit id="3317586253347147483">
+      <notes>
+        <note category="location">src/app/admin/installation-section.component.ts:49</note>
+        <note category="location">src/app/wizards/wizard-run.ts:23</note>
+      </notes>
+      <segment>
+        <source>Too many attempts: wait a minute, then try again.</source>
       </segment>
     </unit>
     <unit id="2996461927148170913">
@@ -14391,6 +14440,8 @@ Space “Holiday photos”
         <note category="location">src/app/tags/scope-tags.dialog.html:195,196</note>
         <note category="location">src/app/tasks/tasks.ts:205</note>
         <note category="location">src/app/tokens/token-create.component.html:122,123</note>
+        <note category="location">src/app/wizards/wizard.component.html:63,64</note>
+        <note category="location">src/app/wizards/wizard.component.html:98,99</note>
         <note category="description">stop editing</note>
       </notes>
       <segment>
@@ -15022,7 +15073,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8229093579785086993">
       <notes>
-        <note category="location">src/app/help/help-page.component.ts:146</note>
+        <note category="location">src/app/help/help-page.component.ts:147</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="title" disp="title"/> · SFE help</source>
@@ -15030,7 +15081,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5842374632018003025">
       <notes>
-        <note category="location">src/app/help/help-page.component.ts:146</note>
+        <note category="location">src/app/help/help-page.component.ts:147</note>
       </notes>
       <segment>
         <source>SFE help</source>
@@ -26981,6 +27032,271 @@ The search index is updated in the background. This can take a while on large fo
       </notes>
       <segment>
         <source>{more, select, yes {{count, number}+ to do} other {{count, number} to do}}</source>
+      </segment>
+    </unit>
+    <unit id="3385864060614579578">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space-folder.step.ts:22,23</note>
+      </notes>
+      <segment>
+        <source>Click a folder to choose it; click again inside it to go deeper. Only the folders the server allows are listed, and the folder can&apos;t change once the space exists.</source>
+      </segment>
+    </unit>
+    <unit id="7971024993560331579">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space-folder.step.ts:25,26</note>
+      </notes>
+      <segment>
+        <source>Could not list the folders: <ph id="0" equiv="INTERPOLATION" disp="{{ reason }}"/></source>
+      </segment>
+    </unit>
+    <unit id="4217967818722614119">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space-visitors.step.ts:23,24</note>
+      </notes>
+      <segment>
+        <source>This server is in Local mode: nobody comes in without an account until it is in External mode.</source>
+      </segment>
+    </unit>
+    <unit id="6927343226230192989">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:29</note>
+      </notes>
+      <segment>
+        <source>The folder whose files the space shows, with everything below it. The space keeps its own index, tags and settings for it.</source>
+      </segment>
+    </unit>
+    <unit id="3709981213344633188">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:41</note>
+      </notes>
+      <segment>
+        <source>What people see when they pick the space. The short name names its files on the server.</source>
+      </segment>
+    </unit>
+    <unit id="3347345719701481191">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:56</note>
+      </notes>
+      <segment>
+        <source>Visitors are people without an account. Let them in only if anyone who can reach the server may see this library.</source>
+      </segment>
+    </unit>
+    <unit id="5042185687670491799">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:65</note>
+      </notes>
+      <segment>
+        <source>Let in, with the Guests group&apos;s rights</source>
+      </segment>
+    </unit>
+    <unit id="517101332476897941">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:66</note>
+      </notes>
+      <segment>
+        <source>Not let in</source>
+      </segment>
+    </unit>
+    <unit id="8547847545918572345">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:78,79</note>
+      </notes>
+      <segment>
+        <source>The space “<ph id="0" equiv="name" disp="space.name"/>” is ready, on <ph id="1" equiv="folder" disp="space.root"/>. It has the groups Administrators, Users and Guests; add accounts to it on its page.</source>
+      </segment>
+    </unit>
+    <unit id="1433961547417065871">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:82</note>
+      </notes>
+      <segment>
+        <source>Open the space&apos;s page</source>
+      </segment>
+    </unit>
+    <unit id="3913486771155197725">
+      <notes>
+        <note category="location">src/app/wizards/new-space/new-space.wizard.ts:83</note>
+      </notes>
+      <segment>
+        <source>Its groups, accounts, folder rules and visitors</source>
+      </segment>
+    </unit>
+    <unit id="1008846354597048987">
+      <notes>
+        <note category="location">src/app/wizards/wizard-page.component.ts:57</note>
+      </notes>
+      <segment>
+        <source>Back to the administration</source>
+      </segment>
+    </unit>
+    <unit id="3568179602342456985">
+      <notes>
+        <note category="location">src/app/wizards/wizard-page.component.ts:64</note>
+      </notes>
+      <segment>
+        <source>There is no such wizard.</source>
+      </segment>
+    </unit>
+    <unit id="2428033851044257374">
+      <notes>
+        <note category="location">src/app/wizards/wizard-page.component.ts:66</note>
+      </notes>
+      <segment>
+        <source>You may not use this wizard.</source>
+      </segment>
+    </unit>
+    <unit id="4185773854505896066">
+      <notes>
+        <note category="location">src/app/wizards/wizard-page.component.ts:67</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="wizard" disp="entry.title"/> – SFE</source>
+      </segment>
+    </unit>
+    <unit id="5650770008029845962">
+      <notes>
+        <note category="location">src/app/wizards/wizard-registry.ts:31</note>
+      </notes>
+      <segment>
+        <source>Step by step: a folder of the server, a name, and whether visitors may come in.</source>
+      </segment>
+    </unit>
+    <unit id="3131535016199325384">
+      <notes>
+        <note category="location">src/app/wizards/wizard-registry.ts:32</note>
+      </notes>
+      <segment>
+        <source>wizard library tenant create add folder guests visitors</source>
+      </segment>
+    </unit>
+    <unit id="219550497670413357">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:8</note>
+      </notes>
+      <segment>
+        <source>Steps of the wizard</source>
+      </segment>
+    </unit>
+    <unit id="7430680760319628492">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:12,13</note>
+        <note category="location">src/app/wizards/wizard.component.html:37,38</note>
+      </notes>
+      <segment>
+        <source>Review</source>
+      </segment>
+    </unit>
+    <unit id="8132022972387555671">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:25,26</note>
+      </notes>
+      <segment>
+        <source>Open the help about this step in a new tab.</source>
+      </segment>
+    </unit>
+    <unit id="7208146869028055854">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:28,29</note>
+      </notes>
+      <segment>
+        <source>More in the help</source>
+      </segment>
+    </unit>
+    <unit id="7990945933546569480">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:38,39</note>
+      </notes>
+      <segment>
+        <source>Nothing is saved yet. Check what you chose, then finish.</source>
+      </segment>
+    </unit>
+    <unit id="5465527588418942381">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:46,47</note>
+      </notes>
+      <segment>
+        <source>Go back to this step to change it.</source>
+      </segment>
+    </unit>
+    <unit id="1230154438678955604">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:50,51</note>
+      </notes>
+      <segment>
+        <source>Change</source>
+      </segment>
+    </unit>
+    <unit id="1089620475808014435">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:85,86</note>
+      </notes>
+      <segment>
+        <source>Start this wizard again, with nothing chosen</source>
+      </segment>
+    </unit>
+    <unit id="6186101642106373118">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:89,90</note>
+      </notes>
+      <segment>
+        <source>Run again</source>
+      </segment>
+    </unit>
+    <unit id="7295206196705371007">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:94,95</note>
+      </notes>
+      <segment>
+        <source>Close the wizard</source>
+      </segment>
+    </unit>
+    <unit id="1868176808226170309">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:103,104</note>
+      </notes>
+      <segment>
+        <source>Leave the wizard without saving anything</source>
+      </segment>
+    </unit>
+    <unit id="3392858157819664227">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:113,114</note>
+      </notes>
+      <segment>
+        <source>Go back to the previous step; what you chose stays</source>
+      </segment>
+    </unit>
+    <unit id="1720288428448966820">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:124,125</note>
+      </notes>
+      <segment>
+        <source>Save everything chosen in the wizard</source>
+      </segment>
+    </unit>
+    <unit id="65984904390749158">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:129,130</note>
+      </notes>
+      <segment>
+        <source>Finish</source>
+      </segment>
+    </unit>
+    <unit id="5083332799173510429">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.html:134,135</note>
+      </notes>
+      <segment>
+        <source>Go on to the next step (Enter)</source>
+      </segment>
+    </unit>
+    <unit id="7848568840065605741">
+      <notes>
+        <note category="location">src/app/wizards/wizard.component.ts:135</note>
+      </notes>
+      <segment>
+        <source>Leave the wizard? What you have chosen so far is lost.</source>
       </segment>
     </unit>
   </file>

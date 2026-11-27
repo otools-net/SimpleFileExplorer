@@ -65,6 +65,7 @@ import { VideoStreamsComponent } from './video-streams.component';
 import { NotificationsComponent } from '../notifications/notifications.component';
 import { ExclusionsSectionComponent } from '../library/scan/exclusions-section.component';
 import { adminHelpLink } from '../help/admin-help';
+import { canOpenWizard, WIZARDS } from '../wizards/wizard-registry';
 
 /** History state of the entries of this page opened from the listing page: "back" returns there. */
 const FROM_LIBRARY = 'sfeFromLibrary';
@@ -205,7 +206,10 @@ export class AdminPageComponent implements OnInit {
     protected readonly query = signal('');
     private readonly words = computed(() => searchWords(this.query()));
     protected readonly searching = computed(() => this.words().length > 0);
-    private readonly results = computed(() => searchAdmin(this.query(), this.sections()));
+    private readonly wizards = computed(() =>
+        WIZARDS.filter((w) => canOpenWizard(w, (right) => this.config.can(right), this.config.config()?.mode)),
+    );
+    private readonly results = computed(() => searchAdmin(this.query(), this.sections(), this.wizards()));
     protected readonly shownResults = computed(() => this.results().slice(0, ADMIN_SEARCH_LIMIT));
     protected readonly resultsCount = computed(() => {
         const count = this.results().length;
@@ -361,6 +365,7 @@ export class AdminPageComponent implements OnInit {
     }
 
     protected resultParams(result: AdminSearchResult): Record<string, string | null> {
+        if (result.wizard) return { id: result.wizard };
         return {
             section: result.section.id,
             page: result.subpage.id === result.section.subpages[0].id ? null : result.subpage.id,
@@ -385,10 +390,10 @@ export class AdminPageComponent implements OnInit {
             const first = this.results()[0];
             if (!first) return;
             this.found(first);
-            void this.router.navigate(['/admin'], {
+            void this.router.navigate([first.wizard ? '/wizard' : '/admin'], {
                 queryParams: this.resultParams(first),
                 state: this.linkState(),
-                replaceUrl: !this.phone(),
+                replaceUrl: !this.phone() && !first.wizard,
             });
         }
     }

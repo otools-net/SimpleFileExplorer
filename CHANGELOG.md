@@ -7,6 +7,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Wizards**: administration jobs step by step, each step explained with a link to its help, nothing saved before
+  **Finish**, a review of everything chosen first, and what was made with links to it at the end. Found by the
+  administration search (under **Wizards**). The first one, **New space**, also opens from **Step by step** next to
+  **New space** on the Spaces page: a folder of the server, a name, whether visitors come in. API: `validateOnly=true`
+  on `POST api/tenants` runs the checks of a new space without creating it (204).
 - **Help inside SFE**: the user documentation now comes with every package (Docker, portable, AppImage) and opens
   from **Help** in the ⋮ menu, in a new tab: its contents by part, a search over every page's titles and headings,
   links between pages kept in the help, your reading settings for prose. Each administration page has a **?** after

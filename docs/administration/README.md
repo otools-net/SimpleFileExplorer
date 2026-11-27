@@ -52,6 +52,9 @@ too). What is found replaces the sections while you type, the names first, each 
 setting is scrolled into view, briefly highlighted and ready to change, the full view shown when it is one of the less
 used ones. The **✕** in the box, or **Esc**, empties it and brings the sections back. Only what you are allowed to see is searched.
 
+[Wizards](wizards.md) are found the same way, listed under **Wizards** (search **new space**, or **wizard** for all
+of them): they do an administration job step by step.
+
 ## Settings pages
 
 - Each setting has a description under it.

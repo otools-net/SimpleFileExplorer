@@ -205,6 +205,43 @@ const scenes = {
         await phone.shot(OUT + 'phone-help.png');
         await phone.close();
     },
+    /** The new-space wizard: its folder step with Photos picked, its review, and the folder step on a phone. */
+    async wizards() {
+        const pickPhotos = async (b) => {
+            // The allowed root here is tests/samples: its sample library holds Photos.
+            await sleep(1000);
+            await b.clickTitle('Choose “');
+            await b.clickText('.folder-picker button', 'library');
+            await b.clickText('.folder-picker button', 'Photos');
+            await maskSamples(b);
+        };
+        /** This checkout's sample library (its path, as the picker and the review show it) as D:\Media. */
+        const maskSamples = (b) => b.eval(`(() => {
+            const re = /[A-Z]:[\\\\/][^\\s"']*?[\\\\/]tests[\\\\/]samples(?:[\\\\/]library)?/gi;
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            for (let n; (n = walker.nextNode());) n.nodeValue = n.nodeValue.replace(re, 'D:\\\\Media');
+            return 1;
+        })()`);
+        const b = await session({ height: 760 });
+        await b.open('wizard?id=new-space', 2500);
+        await pickPhotos(b);
+        await b.shot(OUT + 'wizard-new-space.png');
+        await b.click('.wizard-actions [type="submit"]');
+        await sleep(1000);
+        await b.click('.wizard-actions [type="submit"]');
+        await sleep(1000);
+        await b.click('.wizard-fields input[type="checkbox"]');
+        await b.click('.wizard-actions [type="submit"]');
+        await sleep(1000);
+        await maskSamples(b);
+        await b.shot(OUT + 'wizard-review.png');
+        await b.close();
+        const phone = await session({ width: 390, height: 844, mobile: true });
+        await phone.open('wizard?id=new-space', 2500);
+        await pickPhotos(phone);
+        await phone.shot(OUT + 'phone-wizard.png');
+        await phone.close();
+    },
     /**
      * The keep alive indicator of the ⋮ menu: keep alive turned on with a more folder that doesn't exist, so that its
      * ping fails (the yellow !); then turned off again for the other scenes.

@@ -4,6 +4,8 @@ Code: `src/Sfe.Core/Access/SetupService.cs`, `GeneratedSetupCode.cs`, `Options/A
 `src/Sfe.Api/Program.cs`; client `src/app/account/` (`SetupPage`, `SetupCodeSteps`, `InstallationForm`).
 Installation step: [installation-page.md](installation-page.md).
 
+- The page's requests go through `runRequest` (`wizards/wizard-run.ts`, shared with the wizards), and it uses the
+  wizards' `.wizard-progress` / `.wizard-actions` styles; it is not built on the wizard framework.
 - `SetupService`: required while no enabled server administrator exists; needs `Sfe:Setup:Code` (≥ 12, constant-time
   compare, `SetupOptions.Matches`), except a new install set up from the server's own computer
   ([local-start.md](local-start.md)); creates the local admin in the first library's Administrators group, renames the

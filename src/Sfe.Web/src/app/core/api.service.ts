@@ -620,6 +620,8 @@ export class Api {
     /** Where a space's library folder can be chosen: the allowed roots without `path`, else their sub-folders. */
     tenantFolders = (path: string | null) => this.get<FolderPicker>('tenants/folders', { path });
     createTenant = (tenant: TenantInput) => this.post<TenantDetails>('tenants', tenant);
+    /** The checks of `createTenant` only: refused as it would be, nothing created (a wizard's steps). */
+    checkTenant = (tenant: TenantInput) => this.post<void>('tenants?validateOnly=true', tenant);
     updateTenant = (id: number, tenant: TenantInput) => this.put<TenantDetails>(`tenants/${id}`, tenant);
     deleteTenant = (id: number) => this.delete<void>(`tenants/${id}`);
 

@@ -1807,8 +1807,18 @@
           "Spaces"
         ],
         "summary": "Creates a space on a folder inside the allowed roots, with its own index, tags, settings and groups.",
-        "description": "The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),\nelse next to the first space's (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database\n`{database}_{slug}` on the same server, which the server's account must be allowed to create). Its\ncaches go under `{CacheDirectory}/tenants/{slug}`.",
+        "description": "The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),\nelse next to the first space's (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database\n`{database}_{slug}` on the same server, which the server's account must be allowed to create). Its\ncaches go under `{CacheDirectory}/tenants/{slug}`. With `validateOnly=true`, only the checks run (folder,\nname, short name, rights): 204 when the space would be created, nothing made (a wizard's steps ask so).",
         "operationId": "CreateTenant",
+        "parameters": [
+          {
+            "name": "validateOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1829,6 +1839,9 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "description": "Bad Request",

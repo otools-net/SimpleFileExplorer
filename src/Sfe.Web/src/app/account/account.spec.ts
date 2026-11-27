@@ -286,7 +286,7 @@ describe('SetupPageComponent', () => {
         expect(hint).toContain('SFE made this code when it started');
         expect(hint).toContain('in the window where SFE runs');
         expect(hint).toContain("data/setup-code.txt in SFE's folder");
-        expect(element.querySelector('.setup-progress')!.textContent).toBe('Step 1 of 3');
+        expect(element.querySelector('.wizard-progress')!.textContent).toBe('Step 1 of 3');
     });
 
     it('checks the code, picks the library folder, then creates the administrator and opens the library', async () => {
@@ -331,11 +331,11 @@ describe('SetupPageComponent', () => {
         expect(element.querySelector('#setup-code')).toBeNull();
         expect(api.checkInstallation).toHaveBeenCalledWith('');
         expect(element.querySelector('sfe-installation-form')).not.toBeNull();
-        expect(element.querySelector('.setup-progress')!.textContent).toBe('Step 1 of 2');
+        expect(element.querySelector('.wizard-progress')!.textContent).toBe('Step 1 of 2');
         expect(buttonNamed(element, 'Back')).toBeFalsy();
         buttonNamed(element, 'Next')!.click();
         await settle();
-        expect(element.querySelector('.setup-progress')!.textContent).toBe('Step 2 of 2');
+        expect(element.querySelector('.wizard-progress')!.textContent).toBe('Step 2 of 2');
         await fillAccount();
         buttonNamed(element, 'Create the administrator')!.click();
         await settle();
@@ -447,7 +447,7 @@ describe('SetupPageComponent', () => {
 
         expect(element.querySelector('sfe-installation-form')).toBeNull();
         expect(element.querySelector('#setup-library')).toBeNull();
-        expect(element.querySelector('.setup-progress')!.textContent).toBe('Step 2 of 2');
+        expect(element.querySelector('.wizard-progress')!.textContent).toBe('Step 2 of 2');
         await fillAccount();
         buttonNamed(element, 'Restore the administrator')!.click();
         await settle();

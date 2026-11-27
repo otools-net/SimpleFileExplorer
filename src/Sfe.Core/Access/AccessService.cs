@@ -137,6 +137,20 @@ public sealed class AccessService(
         return outdated.Count;
     }
 
+    /// <summary>
+    /// The checks of <see cref="CreateTenantAsync"/> (all but the folder's), nothing created: null when the space would
+    /// be created, else why not.
+    /// </summary>
+    public async Task<AccessResult<TenantInfo>?> CheckNewTenantAsync(
+        TenantInput input,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var named = await NewTenants.CheckAsync(db, input, cancellationToken);
+        return named.Status == AccessStatus.Ok ? null : named.As<TenantInfo>();
+    }
+
     public async Task<AccessResult<TenantInfo>> CreateTenantAsync(
         TenantInput input,
         string root,

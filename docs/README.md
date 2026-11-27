@@ -38,6 +38,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | Page | What it covers |
 |---|---|
 | [The administration page](administration/README.md) | Layout, settings levels, saving, locks |
+| [Wizards](administration/wizards.md) | Administration jobs step by step: opening a wizard, moving through it, the new-space wizard |
 | [Interface](administration/interface.md) | Theme, listings, search box |
 | [Playback](administration/playback.md) | Video player, external player, data server |
 | [Scanning](administration/scanning.md) | What scans skip, file types, what scans read |

@@ -9,7 +9,7 @@
             }
         </h1>
         @if (stepNumber(); as number) {
-            <p class="setup-progress" i18n>Step {{ number }} of {{ stepCount() }}</p>
+            <p class="wizard-progress" i18n>Step {{ number }} of {{ stepCount() }}</p>
         }
         <a class="setup-help" href="help?page=first-start.md" target="_blank"
            title="Open the help about the first start in a new tab." i18n-title i18n>Help</a>
@@ -126,7 +126,7 @@
                         External to Local.
                     </p>
                     <sfe-installation-form [token]="token()!" [initial]="installation()!" [setup]="true" />
-                    <div class="setup-actions">
+                    <div class="wizard-actions">
                         @if (!codeFree()) {
                             <button
                                 type="button"
@@ -268,7 +268,7 @@
                     @if (error(); as error) {
                         <p class="form-error" role="alert">{{ error }}</p>
                     }
-                    <div class="setup-actions">
+                    <div class="wizard-actions">
                         <button
                             type="button"
                             class="button"

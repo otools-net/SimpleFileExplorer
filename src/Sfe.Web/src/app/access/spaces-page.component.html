@@ -74,6 +74,14 @@
         >
             <svg sfeIcon="plus"></svg><span i18n>New space</span>
         </button>
+        <a
+            class="button"
+            routerLink="/wizard"
+            [queryParams]="{ id: 'new-space' }"
+            title="Create a space step by step, with an explanation at each step"
+            i18n-title
+            i18n
+        >Step by step</a>
     </div>
     <ul class="space-cards">
         @for (space of spaces(); track space.id) {

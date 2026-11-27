@@ -65,10 +65,10 @@
                         @for (result of shownResults(); track $index) {
                             <li>
                                 <a
-                                    routerLink="/admin"
+                                    [routerLink]="result.wizard ? '/wizard' : '/admin'"
                                     [queryParams]="resultParams(result)"
                                     [state]="linkState()"
-                                    [replaceUrl]="!phone()"
+                                    [replaceUrl]="!phone() && !result.wizard"
                                     [title]="result.setting ? openAtSetting(result.where) : openPlace(result.where)"
                                     (click)="found(result)"
                                 >

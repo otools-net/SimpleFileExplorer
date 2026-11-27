@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { Api, ApiError } from '../core/api.service';
+import { Api } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
 import { InstallationView } from '../core/access.models';
 import { SetupInfo } from './account.models';
@@ -9,6 +9,7 @@ import { checkedOf, valueOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
 import { InstallationFormComponent } from './installation-form.component';
 import { generatedCodeWhere, SetupCodeStepsComponent } from './setup-code.component';
+import { runRequest } from '../wizards/wizard-run';
 
 /** The setup's steps: the code, then the library folder and network (skipped in recovery), then the administrator. */
 type SetupStep = 'code' | 'library' | 'account' | 'restart';
@@ -182,23 +183,6 @@ export class SetupPageComponent implements OnInit {
 
     /** Runs a request of the page: its errors are shown by their fields, or above the button. */
     private async run(action: () => Promise<void>): Promise<void> {
-        this.busy.set(true);
-        this.error.set(null);
-        this.errors.set({});
-        try {
-            await action();
-        } catch (error) {
-            if (error instanceof ApiError && error.errors)
-                this.errors.set(
-                    Object.fromEntries(
-                        Object.entries(error.errors).map(([key, messages]) => [key, messages.join(' ')]),
-                    ),
-                );
-            else if (error instanceof ApiError && error.status === 429)
-                this.error.set($localize`Too many attempts: wait a minute, then try again.`);
-            else this.error.set((error as Error).message);
-        } finally {
-            this.busy.set(false);
-        }
+        await runRequest({ busy: this.busy, error: this.error, errors: this.errors }, action);
     }
 }

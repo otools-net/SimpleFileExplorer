@@ -13,7 +13,8 @@ public static class TenantEndpoints
         The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),
         else next to the first space's (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database
         `{database}_{slug}` on the same server, which the server's account must be allowed to create). Its
-        caches go under `{CacheDirectory}/tenants/{slug}`.
+        caches go under `{CacheDirectory}/tenants/{slug}`. With `validateOnly=true`, only the checks run (folder,
+        name, short name, rights): 204 when the space would be created, nothing made (a wizard's steps ask so).
         """;
 
     public static RouteGroupBuilder MapTenantEndpoints(this RouteGroupBuilder api)
@@ -100,32 +101,25 @@ public static class TenantEndpoints
         );
     }
 
-    private static async Task<Results<Created<TenantDetails>, ValidationProblem, ProblemHttpResult>> Create(
+    private static async Task<Results<Created<TenantDetails>, NoContent, ValidationProblem, ProblemHttpResult>> Create(
         [AsParameters] TenantServices services,
         TenantInput input,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        bool validateOnly = false
     )
     {
         var (accounts, registry, configuration, loggers) = services;
         var root = Full(input.Root);
-        if (root is null || !Directory.Exists(root))
+        if (RootError(configuration, root) is { } rootError)
+            return TypedResults.ValidationProblem(new Dictionary<string, string[]> { ["root"] = [rootError] });
+        if (validateOnly)
         {
-            return TypedResults.ValidationProblem(
-                new Dictionary<string, string[]> { ["root"] = ["Choose an existing folder of the server."] }
-            );
+            return await accounts.CheckNewTenantAsync(input, cancellationToken) is { } refused
+                ? TypedResults.ValidationProblem(refused.Errors!)
+                : TypedResults.NoContent();
         }
 
-        if (!AllowedRoots(configuration).Any(allowed => IsInside(allowed, root)))
-        {
-            return TypedResults.ValidationProblem(
-                new Dictionary<string, string[]>
-                {
-                    ["root"] = ["This folder is outside the folders spaces may use (Sfe:Tenants:AllowedRoots)."],
-                }
-            );
-        }
-
-        var result = await accounts.CreateTenantAsync(input, root, cancellationToken);
+        var result = await accounts.CreateTenantAsync(input, root!, cancellationToken);
         if (result.Status != AccessStatus.Ok)
         {
             return result.Status == AccessStatus.Invalid
@@ -215,6 +209,16 @@ public static class TenantEndpoints
             (await accounts.GetUsersAsync(tenant.Id, cancellationToken)).Count,
             (await accounts.GetGroupsAsync(tenant.Id, cancellationToken)).Count
         );
+
+    /// <summary>Why a space can't be made on <paramref name="root"/> (a full path); null when it can.</summary>
+    private static string? RootError(IConfiguration configuration, string? root)
+    {
+        if (root is null || !Directory.Exists(root))
+            return "Choose an existing folder of the server.";
+        return AllowedRoots(configuration).Any(allowed => IsInside(allowed, root))
+            ? null
+            : "This folder is outside the folders spaces may use (Sfe:Tenants:AllowedRoots).";
+    }
 
     /// <summary><c>Sfe:Tenants:AllowedRoots</c>, else the configured root: full paths.</summary>
     private static List<string> AllowedRoots(IConfiguration configuration)

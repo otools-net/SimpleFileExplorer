@@ -1,0 +1,196 @@
+/* ---------- Wizards (wizards/wizard.component) and the setup page: steps, progress, actions ---------- */
+
+/* "Step n of m", under the title (the setup page's too). */
+.wizard-progress {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+/* Back / Next under each step (the setup page's too): one line, the main button at the right end. */
+.wizard-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.wizard-actions .spacer {
+    flex: 1;
+}
+
+.wizard-page {
+    display: block;
+    min-height: 100dvh;
+    background: var(--bg);
+}
+.wizard-topbar {
+    gap: 8px;
+}
+.wizard-topbar .icon-button {
+    flex-shrink: 0;
+}
+
+.wizard {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+}
+.wizard-head {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.wizard-name {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.wizard-layout {
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    align-items: start;
+    gap: 24px;
+}
+
+/* The list of steps, at the left: the current one marked. */
+.wizard-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: wizard-step;
+}
+.wizard-steps li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    counter-increment: wizard-step;
+}
+.wizard-steps li::before {
+    content: counter(wizard-step);
+    display: inline-grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    font-size: 12px;
+}
+.wizard-steps li[aria-current='step'] {
+    background: var(--surface-2);
+    color: var(--text);
+    font-weight: 600;
+}
+.wizard-steps li[aria-current='step']::before {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-contrast);
+}
+
+/* The step itself, in a card. */
+.wizard-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+.wizard-stage h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+.wizard-stage h2:focus {
+    outline: none;
+}
+.wizard-stage > p {
+    margin: 0;
+    line-height: 1.5;
+}
+.wizard-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* The review: each step's choices, with a way back to it. */
+.wizard-review-part {
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.wizard-review-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.wizard-review-head h3 {
+    margin: 0;
+    font-size: 14px;
+}
+.wizard-review-part dl {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 4px 16px;
+    margin: 8px 0 0;
+}
+.wizard-review-part dt {
+    color: var(--text-muted);
+}
+.wizard-review-part dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* The end: what was made. */
+.wizard-links {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.wizard-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+}
+
+/* Phones: the steps as a line above the card, buttons a thumb can hit. */
+@media (max-width: 640px) {
+    .wizard {
+        padding: 16px 16px 32px;
+    }
+    .wizard-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+    .wizard-steps {
+        display: none;
+    }
+    .wizard-stage {
+        padding: 16px;
+    }
+    .wizard-actions .button {
+        min-height: 44px;
+    }
+    .wizard-actions .link-button {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 4px;
+    }
+}

@@ -1,0 +1,144 @@
+<header class="wizard-head">
+    <h1 class="wizard-name">{{ definition().title }}</h1>
+    @if (number(); as number) {
+        <p class="wizard-progress" i18n>Step {{ number.at }} of {{ number.of }}</p>
+    }
+</header>
+<div class="wizard-layout">
+    <ol class="wizard-steps" aria-label="Steps of the wizard" i18n-aria-label>
+        @for (step of steps(); track step.id) {
+            <li [attr.aria-current]="current() === step ? 'step' : null">{{ step.title }}</li>
+        }
+        <li [attr.aria-current]="stage().kind === 'review' ? 'step' : null" i18n>Review</li>
+    </ol>
+    <form class="wizard-stage" novalidate (submit)="next($event)">
+        @switch (stage().kind) {
+            @case ('step') {
+                @if (current(); as step) {
+                    <div class="help-row wizard-stage-head">
+                        <h2 #stageTitle tabindex="-1">{{ step.title }}</h2>
+                        <sfe-help [about]="step.title">
+                            <p>{{ step.explanation }}</p>
+                            <p><a
+                                [href]="helpHref(step)"
+                                target="_blank"
+                                title="Open the help about this step in a new tab."
+                                i18n-title
+                                i18n
+                            >More in the help</a></p>
+                        </sfe-help>
+                    </div>
+                    <div class="wizard-fields">
+                        <ng-container *ngComponentOutlet="step.component; injector: stepInjector" />
+                    </div>
+                }
+            }
+            @case ('review') {
+                <h2 #stageTitle tabindex="-1" i18n>Review</h2>
+                <p i18n>Nothing is saved yet. Check what you chose, then finish.</p>
+                @for (part of review(); track part.step.id) {
+                    <section class="wizard-review-part">
+                        <div class="wizard-review-head">
+                            <h3>{{ part.step.title }}</h3>
+                            <button
+                                type="button"
+                                class="link-button"
+                                title="Go back to this step to change it."
+                                i18n-title
+                                (click)="open(part.step)"
+                                i18n
+                            >Change</button>
+                        </div>
+                        <dl>
+                            @for (line of part.lines; track $index) {
+                                <dt>{{ line.label }}</dt>
+                                <dd>{{ line.value }}</dd>
+                            }
+                        </dl>
+                    </section>
+                }
+            }
+            @case ('end') {
+                @if (ended(); as end) {
+                    <h2 #stageTitle tabindex="-1" i18n>Done</h2>
+                    <p role="status">{{ end.message }}</p>
+                    <ul class="wizard-links">
+                        @for (link of end.links; track link.route + link.label) {
+                            <li>
+                                <a [routerLink]="'/' + link.route" [queryParams]="link.query" [title]="link.title">
+                                    <svg sfeIcon="right"></svg><span>{{ link.label }}</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+        }
+        @if (error(); as error) {
+            <p class="form-error" role="alert">{{ error }}</p>
+        }
+        <div class="wizard-actions">
+            @if (stage().kind === 'end') {
+                <button
+                    type="button"
+                    class="button"
+                    title="Start this wizard again, with nothing chosen"
+                    i18n-title
+                    (click)="start()"
+                    i18n
+                >Run again</button>
+                <span class="spacer"></span>
+                <button
+                    type="button"
+                    class="button primary"
+                    title="Close the wizard"
+                    i18n-title
+                    (click)="closed.emit()"
+                    i18n
+                >Done</button>
+            } @else {
+                <button
+                    type="button"
+                    class="link-button"
+                    title="Leave the wizard without saving anything"
+                    i18n-title
+                    (click)="closed.emit()"
+                    i18n
+                >Cancel</button>
+                <span class="spacer"></span>
+                @if (number()!.at > 1) {
+                    <button
+                        type="button"
+                        class="button"
+                        title="Go back to the previous step; what you chose stays"
+                        i18n-title
+                        [disabled]="busy()"
+                        (click)="back()"
+                        i18n
+                    >Back</button>
+                }
+                @if (stage().kind === 'review') {
+                    <button
+                        type="submit"
+                        class="button primary"
+                        title="Save everything chosen in the wizard"
+                        i18n-title
+                        [disabled]="!canGoOn()"
+                        [attr.aria-busy]="busy()"
+                        i18n
+                    >Finish</button>
+                } @else {
+                    <button
+                        type="submit"
+                        class="button primary"
+                        title="Go on to the next step (Enter)"
+                        i18n-title
+                        [disabled]="!canGoOn()"
+                        [attr.aria-busy]="busy()"
+                        i18n
+                    >Next</button>
+                }
+            }
+        </div>
+    </form>
+</div>

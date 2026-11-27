@@ -545,7 +545,18 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   (`helpLink`, 5.1), Back keeps what was typed, nothing is saved before the last step, the normal pages stay, each
   wizard is found by the admin search. Adding a wizard never touches the framework's files, the routes, the admin
   search or the checklist (5.2); a need two wizards share goes into the framework, in a commit of its own.
-  - [ ] **5.3a The framework, with the new-space wizard as its first user** (M–L). The framework without a user
+  - [x] **5.3a The framework, with the new-space wizard as its first user** (M–L). Done 2026-11-27: note
+    [wizards](../features/wizards.md) (how it is put together, **adding a wizard**). Route `wizard?id=…` (not
+    `admin/wizards/:id`: routes stay one level deep for the relative base href). Right, `onlyIn` and `home` (the admin
+    page Cancel / Done go back to) are in the registry line only, not repeated in the definition. A step declares the
+    request's `fields` it fills: a check's refusal of a later step's field lets it go on, a refused Finish goes back
+    to the step owning the field. `check` / `finish` run in an injection context. Drafts are plain JSON values.
+    Server: `POST tenants?validateOnly=true` (`NewTenants`, `CheckNewTenantAsync`). Shared steps
+    (`wizards/steps/`) not made yet: only one wizard uses each piece. Entry points: admin search, **Step by step** on
+    the Spaces page. Refactorings first: `NewTenants` out of `AccessService`, `StorageServices`, `helpLink` into
+    `help-files.ts`. Baselines raised by the added lines: `AccessService.cs` 858 → 872, `admin-page.component.ts`
+    535 → 540, `api.service.ts` 764 → 766. Screenshots `wizard-new-space.png`, `wizard-review.png`,
+    `phone-wizard.png` (scene `wizards`). Was: the framework without a user
     can't be tested, so it comes with one wizard; any piece only that wizard needs stays in its folder.
     - **Definition** (`wizard-definition.ts`): what a wizard declares, nothing else: id, title, right (and server
       mode, `onlyIn`), its draft (`initialDraft()`), its steps, `finish(draft)` (the one save) and what the end shows.
@@ -654,10 +665,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-27):** **5.1** (help inside the app) done, after two refactorings (`ApiEndpoints`,
-  `api-redirect.ts`). Next: **5.3a** (the wizard framework with the new-space wizard), then **5.2** (the
-  checklist opens wizards through the registry); wizards link their help pages with `helpLink(page, anchor)`
-  (`help/help-links.ts`), loaded lazily with the wizard (never from eager code, see below).
+- **Last session (2026-11-27):** **5.3a** (wizard framework + new-space wizard) done. Next: **5.2** (the
+  checklist: an item names a wizard by its registry id, `findWizard` / `canOpenWizard`, and links to
+  `wizard?id=…`), then **5.3b** and **5.3c** (adding a wizard: [wizards](../features/wizards.md#adding-a-wizard)).
+  Wizards link their help with `helpLink` from `help/help-files.ts` (no markdown-it in their chunk).
 - A heading renamed in `docs/administration/` must be renamed in `help/admin-help.ts` too (`admin-help.spec.ts`
   fails otherwise).
 - Never import `help/help-links.ts` (or anything importing `formats/markdown/markdown.ts`) from eager code: it put

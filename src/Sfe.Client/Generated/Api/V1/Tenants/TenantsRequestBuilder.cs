@@ -41,7 +41,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tenants
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public TenantsRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/tenants", pathParameters)
+        public TenantsRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/tenants{?validateOnly*}", pathParameters)
         {
         }
         /// <summary>
@@ -49,7 +49,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tenants
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public TenantsRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/tenants", rawUrl)
+        public TenantsRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/tenants{?validateOnly*}", rawUrl)
         {
         }
         /// <summary>
@@ -72,7 +72,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tenants
             return collectionResult?.AsList();
         }
         /// <summary>
-        /// The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),else next to the first space&apos;s (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database`{database}_{slug}` on the same server, which the server&apos;s account must be allowed to create). Itscaches go under `{CacheDirectory}/tenants/{slug}`.
+        /// The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),else next to the first space&apos;s (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database`{database}_{slug}` on the same server, which the server&apos;s account must be allowed to create). Itscaches go under `{CacheDirectory}/tenants/{slug}`. With `validateOnly=true`, only the checks run (folder,name, short name, rights): 204 when the space would be created, nothing made (a wizard&apos;s steps ask so).
         /// </summary>
         /// <returns>A <see cref="global::Otools.Net.Sfe.Client.Generated.Models.TenantDetails"/></returns>
         /// <param name="body">The request body</param>
@@ -81,11 +81,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tenants
         /// <exception cref="global::Otools.Net.Sfe.Client.Generated.Models.HttpValidationProblemDetails">When receiving a 400 status code</exception>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.TenantDetails?> PostAsync(global::Otools.Net.Sfe.Client.Generated.Models.TenantInput body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.TenantDetails?> PostAsync(global::Otools.Net.Sfe.Client.Generated.Models.TenantInput body, Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Tenants.TenantsRequestBuilder.TenantsRequestBuilderPostQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.TenantDetails> PostAsync(global::Otools.Net.Sfe.Client.Generated.Models.TenantInput body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.TenantDetails> PostAsync(global::Otools.Net.Sfe.Client.Generated.Models.TenantInput body, Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Tenants.TenantsRequestBuilder.TenantsRequestBuilderPostQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
             if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
@@ -116,18 +116,18 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tenants
             return requestInfo;
         }
         /// <summary>
-        /// The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),else next to the first space&apos;s (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database`{database}_{slug}` on the same server, which the server&apos;s account must be allowed to create). Itscaches go under `{CacheDirectory}/tenants/{slug}`.
+        /// The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),else next to the first space&apos;s (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database`{database}_{slug}` on the same server, which the server&apos;s account must be allowed to create). Itscaches go under `{CacheDirectory}/tenants/{slug}`. With `validateOnly=true`, only the checks run (folder,name, short name, rights): 204 when the space would be created, nothing made (a wizard&apos;s steps ask so).
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="body">The request body</param>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public RequestInformation ToPostRequestInformation(global::Otools.Net.Sfe.Client.Generated.Models.TenantInput body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
+        public RequestInformation ToPostRequestInformation(global::Otools.Net.Sfe.Client.Generated.Models.TenantInput body, Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Tenants.TenantsRequestBuilder.TenantsRequestBuilderPostQueryParameters>>? requestConfiguration = default)
         {
 #nullable restore
 #else
-        public RequestInformation ToPostRequestInformation(global::Otools.Net.Sfe.Client.Generated.Models.TenantInput body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
+        public RequestInformation ToPostRequestInformation(global::Otools.Net.Sfe.Client.Generated.Models.TenantInput body, Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Tenants.TenantsRequestBuilder.TenantsRequestBuilderPostQueryParameters>> requestConfiguration = default)
         {
 #endif
             if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
@@ -145,6 +145,17 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tenants
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Tenants.TenantsRequestBuilder WithUrl(string rawUrl)
         {
             return new global::Otools.Net.Sfe.Client.Generated.Api.V1.Tenants.TenantsRequestBuilder(rawUrl, RequestAdapter);
+        }
+        /// <summary>
+        /// The index of its library goes to `Sfe:Tenants:ConnectionString` (with `{tenant}` for its short name),else next to the first space&apos;s (SQLite: `tenants/{slug}.db` beside its file; SQL Server: database`{database}_{slug}` on the same server, which the server&apos;s account must be allowed to create). Itscaches go under `{CacheDirectory}/tenants/{slug}`. With `validateOnly=true`, only the checks run (folder,name, short name, rights): 204 when the space would be created, nothing made (a wizard&apos;s steps ask so).
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class TenantsRequestBuilderPostQueryParameters 
+        {
+            #pragma warning disable CS1591
+            [QueryParameter("validateOnly")]
+            public bool? ValidateOnly { get; set; }
+            #pragma warning restore CS1591
         }
     }
 }

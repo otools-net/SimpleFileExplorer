@@ -116,12 +116,7 @@
     display: contents;
 }
 
-/* The setup's steps: which one of how many, and Back / Next under each. */
-.setup-progress {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 13px;
-}
+/* The setup's steps: which one of how many, and Back / Next under each, are the wizards' (wizards.css). */
 /* Its help (the first start), at the top right of the card's head. */
 .setup-help {
     position: absolute;
@@ -131,12 +126,6 @@
 }
 .account-head:has(.setup-help) {
     position: relative;
-}
-.setup-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 10px;
 }
 
 /* ---------- Installation settings (setup page, Administration > System > Installation) ---------- */

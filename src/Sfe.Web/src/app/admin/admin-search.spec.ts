@@ -1,6 +1,7 @@
 import { markWords, searchAdmin } from './admin-search';
 import { ADMIN_SECTIONS } from './admin-sections';
 import { TABS } from '../settings/settings-schema';
+import { WIZARDS } from '../wizards/wizard-registry';
 
 const titles = (query: string) => searchAdmin(query, ADMIN_SECTIONS).map((result) => result.title);
 
@@ -54,6 +55,16 @@ describe('searchAdmin', () => {
     it('only looks in the sections given', () => {
         const account = ADMIN_SECTIONS.filter((section) => section.id === 'account');
         expect(searchAdmin('resolution', account)).toEqual([]);
+    });
+
+    it('finds the wizards given by their words, under Wizards, when their section is shown', () => {
+        const [found] = searchAdmin('visitors wizard', ADMIN_SECTIONS, WIZARDS);
+        const account = ADMIN_SECTIONS.filter((section) => section.id === 'account');
+
+        expect(found).toMatchObject({ wizard: 'new-space', title: 'New space', where: 'Wizards' });
+        expect(found.section.id).toBe('access');
+        expect(searchAdmin('new space', account, WIZARDS)).toEqual([]);
+        expect(searchAdmin('visitors wizard', ADMIN_SECTIONS)).toEqual([]);
     });
 });
 

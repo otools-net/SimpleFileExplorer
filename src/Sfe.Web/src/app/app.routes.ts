@@ -3,6 +3,7 @@ import { leaveAdminPage } from './admin/leave-admin-page';
 import { connectionsLanding } from './connections/connections-landing';
 import { LibraryPageComponent } from './library/library-page.component';
 import { leaveViewer, leaveViewPage } from './library/viewer/leave-viewer';
+import { leaveWizard } from './wizards/leave-wizard';
 
 /**
  * The listing page at the root (its query string says what it lists), the administration page, the video player
@@ -36,6 +37,12 @@ export const routes: Routes = [
         path: 'view',
         loadComponent: () => import('./formats/view-page.component').then((m) => m.ViewPageComponent),
         canDeactivate: [leaveViewPage],
+    },
+    // A wizard (`?id=` names it, wizards/wizard-registry.ts): its code loads when opened.
+    {
+        path: 'wizard',
+        loadComponent: () => import('./wizards/wizard-page.component').then((m) => m.WizardPageComponent),
+        canDeactivate: [leaveWizard],
     },
     // The user documentation shipped with the app.
     { path: 'help', loadComponent: () => import('./help/help-page.component').then((m) => m.HelpPageComponent) },

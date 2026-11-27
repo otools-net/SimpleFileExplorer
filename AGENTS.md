@@ -145,6 +145,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [settings-levels](agents/docs/features/settings-levels.md) | environment/server/library/user layers, locks, saving | `Core/Settings/`, `app/settings/` |
 | [admin-page](agents/docs/features/admin-page.md) | administration sections, overview, sub-pages, moved pages, phones | `app/admin/` |
 | [admin-search](agents/docs/features/admin-search.md) | search box of the administration page | `admin-search.ts` |
+| [wizards](agents/docs/features/wizards.md) | the wizard framework: definition, registry (lazy), the `wizard?id=` page, shell, step context, checks with `validateOnly`, the harness; **adding a wizard**; the new-space wizard | `app/wizards/`, `testing/wizard-harness.ts` |
 | [listing-page](agents/docs/features/listing-page.md) | listing state, navigation, dialogs, infinite scroll | `app/library/`, `LibraryBrowser` |
 | [position-restore](agents/docs/features/position-restore.md) | scroll restore, same-URL reloads | `items/listing-position.ts` |
 | [folder-navigation](agents/docs/features/folder-navigation.md) | up / previous / next folder | `LibraryBrowser.Siblings` |

@@ -111,6 +111,9 @@ folder** picked among the folders of `Sfe:Tenants:AllowedRoots` (by default the 
 be a sub-folder of it), an optional **Short name** (names its index and cache folders; it can't change later), and
 whether visitors may come in. The space starts with the three built-in groups and its folder is indexed.
 
+**Step by step** next to it opens the [new-space wizard](wizards.md#new-space): the same, one question at a time,
+each explained.
+
 - Its index goes next to the first space's (SQLite: `tenants/<short name>.db` beside the index file; SQL Server: the
   database `<database>_<short name>` on the same server, which the server's account must be allowed to create), or
   where `Sfe:Tenants:ConnectionString` says; its caches under `<CacheDirectory>/tenants/<short name>`.

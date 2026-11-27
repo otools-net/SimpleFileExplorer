@@ -17,4 +17,7 @@ Code: `src/app/admin/admin-search.ts` (`searchAdmin`, `markWords`), the search b
   `form.showAll` on without writing the preference (as the form does for errors).
 - `markWords` maps normalized positions back to letters; the template that renders the parts is on one line so no
   whitespace text nodes split the words (tests compare `textContent`).
+- Wizards (`WIZARDS`, [wizards](wizards.md)) the session may open (`canOpenWizard`) are results too, under
+  **Wizards**, in the section of their `home` (left out when the session doesn't see it); they link to
+  `wizard?id=` as a new history entry (not `replaceUrl`).
 - A new setting or section is searchable with no extra work; `admin-search.spec.ts` checks every key of `TABS` is found.

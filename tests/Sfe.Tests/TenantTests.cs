@@ -190,6 +190,26 @@ public sealed class TenantTests
     }
 
     [TestMethod]
+    public async Task AValidateOnlyRequestRunsTheChecksAndCreatesNothing()
+    {
+        var admin = await AdminAsync(Factory());
+        await CreateLibraryAsync(admin, "Media", _library.FullPath("Media"));
+        var outside = Directory.CreateDirectory(Path.Combine(_library.BasePath, "Elsewhere")).FullName;
+
+        var fine = await CheckAsync(admin, new TenantInput("Holidays", Root: _library.FullPath("Media")));
+        var badFolder = await CheckAsync(admin, new TenantInput("Holidays", Root: outside));
+        var noName = await CheckAsync(admin, new TenantInput(" ", Root: _library.FullPath("Media")));
+        var takenSlug = await CheckAsync(admin, new TenantInput("Other", "media", _library.FullPath("Media")));
+        var spaces = await GetAsync<List<TenantDetails>>(admin, $"{V1}/tenants");
+
+        Assert.AreEqual(HttpStatusCode.NoContent, fine.Status);
+        Assert.AreEqual("root", badFolder.Field);
+        Assert.AreEqual("name", noName.Field);
+        Assert.AreEqual("slug", takenSlug.Field);
+        Assert.HasCount(2, spaces, "Only the first space and Media");
+    }
+
+    [TestMethod]
     public async Task AccountsOnlyReachTheirLibraries()
     {
         var factory = Factory();
@@ -460,6 +480,21 @@ public sealed class TenantTests
             await response.Content.ReadAsStringAsync(TestContext.CancellationToken)
         );
         return (await response.Content.ReadFromJsonAsync<TenantDetails>(Json, TestContext.CancellationToken))!;
+    }
+
+    /// <summary>A space's checks without creating it: the status, and the one field refused.</summary>
+    private async Task<(HttpStatusCode Status, string? Field)> CheckAsync(HttpClient admin, TenantInput input)
+    {
+        using var response = await admin.PostAsJsonAsync(
+            $"{V1}/tenants?validateOnly=true",
+            input,
+            Json,
+            TestContext.CancellationToken
+        );
+        if (response.StatusCode != HttpStatusCode.BadRequest)
+            return (response.StatusCode, null);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        return (response.StatusCode, problem.RootElement.GetProperty("errors").EnumerateObject().Single().Name);
     }
 
     private async Task SwitchAsync(HttpClient client, string slug)

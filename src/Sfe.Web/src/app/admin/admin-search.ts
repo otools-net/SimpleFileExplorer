@@ -1,17 +1,20 @@
 /*
  * The search box of the administration page: finds the sections, sub-pages and settings (settings-schema.ts) of the
- * sections a session sees, by every word typed (any case, accents ignored) in their titles, descriptions, choices and
- * configuration keys. Those whose title holds every word come first.
+ * sections a session sees, and the wizards it may open, by every word typed (any case, accents ignored) in their
+ * titles, descriptions, choices and configuration keys. Those whose title holds every word come first.
  */
 
 import { ADMIN_GROUP_TITLES, AdminSection, AdminSubpage } from './admin-sections';
 import { SettingField, SettingGroup, TABS } from '../settings/settings-schema';
+import type { WizardEntry } from '../wizards/wizard-registry';
 
 export interface AdminSearchResult {
     section: AdminSection;
     subpage: AdminSubpage;
     /** The setting found (its key in settings-schema.ts); none for a section or a sub-page. */
     setting?: string;
+    /** The wizard found (its registry id), opened on its own page; `section` is the one it belongs to. */
+    wizard?: string;
     title: string;
     /** Where it is: "Section › Sub-page › Group". */
     where: string;
@@ -39,10 +42,14 @@ function fieldText(field: SettingField, group: SettingGroup): string[] {
 }
 
 /**
- * Matches of `query` among `sections` (those the session sees), best first; the page lists `ADMIN_SEARCH_LIMIT` of
- * them.
+ * Matches of `query` among `sections` (those the session sees) and `wizards` (those it may open), best first; the
+ * page lists `ADMIN_SEARCH_LIMIT` of them.
  */
-export function searchAdmin(query: string, sections: AdminSection[]): AdminSearchResult[] {
+export function searchAdmin(
+    query: string,
+    sections: AdminSection[],
+    wizards: readonly WizardEntry[] = [],
+): AdminSearchResult[] {
     const words = searchWords(query);
     if (!words.length) return [];
     const titled: AdminSearchResult[] = [];
@@ -91,7 +98,23 @@ export function searchAdmin(query: string, sections: AdminSection[]): AdminSearc
                     );
         }
     }
+    for (const result of wizardResults(sections, wizards)) add(result, result.text!, result.words);
     return [...titled, ...others];
+}
+
+/** The wizards as results, under the section each belongs to (none when the session doesn't see it). */
+function wizardResults(
+    sections: AdminSection[],
+    wizards: readonly WizardEntry[],
+): (AdminSearchResult & { words: string })[] {
+    const where = $localize`:administration search:Wizards`;
+    return wizards.flatMap((wizard) => {
+        const section = sections.find((candidate) => candidate.id === wizard.home.section);
+        const subpage = section?.subpages.find((page) => page.id === wizard.home.page) ?? section?.subpages[0];
+        if (!section || !subpage) return [];
+        const { id, title, description: text, words } = wizard;
+        return [{ section, subpage, wizard: id, title, where, text, words }];
+    });
 }
 
 /** `text` cut into the parts matching one of `words` and the others, to mark the first ones. */
