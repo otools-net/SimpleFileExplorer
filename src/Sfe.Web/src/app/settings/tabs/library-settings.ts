@@ -110,6 +110,24 @@ export const TAG_SETTINGS: SettingTab = {
                     max: 20,
                     hint: $localize`How many tags each section of the sidebar shows.`,
                 },
+                {
+                    key: 'tags.sidebarPopular',
+                    label: $localize`Show “Most popular”`,
+                    type: 'checkbox',
+                    hint: $localize`Lists the tags on the most files in the sidebar.`,
+                },
+                {
+                    key: 'tags.sidebarSearched',
+                    label: $localize`Show “Last searched”`,
+                    type: 'checkbox',
+                    hint: $localize`Lists the tags you last searched for in the sidebar, while tag history is on.`,
+                },
+                {
+                    key: 'tags.sidebarLucky',
+                    label: $localize`Show “I feel lucky”`,
+                    type: 'checkbox',
+                    hint: $localize`Lists random tags that the other sections don't show, for a surprise.`,
+                },
             ],
         },
         {
@@ -122,7 +140,8 @@ export const TAG_SETTINGS: SettingTab = {
                     type: 'checkbox',
                     hint: $localize`Records the tags you search for and the tags of the files you open, for the \
 sidebar's “Last searched” and “Last viewed” lists.`,
-                    help: $localize`Off: nothing new is recorded, and those lists are hidden.`,
+                    help: $localize`Off: nothing new is recorded, and those lists are hidden. “Last searched” shows \
+only when switched on under Sidebar; searches are recorded while it is hidden, so its list is ready then.`,
                 },
             ],
         },

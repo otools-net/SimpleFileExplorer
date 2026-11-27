@@ -648,6 +648,22 @@ describe('settings on the administration page', () => {
         expect(show).toHaveBeenCalledWith('Tag history cleared.');
     });
 
+    it('names only the history lists the sidebar shows when clearing the tag history', async () => {
+        const ask = vi.spyOn(window, 'confirm').mockReturnValue(false);
+        await open(view(), 'tags');
+        const button = buttonNamed(element, 'Clear tag history')!;
+
+        expect(button.title).toBe("Empty the sidebar's “Last viewed” list (asks first)");
+        button.click();
+        expect(ask).toHaveBeenLastCalledWith(expect.not.stringContaining('Last searched'));
+
+        control('tags.sidebarSearched').click();
+        await settle();
+        expect(button.title).toContain('“Last searched” and “Last viewed”');
+        button.click();
+        expect(ask).toHaveBeenLastCalledWith(expect.stringContaining('“Last searched” and “Last viewed”'));
+    });
+
     it('clears the search history of this browser after asking', async () => {
         const ask = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
         const history = TestBed.inject(SearchHistory);

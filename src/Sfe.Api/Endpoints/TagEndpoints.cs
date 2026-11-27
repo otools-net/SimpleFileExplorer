@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Otools.Net.Sfe.Api.Security;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Paths;
+using Otools.Net.Sfe.Core.Settings;
 using Otools.Net.Sfe.Core.Tagging;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
@@ -59,15 +60,15 @@ public static class TagEndpoints
                     + FileCountDescription
             );
 
-        tags.MapGet(
-                "/sidebar",
-                async (TagService service, CurrentAccess current, CancellationToken cancellationToken) =>
-                    await service.GetSidebarAsync(cancellationToken, (await current.GetAsync()).Visible())
-            )
+        tags.MapGet("/sidebar", GetSidebar)
             .RequireRight(Rights.ViewTags)
             .FolderScoped("file counts (and the most used tags) count only the files the subject sees")
             .WithName("GetTagSidebar")
-            .WithSummary("Most used tags, last searched tags, tags of the last viewed files, and random other tags.");
+            .WithSummary("Most used tags, last searched tags, tags of the last viewed files, and random other tags.")
+            .WithDescription(
+                "A list switched off by the settings (`tags.sidebarPopular`, `tags.sidebarSearched`, "
+                    + "`tags.sidebarLucky`: the user's own, else the library's) is empty, its `show…` false."
+            );
 
         tags.MapDelete("/history", async (TagService service, CancellationToken cancellationToken) =>
             {
@@ -296,6 +297,19 @@ public static class TagEndpoints
         && await service.RecordViewedAsync(file.Path, cancellationToken)
             ? TypedResults.NoContent()
             : TypedResults.NotFound();
+
+    /// <summary>The sidebar's lists, those the user's own settings (else the library's) show.</summary>
+    private static async Task<TagSidebar> GetSidebar(
+        TagService service,
+        SettingsService settings,
+        CurrentAccess current,
+        CancellationToken cancellationToken
+    )
+    {
+        var state = await current.GetAsync();
+        var effective = await settings.GetEffectiveAsync(state.Tenant?.Id, state.User?.Id, cancellationToken);
+        return await service.GetSidebarAsync(TagSidebarChoice.From(effective.Tags), cancellationToken, state.Visible());
+    }
 
     private static async Task<Ok<TagSearchResults>> Search(
         TagService service,

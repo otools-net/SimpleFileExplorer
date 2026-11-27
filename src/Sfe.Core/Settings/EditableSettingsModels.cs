@@ -86,6 +86,9 @@ public sealed class TagSettings
 {
     public bool RecordHistory { get; set; }
     public int SidebarCount { get; set; }
+    public bool SidebarPopular { get; set; }
+    public bool SidebarSearched { get; set; }
+    public bool SidebarLucky { get; set; }
 }
 
 public sealed class PlayerSettings

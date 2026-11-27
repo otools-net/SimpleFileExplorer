@@ -103,12 +103,16 @@ the location) and use **Default tags** at the bottom of the dialog.
 The sidebar at the left of the library page (a drawer on phones; the button at the top left shows or hides it) shows a
 few tags in each section, with their number of files. Click a tag to search for it.
 
-| Section | |
-|---|---|
-| **Most popular** | The tags with the most files |
-| **Last searched** | Tags searched with `t:` |
-| **Last viewed** | Tags of the files opened lately |
-| **I feel lucky** | Random tags; the ↻ button shows others |
+| Section | Shown | |
+|---|---|---|
+| **Last viewed** | always (while tag history is on) | Tags of the files opened lately |
+| **Most popular** | when switched on | The tags with the most files |
+| **Last searched** | when switched on (and tag history is on) | Tags searched with `t:` |
+| **I feel lucky** | when switched on | Random tags; the ↻ button shows others |
+
+**Most popular**, **Last searched** and **I feel lucky** are off unless switched on: for the whole space in
+[Administration › Tags › Settings](../administration/tags.md#settings), or for yourself in **My account ›
+Settings › Tags** (**Show “Most popular”**, **Show “Last searched”**, **Show “I feel lucky”**).
 
 Click a section's heading to fold or open it: **Last searched** and **I feel lucky** are folded at first. Each browser
 remembers which sections you folded or opened.

@@ -18,6 +18,9 @@ node agents/tools/docs-screenshots/run.mjs --ffmpeg <path to ffmpeg> --stall 3 t
 
 # links, images and #anchors of README.md, AGENTS.md, agents/docs/ and docs/ (also lists unused images)
 node agents/tools/docs-screenshots/check-links.mjs
+
+# after a full run: how much each re-saved image changed (SSIM); --revert puts back those that differ by noise only
+node agents/tools/docs-screenshots/changed-images.mjs --ffmpeg <path to ffmpeg> [--threshold 0.995] [--revert]
 ```
 
 | File | |
@@ -29,6 +32,7 @@ node agents/tools/docs-screenshots/check-links.mjs
 | `seed.mjs` | On an empty database: setup page shot (after typing the setup code, when it is asked), the administrator (`admin` / `admin-password-1`), trickplay on every 2 s, scan, tags, accounts (`sam`, guest `kids`), a group, schedules; then deletes a tagged file, scans again (a moved file, task history), waits for trickplay and compares similar videos |
 | `shots.mjs` | The screenshots, as named scenes (`node shots.mjs viewer tags`); each scene opens a fresh browser |
 | `check-links.mjs` | Link checker (GitHub heading slugs) |
+| `changed-images.mjs` | Compares each modified `docs/images/*.png` with its committed version (ffmpeg's SSIM; a size change counts as changed), sorted by hand after: overlays (viewers, editors) and highlight animations score as low as real changes, and a change in the sidebar of a wide shot scores as high as noise |
 
 ## Adding a screenshot
 

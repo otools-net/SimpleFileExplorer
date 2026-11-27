@@ -545,7 +545,7 @@ public sealed class TaggingTests
         Assert.IsTrue(await Tags.RecordViewedAsync("RFile1.txt", TestContext.CancellationToken));
         Assert.IsFalse(await Tags.RecordViewedAsync("Media", TestContext.CancellationToken));
 
-        var sidebar = await Tags.GetSidebarAsync(TestContext.CancellationToken);
+        var sidebar = await Tags.GetSidebarAsync(TagSidebarTests.EveryList, TestContext.CancellationToken);
 
         CollectionAssert.AreEqual(
             new[] { "Tag 01", "Tag 02", "Tag 03", "Favorite", "Tag 04" },
@@ -565,7 +565,7 @@ public sealed class TaggingTests
         // The most recent search comes first; deleting a tag takes it out of the lists.
         await SearchNamesAsync("t:\"tag 11\"");
         Assert.AreEqual(TagDeleteStatus.Deleted, await Tags.DeleteAsync(created[4].Id, TestContext.CancellationToken));
-        var after = await Tags.GetSidebarAsync(TestContext.CancellationToken);
+        var after = await Tags.GetSidebarAsync(TagSidebarTests.EveryList, TestContext.CancellationToken);
         Assert.AreEqual("Tag 11", after.Searched[0].Tag.Name);
         CollectionAssert.AreEqual(new[] { "Tag 06" }, after.Viewed.Select(u => u.Tag.Name).ToArray());
     }

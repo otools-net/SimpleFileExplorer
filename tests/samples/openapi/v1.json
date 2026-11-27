@@ -3695,6 +3695,7 @@
           "Tags"
         ],
         "summary": "Most used tags, last searched tags, tags of the last viewed files, and random other tags.",
+        "description": "A list switched off by the settings (`tags.sidebarPopular`, `tags.sidebarSearched`, `tags.sidebarLucky`: the user's own, else the library's) is empty, its `show…` false.",
         "operationId": "GetTagSidebar",
         "responses": {
           "200": {
@@ -18081,6 +18082,15 @@
               "string"
             ],
             "format": "int32"
+          },
+          "sidebarPopular": {
+            "type": "boolean"
+          },
+          "sidebarSearched": {
+            "type": "boolean"
+          },
+          "sidebarLucky": {
+            "type": "boolean"
           }
         }
       },
@@ -18090,7 +18100,10 @@
           "searched",
           "viewed",
           "lucky",
-          "historyEnabled"
+          "historyEnabled",
+          "showPopular",
+          "showSearched",
+          "showLucky"
         ],
         "type": "object",
         "properties": {
@@ -18119,6 +18132,15 @@
             }
           },
           "historyEnabled": {
+            "type": "boolean"
+          },
+          "showPopular": {
+            "type": "boolean"
+          },
+          "showSearched": {
+            "type": "boolean"
+          },
+          "showLucky": {
             "type": "boolean"
           }
         }

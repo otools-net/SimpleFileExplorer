@@ -300,13 +300,13 @@ public sealed class SettingsTests
         );
         Assert.IsNotNull(tagged);
         await tags.RecordViewedAsync("RFile1.txt", TestContext.CancellationToken);
-        Assert.HasCount(1, (await tags.GetSidebarAsync(TestContext.CancellationToken)).Viewed);
+        Assert.HasCount(1, (await tags.GetSidebarAsync(cancellationToken: TestContext.CancellationToken)).Viewed);
 
         var settings = Settings.Get().Values;
         settings.Tags.RecordHistory = false;
         await Settings.SaveAsync(settings, TestContext.CancellationToken);
         await SearchNamesAsync("t:favorite");
-        var off = await tags.GetSidebarAsync(TestContext.CancellationToken);
+        var off = await tags.GetSidebarAsync(cancellationToken: TestContext.CancellationToken);
 
         Assert.IsFalse(off.HistoryEnabled);
         Assert.IsEmpty(off.Searched);
@@ -314,12 +314,12 @@ public sealed class SettingsTests
 
         settings.Tags.RecordHistory = true;
         await Settings.SaveAsync(settings, TestContext.CancellationToken);
-        var on = await tags.GetSidebarAsync(TestContext.CancellationToken);
+        var on = await tags.GetSidebarAsync(cancellationToken: TestContext.CancellationToken);
         Assert.IsEmpty(on.Searched, "Nothing was recorded while history was off.");
         Assert.HasCount(1, on.Viewed, "History kept from before is shown again.");
 
         Assert.AreEqual(1, await tags.ClearHistoryAsync(TestContext.CancellationToken));
-        Assert.IsEmpty((await tags.GetSidebarAsync(TestContext.CancellationToken)).Viewed);
+        Assert.IsEmpty((await tags.GetSidebarAsync(cancellationToken: TestContext.CancellationToken)).Viewed);
     }
 
     private async Task ScanAsync()

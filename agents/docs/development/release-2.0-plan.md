@@ -60,6 +60,23 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   tile / row (percentage in the hint), real name shown without `.sfe-partial`, not openable until done, refreshed in
   place when finished; a folder being copied shows the progress on its card (from the job's byte totals). Reuse for
   uploads in progress (4.3) where it fits. Tests, user docs with screenshot, partial-files.md updated.
+- [ ] **1.5 Little-used functions made optional, off by default** (owner's request 2026-11-27, S–M; two commits).
+  They see little use, so each becomes a setting that is **off unless switched on** (existing installs too: a
+  changelog line says how to switch them back on).
+  - [x] **a: tag sidebar sections.** Done 2026-11-27: `Sfe:Tags:SidebarPopular` / `SidebarSearched` /
+    `SidebarLucky` (user keys); the route reads the user's effective values into a `TagSidebarChoice` (which also made
+    a user's own `sidebarCount` apply: a fix), `TagSidebarLists` (moved out of `TagService` first) skips what is off;
+    `showPopular` / `showSearched` / `showLucky` added to the answer (additive) so the client hides the sections;
+    saving settings refreshes the sidebar. Note in [tags](../features/tags.md).
+  - [ ] **b: `Sfe:Tenants:AllowedRoots`.** Today: config-only list of the folders a new space's library folder may be
+    picked in, empty = `Sfe:Root` (`TenantEndpoints.AllowedRoots`, `TenantOptions`). It becomes opt-in behind a
+    switch (e.g. `Sfe:Tenants:UseAllowedRoots`, `false`): off, new spaces are picked inside `Sfe:Root` only (today's
+    default, so nothing gets looser) and the space editor, the new-space wizard's folder step and the docs stop
+    mentioning `AllowedRoots`; on, the list applies as today. **Upgrade:** an install whose configuration already
+    lists `AllowedRoots` keeps them working (the switch counts as on when the list is set, or an upgrade step writes
+    it; pick one and note why) ([production-upgrades](production-upgrades.md)). Tests (folders route and
+    create/`validateOnly` with the switch off and on, an install with roots listed), docs `configuration.md`,
+    `docker.md`, `administration/spaces-and-accounts.md`, `system.md`, `wizards.md`.
 
 ### Phase 2: foundations (texts, menus) — before any new screen
 
@@ -673,6 +690,8 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
+- **Added 2026-11-27:** step **1.5** (little-used functions made optional). **1.5a** done 2026-11-27; next **1.5b**
+  (`AllowedRoots` behind a switch), then **5.3b**.
 - **Last session (2026-11-27):** **5.2** (getting-started checklist) done, after **5.3a**. Next: **5.3b** and
   **5.3c** (adding a wizard: [wizards](../features/wizards.md#adding-a-wizard)); register them under the ids the
   checklist already names (`share-folder`, `add-connection`) and its items switch to them by themselves.
@@ -765,7 +784,8 @@ Defaults taken (change here if the owner disagrees): UK English; Windows-Explore
 ≤3 clicks; XxHash128; notifications kept in the browser (server events pushed, not stored); undo per tab, 20 steps;
 dashboard fixed columns; home folder never auto-created; menus (2.9): greyed only for the rights of file actions
 (Scans and previews…, quick links, Copy full path hidden instead), the selection bar never greyed; scan-as-you-go not recursive, 10 minutes; storage bar
-thresholds 85/95 %; sync jobs for administrators only.
+thresholds 85/95 %; sync jobs for administrators only; `AllowedRoots` off (1.5b) means spaces inside `Sfe:Root`
+only, not anywhere on the server (2026-11-27).
 
 ## Open points (not blocking 2.0)
 

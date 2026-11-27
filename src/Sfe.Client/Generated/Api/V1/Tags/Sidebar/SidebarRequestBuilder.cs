@@ -34,7 +34,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tags.Sidebar
         {
         }
         /// <summary>
-        /// Most used tags, last searched tags, tags of the last viewed files, and random other tags.
+        /// A list switched off by the settings (`tags.sidebarPopular`, `tags.sidebarSearched`, `tags.sidebarLucky`: the user&apos;s own, else the library&apos;s) is empty, its `show…` false.
         /// </summary>
         /// <returns>A <see cref="global::Otools.Net.Sfe.Client.Generated.Models.TagSidebar"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -52,7 +52,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Tags.Sidebar
             return await RequestAdapter.SendAsync<global::Otools.Net.Sfe.Client.Generated.Models.TagSidebar>(requestInfo, global::Otools.Net.Sfe.Client.Generated.Models.TagSidebar.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Most used tags, last searched tags, tags of the last viewed files, and random other tags.
+        /// A list switched off by the settings (`tags.sidebarPopular`, `tags.sidebarSearched`, `tags.sidebarLucky`: the user&apos;s own, else the library&apos;s) is empty, its `show…` false.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>

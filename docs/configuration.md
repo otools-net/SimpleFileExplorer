@@ -86,7 +86,7 @@ These have a default in `appsettings.json` and can be changed on the page named;
 | `Sfe:Scan:IgnoredDirectories`, `IgnoredFiles`, `ExcludedFolders`, `Sfe:ShowHiddenItems` | [Scanning › What to scan](administration/scanning.md#what-to-scan) |
 | `Sfe:FileTypes:Images`, `Videos`, `Audio`, `Text` | [Scanning › File types](administration/scanning.md#file-types) |
 | `Sfe:Scan:ComputeHashes`, `ReadResolution`, `IndexWhenListed`, `Parallelism` | [Scanning › Indexing](administration/scanning.md#indexing) |
-| `Sfe:Tags:SidebarCount`, `RecordHistory` | [Tags › Settings](administration/tags.md#settings) |
+| `Sfe:Tags:SidebarCount`, `RecordHistory`, `SidebarPopular`, `SidebarSearched`, `SidebarLucky` | [Tags › Settings](administration/tags.md#settings) |
 | `Sfe:FileTracking:…` | [Duplicates & moves › Settings](administration/duplicates-and-moves.md#settings) |
 | `Sfe:Thumbnails:Enabled`, `Width`, `VideoSeekSeconds`, `LargeImageKilobytes`, `SingleViewOriginals`, `AnimatedHover`, `ExcludedFolders`, `MaxConcurrency`, `TimeoutSeconds` | [Thumbnails](administration/thumbnails.md) |
 | `Sfe:Trickplay:…` | [Trickplay › Settings](administration/trickplay.md#settings) |

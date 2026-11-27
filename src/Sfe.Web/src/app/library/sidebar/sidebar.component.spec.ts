@@ -96,6 +96,25 @@ describe('SidebarComponent', () => {
         expect(section('I feel lucky').hidden).toBe(false);
     });
 
+    it('hides the sections the settings switch off, and shows them for an older server not saying', async () => {
+        await create(data({ showPopular: false, showSearched: false, showLucky: false }));
+
+        expect(section('Most popular').hidden).toBe(true);
+        expect(section('Last searched').hidden).toBe(true);
+        expect(section('I feel lucky').hidden).toBe(true);
+        expect(section('Last viewed').hidden).toBe(false);
+
+        TestBed.inject(SidebarService).data.set(data({ showPopular: true, showSearched: true, showLucky: true }));
+        await settle();
+        expect(section('Most popular').hidden).toBe(false);
+        expect(section('Last searched').hidden).toBe(false);
+        expect(section('I feel lucky').hidden).toBe(false);
+
+        TestBed.inject(SidebarService).data.set(data());
+        await settle();
+        expect(section('Most popular').hidden).toBe(false);
+    });
+
     it('searches for a tag on click, without the quotes the query cannot hold', async () => {
         await create();
 

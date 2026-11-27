@@ -113,7 +113,14 @@ public sealed class EditableSettings
                 RecheckHours = options.Trickplay.RecheckHours,
                 HoverPreview = options.Trickplay.HoverPreview,
             },
-            Tags = new() { RecordHistory = options.Tags.RecordHistory, SidebarCount = options.Tags.SidebarCount },
+            Tags = new()
+            {
+                RecordHistory = options.Tags.RecordHistory,
+                SidebarCount = options.Tags.SidebarCount,
+                SidebarPopular = options.Tags.SidebarPopular,
+                SidebarSearched = options.Tags.SidebarSearched,
+                SidebarLucky = options.Tags.SidebarLucky,
+            },
             Player = new()
             {
                 SeekSeconds = options.Player.SeekSeconds,
@@ -232,6 +239,9 @@ public sealed class EditableSettings
         options.Trickplay.HoverPreview = Trickplay.HoverPreview;
         options.Tags.RecordHistory = Tags.RecordHistory;
         options.Tags.SidebarCount = Tags.SidebarCount;
+        options.Tags.SidebarPopular = Tags.SidebarPopular;
+        options.Tags.SidebarSearched = Tags.SidebarSearched;
+        options.Tags.SidebarLucky = Tags.SidebarLucky;
         options.Player.SeekSeconds = Player.SeekSeconds;
         options.Player.Loop = Player.Loop;
         options.Player.ExternalName = Player.ExternalName;

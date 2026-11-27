@@ -387,11 +387,13 @@ public sealed class TagService(
 
     /// <summary>
     /// Most used tags, last searched tags, tags of the last viewed files, and random tags in none of those lists,
-    /// <see cref="TagOptions.SidebarCount"/> of each. The history lists stay empty while history is off.
+    /// as many of each as <paramref name="choice"/> says, the lists it switches off left empty.
     /// </summary>
+    /// <param name="choice">What is shown; null = the library's settings.</param>
     /// <param name="visible">Where the asker may see files (folder rules): counts, hence the most used tags, count only
     /// those.</param>
     public async Task<TagSidebar> GetSidebarAsync(
+        TagSidebarChoice? choice = null,
         CancellationToken cancellationToken = default,
         PathFilter? visible = null
     )
@@ -399,7 +401,8 @@ public sealed class TagService(
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var graph = await TagGraph.LoadAsync(db, cancellationToken);
         var counts = await FileCountsAsync(db, cancellationToken, visible);
-        return await TagSidebarLists.BuildAsync(db, graph, counts, Settings, cancellationToken);
+        var shown = choice ?? TagSidebarChoice.From(Settings);
+        return await TagSidebarLists.BuildAsync(db, graph, counts, shown, cancellationToken);
     }
 
     /// <summary>Forgets the searched and viewed tags.</summary>

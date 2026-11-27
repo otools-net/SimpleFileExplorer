@@ -23,7 +23,8 @@ Tool: `agents/tools/docs-screenshots/` (how to add a scene: its `README.md`).
   wwwroot\chunk-….js`, the static web assets list still names the previous build's chunks): `run.mjs` builds once
   more by itself. A single-scene run without `--shots-only` still reseeds everything (and re-saves
   `setup-page.png`).
-- A full run re-saves every image with tiny pixel changes: `git checkout` the ones whose screen didn't change.
+- A full run re-saves every image with tiny pixel changes: `git checkout` the ones whose screen didn't change
+  (`changed-images.mjs` scores each one; SSIM alone doesn't decide: look at the borderline ones).
 - The connection images (`connection-*.png`, `search-everywhere.png`) are not made by this tool (no Dropbox account
   there): [dropbox-check](../../tools/dropbox-check/README.md#tools) `shots.mjs` takes them on an install with a
   real connection, its account's e-mail replaced.

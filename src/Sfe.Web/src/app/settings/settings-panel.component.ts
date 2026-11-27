@@ -19,6 +19,7 @@ import { IconComponent } from '../shared/icon.component';
 import { TrickplayStatusComponent } from '../trickplay/trickplay-status.component';
 import { isSimpleGroup, settingFieldId, SettingsForm } from './settings-form.service';
 import { SettingField, TABS } from './settings-schema';
+import { tagHistoryTexts } from './tag-history-texts';
 
 /**
  * One tab of settings-schema.ts, as a sub-page of its section of the administration page: its grouped fields,
@@ -54,6 +55,11 @@ export class SettingsPanelComponent {
         this.form.level() === 'server'
             ? $localize`Spaces and users can't change it: the value above applies everywhere.`
             : $localize`Users of this space can't change it for themselves.`,
+    );
+
+    /** Clear tag history names the lists shown. */
+    protected readonly clearHistoryTitle = computed(
+        () => tagHistoryTexts(this.form.control('tags.sidebarSearched') === true).title,
     );
 
     protected readonly valueOf = valueOf;

@@ -81,6 +81,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Changed
 
+- **The tag sidebar's "Most popular", "Last searched" and "I feel lucky" are off by default**, existing installs too:
+  only **Last viewed** shows. Switch them back on for the space in **Administration › Tags › Settings** (**Show “Most
+  popular”**, **Show “Last searched”**, **Show “I feel lucky”**; `Sfe:Tags:SidebarPopular`, `SidebarSearched`,
+  `SidebarLucky`), or each for yourself in **My account › Settings › Tags**. Searches are still recorded while
+  "Last searched" is hidden. The server no longer reads the lists switched off. API: `showPopular`, `showSearched`,
+  `showLucky` on `GET api/tags/sidebar`.
 - **Uploads into a connection go on** after the page is reloaded or the server restarts, as the library's do: the
   operations panel lists them again and the same file picked or dropped sends the rest. The server keeps their
   records in `connection-uploads` beside the setup code (the provider's upload session protected by the server's
@@ -96,6 +102,7 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- **Tags per sidebar section** set in your own settings now applies; the sidebar used the space's value.
 - The sidebar's **space used and free** showed the disk of the library's folder everywhere; in a folder that is a
   junction, a mounted folder or a link to another disk (and the folders inside it), it now shows that disk's space,
   on Linux also for a disk mounted on a folder of the library (a Docker bind mount). It is also read again a moment

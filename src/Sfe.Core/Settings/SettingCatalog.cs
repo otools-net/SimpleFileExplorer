@@ -57,6 +57,9 @@ public static class SettingCatalog
         "trickplay.hoverPreview",
         "search.historySize",
         "tags.sidebarCount",
+        "tags.sidebarPopular",
+        "tags.sidebarSearched",
+        "tags.sidebarLucky",
         // How text reads in the viewer: a library default, each account's own.
         "reading.theme",
         "reading.customFont",

@@ -35,6 +35,11 @@ not deleted.
 |---|---|---|
 | **Remember tag history** | on | Records the tags searched for and the tags of the files opened, for the sidebar's **Last searched** and **Last viewed** lists, shared by everyone using the space. When off, nothing new is recorded and those lists are hidden (`Sfe:Tags:RecordHistory`) |
 | **Tags per sidebar section** | 5 | All settings view; users can change it for themselves (`Sfe:Tags:SidebarCount`) |
+| **Show “Most popular”** | off | The sidebar lists the tags on the most files; users can change it for themselves (`Sfe:Tags:SidebarPopular`) |
+| **Show “Last searched”** | off | The sidebar lists the tags of the last searches, while tag history is on; searches are recorded while it is off, so the list is ready when switched on; users can change it for themselves (`Sfe:Tags:SidebarSearched`) |
+| **Show “I feel lucky”** | off | The sidebar lists random tags the other sections don't show; users can change it for themselves (`Sfe:Tags:SidebarLucky`) |
+
+Up to version 1.x the three lists were always shown; since 2.0 they are off unless switched on here.
 
 **Clear tag history** forgets the searched and viewed tags right away; tags and files are not changed. Right:
 `settings.tags`.

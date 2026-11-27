@@ -58,8 +58,7 @@
                                         <button
                                             type="button"
                                             class="button small"
-                                            title="Empty the sidebar's “Last searched” and “Last viewed” lists (asks first)"
-                                            i18n-title
+                                            [title]="clearHistoryTitle()"
                                             (click)="form.clearHistory()"
                                             i18n
                                         >Clear tag history</button>

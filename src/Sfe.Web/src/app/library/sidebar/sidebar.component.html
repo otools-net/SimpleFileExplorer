@@ -3,7 +3,7 @@
 @for (section of sections; track section.key) {
     @let usages = sidebar.data()?.[section.key] ?? [];
     @let open = !isFolded(section);
-    <section class="sidebar-section" [hidden]="section.history && sidebar.data()?.historyEnabled === false">
+    <section class="sidebar-section" [hidden]="isHidden(section)">
         <div class="sidebar-heading">
             <h2>
                 <button

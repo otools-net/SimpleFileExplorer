@@ -11,6 +11,10 @@ export interface TagSidebar {
     viewed: TagUsage[];
     lucky: TagUsage[];
     historyEnabled: boolean;
+    /** The lists the settings switch off ("Most popular", "Last searched", "I feel lucky"); missing: shown. */
+    showPopular?: boolean;
+    showSearched?: boolean;
+    showLucky?: boolean;
 }
 
 /** A folder or file kept in the sidebar's quick links (`api/me/quick-links`). */

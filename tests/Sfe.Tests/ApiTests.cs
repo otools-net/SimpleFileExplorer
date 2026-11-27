@@ -1036,7 +1036,7 @@ public sealed class ApiTests
         Assert.AreEqual(HttpStatusCode.NotFound, outside.StatusCode);
         Assert.IsTrue(sidebar.HistoryEnabled);
         Assert.AreEqual("Favorite", sidebar.Viewed.Single().Tag.Name);
-        Assert.AreEqual("Favorite", sidebar.Popular.Single().Tag.Name);
+        Assert.IsEmpty(sidebar.Popular, "Most popular is off by default");
 
         using var cleared = await _client.DeleteAsync($"{V1}/tags/history", Token);
         Assert.AreEqual(HttpStatusCode.NoContent, cleared.StatusCode);

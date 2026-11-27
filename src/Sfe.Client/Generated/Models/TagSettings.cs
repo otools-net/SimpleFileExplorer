@@ -18,6 +18,12 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public bool? RecordHistory { get; set; }
         /// <summary>The sidebarCount property</summary>
         public int? SidebarCount { get; set; }
+        /// <summary>The sidebarLucky property</summary>
+        public bool? SidebarLucky { get; set; }
+        /// <summary>The sidebarPopular property</summary>
+        public bool? SidebarPopular { get; set; }
+        /// <summary>The sidebarSearched property</summary>
+        public bool? SidebarSearched { get; set; }
         /// <summary>
         /// Instantiates a new <see cref="global::Otools.Net.Sfe.Client.Generated.Models.TagSettings"/> and sets the default values.
         /// </summary>
@@ -45,6 +51,9 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             {
                 { "recordHistory", n => { RecordHistory = n.GetBoolValue(); } },
                 { "sidebarCount", n => { SidebarCount = n.GetIntValue(); } },
+                { "sidebarLucky", n => { SidebarLucky = n.GetBoolValue(); } },
+                { "sidebarPopular", n => { SidebarPopular = n.GetBoolValue(); } },
+                { "sidebarSearched", n => { SidebarSearched = n.GetBoolValue(); } },
             };
         }
         /// <summary>
@@ -56,6 +65,9 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteBoolValue("recordHistory", RecordHistory);
             writer.WriteIntValue("sidebarCount", SidebarCount);
+            writer.WriteBoolValue("sidebarLucky", SidebarLucky);
+            writer.WriteBoolValue("sidebarPopular", SidebarPopular);
+            writer.WriteBoolValue("sidebarSearched", SidebarSearched);
             writer.WriteAdditionalData(AdditionalData);
         }
     }

@@ -40,6 +40,12 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public List<global::Otools.Net.Sfe.Client.Generated.Models.TagUsage> Searched { get; set; }
 #endif
+        /// <summary>The showLucky property</summary>
+        public bool? ShowLucky { get; set; }
+        /// <summary>The showPopular property</summary>
+        public bool? ShowPopular { get; set; }
+        /// <summary>The showSearched property</summary>
+        public bool? ShowSearched { get; set; }
         /// <summary>The viewed property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -77,6 +83,9 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "lucky", n => { Lucky = n.GetCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagUsage>(global::Otools.Net.Sfe.Client.Generated.Models.TagUsage.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "popular", n => { Popular = n.GetCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagUsage>(global::Otools.Net.Sfe.Client.Generated.Models.TagUsage.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "searched", n => { Searched = n.GetCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagUsage>(global::Otools.Net.Sfe.Client.Generated.Models.TagUsage.CreateFromDiscriminatorValue)?.AsList(); } },
+                { "showLucky", n => { ShowLucky = n.GetBoolValue(); } },
+                { "showPopular", n => { ShowPopular = n.GetBoolValue(); } },
+                { "showSearched", n => { ShowSearched = n.GetBoolValue(); } },
                 { "viewed", n => { Viewed = n.GetCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagUsage>(global::Otools.Net.Sfe.Client.Generated.Models.TagUsage.CreateFromDiscriminatorValue)?.AsList(); } },
             };
         }
@@ -91,6 +100,9 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagUsage>("lucky", Lucky);
             writer.WriteCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagUsage>("popular", Popular);
             writer.WriteCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagUsage>("searched", Searched);
+            writer.WriteBoolValue("showLucky", ShowLucky);
+            writer.WriteBoolValue("showPopular", ShowPopular);
+            writer.WriteBoolValue("showSearched", ShowSearched);
             writer.WriteCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagUsage>("viewed", Viewed);
             writer.WriteAdditionalData(AdditionalData);
         }

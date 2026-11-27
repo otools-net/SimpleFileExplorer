@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Otools.Net.Sfe.Core.Data;
-using Otools.Net.Sfe.Core.Options;
 
 namespace Otools.Net.Sfe.Core.Tagging;
 
@@ -11,30 +10,32 @@ internal static class TagSidebarLists
 {
     /// <summary>
     /// Most used tags, last searched tags, tags of the last viewed files, and random tags in none of those lists,
-    /// <see cref="TagOptions.SidebarCount"/> of each. The history lists stay empty while history is off.
+    /// <see cref="TagSidebarChoice.Count"/> of each. A list switched off stays empty and isn't read (no query, no
+    /// random pick); the history lists stay empty while history is off.
     /// </summary>
     /// <param name="counts">Files tagged with each tag (those the asker sees).</param>
     public static async Task<TagSidebar> BuildAsync(
         SfeDbContext db,
         TagGraph graph,
         IReadOnlyDictionary<int, int> counts,
-        TagOptions settings,
+        TagSidebarChoice choice,
         CancellationToken cancellationToken
     )
     {
-        var count = Math.Max(1, settings.SidebarCount);
-        var history = settings.RecordHistory;
+        var count = Math.Max(1, choice.Count);
+        var history = choice.History;
         TagUsage Usage(int id) => new(graph.Summary(id)!, counts.GetValueOrDefault(id));
 
-        var popular = Popular(graph, counts, count);
-        var searched = !history
-            ? []
-            : await db
-                .TagActivity.Where(a => a.LastSearchedAt != null)
-                .OrderByDescending(a => a.LastSearchedAt)
-                .Select(a => a.TagId)
-                .Take(count)
-                .ToListAsync(cancellationToken);
+        var popular = choice.Popular ? Popular(graph, counts, count) : [];
+        var searched =
+            !history || !choice.Searched
+                ? []
+                : await db
+                    .TagActivity.Where(a => a.LastSearchedAt != null)
+                    .OrderByDescending(a => a.LastSearchedAt)
+                    .Select(a => a.TagId)
+                    .Take(count)
+                    .ToListAsync(cancellationToken);
         var viewed = !history
             ? []
             : await db
@@ -43,14 +44,17 @@ internal static class TagSidebarLists
                 .Select(a => a.TagId)
                 .Take(count)
                 .ToListAsync(cancellationToken);
-        var lucky = Lucky(graph, popular.Concat(searched).Concat(viewed).ToHashSet(), count);
+        var lucky = choice.Lucky ? Lucky(graph, popular.Concat(searched).Concat(viewed).ToHashSet(), count) : [];
 
         return new TagSidebar(
             popular.Select(Usage).ToList(),
             searched.Where(graph.Contains).Select(Usage).ToList(),
             viewed.Where(graph.Contains).Select(Usage).ToList(),
             lucky.Select(Usage).ToList(),
-            history
+            history,
+            choice.Popular,
+            choice.Searched,
+            choice.Lucky
         );
     }
 

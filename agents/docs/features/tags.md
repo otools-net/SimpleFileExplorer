@@ -9,6 +9,14 @@ search: [scope-tagging.md](scope-tagging.md).
 - Sidebar (`library/sidebar/sidebar.component.ts`): each tag section folds under its heading; `Section.folded` gives
   the default (Last searched, I feel lucky folded), the user's choices are kept per browser in `sfe.sidebar.sections`
   (`{ key: folded }`). Its footer holds Manage tags and the Trash link (rights of the Trash sub-page).
+- "Most popular", "Last searched" and "I feel lucky" are off unless switched on (`Sfe:Tags:SidebarPopular` /
+  `SidebarSearched` / `SidebarLucky`, user keys: the library's default, each account's own; 2.0). `GET
+  api/tags/sidebar` reads the user's effective values (`SettingsService.GetEffectiveAsync`, so `sidebarCount` set by
+  a user applies too: before 2.0 the server only read the library's) into a `TagSidebarChoice`; `TagSidebarLists`
+  leaves a list switched off empty without its query or random pick, and the answer's `showPopular` /
+  `showSearched` / `showLucky` hide its section (missing, from an older server: shown). Searches are recorded
+  (`RecordHistory`) whether "Last searched" shows or not. Clear tag history's texts name only the lists shown
+  (`settings/tag-history-texts.ts`); saving settings refreshes the sidebar.
 - `TagManagerDialog` stays on the listing page (sidebar, tag dialogs) around the same `TagListComponent` as the admin
   page.
 - Tag counts are cached briefly ([scale.md](../development/scale.md)).

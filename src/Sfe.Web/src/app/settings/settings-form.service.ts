@@ -10,6 +10,7 @@ import { ThemeService } from '../core/theme.service';
 import { ToastService } from '../core/toast.service';
 import { SearchHistory } from '../library/search-history.service';
 import { SidebarService } from '../library/sidebar/sidebar.service';
+import { tagHistoryTexts } from './tag-history-texts';
 import { getValue, SettingField, SettingGroup, SIMPLE_SETTINGS, TABS } from './settings-schema';
 import { partlySaved, resetTexts } from './settings-texts';
 
@@ -475,13 +476,7 @@ export class SettingsForm {
     }
 
     async clearHistory(): Promise<void> {
-        if (
-            !confirm(
-                $localize`Forget the searched and viewed tags? The sidebar's “Last searched” and “Last viewed” \
-lists start empty. This cannot be undone.`,
-            )
-        )
-            return;
+        if (!confirm(tagHistoryTexts(this.control('tags.sidebarSearched') === true).question)) return;
         try {
             await this.api.clearTagHistory();
             this.sidebar.refresh();
@@ -501,6 +496,7 @@ lists start empty. This cannot be undone.`,
 
     /** The settings changed on the server: reload what the client derives from them (theme, links, page sizes...). */
     private async applied(): Promise<void> {
+        this.sidebar.refresh();
         try {
             this.theme.setDefault((await this.config.load()).theme);
         } catch (error) {

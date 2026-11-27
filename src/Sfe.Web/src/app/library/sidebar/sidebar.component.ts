@@ -24,6 +24,8 @@ interface Section {
     title: string;
     empty: string;
     history?: boolean;
+    /** The answer's flag saying whether the settings show it (off by default). */
+    shown?: 'showPopular' | 'showSearched' | 'showLucky';
     /** Folded until the user opens it: the lists that help least. */
     folded?: boolean;
 }
@@ -32,12 +34,13 @@ interface Section {
 const FOLDED_PREFERENCE = 'sfe.sidebar.sections';
 
 const SECTIONS: Section[] = [
-    { key: 'popular', title: $localize`Most popular`, empty: $localize`No file is tagged yet.` },
+    { key: 'popular', title: $localize`Most popular`, empty: $localize`No file is tagged yet.`, shown: 'showPopular' },
     {
         key: 'searched',
         title: $localize`Last searched`,
         empty: $localize`Search with t:name to see the tags here.`,
         history: true,
+        shown: 'showSearched',
         folded: true,
     },
     {
@@ -46,12 +49,19 @@ const SECTIONS: Section[] = [
         empty: $localize`Open a tagged file to see its tags here.`,
         history: true,
     },
-    { key: 'lucky', title: $localize`I feel lucky`, empty: $localize`No other tags.`, folded: true },
+    {
+        key: 'lucky',
+        title: $localize`I feel lucky`,
+        empty: $localize`No other tags.`,
+        shown: 'showLucky',
+        folded: true,
+    },
 ];
 
 /**
- * Collapsible sidebar: the user's quick links, then the tags: most used tags, last searched tags, tags of the last
- * viewed files and random others, each list folding under its heading; at the bottom, the space used and free
+ * Collapsible sidebar: the user's quick links, then the tags (those the settings show): most used tags, last searched
+ * tags, tags of the last viewed files and random others, each list folding under its heading; at the bottom, the space
+ * used and free
  * (`StorageBarComponent`), Manage tags and the trash.
  */
 @Component({
@@ -115,6 +125,15 @@ export class SidebarComponent implements OnInit {
                   count,
               })
             : icu($localize`Open the trash. It holds {count, plural, one {# item} other {# items}}.`, { count });
+    }
+
+    /** Switched off by the settings, or a history list while the history isn't recorded. */
+    protected isHidden(section: Section): boolean {
+        const data = this.sidebar.data();
+        return (
+            (!!section.history && data?.historyEnabled === false) ||
+            (!!section.shown && data?.[section.shown] === false)
+        );
     }
 
     protected isFolded(section: Section): boolean {

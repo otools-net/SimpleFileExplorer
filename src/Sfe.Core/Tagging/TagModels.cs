@@ -61,12 +61,18 @@ public sealed record TagUsage(TagSummary Tag, int FileCount);
 /// <param name="Viewed">Tags of the most recently viewed files.</param>
 /// <param name="Lucky">Random tags in none of the other lists.</param>
 /// <param name="HistoryEnabled">Searched and viewed tags are recorded (when off, those lists are empty).</param>
+/// <param name="ShowPopular">The "Most popular" list is shown (a setting; off, the list is empty).</param>
+/// <param name="ShowSearched">The "Last searched" list is shown (a setting; off, the list is empty).</param>
+/// <param name="ShowLucky">The "I feel lucky" list is shown (a setting; off, the list is empty).</param>
 public sealed record TagSidebar(
     IReadOnlyList<TagUsage> Popular,
     IReadOnlyList<TagUsage> Searched,
     IReadOnlyList<TagUsage> Viewed,
     IReadOnlyList<TagUsage> Lucky,
-    bool HistoryEnabled
+    bool HistoryEnabled,
+    bool ShowPopular,
+    bool ShowSearched,
+    bool ShowLucky
 );
 
 public enum TagEditStatus
