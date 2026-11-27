@@ -79,6 +79,14 @@ public sealed class Trash(
     /// </summary>
     public event Action? EntriesChanged;
 
+    private long _entryChanges;
+
+    /// <summary>
+    /// How many times an entry came in or left since the start: a figure that moves when the trash's files took or
+    /// freed space (the storage bar's cache, agents/docs/features/storage-usage.md).
+    /// </summary>
+    public long EntryChanges => Interlocked.Read(ref _entryChanges);
+
     public int RetentionDays => Math.Max(0, options.CurrentValue.Files.Trash.RetentionDays);
 
     /// <summary>
@@ -818,6 +826,7 @@ public sealed class Trash(
 
     private void TellEntriesChanged()
     {
+        Interlocked.Increment(ref _entryChanges);
         try
         {
             EntriesChanged?.Invoke();

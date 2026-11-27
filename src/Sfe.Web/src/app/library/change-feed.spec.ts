@@ -156,4 +156,23 @@ describe('ChangeFeed and changes made outside SFE', () => {
 
         expect(browse).toHaveBeenCalledTimes(1);
     });
+
+    it('counts the changes made through SFE where the files shown are kept, for the storage bar', async () => {
+        await setUp();
+        // Any folder of the library, this tab's own changes too, and the trash.
+        feed.changed({ path: 'Elsewhere', origin: TAB_ID });
+        feed.changed({ path: 'Media', origin: null });
+        last().dispatchEvent(new Event('trash'));
+        expect(feed.spaceChanges()).toBe(3);
+
+        // Not those made outside SFE (the server read the space anew only after SFE's), nor in another place.
+        feed.changed({ path: 'Media', origin: null, outside: true });
+        feed.changed({ path: 'Media', origin: null, connection: 7 });
+        expect(feed.spaceChanges()).toBe(3);
+
+        store.route.set({ path: 'Media', q: '', sort: '', desc: false, c: 7 });
+        feed.changed({ path: 'Media', origin: null, connection: 7 });
+        last().dispatchEvent(new Event('trash'));
+        expect(feed.spaceChanges()).toBe(4);
+    });
 });

@@ -1,4 +1,5 @@
 using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
 
 namespace Otools.Net.Sfe.Tests;
 
@@ -59,9 +60,7 @@ public sealed class DiskSpaceTests
         var other = DriveInfo
             .GetDrives()
             .FirstOrDefault(d =>
-                d.IsReady
-                && d.DriveType == DriveType.Fixed
-                && Math.Abs(d.AvailableFreeSpace - here) > 4 * Slack
+                d.IsReady && d.DriveType == DriveType.Fixed && Math.Abs(d.AvailableFreeSpace - here) > 4 * Slack
             );
         if (other is null)
             Assert.Inconclusive("No second volume whose free space differs from the temp folder's.");
@@ -82,9 +81,10 @@ public sealed class DiskSpaceTests
         if (!TryLinkFolder(link, Path.GetDirectoryName(target)!))
             Assert.Inconclusive("A junction or a link could not be made here.");
 
-        Assert.AreEqual(link, DiskSpace.VolumeFolder(library, link));
-        Assert.AreEqual(link, DiskSpace.VolumeFolder(library, Path.Combine(link, "deep")));
-        Assert.AreEqual(link, DiskSpace.VolumeFolder(library, Path.Combine(link, "deep", "not made yet")));
+        var expected = ExpectedVolume(link, link);
+        Assert.AreEqual(expected, DiskSpace.VolumeFolder(library, link));
+        Assert.AreEqual(expected, DiskSpace.VolumeFolder(library, Path.Combine(link, "deep")));
+        Assert.AreEqual(expected, DiskSpace.VolumeFolder(library, Path.Combine(link, "deep", "not made yet")));
     }
 
     [TestMethod]
@@ -93,10 +93,38 @@ public sealed class DiskSpaceTests
         var library = Directory.CreateDirectory(Path.Combine(_root, "library")).FullName;
         var folder = Directory.CreateDirectory(Path.Combine(library, "a", "b")).FullName;
 
-        Assert.AreEqual(library, DiskSpace.VolumeFolder(library + Path.DirectorySeparatorChar, folder));
-        Assert.AreEqual(library, DiskSpace.VolumeFolder(library, library));
-        Assert.AreEqual(library, DiskSpace.VolumeFolder(library, _root), "Outside the library: its root");
+        var expected = ExpectedVolume(library, library);
+        Assert.AreEqual(expected, DiskSpace.VolumeFolder(library + Path.DirectorySeparatorChar, folder));
+        Assert.AreEqual(expected, DiskSpace.VolumeFolder(library, library));
+        Assert.AreEqual(expected, DiskSpace.VolumeFolder(library, _root), "Outside the library: its root");
     }
+
+    /// <summary>
+    /// A file system mounted on a plain folder (no link), named by <c>SFE_TEST_MOUNTED_FOLDER</c>
+    /// (agents/tools/linux-tests/ mounts a small tmpfs in WSL without sudo): measured on itself, not on its parent's
+    /// disk. Skipped otherwise.
+    /// </summary>
+    [TestMethod]
+    public void AFileSystemMountedOnAPlainFolderIsMeasuredOnItself()
+    {
+        var mounted = Environment.GetEnvironmentVariable("SFE_TEST_MOUNTED_FOLDER");
+        if (string.IsNullOrEmpty(mounted))
+            Assert.Inconclusive("SFE_TEST_MOUNTED_FOLDER names no folder a file system is mounted on.");
+        var library = Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(mounted))!;
+        Directory.CreateDirectory(Path.Combine(mounted, "inside"));
+
+        var volume = DiskSpace.VolumeFolder(library, Path.Combine(mounted, "inside"));
+
+        Assert.AreEqual(Path.TrimEndingDirectorySeparator(mounted), volume);
+        Assert.AreNotEqual(DiskSpace.Of(library).Total, DiskSpace.Of(volume).Total);
+    }
+
+    /// <summary>
+    /// What <see cref="DiskSpace.VolumeFolder"/> gives for a folder whose closest link (or library root) is
+    /// <paramref name="linkOrRoot"/>: on Linux the mount point holding its real path, elsewhere the link itself.
+    /// </summary>
+    internal static string ExpectedVolume(string folder, string linkOrRoot) =>
+        MountPoints.Holding(LibraryPaths.RealPath(folder)) ?? linkOrRoot;
 
     private static void AssertClose(long? expected, long? actual)
     {

@@ -3,7 +3,8 @@ import { ConfigService } from '../../core/config.service';
 import { ApiMock, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
 import { StorageUsage } from '../library.models';
 import { ListingStore } from '../listing.store';
-import { STORAGE_REFRESH_MS, StorageBarComponent } from './storage-bar.component';
+import { ChangeFeed } from '../change-feed.service';
+import { STORAGE_CHANGE_DELAY_MS, STORAGE_REFRESH_MS, StorageBarComponent } from './storage-bar.component';
 
 describe('StorageBarComponent', () => {
     let api: ApiMock;
@@ -83,6 +84,26 @@ describe('StorageBarComponent', () => {
         fixture.detectChanges();
         await settle();
         expect(api.storage).toHaveBeenLastCalledWith(null, '');
+    });
+
+    it('reads again once changes made through SFE stop', async () => {
+        await create();
+        vi.useFakeTimers();
+        try {
+            const feed = TestBed.inject(ChangeFeed);
+            feed.spaceChanges.update((n) => n + 1);
+            fixture.detectChanges();
+            vi.advanceTimersByTime(STORAGE_CHANGE_DELAY_MS / 2);
+            feed.spaceChanges.update((n) => n + 1);
+            fixture.detectChanges();
+            vi.advanceTimersByTime(STORAGE_CHANGE_DELAY_MS - 1);
+            expect(api.storage).toHaveBeenCalledTimes(1);
+
+            vi.advanceTimersByTime(1);
+            expect(api.storage).toHaveBeenCalledTimes(2);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('says when the space is not reported, without a bar', async () => {

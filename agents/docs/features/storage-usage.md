@@ -14,16 +14,28 @@ Code: `Core/Files/DiskSpace.cs`, `StorageUsage.cs`, `TrashSize.cs`, `Trash.SizeA
   the provider's `IRemoteStorage.SpaceAsync`, only when its capability `FreeSpace` says so, else `reported: false`
   without calling it. Dropbox gives `used` and, for individual and team allocations, `total`.
 - Answer `StorageUsage(reported, used, total, free)`; `total` / `free` null when a provider gives only `used`.
-- `StorageUsageCache` (singleton) keeps each answer two minutes, keyed `library:<volume folder>` /
-  `connection:<id>`: every session of a space shares one read; a provider counts calls. The volume folder is
-  `DiskSpace.VolumeFolder(root, folder)`: the closest junction / mounted folder / link from the folder up to the
-  root (one `LinkTarget` look per level, nothing per folder content), else the root; so the cache holds one entry per
-  link visited, not per folder. The library's read runs on the thread pool with a 5-second wait: a share that doesn't
-  answer is "not reported", the request not held, and `library-stalled:<root>` keeps that answer two minutes so a
-  dead share doesn't take a thread per request.
-- Not seen: a file system mounted on a Linux folder that is not a link (a Docker bind mount under a library
-  subfolder): no link on the way, so it shows the root's. Measuring every folder would find it, at one `statvfs`
-  per folder opened.
+- `StorageUsageCache` (singleton) keeps each answer two minutes, keyed `library:<root>|<volume folder>` /
+  `connection:<id>`: every session of a space shares one read; a provider counts calls. The cache holds one entry per
+  volume reached, never one per folder. The library's read runs on the thread pool with a 5-second wait: a share that
+  doesn't answer is "not reported", the request not held, and `library-stalled:<root>` keeps that answer two minutes
+  so a dead share doesn't take a thread per request.
+- The volume folder is `DiskSpace.VolumeFolder(root, folder)`:
+  - Linux: the mount point holding the folder's real path (`LibraryPaths.RealPath`, links resolved), the longest one
+    of `/proc/self/mountinfo` (`MountPoints`, read again at most every two minutes; the fifth field, ` `-style
+    escapes decoded). A file system mounted on a plain folder (a Docker bind mount under a library subfolder, a disk
+    mounted there) counts, with no `statvfs` per folder.
+  - Windows, macOS, or no mount list: the closest junction / mounted folder / link from the folder up to the root
+    (one `LinkTarget` look per level, nothing per folder content), else the root.
+- Changes made through SFE drop what was kept of where they were made, so the bar shows the space taken or freed:
+  - A library's entries carry `LibraryBrowser.Changes + Trash.EntryChanges` when read; a different count reads the
+    disk again. `LibraryBrowser.Invalidate` (every file operation, upload, copy, move, trash, restore) and the trash's
+    entries coming or leaving (purges too) move it. Per library, not per volume: any change there reads the volume
+    asked for again (one `statvfs`); the count is taken before reading, so a change during the read isn't missed.
+  - A connection's entry is removed on `ConnectionChanges.FolderChanged` (its write routes, uploads, transfers).
+  - Changes made outside SFE don't drop anything: the two minutes do.
+  - Client: `ChangeFeed.spaceChanges` counts the feed's `changed` events not `outside` whose connection is the
+    place shown (this tab's own too), and `trash` events in the library; the bar reads again
+    `STORAGE_CHANGE_DELAY_MS` (2 s) after the last one.
 
 ## Measuring a disk
 
@@ -32,6 +44,9 @@ Code: `Core/Files/DiskSpace.cs`, `StorageUsage.cs`, `TrashSize.cs`, `Trash.SizeA
 - Elsewhere: `new DriveInfo(folder)` on the folder itself. On Unix .NET passes the name to `statvfs`, which answers
   for the file system holding it (a Docker volume on `/data`), where `Path.GetPathRoot` would give `/`.
 - Both follow junctions, mounted folders and links to the volume they lead to.
+- Tests on Linux: `agents/tools/linux-tests/run.sh --mounts` mounts a 64 MB tmpfs on a plain folder
+  (`SFE_TEST_MOUNTED_FOLDER`, `DiskSpaceTests.AFileSystemMountedOnAPlainFolderIsMeasuredOnItself`); `MountPointsTests`
+  parse a `mountinfo` text on any system.
 - The free-space margins (`Files:MinimumFreeSpaceMegabytes`) of copies, moves, extractions, compressions, uploads and
   transfers all read `DiskSpace.FreeBytes(path)`: the closest folder that exists (the path, a file's folder, or a
   parent of folders not made yet), measured as above. Never `DriveInfo(Path.GetPathRoot(...))`: the drive letter of
@@ -43,8 +58,9 @@ Code: `Core/Files/DiskSpace.cs`, `StorageUsage.cs`, `TrashSize.cs`, `Trash.SizeA
 ## The sidebar's bar
 
 - In the sidebar's footer, above Manage tags and Trash. The place is `ConfigService.place()` (null = library), the
-  folder `ListingStore.route().path` ('' in a connection or a search everywhere); read again when either changes, then every 5 minutes while `document.visibilityState` is visible (the interval does
-  nothing when hidden; coming back after 5 minutes reads at once).
+  folder `ListingStore.route().path` ('' in a connection or a search everywhere); read again when either changes,
+  after changes made through SFE there (above), then every 5 minutes while `document.visibilityState` is visible (the
+  interval does nothing when hidden; coming back after 5 minutes reads at once).
 - Orange (`--accent`) from 85 % used, red (`--danger`) from 95 % (`NEARLY_FULL`, `FULL` in `storage-texts.ts`). No bar
   without a total; hidden when the read fails (a connection to sign in to again: its listing says so).
 - Texts say **disk** for the library's storage (glossary in [ui-texts](../development/ui-texts.md)), never "drive".

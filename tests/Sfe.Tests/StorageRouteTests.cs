@@ -8,13 +8,15 @@ using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Connections;
 using Otools.Net.Sfe.Core.Data;
 using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Paths;
 using Otools.Net.Sfe.Tests.Infrastructure;
 
 namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <c>api/storage</c> and <c>api/connections/{id}/storage</c>: the space of the drive of a library folder (through a
-/// junction inside the library: the volume it leads to) and of a connection's account, kept a while, not reported when the provider can't tell, and only for who may use it.
+/// junction inside the library: the volume it leads to) and of a connection's account, kept a while (until SFE
+/// changes files there), not reported when the provider can't tell, and only for who may use it.
 /// </summary>
 [TestClass]
 public sealed class StorageRouteTests
@@ -96,12 +98,15 @@ public sealed class StorageRouteTests
             Assert.Inconclusive("A junction or a link could not be made here.");
         var cache = _factory.Services.GetRequiredService<StorageUsageCache>();
 
+        var linkVolume = DiskSpaceTests.ExpectedVolume(link, link);
+
         Assert.IsTrue((await LibraryStorageAsync("Movies/deep")).Reported);
-        Assert.IsNotNull(cache.Find("library:" + link), "Kept for the junction, for every folder under it");
-        Assert.IsNull(cache.Find("library:" + RootFolder), "The library's folder not measured");
+        Assert.IsNotNull(cache.ChangesKept(Key(linkVolume)), "Kept for the junction, for every folder under it");
+        if (!OperatingSystem.IsLinux()) // there the library's folder may be on the same mount
+            Assert.IsNull(cache.ChangesKept(Key(RootFolder)), "The library's folder not measured");
 
         Assert.IsTrue((await LibraryStorageAsync("plain")).Reported);
-        Assert.IsNotNull(cache.Find("library:" + RootFolder));
+        Assert.IsNotNull(cache.ChangesKept(Key(RootVolume)));
     }
 
     [TestMethod]
@@ -111,7 +116,42 @@ public sealed class StorageRouteTests
 
         Assert.IsTrue((await LibraryStorageAsync("../..")).Reported);
         Assert.IsTrue((await LibraryStorageAsync("not/there")).Reported);
-        Assert.IsNotNull(cache.Find("library:" + RootFolder));
+        Assert.IsNotNull(cache.ChangesKept(Key(RootVolume)));
+    }
+
+    [TestMethod]
+    public async Task AChangeMadeThroughSfeReadsTheLibrarysDiskAgain()
+    {
+        Directory.CreateDirectory(Path.Combine(_library.Root, "plain"));
+        var cache = _factory.Services.GetRequiredService<StorageUsageCache>();
+        await LibraryStorageAsync("plain");
+        var before = cache.ChangesKept(Key(RootVolume));
+
+        using var created = await _admin.PostAsJsonAsync(
+            $"{V1}/files/folders",
+            new CreateFolderRequest("plain", "New"),
+            Cancel
+        );
+        Assert.AreEqual(HttpStatusCode.OK, created.StatusCode, await created.Content.ReadAsStringAsync(Cancel));
+        await LibraryStorageAsync("plain");
+
+        Assert.IsNotNull(before);
+        Assert.IsGreaterThan(before.Value, cache.ChangesKept(Key(RootVolume))!.Value, "Read again, kept anew");
+    }
+
+    [TestMethod]
+    public async Task AChangeInAConnectionReadsItsAccountAgain()
+    {
+        await StorageAsync(_admin);
+        using var created = await _admin.PostAsJsonAsync(
+            $"{V1}/connections/{_id}/files/folders",
+            new CreateFolderRequest("", "New"),
+            Cancel
+        );
+        Assert.AreEqual(HttpStatusCode.OK, created.StatusCode, await created.Content.ReadAsStringAsync(Cancel));
+        await StorageAsync(_admin);
+
+        Assert.AreEqual(2, _account.Calls.Count(c => c == "space"));
     }
 
     [TestMethod]
@@ -150,6 +190,10 @@ public sealed class StorageRouteTests
     }
 
     private string RootFolder => Path.TrimEndingDirectorySeparator(Path.GetFullPath(_library.Root));
+
+    private string RootVolume => DiskSpaceTests.ExpectedVolume(RootFolder, RootFolder);
+
+    private string Key(string volume) => $"library:{LibraryPaths.NormalizeRoot(_library.Root)}|{volume}";
 
     private async Task<StorageUsage> LibraryStorageAsync(string path)
     {

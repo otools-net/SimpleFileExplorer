@@ -63,6 +63,12 @@ export class ChangeFeed {
     readonly trashChanges = signal(0);
 
     /**
+     * Counts the changes made through SFE (by any tab, person or job) where the files shown are kept: a folder of the
+     * library, or of the connection shown, changed, or the trash; the storage bar reads the space again.
+     */
+    readonly spaceChanges = signal(0);
+
+    /**
      * The server doesn't answer: the feed dropped and didn't come back within `LOST_AFTER`, or nothing came through it
      * for `SILENCE` (a server or network that hangs without closing the connection). Cleared when it opens again.
      */
@@ -151,6 +157,7 @@ export class ChangeFeed {
         source.addEventListener('trash', () => {
             this.heard();
             this.trashChanges.update((n) => n + 1);
+            if (this.store.route().c == null) this.spaceChanges.update((n) => n + 1);
         });
         source.addEventListener('task', (event) => {
             this.heard();
@@ -223,6 +230,7 @@ export class ChangeFeed {
     changed(change: FolderChange): void {
         if (change.outside && !this.live()) return;
         const connection = change.connection ?? null;
+        if (!change.outside && connection === (this.store.route().c ?? null)) this.spaceChanges.update((n) => n + 1);
         if (change.origin !== TAB_ID && connection === null) this.listeners.forEach((listener) => listener(change));
         const route = this.store.route();
         if (change.origin === TAB_ID || route.q || change.path !== route.path) return;

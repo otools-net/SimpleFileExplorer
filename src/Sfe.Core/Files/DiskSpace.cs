@@ -39,10 +39,11 @@ public static class DiskSpace
     public static long? FreeBytes(string path) => ClosestFolder(path) is { } folder ? Of(folder).Free : null;
 
     /// <summary>
-    /// The folder whose volume holds <paramref name="folder"/> inside <paramref name="root"/>: the closest junction,
-    /// mounted folder or link on the way from the folder up to the root, else the root. Every folder under it is on
-    /// the same volume (Windows) or file system reached through links, so one measure of it answers for all of them;
-    /// one look per level of the path, never the folder's content. A folder outside the root gives the root.
+    /// The folder whose volume holds <paramref name="folder"/> inside <paramref name="root"/>, so one measure of it
+    /// answers for every folder on that volume. On Linux the mount point holding the folder's real path
+    /// (<see cref="MountPoints"/>: a file system mounted on a plain folder counts too); elsewhere, or when the mounts
+    /// can't be read, the closest junction, mounted folder or link on the way from the folder up to the root, else the
+    /// root. One look per level of the path, never the folder's content. A folder outside the root gives the root.
     /// </summary>
     public static string VolumeFolder(string root, string folder)
     {
@@ -51,18 +52,23 @@ public static class DiskSpace
         {
             var current = ClosestFolder(folder) is { } closest ? Path.TrimEndingDirectorySeparator(closest) : top;
             if (!LibraryPaths.IsSameOrInside(current, top))
-                return top;
-            for (; current.Length > top.Length; current = Path.GetDirectoryName(current)!)
-            {
-                if (new DirectoryInfo(current).LinkTarget is not null)
-                    return current;
-            }
-            return top;
+                current = top;
+            return MountPoints.Holding(LibraryPaths.RealPath(current)) ?? ClosestLink(top, current);
         }
         catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
         {
             return top;
         }
+    }
+
+    private static string ClosestLink(string top, string current)
+    {
+        for (; current.Length > top.Length; current = Path.GetDirectoryName(current)!)
+        {
+            if (new DirectoryInfo(current).LinkTarget is not null)
+                return current;
+        }
+        return top;
     }
 
     private static string? ClosestFolder(string path)

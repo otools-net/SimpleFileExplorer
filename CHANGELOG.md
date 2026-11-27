@@ -87,8 +87,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 ### Fixed
 
 - The sidebar's **space used and free** showed the disk of the library's folder everywhere; in a folder that is a
-  junction, a mounted folder or a link to another disk (and the folders inside it), it now shows that disk's space.
-  API: `GET api/storage` takes the folder shown as `path`.
+  junction, a mounted folder or a link to another disk (and the folders inside it), it now shows that disk's space,
+  on Linux also for a disk mounted on a folder of the library (a Docker bind mount). It is also read again a moment
+  after files are copied, moved, uploaded or deleted there through SFE, instead of after a few minutes. API:
+  `GET api/storage` takes the folder shown as `path`.
 - A copy (or a transfer from the library) of a file the server's account may not read said it "may not change
   files there", sending you to check the target folder; it now says the server's account may not read the file,
   naming it when it is inside a copied folder.

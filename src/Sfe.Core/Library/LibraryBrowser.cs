@@ -298,6 +298,14 @@ public sealed class LibraryBrowser(
     /// </summary>
     public event Action<string>? FolderChanged;
 
+    private long _changes;
+
+    /// <summary>
+    /// How many times SFE changed a folder of the library since the start (<see cref="Invalidate"/>): a figure that
+    /// moves when space may have been taken or freed (the storage bar's cache, agents/docs/features/storage-usage.md).
+    /// </summary>
+    public long Changes => Interlocked.Read(ref _changes);
+
     /// <summary>
     /// Forgets what is kept of the folder <paramref name="fullPath"/> (its sorted listings, its cover), after SFE
     /// changed it: its last write time, which tells a change otherwise, is not reliable everywhere (FAT keeps it to
@@ -305,6 +313,7 @@ public sealed class LibraryBrowser(
     /// </summary>
     public void Invalidate(string fullPath)
     {
+        Interlocked.Increment(ref _changes);
         // After the listing is forgotten: whoever listens lists it anew.
         if (Forget(fullPath) is { } changed && FolderChanged is { } handlers)
         {

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Otools.Net.Sfe.Api.Security;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Files;
+using Otools.Net.Sfe.Core.Library;
 using Otools.Net.Sfe.Core.Paths;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
@@ -10,7 +11,8 @@ namespace Otools.Net.Sfe.Api.Endpoints;
 /// The space used and free where files are kept, for the sidebar's bar: the drive of the library folder shown, which a
 /// junction or a link inside the library may put on another volume (numbers only, never its path, which space
 /// administrators don't see), and a connection's account as its provider reports it. Read at most every
-/// <see cref="StorageUsageCache.Lifetime"/> per volume folder (<see cref="DiskSpace.VolumeFolder"/>) or connection.
+/// <see cref="StorageUsageCache.Lifetime"/> per volume folder (<see cref="DiskSpace.VolumeFolder"/>) or connection, and
+/// again after SFE changed files there.
 /// </summary>
 public static class StorageEndpoints
 {
@@ -55,6 +57,8 @@ public static class StorageEndpoints
     private static async Task<Ok<StorageUsage>> Library(
         LibraryPaths paths,
         CurrentAccess current,
+        LibraryBrowser browser,
+        Trash trash,
         StorageUsageCache cache,
         CancellationToken cancellationToken,
         string? path = null
@@ -65,14 +69,16 @@ public static class StorageEndpoints
         if (cache.Find(stalled) is { } notAnswering)
             return TypedResults.Ok(notAnswering);
         var folder = await ShownFolderAsync(paths, current, path);
+        // Counted before reading: a change made while the disk is read makes the next request read again.
+        var changes = browser.Changes + trash.EntryChanges;
         try
         {
             var usage = await Task.Run(
                     () =>
                     {
                         var volume = DiskSpace.VolumeFolder(paths.Root, folder);
-                        var key = "library:" + volume;
-                        return cache.Find(key) ?? cache.Keep(key, DiskSpace.Of(volume));
+                        var key = $"library:{paths.Root}|{volume}";
+                        return cache.Find(key, changes) ?? cache.Keep(key, DiskSpace.Of(volume), changes);
                     },
                     cancellationToken
                 )
@@ -109,7 +115,7 @@ public static class StorageEndpoints
         var (open, answer) = await files.OpenAsync(id, Rights.Browse, cancellationToken);
         if (open is null)
             return answer!;
-        var key = "connection:" + id;
+        var key = StorageUsageCache.ConnectionKey(id);
         if (cache.Find(key) is { } known)
             return TypedResults.Ok(known);
         if (!open.Capabilities.FreeSpace)
