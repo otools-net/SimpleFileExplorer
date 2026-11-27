@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConfigService } from '../../core/config.service';
 import { ApiMock, loadConfig, mockApi, settle, testProviders } from '../../../testing/fakes';
 import { StorageUsage } from '../library.models';
+import { ListingStore } from '../listing.store';
 import { STORAGE_REFRESH_MS, StorageBarComponent } from './storage-bar.component';
 
 describe('StorageBarComponent', () => {
@@ -34,7 +35,7 @@ describe('StorageBarComponent', () => {
     it("shows the library disk's space with a bar", async () => {
         await create();
 
-        expect(api.storage).toHaveBeenCalledWith(null);
+        expect(api.storage).toHaveBeenCalledWith(null, '');
         expect(host.hidden).toBe(false);
         expect(host.querySelector('.storage-line')!.textContent).toBe('50 B used of 100 B, 50 B free');
         expect(host.querySelector('[role=meter]')!.getAttribute('aria-valuenow')).toBe('50');
@@ -62,8 +63,26 @@ describe('StorageBarComponent', () => {
         await settle();
         fixture.detectChanges();
 
-        expect(api.storage).toHaveBeenLastCalledWith(7);
+        expect(api.storage).toHaveBeenLastCalledWith(7, '');
         expect(host.title).toBe('The account of the connection “Box” is 50% full.');
+    });
+
+    it('reads the disk of each library folder shown, a junction may lead to another', async () => {
+        await create();
+        const store = TestBed.inject(ListingStore);
+        api.storage.mockResolvedValue(usage(10, 100));
+        store.route.set({ path: 'Movies/2024', q: '', sort: '', desc: false });
+        fixture.detectChanges();
+        await settle();
+        fixture.detectChanges();
+
+        expect(api.storage).toHaveBeenLastCalledWith(null, 'Movies/2024');
+        expect(host.querySelector('.storage-line')!.textContent).toBe('10 B used of 100 B, 90 B free');
+
+        store.route.set({ path: 'Movies/2024', q: 'cat', all: true, sort: '', desc: false });
+        fixture.detectChanges();
+        await settle();
+        expect(api.storage).toHaveBeenLastCalledWith(null, '');
     });
 
     it('says when the space is not reported, without a bar', async () => {

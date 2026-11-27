@@ -12,6 +12,7 @@ import { Api } from '../../core/api.service';
 import { ConfigService } from '../../core/config.service';
 import { Rights } from '../../core/rights';
 import { StorageUsage } from '../library.models';
+import { ListingStore } from '../listing.store';
 import { storageHint, storageLevel, storageLine, usedShare } from './storage-texts';
 
 /** How often the space is read again while the page is shown (the server keeps it two minutes). */
@@ -19,8 +20,9 @@ export const STORAGE_REFRESH_MS = 5 * 60_000;
 
 /**
  * The sidebar's storage bar: the space used and free where the files listed are kept, the disk holding the library
- * or the account of the connection shown; orange from 85 % used, red from 95 %. Read when the place changes, then
- * every few minutes while the page is shown; hidden when it can't be read (a connection to sign in to again).
+ * folder shown (a junction in the library may lead to another disk) or the account of the connection shown; orange
+ * from 85 % used, red from 95 %. Read when the place or the library folder changes, then every few minutes while the
+ * page is shown; hidden when it can't be read (a connection to sign in to again).
  */
 @Component({
     selector: 'sfe-storage-bar',
@@ -52,8 +54,14 @@ export const STORAGE_REFRESH_MS = 5 * 60_000;
 export class StorageBarComponent {
     private readonly api = inject(Api);
     private readonly config = inject(ConfigService);
+    private readonly store = inject(ListingStore);
     /** The connection shown; null in the library. */
     private readonly connection = computed(() => this.config.place()?.id ?? null);
+    /** The library folder shown ('' for its root, a connection or a search everywhere). */
+    private readonly folder = computed(() => {
+        const route = this.store.route();
+        return this.connection() !== null || route.all ? '' : route.path;
+    });
     private readAt = 0;
     private sequence = 0;
 
@@ -80,7 +88,8 @@ export class StorageBarComponent {
     constructor() {
         effect(() => {
             const connection = this.connection();
-            untracked(() => void this.read(connection));
+            const folder = this.folder();
+            untracked(() => void this.read(connection, folder));
         });
         const timer = setInterval(() => this.readIfDue(), STORAGE_REFRESH_MS);
         inject(DestroyRef).onDestroy(() => clearInterval(timer));
@@ -89,10 +98,10 @@ export class StorageBarComponent {
     /** Read again when the page is shown and the last read is old; nothing while it is hidden. */
     protected readIfDue(): void {
         if (document.visibilityState === 'visible' && Date.now() - this.readAt >= STORAGE_REFRESH_MS)
-            void this.read(this.connection());
+            void this.read(this.connection(), this.folder());
     }
 
-    private async read(connection: number | null): Promise<void> {
+    private async read(connection: number | null, folder: string): Promise<void> {
         const request = ++this.sequence;
         this.readAt = Date.now();
         if (connection === null && !this.config.can(Rights.browse)) {
@@ -100,7 +109,7 @@ export class StorageBarComponent {
             return;
         }
         try {
-            const usage = await this.api.storage(connection);
+            const usage = await this.api.storage(connection, folder);
             if (request === this.sequence) this.usage.set(usage);
         } catch {
             if (request === this.sequence) this.usage.set(null);

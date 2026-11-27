@@ -125,10 +125,12 @@ opens its files in the same listing ([browsing a connection](../administration/c
 Quick links keep the library's folders and files only.
 
 **Space used and free.** At the bottom of the sidebar, a bar shows how full the storage of what is listed is: the disk
-holding the library, or the account of the connection you are in ("120 GB used of 500 GB, 380 GB free"). It turns
+holding the folder you are in, or the account of the connection you are in ("120 GB used of 500 GB, 380 GB free").
+A folder of the library that is a junction, a mounted folder or a link to another disk shows that disk's space, and so
+do the folders inside it. It turns
 orange from 85 % used and red from 95 %; its hint gives the share used. A connection whose storage service doesn't tell
-shows "Free space not reported", and one telling only what is used shows no bar. The numbers are read again every few
-minutes while the page is open.
+shows "Free space not reported", and one telling only what is used shows no bar. The numbers are read again when you open
+another folder and every few minutes while the page is open.
 
 ## Folder pictures
 

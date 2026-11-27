@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
+using Otools.Net.Sfe.Api.Endpoints;
 using Otools.Net.Sfe.Core.Access;
 using Otools.Net.Sfe.Core.Connections;
 using Otools.Net.Sfe.Core.Data;
@@ -12,8 +13,8 @@ using Otools.Net.Sfe.Tests.Infrastructure;
 namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
-/// <c>api/storage</c> and <c>api/connections/{id}/storage</c>: the space of the library's drive and of a
-/// connection's account, kept a while, not reported when the provider can't tell, and only for who may use it.
+/// <c>api/storage</c> and <c>api/connections/{id}/storage</c>: the space of the drive of a library folder (through a
+/// junction inside the library: the volume it leads to) and of a connection's account, kept a while, not reported when the provider can't tell, and only for who may use it.
 /// </summary>
 [TestClass]
 public sealed class StorageRouteTests
@@ -65,6 +66,9 @@ public sealed class StorageRouteTests
     {
         await _factory.DisposeAsync();
         SqliteConnection.ClearAllPools();
+        // TestLibrary can't delete through a junction: the link first, alone.
+        if (new DirectoryInfo(Path.Combine(_library.Root, "Movies")) is { LinkTarget: not null } link)
+            link.Delete();
         _library.Dispose();
     }
 
@@ -80,6 +84,34 @@ public sealed class StorageRouteTests
         Assert.IsGreaterThan(0L, usage.Total!.Value);
         Assert.AreEqual(usage.Total, usage.Used + usage.Free);
         Assert.DoesNotContain(Path.GetFileName(_library.Root), text);
+    }
+
+    [TestMethod]
+    public async Task AFolderBehindAJunctionIsMeasuredOnItsVolume()
+    {
+        Directory.CreateDirectory(Path.Combine(_library.Root, "real", "deep"));
+        Directory.CreateDirectory(Path.Combine(_library.Root, "plain"));
+        var link = Path.Combine(_library.Root, "Movies");
+        if (!DiskSpaceTests.TryLinkFolder(link, Path.Combine(_library.Root, "real")))
+            Assert.Inconclusive("A junction or a link could not be made here.");
+        var cache = _factory.Services.GetRequiredService<StorageUsageCache>();
+
+        Assert.IsTrue((await LibraryStorageAsync("Movies/deep")).Reported);
+        Assert.IsNotNull(cache.Find("library:" + link), "Kept for the junction, for every folder under it");
+        Assert.IsNull(cache.Find("library:" + RootFolder), "The library's folder not measured");
+
+        Assert.IsTrue((await LibraryStorageAsync("plain")).Reported);
+        Assert.IsNotNull(cache.Find("library:" + RootFolder));
+    }
+
+    [TestMethod]
+    public async Task AFolderNotThereOrOutsideIsMeasuredAsTheLibrary()
+    {
+        var cache = _factory.Services.GetRequiredService<StorageUsageCache>();
+
+        Assert.IsTrue((await LibraryStorageAsync("../..")).Reported);
+        Assert.IsTrue((await LibraryStorageAsync("not/there")).Reported);
+        Assert.IsNotNull(cache.Find("library:" + RootFolder));
     }
 
     [TestMethod]
@@ -115,6 +147,15 @@ public sealed class StorageRouteTests
         Assert.AreEqual(HttpStatusCode.Forbidden, bobs.StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, unknown.StatusCode);
         Assert.IsEmpty(_account.Calls);
+    }
+
+    private string RootFolder => Path.TrimEndingDirectorySeparator(Path.GetFullPath(_library.Root));
+
+    private async Task<StorageUsage> LibraryStorageAsync(string path)
+    {
+        using var response = await _bob.GetAsync($"{V1}/storage?path={Uri.EscapeDataString(path)}", Cancel);
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, await response.Content.ReadAsStringAsync(Cancel));
+        return (await response.Content.ReadFromJsonAsync<StorageUsage>(Cancel))!;
     }
 
     private async Task<StorageUsage> StorageAsync(HttpClient client)

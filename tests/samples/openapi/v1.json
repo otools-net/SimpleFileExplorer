@@ -2865,9 +2865,18 @@
         "tags": [
           "Library"
         ],
-        "summary": "The space used and free on the drive holding the library's folder.",
-        "description": "`used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the provider\ndoesn't tell. A provider may give `used` without `total` (no limit known). Read again at most every two\nminutes.",
+        "summary": "The space used and free on the drive holding a library folder.",
+        "description": "`path`: the library folder shown (empty: the library's folder); a junction, a mounted folder or a link on\nits way is measured on the volume it leads to. A folder the session may not browse, or that is not there,\ngives the library's folder.`used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the provider\ndoesn't tell. A provider may give `used` without `total` (no limit known). Read again at most every two\nminutes.",
         "operationId": "GetLibraryStorage",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",

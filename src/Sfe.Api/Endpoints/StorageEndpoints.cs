@@ -7,14 +7,21 @@ using Otools.Net.Sfe.Core.Paths;
 namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
-/// The space used and free where files are kept, for the sidebar's bar: the drive of the library's folder (numbers
-/// only, never its path, which space administrators don't see) and a connection's account as its provider reports
-/// it. Read at most every <see cref="StorageUsageCache.Lifetime"/> per drive or connection.
+/// The space used and free where files are kept, for the sidebar's bar: the drive of the library folder shown, which a
+/// junction or a link inside the library may put on another volume (numbers only, never its path, which space
+/// administrators don't see), and a connection's account as its provider reports it. Read at most every
+/// <see cref="StorageUsageCache.Lifetime"/> per volume folder (<see cref="DiskSpace.VolumeFolder"/>) or connection.
 /// </summary>
 public static class StorageEndpoints
 {
     /// <summary>A drive not answering in this time (a share gone) is not reported, the request not held.</summary>
     private static readonly TimeSpan DiskWait = TimeSpan.FromSeconds(5);
+
+    private const string LibraryDescription = """
+        `path`: the library folder shown (empty: the library's folder); a junction, a mounted folder or a link on
+        its way is measured on the volume it leads to. A folder the session may not browse, or that is not there,
+        gives the library's folder.
+        """;
 
     private const string Description = """
         `used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the provider
@@ -26,10 +33,11 @@ public static class StorageEndpoints
     {
         api.MapGet("/storage", Library)
             .RequireRight(Rights.Browse)
+            .FolderScoped("library.browse at the folder; a folder the session may not browse gives the library's")
             .WithTags("Library")
             .WithName("GetLibraryStorage")
-            .WithSummary("The space used and free on the drive holding the library's folder.")
-            .WithDescription(Description);
+            .WithSummary("The space used and free on the drive holding a library folder.")
+            .WithDescription(LibraryDescription + Description);
 
         api.MapGet("/connections/{id:int}/storage", Connection)
             .RequireRateLimiting(RequestLimits.Connections)
@@ -46,24 +54,49 @@ public static class StorageEndpoints
 
     private static async Task<Ok<StorageUsage>> Library(
         LibraryPaths paths,
+        CurrentAccess current,
         StorageUsageCache cache,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        string? path = null
     )
     {
-        var key = "library:" + paths.Root;
-        if (cache.Find(key) is { } known)
-            return TypedResults.Ok(known);
-        StorageUsage usage;
+        // A library whose drive did not answer is not asked again for a while: each read would hold a thread.
+        var stalled = "library-stalled:" + paths.Root;
+        if (cache.Find(stalled) is { } notAnswering)
+            return TypedResults.Ok(notAnswering);
+        var folder = await ShownFolderAsync(paths, current, path);
         try
         {
-            usage = await Task.Run(() => DiskSpace.Of(paths.Root), cancellationToken)
+            var usage = await Task.Run(
+                    () =>
+                    {
+                        var volume = DiskSpace.VolumeFolder(paths.Root, folder);
+                        var key = "library:" + volume;
+                        return cache.Find(key) ?? cache.Keep(key, DiskSpace.Of(volume));
+                    },
+                    cancellationToken
+                )
                 .WaitAsync(DiskWait, cancellationToken);
+            return TypedResults.Ok(usage);
         }
         catch (TimeoutException)
         {
-            usage = StorageUsage.NotReported;
+            return TypedResults.Ok(cache.Keep(stalled, StorageUsage.NotReported));
         }
-        return TypedResults.Ok(cache.Keep(key, usage));
+    }
+
+    /// <summary>The full path of the folder asked for, or the library's when the session may not browse it.</summary>
+    private static async Task<string> ShownFolderAsync(LibraryPaths paths, CurrentAccess current, string? path)
+    {
+        if (
+            !paths.TryResolve(path, out var full)
+            || paths.ToRelative(full) is not { Length: > 0 } canonical
+            || (await current.GetAsync()).Check(paths, canonical, Rights.Browse) != PathVerdict.Allowed
+        )
+        {
+            return paths.Root;
+        }
+        return full;
     }
 
     private static async Task<IResult> Connection(

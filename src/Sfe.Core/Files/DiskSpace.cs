@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Otools.Net.Sfe.Core.Paths;
 
 namespace Otools.Net.Sfe.Core.Files;
 
@@ -36,6 +37,33 @@ public static class DiskSpace
     /// mounted folder or a link on the way counts with the volume it leads to, not the drive letter of the path.
     /// </summary>
     public static long? FreeBytes(string path) => ClosestFolder(path) is { } folder ? Of(folder).Free : null;
+
+    /// <summary>
+    /// The folder whose volume holds <paramref name="folder"/> inside <paramref name="root"/>: the closest junction,
+    /// mounted folder or link on the way from the folder up to the root, else the root. Every folder under it is on
+    /// the same volume (Windows) or file system reached through links, so one measure of it answers for all of them;
+    /// one look per level of the path, never the folder's content. A folder outside the root gives the root.
+    /// </summary>
+    public static string VolumeFolder(string root, string folder)
+    {
+        var top = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
+        try
+        {
+            var current = ClosestFolder(folder) is { } closest ? Path.TrimEndingDirectorySeparator(closest) : top;
+            if (!LibraryPaths.IsSameOrInside(current, top))
+                return top;
+            for (; current.Length > top.Length; current = Path.GetDirectoryName(current)!)
+            {
+                if (new DirectoryInfo(current).LinkTarget is not null)
+                    return current;
+            }
+            return top;
+        }
+        catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
+        {
+            return top;
+        }
+    }
 
     private static string? ClosestFolder(string path)
     {

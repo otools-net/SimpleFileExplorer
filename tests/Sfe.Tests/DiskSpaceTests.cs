@@ -4,7 +4,8 @@ namespace Otools.Net.Sfe.Tests;
 
 /// <summary>
 /// <see cref="DiskSpace.FreeBytes"/>, which copies, extractions, uploads and transfers check before writing: the
-/// volume a folder is really on (through a junction or a link), measured on the closest folder that exists.
+/// volume a folder is really on (through a junction or a link), measured on the closest folder that exists; and
+/// <see cref="DiskSpace.VolumeFolder"/>, which the sidebar's bar measures for the library folder shown.
 /// </summary>
 [TestClass]
 public sealed class DiskSpaceTests
@@ -21,7 +22,11 @@ public sealed class DiskSpaceTests
     public void Cleanup()
     {
         // The links first, alone: never into the volume they lead to.
-        var links = Directory.EnumerateDirectories(_root).Where(d => new DirectoryInfo(d).LinkTarget is not null);
+        var library = Path.Combine(_root, "library");
+        var links = Directory
+            .EnumerateDirectories(_root)
+            .Concat(Directory.Exists(library) ? Directory.EnumerateDirectories(library) : [])
+            .Where(d => new DirectoryInfo(d).LinkTarget is not null);
         foreach (var link in links.ToList())
             Directory.Delete(link);
         Directory.Delete(_root, recursive: true);
@@ -68,6 +73,31 @@ public sealed class DiskSpaceTests
         AssertClose(other.AvailableFreeSpace, DiskSpace.FreeBytes(Path.Combine(link, "not made yet")));
     }
 
+    [TestMethod]
+    public void AFolderBehindAJunctionIsOnTheJunctionsVolume()
+    {
+        var library = Directory.CreateDirectory(Path.Combine(_root, "library")).FullName;
+        var target = Directory.CreateDirectory(Path.Combine(_root, "target", "deep")).FullName;
+        var link = Path.Combine(library, "Movies");
+        if (!TryLinkFolder(link, Path.GetDirectoryName(target)!))
+            Assert.Inconclusive("A junction or a link could not be made here.");
+
+        Assert.AreEqual(link, DiskSpace.VolumeFolder(library, link));
+        Assert.AreEqual(link, DiskSpace.VolumeFolder(library, Path.Combine(link, "deep")));
+        Assert.AreEqual(link, DiskSpace.VolumeFolder(library, Path.Combine(link, "deep", "not made yet")));
+    }
+
+    [TestMethod]
+    public void AnOrdinaryFolderIsOnTheRootsVolume()
+    {
+        var library = Directory.CreateDirectory(Path.Combine(_root, "library")).FullName;
+        var folder = Directory.CreateDirectory(Path.Combine(library, "a", "b")).FullName;
+
+        Assert.AreEqual(library, DiskSpace.VolumeFolder(library + Path.DirectorySeparatorChar, folder));
+        Assert.AreEqual(library, DiskSpace.VolumeFolder(library, library));
+        Assert.AreEqual(library, DiskSpace.VolumeFolder(library, _root), "Outside the library: its root");
+    }
+
     private static void AssertClose(long? expected, long? actual)
     {
         Assert.IsNotNull(expected);
@@ -76,7 +106,7 @@ public sealed class DiskSpaceTests
     }
 
     /// <summary>A junction on Windows (no privilege needed), a symbolic link elsewhere.</summary>
-    private static bool TryLinkFolder(string link, string target)
+    internal static bool TryLinkFolder(string link, string target)
     {
         if (OperatingSystem.IsWindows())
         {

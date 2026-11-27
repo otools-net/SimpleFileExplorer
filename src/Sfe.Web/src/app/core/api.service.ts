@@ -395,10 +395,10 @@ export class Api {
     /** The folder this tab shows (null: none; a connection's: `connection`), followed for outside changes. */
     watchFolder = (path: string | null, connection: number | null = null) =>
         this.put<{ watching: boolean }>('files/changes/watch', { path, connection });
-    /** The space used and free on the disk holding the library, or in a connection's account (`id`). */
-    storage = (id: number | null) =>
+    /** The space used and free on the disk holding a library folder (`path`), or in a connection's account (`id`). */
+    storage = (id: number | null, path = '') =>
         id === null
-            ? this.get<StorageUsage>('storage')
+            ? this.get<StorageUsage>('storage', path ? { path } : {})
             : this.getOrRefused<StorageUsage>(`connections/${id}/storage`, {});
     /** Puts an item of the trash back. Resolves with the conflict (409: a scan runs there...). */
     restoreFromTrash = (id: number) => this.post<FileOperationResult>(`files/trash/${id}/restore`);

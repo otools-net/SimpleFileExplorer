@@ -22,7 +22,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Storage
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public StorageRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/storage", pathParameters)
+        public StorageRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/storage{?path*}", pathParameters)
         {
         }
         /// <summary>
@@ -30,39 +30,39 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Storage
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public StorageRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/storage", rawUrl)
+        public StorageRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/storage{?path*}", rawUrl)
         {
         }
         /// <summary>
-        /// `used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the providerdoesn&apos;t tell. A provider may give `used` without `total` (no limit known). Read again at most every twominutes.
+        /// `path`: the library folder shown (empty: the library&apos;s folder); a junction, a mounted folder or a link onits way is measured on the volume it leads to. A folder the session may not browse, or that is not there,gives the library&apos;s folder.`used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the providerdoesn&apos;t tell. A provider may give `used` without `total` (no limit known). Read again at most every twominutes.
         /// </summary>
         /// <returns>A <see cref="global::Otools.Net.Sfe.Client.Generated.Models.StorageUsage"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.StorageUsage?> GetAsync(Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.StorageUsage?> GetAsync(Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Storage.StorageRequestBuilder.StorageRequestBuilderGetQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.StorageUsage> GetAsync(Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.StorageUsage> GetAsync(Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Storage.StorageRequestBuilder.StorageRequestBuilderGetQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
             var requestInfo = ToGetRequestInformation(requestConfiguration);
             return await RequestAdapter.SendAsync<global::Otools.Net.Sfe.Client.Generated.Models.StorageUsage>(requestInfo, global::Otools.Net.Sfe.Client.Generated.Models.StorageUsage.CreateFromDiscriminatorValue, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// `used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the providerdoesn&apos;t tell. A provider may give `used` without `total` (no limit known). Read again at most every twominutes.
+        /// `path`: the library folder shown (empty: the library&apos;s folder); a junction, a mounted folder or a link onits way is measured on the volume it leads to. A folder the session may not browse, or that is not there,gives the library&apos;s folder.`used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the providerdoesn&apos;t tell. A provider may give `used` without `total` (no limit known). Read again at most every twominutes.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
+        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Storage.StorageRequestBuilder.StorageRequestBuilderGetQueryParameters>>? requestConfiguration = default)
         {
 #nullable restore
 #else
-        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
+        public RequestInformation ToGetRequestInformation(Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Storage.StorageRequestBuilder.StorageRequestBuilderGetQueryParameters>> requestConfiguration = default)
         {
 #endif
             var requestInfo = new RequestInformation(Method.GET, UrlTemplate, PathParameters);
@@ -78,6 +78,26 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Storage
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Storage.StorageRequestBuilder WithUrl(string rawUrl)
         {
             return new global::Otools.Net.Sfe.Client.Generated.Api.V1.Storage.StorageRequestBuilder(rawUrl, RequestAdapter);
+        }
+        /// <summary>
+        /// `path`: the library folder shown (empty: the library&apos;s folder); a junction, a mounted folder or a link onits way is measured on the volume it leads to. A folder the session may not browse, or that is not there,gives the library&apos;s folder.`used`, `total` and `free` in bytes; `reported` false (the numbers null) when the drive or the providerdoesn&apos;t tell. A provider may give `used` without `total` (no limit known). Read again at most every twominutes.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class StorageRequestBuilderGetQueryParameters 
+        {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+            #pragma warning disable CS1591
+            [QueryParameter("path")]
+            public string? Path { get; set; }
+            #pragma warning restore CS1591
+#nullable restore
+#else
+            #pragma warning disable CS1591
+            [QueryParameter("path")]
+            public string Path { get; set; }
+            #pragma warning restore CS1591
+#endif
         }
     }
 }

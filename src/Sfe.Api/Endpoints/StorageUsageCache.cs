@@ -5,8 +5,9 @@ namespace Otools.Net.Sfe.Api.Endpoints;
 
 /// <summary>
 /// The space of the library's drives and of connections, kept a few minutes: every open page asks for it every few
-/// minutes, and a provider counts each call. Keyed by what is measured (a drive by the library's folder, a connection
-/// by its id), so every session of a space shares one read. As many entries as libraries and connections.
+/// minutes, and a provider counts each call. Keyed by what is measured (a drive by its volume folder: the library's
+/// folder or a junction or link inside it; a connection by its id), so every session of a space shares one read. As
+/// many entries as libraries, links visited in them and connections.
 /// </summary>
 public sealed class StorageUsageCache(TimeProvider time)
 {
