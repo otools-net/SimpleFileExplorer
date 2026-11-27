@@ -73,7 +73,7 @@ signed-in server administrator without the code can't use it, nor can anyone wit
     library folder and ffmpeg are then set in the server's configuration only (`Sfe__Root` and
     `Sfe__Thumbnails__FfmpegPath` in its environment, or `Sfe:Root` and `Sfe:Thumbnails:FfmpegPath` in
     `appsettings.json`): the page shows them without a way to change them, whoever signs in. New spaces still get
-    their folders inside `Sfe:Tenants:AllowedRoots`, which only the configuration sets. Fast sign-in is off.
+    their folders inside the library folder, or the other folders only the configuration allows. Fast sign-in is off.
 
   Local can only be chosen from a browser on the server itself (`http://localhost:<port>`). The page switches from Local
   to External, but never back: an External server returns to Local only in its configuration (`Sfe:Mode` in
@@ -108,7 +108,7 @@ same in both. The server enforces each line; a setting that only one mode uses i
 | Access tokens | Administrators' tokens only | Every account's, with its rights |
 | Visitors without an account | Never: spaces open to them are closed until the server is External | When the configuration allows them (`Sfe:Security:AnonymousGuests`) and the space opens to them |
 | Library folder and ffmpeg | Chosen in Installation | From the server's configuration only (`Sfe__Root`, `Sfe__Thumbnails__FfmpegPath`) |
-| New spaces | Inside `Sfe:Tenants:AllowedRoots` | Inside `Sfe:Tenants:AllowedRoots` |
+| New spaces | Inside the library folder (other folders from the configuration only) | Inside the library folder (other folders from the configuration only) |
 | [Fast sign-in](#start-up) | When turned on in Start-up | Off (the setting is greyed out, and kept for a return to Local) |
 | Setup without the code | From this computer, through the [setup link](../first-start.md#on-the-servers-own-computer-no-code-with-the-setup-link) | Only when External was chosen on that setup page; External from the configuration always asks for the code |
 | Changing the mode from the web | To External | Never back to Local: only in the configuration (`Sfe:Mode`) |

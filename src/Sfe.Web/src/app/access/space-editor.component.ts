@@ -23,9 +23,9 @@ interface SpaceDraft {
 }
 
 /**
- * Creates a space on a folder of the server (picked among the folders the configuration allows,
- * Sfe:Tenants:AllowedRoots: its index is created at once), or renames, disables a space and switches rights off in it
- * (server administrators).
+ * Creates a space on a folder of the server (picked among the folders the configuration allows: Sfe:Root, or
+ * Sfe:Tenants:AllowedRoots when switched on; its index is created at once), or renames, disables a space and switches
+ * rights off in it (server administrators).
  */
 @Component({
     selector: 'sfe-space-editor',

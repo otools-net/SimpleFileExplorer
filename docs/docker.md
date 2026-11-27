@@ -90,9 +90,9 @@ Any setting can be given the same way (`-e Sfe__…`, or `environment:` in a com
 always wins over the file. The usual ones:
 
 - `Sfe__Setup__Code`: a setup code of your own (at least 12 characters) instead of the one SFE prints in its log.
-- `Sfe__Tenants__AllowedRoots__0`, `__1`…: the folders other [spaces](administration/spaces-and-accounts.md) may use;
-  mount them (e.g. `-v /srv/family:/libraries/family`) and allow their parent (`/libraries`). By default only the
-  library.
+- `Sfe__Tenants__UseAllowedRoots=true` with `Sfe__Tenants__AllowedRoots__0`, `__1`…: the folders other
+  [spaces](administration/spaces-and-accounts.md) may use; mount them (e.g. `-v /srv/family:/libraries/family`) and
+  allow their parent (`/libraries`). By default only folders inside the library.
 - `Sfe__Security__TrustedProxies__0`: a reverse proxy on another address than the container's own (e.g. the Docker
   network `172.16.0.0/12`), so that sign-in limits see the visitors' addresses
   ([reverse proxy](installation.md#reaching-it-from-outside-https-and-a-reverse-proxy)); with https,

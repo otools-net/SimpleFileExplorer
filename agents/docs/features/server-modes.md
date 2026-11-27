@@ -40,8 +40,8 @@ tests), `ServerModeTests`, `account.spec.ts`. The Docker image (External): [dock
   an External server ("the server's configuration (External mode: Sfe__Root …)"), so `Save` refuses them with the
   existing lock check, and the form shows them read-only. A root or ffmpeg sent with `Mode: External` in the same save is
   refused too (the client never sends them once External is chosen). What the file already holds stays in effect.
-- New spaces stay creatable inside `Sfe:Tenants:AllowedRoots` (configuration only, `TenantEndpoints.Create`); no route
-  changes a space's root.
+- New spaces stay creatable inside `Sfe:Root`, or `Sfe:Tenants:AllowedRoots` while `Sfe:Tenants:UseAllowedRoots` is on
+  (configuration only, `TenantEndpoints.Create`); no route changes a space's root.
 - **Setup without a code** (`LocalVisitor.SetupCodeWaivedAsync`) ends when External comes from the configuration
   (`InstallationSettings.SetByConfiguration`, or not held by the installation file: appsettings): External chosen on the
   setup page by the local visitor keeps the waiver, which the rest of that setup needs (else `POST api/setup` would ask

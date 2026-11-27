@@ -49,8 +49,8 @@ settings and groups. For server administrators (the right **Manage spaces**). Th
 
 The space's **library folder**: the folder whose files the space shows, with everything below it. Click a folder to
 choose it, click again inside it to go deeper, **‥** to go up. Only the folders the server allows are listed
-(`Sfe:Tenants:AllowedRoots`, otherwise the first space's folder, so a space can be a sub-folder of it), and the folder
-can't change once the space exists. The folder's name becomes the space's name until you type another one.
+(those inside the first space's folder, so a space is a sub-folder of it, unless the
+[configuration](../configuration.md) allows others), and the folder can't change once the space exists. The folder's name becomes the space's name until you type another one.
 
 ### New space: name
 

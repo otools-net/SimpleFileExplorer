@@ -4,7 +4,7 @@ import { FolderPickerComponent, FolderSource } from '../../shared/folder-picker.
 import { injectWizard } from '../wizard-context';
 import { folderName, NewSpaceDraft } from './new-space-draft';
 
-/** The new space's library folder, picked among the folders the server allows (Sfe:Tenants:AllowedRoots). */
+/** The new space's library folder, picked among the folders the server allows (tenants/folders). */
 @Component({
     selector: 'sfe-new-space-folder',
     imports: [FolderPickerComponent],

@@ -107,8 +107,8 @@ not found**: **Re-point…** moves them to the folder's new place.
 ![A new space](../images/space-new.png)
 
 **New space** (server administrators) asks for a **Name** (shown in the ⋮ menu and on the sign-in page), a **Library
-folder** picked among the folders of `Sfe:Tenants:AllowedRoots` (by default the configured `Sfe:Root`, so a space can
-be a sub-folder of it), an optional **Short name** (names its index and cache folders; it can't change later), and
+folder** picked inside the first space's library folder (so a space is a sub-folder of it; the server's
+[configuration](../configuration.md) can allow other folders), an optional **Short name** (names its index and cache folders; it can't change later), and
 whether visitors may come in. The space starts with the three built-in groups and its folder is indexed.
 
 **Step by step** next to it opens the [new-space wizard](wizards.md#new-space): the same, one question at a time,

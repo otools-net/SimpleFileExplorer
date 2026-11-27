@@ -111,7 +111,7 @@
     <unit id="5878305334612867800">
       <notes>
         <note category="location">src/app/access/account-editor.component.html:34</note>
-        <note category="location">src/app/access/space-editor.component.html:79</note>
+        <note category="location">src/app/access/space-editor.component.html:78</note>
         <note category="location">src/app/account/installation-form.component.html:119</note>
         <note category="location">src/app/account/setup-page.component.html:184</note>
         <note category="location">src/app/wizards/new-space/new-space-name.step.ts:29</note>
@@ -427,7 +427,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:237</note>
         <note category="location">src/app/access/accounts-page.component.html:96,97</note>
-        <note category="location">src/app/access/space-editor.component.html:115</note>
+        <note category="location">src/app/access/space-editor.component.html:114</note>
         <note category="location">src/app/access/space-members.component.html:78,79</note>
         <note category="location">src/app/access/spaces-page.component.html:38,39</note>
         <note category="location">src/app/access/spaces-page.component.html:104,105</note>
@@ -464,7 +464,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:265,266</note>
         <note category="location">src/app/access/group-editor.component.html:158,159</note>
-        <note category="location">src/app/access/space-editor.component.html:189,190</note>
+        <note category="location">src/app/access/space-editor.component.html:188,189</note>
       </notes>
       <segment>
         <source>Close without saving (Esc)</source>
@@ -475,7 +475,7 @@
         <note category="location">src/app/access/account-editor.component.html:269,270</note>
         <note category="location">src/app/access/folder-access.component.html:128,129</note>
         <note category="location">src/app/access/group-editor.component.html:162,163</note>
-        <note category="location">src/app/access/space-editor.component.html:193,194</note>
+        <note category="location">src/app/access/space-editor.component.html:192,193</note>
         <note category="location">src/app/connections/connect.dialog.html:108,109</note>
         <note category="location">src/app/files/batch-rename.dialog.html:85,86</note>
         <note category="location">src/app/files/compress.dialog.html:102,103</note>
@@ -511,7 +511,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:280</note>
         <note category="location">src/app/access/group-editor.component.html:173</note>
-        <note category="location">src/app/access/space-editor.component.html:204</note>
+        <note category="location">src/app/access/space-editor.component.html:203</note>
         <note category="location">src/app/files/name.dialog.ts:93</note>
         <note category="location">src/app/tokens/token-create.component.html:147,148</note>
       </notes>
@@ -523,7 +523,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:282</note>
         <note category="location">src/app/access/group-editor.component.html:175</note>
-        <note category="location">src/app/access/space-editor.component.html:206</note>
+        <note category="location">src/app/access/space-editor.component.html:205</note>
         <note category="location">src/app/account/account-section.component.html:73,74</note>
         <note category="location">src/app/admin/admin-page.component.html:469,470</note>
         <note category="location">src/app/admin/installation-section.component.html:57,58</note>
@@ -1049,7 +1049,7 @@
     <unit id="5810605183775274977">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:53,54</note>
-        <note category="location">src/app/access/space-editor.component.html:50,51</note>
+        <note category="location">src/app/access/space-editor.component.html:49,50</note>
       </notes>
       <segment>
         <source>Go to the folder above</source>
@@ -1066,7 +1066,7 @@
     <unit id="5747307847814581767">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:67,68</note>
-        <note category="location">src/app/access/space-editor.component.html:66,67</note>
+        <note category="location">src/app/access/space-editor.component.html:65,66</note>
         <note category="location">src/app/shared/folder-picker.component.html:37,38</note>
       </notes>
       <segment>
@@ -1076,7 +1076,7 @@
     <unit id="116411768209281353">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:72,73</note>
-        <note category="location">src/app/access/space-editor.component.html:71,72</note>
+        <note category="location">src/app/access/space-editor.component.html:70,71</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:25,26</note>
       </notes>
       <segment>
@@ -1959,17 +1959,17 @@
         <source>For example, a <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Family</pc> space on <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">D:\Media\Family</pc> and a <pc id="2" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Work</pc> space on <pc id="3" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">D:\Media\Work</pc>: each sees only its own folder.</source>
       </segment>
     </unit>
-    <unit id="6541033429374794366">
+    <unit id="6936705254819349877">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:30,32</note>
+        <note category="location">src/app/access/space-editor.component.html:30,31</note>
       </notes>
       <segment>
-        <source>Only folders inside those the server&apos;s configuration allows can be picked (<pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">Sfe:Tenants:AllowedRoots</pc>, otherwise the first space&apos;s folder). The folder can&apos;t change once the space exists.</source>
+        <source>Only folders inside the first space&apos;s folder can be picked, unless the server&apos;s configuration allows others. The folder can&apos;t change once the space exists.</source>
       </segment>
     </unit>
     <unit id="1984535602796088797">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:41,42</note>
+        <note category="location">src/app/access/space-editor.component.html:40,41</note>
         <note category="location">src/app/wizards/new-space/new-space-folder.step.ts:17,18</note>
       </notes>
       <segment>
@@ -1978,7 +1978,7 @@
     </unit>
     <unit id="8345236492176033983">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:60,61</note>
+        <note category="location">src/app/access/space-editor.component.html:59,60</note>
       </notes>
       <segment>
         <source>Use <ph id="0" equiv="INTERPOLATION" disp="{{ folder.path }}"/>, or open it</source>
@@ -1986,7 +1986,7 @@
     </unit>
     <unit id="2729682662981362859">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:78</note>
+        <note category="location">src/app/access/space-editor.component.html:77</note>
         <note category="location">src/app/wizards/new-space/new-space-name.step.ts:28</note>
         <note category="location">src/app/wizards/new-space/new-space.wizard.ts:49</note>
       </notes>
@@ -1996,7 +1996,7 @@
     </unit>
     <unit id="2775161701985087263">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:86,87</note>
+        <note category="location">src/app/access/space-editor.component.html:85,86</note>
         <note category="location">src/app/wizards/new-space/new-space-name.step.ts:35,36</note>
         <note category="location">src/app/wizards/new-space/new-space.wizard.ts:49</note>
       </notes>
@@ -2006,7 +2006,7 @@
     </unit>
     <unit id="4532599727663135425">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:91,92</note>
+        <note category="location">src/app/access/space-editor.component.html:90,91</note>
         <note category="location">src/app/wizards/new-space/new-space-name.step.ts:41,42</note>
       </notes>
       <segment>
@@ -2015,7 +2015,7 @@
     </unit>
     <unit id="2005538175640046323">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:103</note>
+        <note category="location">src/app/access/space-editor.component.html:102</note>
         <note category="location">src/app/wizards/new-space/new-space-visitors.step.ts:18</note>
       </notes>
       <segment>
@@ -2024,7 +2024,7 @@
     </unit>
     <unit id="6365648531973014461">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:104,105</note>
+        <note category="location">src/app/access/space-editor.component.html:103,104</note>
         <note category="location">src/app/wizards/new-space/new-space-visitors.step.ts:19,20</note>
       </notes>
       <segment>
@@ -2033,7 +2033,7 @@
     </unit>
     <unit id="6722561928596189134">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:116,117</note>
+        <note category="location">src/app/access/space-editor.component.html:115,116</note>
       </notes>
       <segment>
         <source>Nobody can open the space and its background tasks stop. Its index, tags, groups and settings are kept.</source>
@@ -2041,8 +2041,8 @@
     </unit>
     <unit id="2203827180517415193">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:121,122</note>
-        <note category="location">src/app/access/space-editor.component.html:154,155</note>
+        <note category="location">src/app/access/space-editor.component.html:120,121</note>
+        <note category="location">src/app/access/space-editor.component.html:153,154</note>
       </notes>
       <segment>
         <source>Rights switched off in this space</source>
@@ -2050,7 +2050,7 @@
     </unit>
     <unit id="4862130549765057998">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:122</note>
+        <note category="location">src/app/access/space-editor.component.html:121</note>
       </notes>
       <segment>
         <source>Switched-off rights</source>
@@ -2058,7 +2058,7 @@
     </unit>
     <unit id="144456688322603008">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:123,124</note>
+        <note category="location">src/app/access/space-editor.component.html:122,123</note>
       </notes>
       <segment>
         <source>A right ticked here is taken from everyone in this space, whatever their groups say. Only server administrators can tick it; the space&apos;s own administrators can&apos;t give it back.</source>
@@ -2066,7 +2066,7 @@
     </unit>
     <unit id="3809747672262227998">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:126,127</note>
+        <note category="location">src/app/access/space-editor.component.html:125,126</note>
       </notes>
       <segment>
         <source>For example, tick <pc id="0" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Remove duplicates</pc> on a space whose files must never be deleted from SFE.</source>
@@ -2074,7 +2074,7 @@
     </unit>
     <unit id="7679432750721534199">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:128,132</note>
+        <note category="location">src/app/access/space-editor.component.html:127,131</note>
       </notes>
       <segment>
         <source><pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Files read-only</pc> ticks every right that creates, changes or deletes files (marked <pc id="1" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Changes files</pc>): people can still tag and use the space. <pc id="2" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Read-only</pc> ticks every right that changes anything (marked <pc id="3" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">Changes things</pc> too): the space can only be looked at.</source>
@@ -2082,7 +2082,7 @@
     </unit>
     <unit id="5717656706811431952">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:135,136</note>
+        <note category="location">src/app/access/space-editor.component.html:134,135</note>
       </notes>
       <segment>
         <source>Switch off at once</source>
@@ -2090,7 +2090,7 @@
     </unit>
     <unit id="842401310033598175">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:139,140</note>
+        <note category="location">src/app/access/space-editor.component.html:138,139</note>
       </notes>
       <segment>
         <source>Tick every right that creates, changes or deletes files in this space</source>
@@ -2098,7 +2098,7 @@
     </unit>
     <unit id="4041296798876120831">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:143,144</note>
+        <note category="location">src/app/access/space-editor.component.html:142,143</note>
       </notes>
       <segment>
         <source>Files read-only</source>
@@ -2106,7 +2106,7 @@
     </unit>
     <unit id="6880835683163938248">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:147,148</note>
+        <note category="location">src/app/access/space-editor.component.html:146,147</note>
       </notes>
       <segment>
         <source>Tick every right that changes something in this space</source>
@@ -2114,7 +2114,7 @@
     </unit>
     <unit id="6306138344256927663">
       <notes>
-        <note category="location">src/app/access/space-editor.component.html:151,152</note>
+        <note category="location">src/app/access/space-editor.component.html:150,151</note>
       </notes>
       <segment>
         <source>Read-only</source>
@@ -18211,7 +18211,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1420820821452743483">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:97</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:98</note>
       </notes>
       <segment>
         <source>Quick links and tags</source>
@@ -18219,7 +18219,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6566220851744770937">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:119</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:120</note>
       </notes>
       <segment>
         <source>Open the trash.</source>
@@ -18227,7 +18227,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8449486268932741195">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:120</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:121</note>
       </notes>
       <segment>
         <source>Open the trash. It&apos;s empty.</source>
@@ -18235,7 +18235,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8830524108826229557">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:123</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:124</note>
       </notes>
       <segment>
         <source>Open the trash. It holds more than {count, plural, one {# item} other {# items}}.</source>
@@ -18243,7 +18243,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="895952222380713711">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:126</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:127</note>
       </notes>
       <segment>
         <source>Open the trash. It holds {count, plural, one {# item} other {# items}}.</source>
@@ -18251,7 +18251,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2505292712993436159">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:149</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:150</note>
       </notes>
       <segment>
         <source>Fold the list “<ph id="0" equiv="list" disp="section.title"/>”.</source>
@@ -18259,7 +18259,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5659408281749789575">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:150</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:151</note>
       </notes>
       <segment>
         <source>Show the list “<ph id="0" equiv="list" disp="section.title"/>”.</source>
@@ -18267,7 +18267,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5772995685589083312">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:155</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:156</note>
       </notes>
       <segment>
         <source>{count, plural, one {# file has this tag} other {# files have this tag}}.</source>

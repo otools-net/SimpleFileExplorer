@@ -31,8 +31,8 @@ public static class TenantEndpoints
             .NotLibraryPaths()
             .WithName("GetTenantFolders")
             .WithSummary(
-                "Folders a space's library folder can be chosen in (`Sfe:Tenants:AllowedRoots`, "
-                    + "else the configured root)."
+                "Folders a space's library folder can be chosen in (the configured root, or "
+                    + "`Sfe:Tenants:AllowedRoots` while `Sfe:Tenants:UseAllowedRoots` is on)."
             )
             .WithDescription("Without `path`, the allowed roots; with one, its sub-folders (hidden ones left out).");
 
@@ -215,25 +215,31 @@ public static class TenantEndpoints
     {
         if (root is null || !Directory.Exists(root))
             return "Choose an existing folder of the server.";
-        return AllowedRoots(configuration).Any(allowed => IsInside(allowed, root))
-            ? null
-            : "This folder is outside the folders spaces may use (Sfe:Tenants:AllowedRoots).";
+        if (AllowedRoots(configuration).Any(allowed => IsInside(allowed, root)))
+            return null;
+        return Options(configuration).UsesAllowedRoots
+            ? "This folder is outside the folders spaces may use (Sfe:Tenants:AllowedRoots)."
+            : "This folder is outside the first space's library folder (Sfe:Root).";
     }
 
-    /// <summary><c>Sfe:Tenants:AllowedRoots</c>, else the configured root: full paths.</summary>
+    /// <summary>
+    /// <c>Sfe:Tenants:AllowedRoots</c> while <c>Sfe:Tenants:UseAllowedRoots</c> is on (or the list is set without
+    /// it), else the configured root: full paths.
+    /// </summary>
     private static List<string> AllowedRoots(IConfiguration configuration)
     {
-        var allowed = configuration
-            .GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Tenants)}")
-            .Get<TenantOptions>()
-            ?.AllowedRoots
-            ?? [];
+        var options = Options(configuration);
+        var allowed = options.UsesAllowedRoots ? options.AllowedRoots : [];
         return (allowed.Count > 0 ? allowed : [ConfiguredRoot(configuration) ?? string.Empty])
             .Select(Full)
             .OfType<string>()
             .Distinct(LibraryPaths.PathComparer)
             .ToList();
     }
+
+    private static TenantOptions Options(IConfiguration configuration) =>
+        configuration.GetSection($"{SfeOptions.SectionName}:{nameof(SfeOptions.Tenants)}").Get<TenantOptions>()
+        ?? new TenantOptions();
 
     private static string? ConfiguredRoot(IConfiguration configuration) =>
         Full(configuration[$"{SfeOptions.SectionName}:{nameof(SfeOptions.Root)}"]);

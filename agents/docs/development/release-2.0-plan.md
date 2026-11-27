@@ -60,7 +60,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   tile / row (percentage in the hint), real name shown without `.sfe-partial`, not openable until done, refreshed in
   place when finished; a folder being copied shows the progress on its card (from the job's byte totals). Reuse for
   uploads in progress (4.3) where it fits. Tests, user docs with screenshot, partial-files.md updated.
-- [ ] **1.5 Little-used functions made optional, off by default** (owner's request 2026-11-27, S–M; two commits).
+- [x] **1.5 Little-used functions made optional, off by default** (owner's request 2026-11-27, S–M; two commits).
   They see little use, so each becomes a setting that is **off unless switched on** (existing installs too: a
   changelog line says how to switch them back on).
   - [x] **a: tag sidebar sections.** Done 2026-11-27: `Sfe:Tags:SidebarPopular` / `SidebarSearched` /
@@ -68,7 +68,11 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     a user's own `sidebarCount` apply: a fix), `TagSidebarLists` (moved out of `TagService` first) skips what is off;
     `showPopular` / `showSearched` / `showLucky` added to the answer (additive) so the client hides the sections;
     saving settings refreshes the sidebar. Note in [tags](../features/tags.md).
-  - [ ] **b: `Sfe:Tenants:AllowedRoots`.** Today: config-only list of the folders a new space's library folder may be
+  - [x] **b: `Sfe:Tenants:AllowedRoots`.** Done 2026-11-27: `Sfe:Tenants:UseAllowedRoots` (`bool?`,
+    `TenantOptions.UsesAllowedRoots`); left out, it counts as on when the list is set (no upgrade step: configuration
+    may come from environment variables or a read-only file that a step can't rewrite); off, the refusal names
+    `Sfe:Root`; the space editor's help and the docs no longer name `AllowedRoots` (configuration.md, docker.md do).
+    Note in [tenants](../architecture/tenants.md). Was: today config-only list of the folders a new space's library folder may be
     picked in, empty = `Sfe:Root` (`TenantEndpoints.AllowedRoots`, `TenantOptions`). It becomes opt-in behind a
     switch (e.g. `Sfe:Tenants:UseAllowedRoots`, `false`): off, new spaces are picked inside `Sfe:Root` only (today's
     default, so nothing gets looser) and the space editor, the new-space wizard's folder step and the docs stop
@@ -690,13 +694,13 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Added 2026-11-27:** step **1.5** (little-used functions made optional). **1.5a** done 2026-11-27; next **1.5b**
-  (`AllowedRoots` behind a switch), then **5.3b**.
-- **e2e failing before 1.5a** (seen 2026-11-27, same on f7a3b95c): `tags.spec.ts:9` (phones: the selection bar's
-  Tags button not found by `/^(Tags|Add or remove tags)/`), `connection-tags.spec.ts:85` (same wait),
-  `connection-viewer.spec.ts:84` (a console 404 from `api/v1/connections/3/storage`); also once in the full quick
-  set: `pages.spec.ts:18` and the admin getting-started spec on `landscape`. Fix before relying on the quick set.
-- **Last session (2026-11-27):** **5.2** (getting-started checklist) done, after **5.3a**. Next: **5.3b** and
+- **Last session (2026-11-27, later):** **1.5b** done (step 1.5 finished); the e2e specs failing since 2.9 / 4.x fixed
+  in their own commit (a one-file selection's Tags button is titled "See or change the tags of this file."; fake
+  connections answer `connections/{id}/storage`; `landscape` (800 px) is not the admin page's phone layout and keeps
+  the help's contents beside the page); the 360–400 px search box fixed (it shrank to 22 px). Next: **5.3b**.
+- e2e on `landscape` (800 × 360) gets the wide layouts (admin page, help at > 760 px): a spec on phones that needs
+  the phone layout locates both places or checks which one shows.
+- **5.2** (getting-started checklist) done, after **5.3a**. Then **5.3b** and
   **5.3c** (adding a wizard: [wizards](../features/wizards.md#adding-a-wizard)); register them under the ids the
   checklist already names (`share-folder`, `add-connection`) and its items switch to them by themselves.
   Wizards link their help with `helpLink` from `help/help-files.ts` (no markdown-it in their chunk).

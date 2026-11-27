@@ -68,7 +68,8 @@ folder and ffmpeg are set here only.
 | `Sfe:Security:Directories` | Directories checking passwords, in order (empty = local accounts only; see [Directories](administration/spaces-and-accounts.md#directories-ldap)) |
 | `Sfe:Rights:Disabled` | Rights nobody gets, not even administrators (e.g. `tracking.duplicatesRemove`, `files.*`; `folder:write` = every right that changes files, `kind:write` = every right that changes anything); see [Rights](reference/rights.md) |
 | `Sfe:Locked` | Settings nobody can change from the web, at any level (e.g. `player.*`); see [Settings by level](reference/settings-levels.md) |
-| `Sfe:Tenants:AllowedRoots` | Folders new spaces may be created in (default: `Sfe:Root`) |
+| `Sfe:Tenants:UseAllowedRoots` | `true` lets new spaces be created in the folders of `Sfe:Tenants:AllowedRoots` instead of inside `Sfe:Root` only (default: `false`; left out, it counts as `true` when the list is set, as on earlier installs) |
+| `Sfe:Tenants:AllowedRoots` | Folders new spaces may be created in while `Sfe:Tenants:UseAllowedRoots` is on |
 | `Sfe:Tenants:ConnectionString` | Index of a new space, `{tenant}` standing for its short name; default next to the first space's |
 
 ## Settings also on the administration page

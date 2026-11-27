@@ -28,7 +28,8 @@ services:
       # SFE_LOGS_DIR: /logs
       # A setup code of your own (at least 12 characters), instead of the one SFE prints in its log.
       # Sfe__Setup__Code: "choose-a-long-code"
-      # Spaces may use folders below these (by default only the library).
+      # Spaces may use folders below these (by default only folders inside the library).
+      # Sfe__Tenants__UseAllowedRoots: "true"
       # Sfe__Tenants__AllowedRoots__0: /library
       # Sfe__Tenants__AllowedRoots__1: /libraries
       # Behind a reverse proxy on another address: trust it, so that sign-ins see the visitors' addresses.

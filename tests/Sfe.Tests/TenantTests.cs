@@ -180,13 +180,71 @@ public sealed class TenantTests
     {
         var elsewhere = Directory.CreateDirectory(Path.Combine(_library.BasePath, "Elsewhere")).FullName;
         File.WriteAllText(Path.Combine(elsewhere, "note.txt"), "hello");
-        var admin = await AdminAsync(Factory(settings => settings["Sfe:Tenants:AllowedRoots:0"] = elsewhere));
+        var admin = await AdminAsync(
+            Factory(settings =>
+            {
+                settings["Sfe:Tenants:UseAllowedRoots"] = "true";
+                settings["Sfe:Tenants:AllowedRoots:0"] = elsewhere;
+            })
+        );
 
+        var roots = await GetAsync<FolderPicker>(admin, $"{V1}/tenants/folders");
         var created = await CreateLibraryAsync(admin, "Elsewhere", elsewhere);
         await SwitchAsync(admin, created.Slug);
         var listing = await GetAsync<DirectoryListing>(admin, $"{V1}/browse");
 
+        Assert.AreEqual(elsewhere, roots.Folders.Single().Path);
         Assert.AreEqual("note.txt", listing.Items.Single().Name);
+    }
+
+    [TestMethod]
+    public async Task AnInstallListingAllowedRootsWithoutTheSwitchKeepsThem()
+    {
+        var elsewhere = Directory.CreateDirectory(Path.Combine(_library.BasePath, "Elsewhere")).FullName;
+        var admin = await AdminAsync(Factory(settings => settings["Sfe:Tenants:AllowedRoots:0"] = elsewhere));
+
+        var roots = await GetAsync<FolderPicker>(admin, $"{V1}/tenants/folders");
+        var check = await CheckAsync(admin, new TenantInput("Elsewhere", Root: elsewhere));
+
+        Assert.AreEqual(elsewhere, roots.Folders.Single().Path);
+        Assert.AreEqual(HttpStatusCode.NoContent, check.Status);
+    }
+
+    [TestMethod]
+    public async Task AllowedRootsSwitchedOffLeaveNewSpacesInsideTheRoot()
+    {
+        var elsewhere = Directory.CreateDirectory(Path.Combine(_library.BasePath, "Elsewhere")).FullName;
+        var admin = await AdminAsync(
+            Factory(settings =>
+            {
+                settings["Sfe:Tenants:UseAllowedRoots"] = "false";
+                settings["Sfe:Tenants:AllowedRoots:0"] = elsewhere;
+            })
+        );
+
+        var roots = await GetAsync<FolderPicker>(admin, $"{V1}/tenants/folders");
+        using var picker = await admin.GetAsync(
+            $"{V1}/tenants/folders?path={Uri.EscapeDataString(elsewhere)}",
+            TestContext.CancellationToken
+        );
+        var refused = await CheckAsync(admin, new TenantInput("Elsewhere", Root: elsewhere));
+        var inside = await CheckAsync(admin, new TenantInput("Media", Root: _library.FullPath("Media")));
+        using var created = await admin.PostAsJsonAsync(
+            $"{V1}/tenants",
+            new TenantInput("Elsewhere", Root: elsewhere),
+            Json,
+            TestContext.CancellationToken
+        );
+
+        Assert.AreEqual(Path.GetFullPath(_library.Root), roots.Folders.Single().Path);
+        Assert.AreEqual(HttpStatusCode.NotFound, picker.StatusCode);
+        Assert.AreEqual("root", refused.Field);
+        Assert.AreEqual(HttpStatusCode.NoContent, inside.Status);
+        Assert.AreEqual(HttpStatusCode.BadRequest, created.StatusCode);
+        StringAssert.Contains(
+            await created.Content.ReadAsStringAsync(TestContext.CancellationToken),
+            "first space's library folder"
+        );
     }
 
     [TestMethod]

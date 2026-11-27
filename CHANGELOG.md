@@ -87,6 +87,10 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   `SidebarLucky`), or each for yourself in **My account › Settings › Tags**. Searches are still recorded while
   "Last searched" is hidden. The server no longer reads the lists switched off. API: `showPopular`, `showSearched`,
   `showLucky` on `GET api/tags/sidebar`.
+- **New spaces are picked inside the first space's library folder** unless `Sfe:Tenants:UseAllowedRoots` is `true`:
+  only then do the folders of `Sfe:Tenants:AllowedRoots` apply. Installs that already list `AllowedRoots` keep them
+  (the switch left out counts as on when the list is set); set the switch to `false` to stop using them. The space
+  editor and the New space wizard no longer name the setting.
 - **Uploads into a connection go on** after the page is reloaded or the server restarts, as the library's do: the
   operations panel lists them again and the same file picked or dropped sends the rest. The server keeps their
   records in `connection-uploads` beside the setup code (the provider's upload session protected by the server's

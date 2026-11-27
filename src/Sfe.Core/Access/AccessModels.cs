@@ -72,7 +72,7 @@ public sealed record GroupInput(
 );
 
 /// <param name="Slug">Short name for its index and caches; made from the name when empty. Fixed once created.</param>
-/// <param name="Root">Root folder (full path, inside <c>Sfe:Tenants:AllowedRoots</c>); ignored for the first
+/// <param name="Root">Root folder (full path, inside the folders spaces may use); ignored for the first
 /// library.</param>
 /// <param name="DisabledRights">Rights nobody gets in this library; null keeps the current ones.</param>
 public sealed record TenantInput(

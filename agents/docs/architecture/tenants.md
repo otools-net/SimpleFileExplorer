@@ -26,3 +26,8 @@ Code: `src/Sfe.Api/Tenancy/` (`TenantRegistry`, `TenantHost`, `TenantMiddleware`
 - `TenantMiddleware` swaps `HttpContext.RequestServices` for `TenantRequestServices` (Core types from the library, the
   rest from the request) for `/api` and `/openapi`, except setup/session/docs.
 - Which library a request uses: see [rights.md](../features/rights.md) (`CurrentAccess`).
+- Where a new library's root may be (`TenantEndpoints.AllowedRoots`, folders route and create): inside `Sfe:Root`, or
+  the folders of `Sfe:Tenants:AllowedRoots` while `TenantOptions.UsesAllowedRoots` (`UseAllowedRoots`, off by default;
+  left out, it counts as on when the list is set, so installs from before the switch keep theirs: configuration
+  comes from files, environment and command line that an upgrade step can't rewrite). Checked where the folders
+  really are (`LibraryPaths.RealPath`): a link inside an allowed root leads nowhere outside it.

@@ -1866,7 +1866,7 @@
         "tags": [
           "Spaces"
         ],
-        "summary": "Folders a space's library folder can be chosen in (`Sfe:Tenants:AllowedRoots`, else the configured root).",
+        "summary": "Folders a space's library folder can be chosen in (the configured root, or `Sfe:Tenants:AllowedRoots` while `Sfe:Tenants:UseAllowedRoots` is on).",
         "description": "Without `path`, the allowed roots; with one, its sub-folders (hidden ones left out).",
         "operationId": "GetTenantFolders",
         "parameters": [
