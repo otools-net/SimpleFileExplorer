@@ -3,7 +3,8 @@ import { inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ApiError, problemType, toApiError } from './api-error';
-import { chunkHeaders, params, QueryValue, UploadChunk, withQuery } from './api-query';
+import { chunkHeaders, params, QueryValue, UploadChunk, withLevel, withQuery } from './api-query';
+import { redirectAfterRefusal } from './api-redirect';
 import {
     FolderAccessReport,
     FolderRuleView,
@@ -739,7 +740,7 @@ export class Api {
                             error instanceof HttpErrorResponse &&
                             (redirect || type === 'migration-required' || type === 'local-only')
                         )
-                            this.redirect(error.status, type);
+                            redirectAfterRefusal(this.injector.get(Router), error.status, type);
                         reject(toApiError(error));
                     }
                 },
@@ -754,27 +755,4 @@ export class Api {
             );
         });
     }
-
-    private redirect(status: number, type: string | null): void {
-        if (
-            status !== 401 &&
-            !(status === 503 && (type === 'setup-required' || type === 'migration-required')) &&
-            !(status === 403 && type === 'local-only')
-        )
-            return;
-        const router = this.injector.get(Router);
-        const page = router.url.split('?')[0];
-        if (status === 403 && type === 'local-only') {
-            if (page !== '/local-only' && page !== '/login') void router.navigate(['/local-only']);
-        } else if (status === 503 && type === 'migration-required') {
-            if (page !== '/migration') void router.navigate(['/migration']);
-        } else if (status === 503 && type === 'setup-required' && page !== '/setup') void router.navigate(['/setup']);
-        else if (status === 401 && page !== '/login' && page !== '/setup' && page !== '/migration')
-            void router.navigate(['/login'], { queryParams: { return: router.url === '/' ? null : router.url } });
-    }
-}
-
-/** `url` with the settings level asked for, when one is. */
-function withLevel(url: string, level: SettingLevel | undefined): string {
-    return level ? `${url}?level=${level}` : url;
 }

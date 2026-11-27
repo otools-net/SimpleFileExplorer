@@ -1,4 +1,5 @@
 import { HttpHeaders, HttpParams } from '@angular/common/http';
+import { SettingLevel } from './setting.models';
 
 /** A value of a request's query. */
 export type QueryValue = string | number | boolean | null | undefined;
@@ -28,4 +29,9 @@ export interface UploadChunk {
 /** The headers of an upload's chunk: raw bytes, and the digest the server checks them against. */
 export function chunkHeaders(headers: HttpHeaders, digest: string): HttpHeaders {
     return headers.set('Content-Type', 'application/octet-stream').set('Content-Digest', digest);
+}
+
+/** `url` with the settings level asked for, when one is. */
+export function withLevel(url: string, level: SettingLevel | undefined): string {
+    return level ? `${url}?level=${level}` : url;
 }
