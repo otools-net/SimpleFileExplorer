@@ -62,6 +62,17 @@
                 @if (ended(); as end) {
                     <h2 #stageTitle tabindex="-1" i18n>Done</h2>
                     <p role="status">{{ end.message }}</p>
+                    @if (end.details; as details) {
+                        <section class="wizard-review-part wizard-end-details">
+                            <h3>{{ details.title }}</h3>
+                            <dl>
+                                @for (line of details.lines; track $index) {
+                                    <dt>{{ line.label }}</dt>
+                                    <dd>{{ line.value }}</dd>
+                                }
+                            </dl>
+                        </section>
+                    }
                     <ul class="wizard-links">
                         @for (link of end.links; track link.route + link.label) {
                             <li>

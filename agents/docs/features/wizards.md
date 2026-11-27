@@ -19,8 +19,8 @@ with (`TenantEndpoints.Create`). User docs: `docs/administration/wizards.md`.
   guard `leaveWizard`. It refuses an unknown id or a session without the right / in the other mode, sets the title,
   loads the definition. Cancel, Done and the arrow go to `admin?section=&page=` of the line's `home`.
 - **Shell** (`sfe-wizard`): Step n of m (skipped steps left out; the review counts), the steps' list (hidden on phones),
-  Next (submit: Enter in a field), Back, Cancel, the review with Change per step, Finish, the end (message, links, Run
-  again, Done), focus on the new title, `beforeunload` and `canLeave()` while the draft differs from the initial one.
+  Next (submit: Enter in a field), Back, Cancel, the review with Change per step, Finish, the end (message, optional
+  `details`: lines under a heading, links, Run again, Done), focus on the new title, `beforeunload` and `canLeave()` while the draft differs from the initial one.
 - **Step context** (`WIZARD_CONTEXT`, `injectWizard<D>()`): the draft signal, `change(partial)`, `errors`, `busy`.
 - **Checks and refusals**: a step's `check` and the definition's `finish` run in an injection context
   (`runInInjectionContext`): `inject()` before the first `await`. A check's refusal (`ApiError.errors`) keeps the

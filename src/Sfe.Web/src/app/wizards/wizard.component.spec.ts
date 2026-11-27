@@ -185,6 +185,19 @@ describe('WizardComponent', () => {
         const link = wizard.element.querySelector<HTMLAnchorElement>('.wizard-links a')!;
         expect(link.getAttribute('href')).toBe('/admin?section=access');
         expect(wizard.wizard.canLeave()).toBe(true);
+        expect(wizard.element.querySelector('.wizard-end-details')).toBeNull();
+    });
+
+    it('shows the lines of the end under their heading', async () => {
+        finish.mockResolvedValueOnce({ ...end, details: { title: 'Who', lines: [{ label: 'Ann', value: 'Sees' }] } });
+        const wizard = await open();
+        await wizard.fill({ alpha: 'a' });
+        for (let i = 0; i < 4; i++) await wizard.next();
+
+        const details = wizard.element.querySelector('.wizard-end-details')!;
+        expect(details.querySelector('h3')!.textContent).toBe('Who');
+        expect(details.querySelector('dt')!.textContent).toBe('Ann');
+        expect(details.querySelector('dd')!.textContent).toBe('Sees');
     });
 
     it('comes back to the step whose field a refused Finish names, with its error', async () => {

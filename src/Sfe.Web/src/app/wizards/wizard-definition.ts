@@ -24,6 +24,8 @@ export interface WizardLink {
 /** What the end step shows once the wizard has saved. */
 export interface WizardEnd {
     message: string;
+    /** Lines under a heading, between the message and the links (who has access now...). */
+    details?: { title: string; lines: WizardReviewLine[] };
     links: WizardLink[];
 }
 

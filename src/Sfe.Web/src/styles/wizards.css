@@ -135,7 +135,8 @@
     justify-content: space-between;
     gap: 10px;
 }
-.wizard-review-head h3 {
+.wizard-review-head h3,
+.wizard-end-details h3 {
     margin: 0;
     font-size: 14px;
 }
