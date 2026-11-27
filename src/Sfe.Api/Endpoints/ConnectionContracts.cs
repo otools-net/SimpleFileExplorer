@@ -97,13 +97,16 @@ public sealed record ConnectionListing(
 /// <param name="ContentHash">The file's content hash as the provider gives it; null for a folder or none.</param>
 /// <param name="HashName">The kind of hash (<see cref="ProviderCapabilities.ContentHash"/>).</param>
 /// <param name="Downloadable">False for what has no content to read (an online document of the provider).</param>
+/// <param name="Access">What the caller may do with it and why not (agents/docs/features/item-access.md); `disk`
+/// is the storage's side.</param>
 public sealed record ConnectionItemProperties(
     LibraryItem Item,
     string Kind,
     string? Account,
     string? ContentHash,
     string? HashName,
-    bool Downloadable
+    bool Downloadable,
+    ItemAccess? Access = null
 );
 
 /// <summary>What the listing of a connection's folder uses (bound with <c>[AsParameters]</c>): the provider's

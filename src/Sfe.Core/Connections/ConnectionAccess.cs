@@ -142,7 +142,8 @@ public sealed class ConnectionAccess(
                     pair.Connection.Name,
                     pair.Connection.Level,
                     pair.Connection.State,
-                    pair.Access!.Value
+                    pair.Access!.Value,
+                    pair.Connection.ReadOnly
                 )),
         ];
     }

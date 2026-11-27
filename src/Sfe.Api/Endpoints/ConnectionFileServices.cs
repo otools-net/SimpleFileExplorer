@@ -15,9 +15,49 @@ internal sealed record ConnectionFileServices(
     ConnectionService Connections,
     ConnectionProviders Providers,
     ConnectionGates Gates,
+    RemoteReadOnlyFolders ReadOnlyFolders,
+    Microsoft.Extensions.Options.IOptionsMonitor<Otools.Net.Sfe.Core.Options.SfeOptions> ServerOptions,
     HttpContext Context
 )
 {
+    /// <summary>What the session may do in <paramref name="open"/> (agents/docs/features/item-access.md).</summary>
+    public async Task<ConnectionAccessReport> AccessReportAsync(OpenConnection open) =>
+        new(await Current.GetAsync(), ServerOptions.CurrentValue.Rights.Disabled, open);
+
+    /// <summary>
+    /// The provider refuses changes in <paramref name="folder"/> (<see cref="RemoteReadOnlyFolders"/>), asked with
+    /// <paramref name="storage"/> in the turn the caller holds; false for providers that don't tell.
+    /// </summary>
+    public Task<bool> ProviderRefusesAsync(
+        OpenConnection open,
+        string folder,
+        IRemoteStorage storage,
+        CancellationToken cancellationToken
+    ) =>
+        open.Capabilities.ReadOnlyItems
+            ? ReadOnlyFolders.IsReadOnlyAsync(
+                open.Connection.Id,
+                folder,
+                () => storage.GetAsync(folder, cancellationToken)
+            )
+            : Task.FromResult(false);
+
+    /// <summary>
+    /// <see cref="ProviderRefusesAsync(OpenConnection, string, IRemoteStorage, CancellationToken)"/> outside a turn:
+    /// one is taken when the answer isn't kept; false while the provider asks to wait.
+    /// </summary>
+    public Task<bool> ProviderRefusesAsync(OpenConnection open, string folder, CancellationToken cancellationToken)
+    {
+        var id = open.Connection.Id;
+        if (!open.Capabilities.ReadOnlyItems || Gates.WaitLeft(id) is not null)
+            return Task.FromResult(false);
+        return ReadOnlyFolders.IsReadOnlyAsync(id, folder, async () =>
+        {
+            using var turn = await Gates.EnterAsync(id, cancellationToken);
+            return turn is null ? null : await open.Storage.GetAsync(folder, cancellationToken);
+        });
+    }
+
     /// <summary>
     /// The connection opened for this request (its storage disposed when the answer is sent, after a file is
     /// streamed), or the answer to give instead.

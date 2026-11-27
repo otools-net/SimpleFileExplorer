@@ -398,9 +398,10 @@ downloaded as it is.
 - **Access**: what you may do with it (open, download, save changes over a file, add files and folders to a folder,
   rename, move, move to the trash), with a ✓ or, for what you can't, the reason under it: the server's or the space's
   switch, a visitor or guest account, your rights, a folder rule, a link the server keeps read-only, the disk (mounted
-  read-only, or the server not allowed to write there), a file the disk marks read-only. **Folder rule** names the
-  folder whose rule decides here (ask an administrator to change it), **Disk** says whether the disk takes changes
-  where the item is.
+  read-only, or the server not allowed to write there), a file the disk marks read-only; on a connection, the
+  connection made read only, shared with your groups to read only, or the storage refusing changes there. **Folder
+  rule** names the folder whose rule decides here (ask an administrator to change it), **Disk** (on a connection,
+  the provider's name) says whether the disk or the storage takes changes where the item is.
 
 ![The Access section of a file's properties](../images/properties-access.png)
 

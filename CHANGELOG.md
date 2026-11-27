@@ -55,6 +55,13 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
   (Cut, Rename…, Move to…, Delete…, the archive's, New folder…, New file…, uploads, Paste) are greyed out with that
   reason. API: `access` on `GET api/files/properties` (`actions`, `ruleFolder`, `disk`), the reason word
   `fileReadOnly`; Sfe.Client: the same in `Raw` models.
+- **Read only on connections**: a connection's folders show the same **Read only** chip, and Properties the same
+  **Access** section, with the connection's reasons: made read only, shared with your groups to read only, a folder
+  rule, or the storage refusing changes (a Dropbox folder shared with the account to view only, asked once per folder
+  and kept 30 s); such Dropbox folders and their files get a lock in listings read from Dropbox, and the menu entries
+  writing in them are greyed out. API: `readOnly` on `GET api/connections/{id}/browse` and its items, `access` on
+  `GET api/connections/{id}/files/properties`, the reason words `connection`, `level` and `provider`, `readOnly` on
+  the usable connections and `readOnlyItems` in a provider's capabilities; Sfe.Client: the same in `Raw` models.
 
 ### Changed
 

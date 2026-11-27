@@ -14,6 +14,9 @@ const REASONS: Record<ReadOnlyReason, string> = {
     diskReadOnly: $localize`Read only: the disk refuses changes here, it is mounted read-only.`,
     diskRefused: $localize`Read only: the server isn't allowed to write in this folder on the disk.`,
     fileReadOnly: $localize`Read only: the disk marks this file read-only.`,
+    connection: $localize`Read only: this connection is set so that nobody changes its files.`,
+    level: $localize`Read only: this connection is shared with your groups to open files, not change them.`,
+    provider: $localize`Read only: the storage refuses changes here, this folder is shared to view only.`,
 };
 
 /** Why the session can't change the files of the folder listed; null when it can, and for searches. */
@@ -26,11 +29,12 @@ export function readOnlyText(reason: ReadOnlyReason): string {
     return REASONS[reason] ?? REASONS.rights;
 }
 
-/** What changes the folder listed on the disk: greyed in the menus when the disk refuses it. */
-const PLACE_REASONS: readonly ReadOnlyReason[] = ['link', 'diskReadOnly', 'diskRefused'];
+/** What changes the folder listed on the disk (or a connection's storage): greyed in the menus when it is refused. */
+const PLACE_REASONS: readonly ReadOnlyReason[] = ['link', 'diskReadOnly', 'diskRefused', 'provider'];
 
 /**
- * Why the folder listed takes no change although the rights allow it: a link the server keeps read-only, or the disk.
+ * Why the folder listed takes no change although the rights allow it: a link the server keeps read-only, the disk,
+ * or a connection's storage.
  * Null when it takes them, when the rights already refuse (the menus say so), and for searches.
  */
 export function placeRefusal(page: ListingPage | null): ReadOnlyReason | null {
@@ -39,17 +43,18 @@ export function placeRefusal(page: ListingPage | null): ReadOnlyReason | null {
 }
 
 /**
- * Why `item` of the folder listed can't be changed when the folder can: the disk marks the file read-only, or a folder
- * rule lets the session only read it. Null when it is like its folder: what differs only is marked, the usual case
- * stays quiet.
+ * Why `item` of the folder listed can't be changed when the folder can: the disk marks the file read-only (on a
+ * connection, `onPlace`: its storage refuses changes to it), or a folder rule lets the session only read it. Null when
+ * it is like its folder: what differs only is marked, the usual case stays quiet.
  */
-export function itemLock(page: ListingPage | null, item: LibraryItem): string | null {
+export function itemLock(page: ListingPage | null, item: LibraryItem, onPlace = false): string | null {
     if (!page || !('directoryCount' in page) || page.readOnly) return null;
     const children = page.access?.children ?? {};
     const own =
         children[item.name] ??
         Object.entries(children).find(([name]) => name.toLowerCase() === item.name.toLowerCase())?.[1];
     if (own?.readOnly && !own.pathOnly) return $localize`A folder rule lets you open this, not change it.`;
+    if (item.readOnly && onPlace) return $localize`The storage refuses changes to it: it is shared to view only.`;
     if (item.readOnly) return $localize`Marked read-only on the disk: it can't be saved over.`;
     return null;
 }

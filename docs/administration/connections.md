@@ -151,7 +151,13 @@ in the usual listing: folders first, sorted as you choose, pictures and videos s
   from Dropbox, and items not in the index yet are faded, as files not scanned are in the library. A folder of more
   than 20,000 items read from Dropbox is listed in its order, the sort off.
 - **Properties** (item menu) shows a file's or folder's size, date (Dropbox keeps none for folders), path and
-  Dropbox's content hash; on your own connection, the Dropbox account too.
+  Dropbox's content hash; on your own connection, the Dropbox account too; and its **Access** section, as in the
+  library: what you may do with it and why not, the folder whose rule decides, and under **Dropbox** whether
+  Dropbox takes changes where it is.
+- A folder you can't change shows the **Read only** chip, as in the library
+  ([read-only folders](../user-guide/browsing.md#read-only-folders-and-files)): the connection made read only, its
+  groups given **Read only**, a folder rule, or Dropbox itself refusing changes (a folder shared with the account to
+  view only). Such shared folders, and what is in them, also get a small lock in a listing read from Dropbox.
 - Where the connection gives you **reads and changes**: **New folder**, **Rename** (F2) and batch rename, **Delete**
   (into Dropbox's deleted files, where Dropbox keeps them for a while, as the delete dialog says: no Undo in SFE),
   and moving or copying inside the connection by cut and paste (Ctrl+X / Ctrl+C, Ctrl+V) or by dragging onto a

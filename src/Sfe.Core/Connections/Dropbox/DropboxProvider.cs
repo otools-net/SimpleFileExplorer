@@ -52,6 +52,7 @@ public sealed class DropboxProvider(OutboundPolicy outbound, ProviderSecrets sec
             OwnTrash = true,
             CaseInsensitiveNames = true,
             FreeSpace = true,
+            ReadOnlyItems = true,
         };
 
     public IReadOnlyList<SignInMethod> SignInMethods(ConnectionOptions options) =>

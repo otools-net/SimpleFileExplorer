@@ -72,6 +72,13 @@ public sealed class FakeAccount(FakeProvider provider)
     /// </summary>
     public Dictionary<string, RemoteMedia?> Thumbnailed { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Folders the provider refuses changes in (full paths): they and what is under them are told
+    /// <see cref="RemoteItem.ReadOnly"/> when the provider has <see cref="ProviderCapabilities.ReadOnlyItems"/>, as
+    /// Dropbox tells a folder shared for viewing only. Nothing refuses the changes themselves.
+    /// </summary>
+    public HashSet<string> ReadOnlyFolders { get; } = new(StringComparer.OrdinalIgnoreCase);
+
     public string? TextOf(string path) =>
         Locked(() => Find(path) is { Content: { } bytes } ? System.Text.Encoding.UTF8.GetString(bytes) : null);
 

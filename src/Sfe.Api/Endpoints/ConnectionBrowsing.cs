@@ -22,6 +22,7 @@ internal static class ConnectionBrowsing
     )
     {
         var open = request.Open;
+        request = request with { ReadOnly = await ReadOnlyAsync(request, files, cancellationToken) };
         var target = await TargetAsync(files, open, cancellationToken);
         if (target is not null && await FromIndexAsync(request, target, browse, cancellationToken) is { } indexed)
             return await AnswerAsync(request, indexed, browse, (target, _ => true), cancellationToken);
@@ -53,6 +54,23 @@ internal static class ConnectionBrowsing
             ProviderPaging: asked.Offset > 0 && browse.Listings.Holds(asked)
         );
         return browse.IndexListings.ListAsync(query, cancellationToken);
+    }
+
+    /// <summary>
+    /// Why the session can change no file in the folder: SFE's reasons, then the provider's when SFE lets it
+    /// (agents/docs/features/item-access.md).
+    /// </summary>
+    private static async Task<ReadOnlyReason?> ReadOnlyAsync(
+        ConnectionBrowseRequest request,
+        ConnectionFileServices files,
+        CancellationToken cancellationToken
+    )
+    {
+        var (open, path) = (request.Open, request.Asked.Path);
+        var report = await files.AccessReportAsync(open);
+        if (report.FolderReason(path, request.Here) is { } reason)
+            return reason;
+        return await files.ProviderRefusesAsync(open, path, cancellationToken) ? ReadOnlyReason.Provider : null;
     }
 
     /// <summary>The connection as its index is made from it (root folder, account); null when it is gone.</summary>
@@ -91,7 +109,8 @@ internal static class ConnectionBrowsing
         // Sizes and lengths a thumbnail or the content cache told (agents/docs/features/connection-previews.md).
         if (index.Target is { } known)
             items = await browse.Media.AttachAsync(RemoteTagPlace.Of(known), items, cancellationToken);
-        return TypedResults.Ok(page with { Listing = page.Listing with { Access = view, Items = items } });
+        var listed = page.Listing with { Access = view, Items = items, ReadOnly = request.ReadOnly };
+        return TypedResults.Ok(page with { Listing = listed });
     }
 
     /// <summary>

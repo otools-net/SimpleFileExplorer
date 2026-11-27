@@ -139,6 +139,7 @@ public static class AccessServiceCollectionExtensions
         services.AddSingleton<ConnectionSignInFlow>();
         services.AddSingleton<RemoteListings>();
         services.AddSingleton<ConnectionGates>();
+        services.AddSingleton<RemoteReadOnlyFolders>();
         services.AddSingleton<Transfers.TransferCalls>();
         // Unfinished uploads into connections, kept across restarts beside the setup code (sessions protected).
         services.AddSingleton(sp => new RemoteUploadRecords(

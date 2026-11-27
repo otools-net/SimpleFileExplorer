@@ -41,7 +41,19 @@ export interface LibraryItem {
  * refused writing; in Properties also a file the disk marks read-only.
  */
 export type ReadOnlyReason =
-    'server' | 'space' | 'visitor' | 'rights' | 'rule' | 'link' | 'diskReadOnly' | 'diskRefused' | 'fileReadOnly';
+    | 'server'
+    | 'space'
+    | 'visitor'
+    | 'rights'
+    | 'rule'
+    | 'link'
+    | 'diskReadOnly'
+    | 'diskRefused'
+    | 'fileReadOnly'
+    // Connections: set read-only, its level for the groups, the storage refusing changes.
+    | 'connection'
+    | 'level'
+    | 'provider';
 
 /**
  * What a folder is kept out of, for the whole space (`index.exclude`): for each, the listed folder it is excluded

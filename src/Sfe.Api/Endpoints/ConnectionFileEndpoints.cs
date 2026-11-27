@@ -31,6 +31,9 @@ public static class ConnectionFileEndpoints
         The item as a listing shows it (`item`; the root folder named after the connection), the provider's kind,
         the content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file has
         content to download. `account` (the provider's account) is given only on the caller's own connection.
+        `access`: what the caller may do with it, each action with the first reason refusing it (SFE's: the space,
+        the connection set read-only, a folder rule, the groups' level; then `provider`, the storage refusing changes
+        there), the folder of the nearest rule, and in `disk` whether the storage takes changes where it is.
         """;
 
     public static RouteGroupBuilder MapConnectionFileEndpoints(this RouteGroupBuilder api)
@@ -160,6 +163,10 @@ public static class ConnectionFileEndpoints
                 return there;
             if (normalized.Length == 0)
                 item = item with { Name = open.Connection.Name };
+            var parentReadOnly =
+                normalized.Length > 0
+                && await files.ProviderRefusesAsync(open, RemotePaths.Parent(normalized), storage, cancellationToken);
+            var access = (await files.AccessReportAsync(open)).Of(normalized, item, parentReadOnly);
             return TypedResults.Ok(
                 new ConnectionItemProperties(
                     ConnectionListings.ToItem(item, classifier),
@@ -167,7 +174,8 @@ public static class ConnectionFileEndpoints
                     account,
                     item.Hash,
                     open.Capabilities.ContentHash,
-                    item.Downloadable
+                    item.Downloadable,
+                    access
                 )
             );
         });

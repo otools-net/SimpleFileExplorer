@@ -72,11 +72,14 @@ its hint says why, in one sentence:
 - you are a visitor or use a guest account;
 - your rights in this space, or a folder rule on this folder, let you open files only (ask an administrator);
 - the folder is behind a link leaving the library, which the server keeps read-only;
-- the disk refuses changes: it is mounted read-only, or the server isn't allowed to write in this folder.
+- the disk refuses changes: it is mounted read-only, or the server isn't allowed to write in this folder;
+- on a [connection](../administration/connections.md#browsing-a-connection): the connection is made read only, it is
+  shared with your groups to read only, or the storage refuses changes (a Dropbox folder shared with the account to
+  view only).
 
 When you can change the folder, nothing is shown, but a small **lock** marks the files and folders inside that you
 can't change: a folder rule makes them read-only for you, or the disk marks the file read-only (it opens, but can't be
-saved over). The buttons and menu entries for what you can't do are hidden or greyed, as before; in a folder the disk
+saved over); on a connection, what its storage refuses to change. The buttons and menu entries for what you can't do are hidden or greyed, as before; in a folder the disk
 refuses, the menu entries that would write there (Rename…, Move to…, Delete…, New folder…, uploads, Paste…) are
 greyed with the disk's reason. The [properties](managing-files.md#properties) of an item say, in their **Access**
 section, what you may do with it and why not.

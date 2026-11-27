@@ -20,7 +20,8 @@ Dropbox](../../../docs/administration/connections.md#setting-up-dropbox-server-a
   `*.dl.dropboxusercontent.com` (temporary links). The browser alone goes to `www.dropbox.com/oauth2/authorize`.
   `notify.dropboxapi.com` (long poll) is not used.
 - Capabilities: ranged reads, uploads in parts of at most 150 MB, server-side copy and move, thumbnails, change
-  cursor, content hash `dropbox`, own trash, case-insensitive names, free space; no folder dates.
+  cursor, content hash `dropbox`, own trash, case-insensitive names, free space, read-only items
+  (`SharingInfo.ReadOnly` of a file or folder: a folder shared for viewing and what is in it); no folder dates.
 
 ## App key, secret and sign-in
 

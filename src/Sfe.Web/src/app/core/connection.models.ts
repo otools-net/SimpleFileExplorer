@@ -4,7 +4,7 @@
  */
 
 import { ConnectionLevelName } from './config.models';
-import { DirectoryListing, LibraryItem } from './models';
+import { DirectoryListing, ItemAccess, LibraryItem } from './models';
 
 export type FolderLevelName = 'hidden' | 'read' | 'write';
 export type ConnectionStateName = 'ready' | 'needsReconnecting';
@@ -194,6 +194,8 @@ export interface PlaceProperties {
     hashName: string | null;
     /** False for an online document: nothing to download. */
     downloadable: boolean;
+    /** What the session may do with it (`disk`: whether the storage takes changes where it is). */
+    access?: ItemAccess | null;
 }
 
 /** A folder rule of a connection for one group or account of the library (`api/connections/{id}/folder-rules`). */

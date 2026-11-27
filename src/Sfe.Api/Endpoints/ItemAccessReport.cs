@@ -72,6 +72,12 @@ internal sealed class ItemAccessReport(
     {
         if (state.Has(right))
             return state.At(paths, path) is { } here && !here.Has(right) ? ReadOnlyReason.Rule : null;
+        return Unheld(state, serverOff, right);
+    }
+
+    /// <summary>Why the asker doesn't hold <paramref name="right"/> in the space (it doesn't).</summary>
+    internal static ReadOnlyReason Unheld(AccessState state, IReadOnlyCollection<string> serverOff, string right)
+    {
         if (RightCatalog.MatchesAny(serverOff, right))
             return ReadOnlyReason.Server;
         if (state.Access.SpaceDisabled?.Contains(right) == true)

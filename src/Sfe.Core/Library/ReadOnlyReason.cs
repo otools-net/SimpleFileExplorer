@@ -32,4 +32,15 @@ public enum ReadOnlyReason
 
     /// <summary>The disk marks the file read-only: it can't be saved over (Properties only).</summary>
     FileReadOnly,
+
+    /// <summary>A connection set read-only by whoever manages it (<c>Connection.ReadOnly</c>).</summary>
+    Connection,
+
+    /// <summary>A connection given to the asker's groups to read only (their level), no rule raising it.</summary>
+    Level,
+
+    /// <summary>
+    /// The connection's storage refuses changes there (a folder shared with its account for viewing only).
+    /// </summary>
+    Provider,
 }

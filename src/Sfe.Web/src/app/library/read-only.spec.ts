@@ -92,6 +92,9 @@ describe('Read-only folders', () => {
             'diskReadOnly',
             'diskRefused',
             'fileReadOnly',
+            'connection',
+            'level',
+            'provider',
         ];
         const texts = reasons.map(readOnlyText);
 
@@ -131,6 +134,12 @@ describe('Locks on items', () => {
         expect(row.querySelector('.lock-mark')).not.toBeNull();
         expect(folder.querySelector('.lock-mark')!.getAttribute('title')).toContain('folder rule');
         expect(quiet.querySelector('.lock-mark')).toBeNull();
+    });
+
+    it("say the storage refuses changes on a connection's items", () => {
+        expect(itemLock(page([marked]), marked, true)).toBe(
+            'The storage refuses changes to it: it is shared to view only.',
+        );
     });
 
     it('are left out when the whole folder is read-only: its chip says it', () => {
@@ -173,6 +182,15 @@ describe('Menus on a folder the disk refuses', () => {
 
         expect(greyedIds(TestBed.inject(ItemMenu).entries(sub))).not.toContain('paste');
         expect(greyedIds(TestBed.inject(ItemMenu).entries(sub))).toContain('rename');
+    });
+
+    it("grey them too in a connection's folder its storage refuses", async () => {
+        await show(page([photo], { readOnly: 'provider' }));
+
+        const entries = TestBed.inject(ItemMenu).entries(photo);
+
+        expect(greyedIds(entries)).toEqual(expect.arrayContaining(['cut', 'rename', 'moveTo', 'delete']));
+        expect(entryOf(entries, 'delete').title).toBe(readOnlyText('provider'));
     });
 
     it('stay as the rights say when the folder takes changes, or the rights already refuse', async () => {

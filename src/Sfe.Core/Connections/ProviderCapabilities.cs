@@ -53,4 +53,10 @@ public sealed record ProviderCapabilities
 
     /// <summary>Tells the space used and left.</summary>
     public bool FreeSpace { get; init; }
+
+    /// <summary>
+    /// Tells the items it refuses to change (<see cref="RemoteItem.ReadOnly"/>: a folder shared for viewing only),
+    /// so that listings and Properties say so before trying (agents/docs/features/item-access.md).
+    /// </summary>
+    public bool ReadOnlyItems { get; init; }
 }

@@ -119,6 +119,32 @@ describe("Properties of a connection's items", () => {
         expect(element.textContent).toContain('None to download: this is an online document.');
     });
 
+    it("tells what the session may do there, the storage's side under the provider's name", async () => {
+        await setUp(true);
+        const access: PlaceProperties['access'] = {
+            actions: [
+                { action: 'open', allowed: true, reason: null },
+                { action: 'saveOver', allowed: false, reason: 'provider' },
+                { action: 'rename', allowed: false, reason: 'level' },
+            ],
+            ruleFolder: 'Trips',
+            disk: 'provider',
+        };
+        api.connectionGet.mockResolvedValue(remote(photo, { access }));
+
+        const element = await open(photo);
+
+        const reasons = [...element.querySelectorAll('.access-lines .access-reason')].map((r) => r.textContent);
+        expect(reasons).toEqual([
+            'The storage refuses changes there.',
+            'This connection is shared with your groups to read only.',
+        ]);
+        expect(element.querySelector('.access-rule')!.textContent).toContain(' / Trips.');
+        const side = [...element.querySelectorAll('.properties-access dt')].at(-1)!;
+        expect(side.textContent).toBe('Dropbox');
+        expect(element.querySelector('.access-disk')!.textContent).toBe('The storage refuses changes there.');
+    });
+
     it("asks the library's route outside a connection", async () => {
         await setUp(false);
         api.properties.mockResolvedValue(local(photo));

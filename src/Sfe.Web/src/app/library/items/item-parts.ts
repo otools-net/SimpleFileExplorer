@@ -182,5 +182,6 @@ export class ItemFolderComponent {
 export class LockMarkComponent {
     readonly item = input.required<LibraryItem>();
     private readonly store = inject(ListingStore);
-    protected readonly lock = computed(() => itemLock(this.store.listing(), this.item()));
+    private readonly config = inject(ConfigService);
+    protected readonly lock = computed(() => itemLock(this.store.listing(), this.item(), this.config.place() !== null));
 }

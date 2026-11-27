@@ -7,12 +7,14 @@ Code: `src/Sfe.Api/Endpoints/ListingAccess.cs` (`SfeReason`, `DiskReason`, `Acce
 `library/read-only.ts` (`readOnlyReason`, `readOnlyText`, `itemLock`), `LockMarkComponent` (`items/item-parts.ts`),
 the chip in `location/location.component.html`, `.read-only-chip` (`styles/location.css`), `.lock-mark`
 (`styles/items.css`); `placeRefusal` with `ItemCommands.onDisk` and `FolderMenu.onDisk` (menus);
-`files/access-texts.ts` and the Access section of `properties.dialog.html` (`styles/item-access.css`). Tests:
-`ListingReadOnlyRouteTests`, `ItemAccessRouteTests`, `FolderPolicyTests.TheFolderARuleIsSetOnIsTold`,
-`DiskWritesTests`, `read-only.spec.ts`, `properties.spec.ts`; on Linux through WSL with
-`agents/tools/linux-tests/run.sh --readonly-mount` (`access(2)` refused and `EROFS` checked there, 2026-11-26). Plan steps 4.6a
-(library listings, done), 4.6b (Properties and menus, done), 4.6c (connections):
-[release-2.0-plan](../development/release-2.0-plan.md).
+`files/access-texts.ts` and `files/item-access.component.*` (the Access section, `styles/item-access.css`).
+Connections: `ConnectionAccessReport`, `RemoteReadOnlyFolders`, `ConnectionFileServices.ProviderRefusesAsync`,
+`ConnectionFolders.RuleFolder` / `ChangesFiles`, `RemoteItem.ReadOnly`, `ProviderCapabilities.ReadOnlyItems`,
+`UsableConnection.ReadOnly`. Tests: `ListingReadOnlyRouteTests`, `ItemAccessRouteTests`,
+`ConnectionReadOnlyRouteTests`, `FolderPolicyTests.TheFolderARuleIsSetOnIsTold`, `DiskWritesTests`,
+`read-only.spec.ts`, `properties.spec.ts`, `place-properties.spec.ts`; on Linux through WSL with
+`agents/tools/linux-tests/run.sh --readonly-mount` (`access(2)` refused and `EROFS` checked there, 2026-11-26).
+Done in plan steps 4.6a (library listings), 4.6b (Properties and menus), 4.6c (connections), 2026-11-26/27.
 
 ## What a listing says (`GET api/browse`)
 
@@ -64,6 +66,31 @@ the chip in `location/location.component.html`, `.read-only-chip` (`styles/locat
 - Searches never grey (no listing reason); the location bar's buttons (upload, new folder) aren't greyed (left for
   now: the server's error says it).
 
+## Connections (`GET api/connections/{id}/browse`, `…/files/properties`)
+
+- The listing's `readOnly`, the first that applies: the space's reasons as in the library (`server`, `space`,
+  `rights`: `ListingAccess.SfeReason` without a folder; visitors never use connections), then the connection's when
+  the folder's `FolderAccess` has no right that changes files: `connection` (`Connection.ReadOnly`, the cap, also for
+  owners and server administrators), `rule` (a rule of the asker at or above the folder:
+  `ConnectionFolders.RuleFolder`), else `level` (the groups' row is Read). Then, only when SFE lets the asker
+  write, `provider`: the storage refuses changes in the folder.
+- `provider` needs `ProviderCapabilities.ReadOnlyItems` (Dropbox: `sharing_info.read_only` of a file or folder, set
+  on a folder shared with the account for viewing and on everything in it). The folder's own metadata is asked
+  (`GetAsync`) by `RemoteReadOnlyFolders`, kept 30 s per connection and path, at most 1,000; outside the route's
+  turn it takes one of the gate (`ProviderRefusesAsync`), and nothing while the provider asks to wait. A call that
+  fails counts as writable. The singleton is per server (DI, not static: tests get their own).
+- Children: `access.children[name].readOnly` from the connection's rules (as in the library), and `readOnly` on
+  items the provider marks (`ConnectionListings.ToItem`; folders too, unlike the library). Listings from the index
+  don't have the provider's mark (the index keeps no such column): the lock shows only on listings read from the
+  provider; the folder's own chip doesn't depend on it.
+- Properties: `access` (`ItemAccess`, as the library's) from `ConnectionAccessReport.Of`: rights checked in the space
+  (`ItemAccessReport.Unheld`), then at the item (`Folders.At(path, id)`: rules set on it elsewhere too), then the
+  provider: the item's own mark refuses saving over a file and adding inside a folder, its parent's (asked through
+  `RemoteReadOnlyFolders` in the route's turn) renaming, moving and deleting. `disk` is the storage's side (the
+  folder, or the file's folder); the client labels it with the provider's name.
+- Menus: `placeRefusal` counts `provider` with the disk's reasons (writes greyed); the SFE reasons are already in
+  the folder's rights (`access.rights`), which grey the menus as before.
+
 ## The disk probe (`DiskWrites`)
 
 - Never writes. Windows: the volume's `FILE_READ_ONLY_VOLUME` flag (`GetVolumePathName` + `GetVolumeInformation`),
@@ -97,3 +124,7 @@ the chip in `location/location.component.html`, `.read-only-chip` (`styles/locat
   after the folder changes or the cache drops it.
 - The probe is static (server-wide), keyed by full path: two spaces on the same folder share answers, as they share
   the disk.
+- A Dropbox member may rename or move the shared folder itself (its mount) even when it is shared to view only:
+  Properties asks the mount's parent for those, so they stay allowed; inside it everything is refused.
+- Two `[AsParameters]` records of one route can't have properties of the same name (ASP.NET: "An item with the same
+  key has already been added"): `ConnectionFileServices.ServerOptions`, not `Options` (the browse services have one).

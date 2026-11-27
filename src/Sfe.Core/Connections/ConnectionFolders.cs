@@ -20,6 +20,11 @@ public sealed class ConnectionFolders(
     /// <summary>No folder rule nor level narrows the rights: an owner, a server administrator.</summary>
     public bool IsUnrestricted => policy.IsUnrestricted;
 
+    private static readonly string[] FileRights =
+    [
+        .. RightCatalog.TenantRights.Where(r => r.ChangesFiles).Select(r => r.Id),
+    ];
+
     /// <summary>How the provider compares names.</summary>
     public StringComparison Comparison => comparison;
 
@@ -57,6 +62,15 @@ public sealed class ConnectionFolders(
     /// before changing or copying a whole tree, so that nobody reaches what is hidden from them.
     /// </summary>
     public bool AllowsThroughout(string path, string right) => policy.AllowsThroughout(path, right, granted);
+
+    /// <summary>
+    /// The nearest folder at or above <paramref name="path"/> with one of the subject's rules; null without one
+    /// (<see cref="FolderPolicy.RuleFolder"/>).
+    /// </summary>
+    public string? RuleFolder(string path) => policy.RuleFolder(path);
+
+    /// <summary>Some right of <paramref name="access"/> changes files (creating, renaming, deleting...).</summary>
+    public static bool ChangesFiles(FolderAccess access) => FileRights.Any(access.Has);
 
     /// <summary>The subject may use <paramref name="right"/> somewhere in the connection.</summary>
     public bool AllowsSomewhere(string right) => policy.Paths.Any(path => Allows(path, right));
@@ -162,5 +176,11 @@ public sealed class ConnectionFolders(
     private static FolderAccessView View(
         FolderAccess access,
         IReadOnlyDictionary<string, FolderAccessView>? children
-    ) => new([.. access.Allowed.Order(StringComparer.Ordinal)], access.PathOnly, children);
+    ) =>
+        new(
+            [.. access.Allowed.Order(StringComparer.Ordinal)],
+            access.PathOnly,
+            children,
+            ReadOnly: !ChangesFiles(access)
+        );
 }

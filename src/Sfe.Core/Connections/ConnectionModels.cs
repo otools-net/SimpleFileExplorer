@@ -68,7 +68,8 @@ public sealed record UsableConnection(
     string Name,
     ConnectionLevel Level,
     ConnectionState State,
-    FolderLevel Access
+    FolderLevel Access,
+    bool ReadOnly = false
 );
 
 /// <summary>What a person asks to connect (<see cref="ConnectionSignInFlow.BeginAsync"/>).</summary>

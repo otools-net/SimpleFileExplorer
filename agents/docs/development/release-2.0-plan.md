@@ -462,7 +462,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     Was: a task finished or failed while away, for the user who started it; administrators also get failed
     background tasks. Each a notification with a deep link to its run in the task history (new: a link opening one
     run); a link to an upload (admin uploads) where it helps.
-- [ ] **4.6 What I may do here: read-only or writable shown** (owner's request 2026-11-23, M; after 2.9). Show, for
+- [x] **4.6 What I may do here: read-only or writable shown** (owner's request 2026-11-23, M; after 2.9). Show, for
   a folder and for a file, whether the user can only read it or can also change it, and **why**, from both sides:
   **SFE** (the space's rights, `Sfe:Rights:Disabled` and the space's **Files read-only** switch, folder rules;
   for connections the level, the connection's `ReadOnly` cap and its folder rules) and **the file system as it is
@@ -505,8 +505,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     section; `placeRefusal` greys the item menu's writes (cut, rename, move, delete, archive, paste but not for
     `diskRefused`) and the background menu's New… / uploads / Paste. Screenshot `properties-access.png` (scene
     `properties`, the space's switch for the shot through `filesReadOnly`). Location bar buttons not greyed.
-  - [ ] **4.6c connections:** the level, the connection's `ReadOnly` cap and its folder rules, folders the provider
-    reports read-only, in the same chip, locks and Properties.
+  - [x] **4.6c connections:** the level, the connection's `ReadOnly` cap and its folder rules, folders the provider
+    reports read-only, in the same chip, locks and Properties. Done 2026-11-27: `ConnectionAccessReport` (listing
+    reason: the space's, then `connection` / `rule` / `level`, then `provider`; Properties' `access`), reason words
+    `connection`, `level`, `provider` (additive), `RemoteItem.ReadOnly` with `ProviderCapabilities.ReadOnlyItems`
+    (Dropbox `SharingInfo.ReadOnly`), `RemoteReadOnlyFolders` (the folder's metadata, 30 s per folder, a gate turn
+    outside the route's), `UsableConnection.ReadOnly`, children's `readOnly` from the connection's rules. Client: the
+    Access section moved into `files/item-access.component.*` (both sheets), the storage's side labelled with the
+    provider's name, `placeRefusal` counts `provider`. No screenshot: no connection can be made in the
+    docs-screenshots tool (needs a real Dropbox account); user docs in text. OpenAPI baseline and Sfe.Client
+    regenerated.
 
 ### Phase 5: guidance
 
@@ -589,12 +597,13 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-26):** **4.6a** (library listings) and **4.6b** (Properties' Access section, menus greyed
-  by the disk) done. Next: **4.6c** (connections: the level, the connection's `ReadOnly` cap, its folder rules,
-  folders the provider reports read-only, in the same chip, locks and Properties).
-- 4.6c: `ItemAccessReport` (library) is the shape to follow for a connection's Properties (`place-properties.ts`
-  shows the remote sheet: no Access section yet); `ConnectionPolicies` has a `FolderPolicy` per connection
-  (`RuleFolder` works on it, paths compared as the provider does).
+- **Last session (2026-11-27):** a fix committed apart (a copy of a file the server's account may not read says so:
+  `UnreadableException`), then **4.6c** (connections) done, which closes **4.6**. Next: phase 5, **5.1** (help
+  inside the app).
+- The tests' `UnreadableFile` (`tests/Sfe.Tests/Infrastructure/`) makes a file unreadable (Windows ACL, Unix mode)
+  for a test and gives it back when disposed.
+- Two `[AsParameters]` records on one route must not share a property name (ASP.NET fails every request with "An
+  item with the same key has already been added. Key: …").
 - The docs-screenshots helper `filesReadOnly(b)` (`shots.mjs`) turns the space's Files read-only switch on and
   answers what puts it back: reuse it for shots of what a read-only user sees.
 - Docs-screenshots scenes can't sign in other accounts: the app runs in Local mode (administrators only). Show what

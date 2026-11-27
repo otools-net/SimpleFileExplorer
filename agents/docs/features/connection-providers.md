@@ -61,8 +61,10 @@ client component or table changes.
 `RangedReads`, `UploadsInParts`, `MaxUploadPart`, `ServerSideCopy`, `ServerSideMove` (two flags: SFTP moves but
 cannot copy), `Thumbnails`, `ChangeCursor`, `ContentHash` (a name: `dropbox`, `md5`, `sha256`; null = none; the
 transfers verify with it, `ContentHashes`), `OwnTrash`, `CaseInsensitiveNames` (`RemotePaths.ComparisonOf`: paths
-and rules compare by it), `UniqueNames`, `FolderDates`, `FreeSpace`. The server sends them in `ClientConfig` and each
-listing; the client hides what a place can't do from them (`atPlace`).
+and rules compare by it), `UniqueNames`, `FolderDates`, `FreeSpace`, `ReadOnlyItems` (it sets `RemoteItem.ReadOnly` on
+what it refuses to change: [item-access](item-access.md#connections-get-apiconnectionsidbrowse-filesproperties)).
+The server sends them in `ClientConfig` and each listing; the client hides what a place can't do from them
+(`atPlace`).
 
 Checked on paper (2026-11-13) against WebDAV, SFTP and Google Drive:
 

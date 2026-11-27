@@ -33,7 +33,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Properti
         {
         }
         /// <summary>
-        /// The item as a listing shows it (`item`; the root folder named after the connection), the provider&apos;s kind,the content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file hascontent to download. `account` (the provider&apos;s account) is given only on the caller&apos;s own connection.
+        /// The item as a listing shows it (`item`; the root folder named after the connection), the provider&apos;s kind,the content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file hascontent to download. `account` (the provider&apos;s account) is given only on the caller&apos;s own connection.`access`: what the caller may do with it, each action with the first reason refusing it (SFE&apos;s: the space,the connection set read-only, a folder rule, the groups&apos; level; then `provider`, the storage refusing changesthere), the folder of the nearest rule, and in `disk` whether the storage takes changes where it is.
         /// </summary>
         /// <returns>A <see cref="Stream"/></returns>
         /// <param name="cancellationToken">Cancellation token to use when cancelling requests</param>
@@ -51,7 +51,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Properti
             return await RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, default, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// The item as a listing shows it (`item`; the root folder named after the connection), the provider&apos;s kind,the content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file hascontent to download. `account` (the provider&apos;s account) is given only on the caller&apos;s own connection.
+        /// The item as a listing shows it (`item`; the root folder named after the connection), the provider&apos;s kind,the content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file hascontent to download. `account` (the provider&apos;s account) is given only on the caller&apos;s own connection.`access`: what the caller may do with it, each action with the first reason refusing it (SFE&apos;s: the space,the connection set read-only, a folder rule, the groups&apos; level; then `provider`, the storage refusing changesthere), the folder of the nearest rule, and in `disk` whether the storage takes changes where it is.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
@@ -78,7 +78,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Properti
             return new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Item.Files.Properties.PropertiesRequestBuilder(rawUrl, RequestAdapter);
         }
         /// <summary>
-        /// The item as a listing shows it (`item`; the root folder named after the connection), the provider&apos;s kind,the content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file hascontent to download. `account` (the provider&apos;s account) is given only on the caller&apos;s own connection.
+        /// The item as a listing shows it (`item`; the root folder named after the connection), the provider&apos;s kind,the content hash the provider gives (`contentHash`, of the kind `hashName` names) and whether the file hascontent to download. `account` (the provider&apos;s account) is given only on the caller&apos;s own connection.`access`: what the caller may do with it, each action with the first reason refusing it (SFE&apos;s: the space,the connection set read-only, a folder rule, the groups&apos; level; then `provider`, the storage refusing changesthere), the folder of the nearest rule, and in `disk` whether the storage takes changes where it is.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class PropertiesRequestBuilderGetQueryParameters 

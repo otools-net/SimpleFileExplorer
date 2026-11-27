@@ -36,6 +36,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public string Name { get; set; }
 #endif
+        /// <summary>The readOnly property</summary>
+        public bool? ReadOnly { get; set; }
         /// <summary>The state property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Models.ConnectionState? State { get; set; }
         /// <summary>
@@ -44,6 +46,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public UsableConnection()
         {
             AdditionalData = new Dictionary<string, object>();
+            ReadOnly = false;
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -68,6 +71,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "kind", n => { Kind = n.GetStringValue(); } },
                 { "level", n => { Level = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectionLevel>(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
+                { "readOnly", n => { ReadOnly = n.GetBoolValue(); } },
                 { "state", n => { State = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectionState>(); } },
             };
         }
@@ -83,6 +87,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteStringValue("kind", Kind);
             writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectionLevel>("level", Level);
             writer.WriteStringValue("name", Name);
+            writer.WriteBoolValue("readOnly", ReadOnly);
             writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectionState>("state", State);
             writer.WriteAdditionalData(AdditionalData);
         }

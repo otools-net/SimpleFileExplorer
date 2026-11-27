@@ -43,11 +43,17 @@ internal static class ConnectionListings
     public static LibraryItem ToItem(RemoteItem item, MediaClassifier classifier)
     {
         DateTimeOffset? modified = item.Modified is { } date ? new DateTimeOffset(date, TimeSpan.Zero) : null;
+        // The provider refusing changes to it (a folder shared for viewing only): its lock in listings.
+        bool? readOnly = item.ReadOnly ? true : null;
         if (item.IsFolder)
-            return new LibraryItem(item.Name, item.Path, ItemKind.Directory, null, null, modified);
+            return new LibraryItem(item.Name, item.Path, ItemKind.Directory, null, null, modified) with
+            {
+                ReadOnly = readOnly,
+            };
 
         var extension = RemoteSort.ExtensionOf(item);
-        return new LibraryItem(item.Name, item.Path, classifier.Classify(extension), extension, item.Size, modified);
+        var kind = classifier.Classify(extension);
+        return new LibraryItem(item.Name, item.Path, kind, extension, item.Size, modified) with { ReadOnly = readOnly };
     }
 
     private static IReadOnlyList<Breadcrumb> Breadcrumbs(string rootName, string path)

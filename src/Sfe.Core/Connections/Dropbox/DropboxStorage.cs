@@ -221,9 +221,16 @@ public sealed class DropboxStorage : IRemoteStorage
                 DateTime.SpecifyKind(entry.AsFile.ServerModified, DateTimeKind.Utc),
                 entry.AsFile.Id,
                 entry.AsFile.ContentHash,
-                entry.AsFile.IsDownloadable
+                entry.AsFile.IsDownloadable,
+                entry.AsFile.SharingInfo?.ReadOnly == true
             )
-            : new RemoteItem(entry.Name, RelativeOf(entry), IsFolder: true, Id: entry.AsFolder?.Id);
+            : new RemoteItem(
+                entry.Name,
+                RelativeOf(entry),
+                IsFolder: true,
+                Id: entry.AsFolder?.Id,
+                ReadOnly: entry.AsFolder?.SharingInfo?.ReadOnly == true
+            );
 
     /// <summary>Part of a file through its temporary link; the whole file when the server ignores the range.</summary>
     private async Task<RemoteContent> ReadRangeAsync(

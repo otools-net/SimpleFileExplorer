@@ -29,7 +29,7 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
         });
 
     public Task<RemoteItem?> GetAsync(string path, CancellationToken cancellationToken) =>
-        Call("get", path, () => path.Length == 0 ? new RemoteItem("", "", true)
+        Call("get", path, () => path.Length == 0 ? new RemoteItem("", "", true, ReadOnly: IsReadOnly(root))
             : account.Find(Full(path)) is { } entry ? ToItem(entry)
             : null);
 
@@ -267,7 +267,15 @@ public sealed class FakeStorage(FakeAccount account, string root, ProviderCapabi
             entry.Content?.LongLength,
             entry.Modified,
             entry.Id,
-            entry.Content is { } bytes ? HashOf(bytes) : null
+            entry.Content is { } bytes ? HashOf(bytes) : null,
+            ReadOnly: IsReadOnly(entry.Path)
+        );
+
+    private bool IsReadOnly(string full) =>
+        capabilities.ReadOnlyItems
+        && account.ReadOnlyFolders.Any(folder =>
+            full.Equals(folder, StringComparison.OrdinalIgnoreCase)
+            || full.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase)
         );
 
     private string HashOf(byte[] bytes) =>

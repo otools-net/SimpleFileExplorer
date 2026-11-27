@@ -36,6 +36,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public bool? OwnTrash { get; set; }
         /// <summary>The rangedReads property</summary>
         public bool? RangedReads { get; set; }
+        /// <summary>The readOnlyItems property</summary>
+        public bool? ReadOnlyItems { get; set; }
         /// <summary>The serverSideCopy property</summary>
         public bool? ServerSideCopy { get; set; }
         /// <summary>The serverSideMove property</summary>
@@ -79,6 +81,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "maxUploadPart", n => { MaxUploadPart = n.GetLongValue(); } },
                 { "ownTrash", n => { OwnTrash = n.GetBoolValue(); } },
                 { "rangedReads", n => { RangedReads = n.GetBoolValue(); } },
+                { "readOnlyItems", n => { ReadOnlyItems = n.GetBoolValue(); } },
                 { "serverSideCopy", n => { ServerSideCopy = n.GetBoolValue(); } },
                 { "serverSideMove", n => { ServerSideMove = n.GetBoolValue(); } },
                 { "thumbnails", n => { Thumbnails = n.GetBoolValue(); } },
@@ -101,6 +104,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteLongValue("maxUploadPart", MaxUploadPart);
             writer.WriteBoolValue("ownTrash", OwnTrash);
             writer.WriteBoolValue("rangedReads", RangedReads);
+            writer.WriteBoolValue("readOnlyItems", ReadOnlyItems);
             writer.WriteBoolValue("serverSideCopy", ServerSideCopy);
             writer.WriteBoolValue("serverSideMove", ServerSideMove);
             writer.WriteBoolValue("thumbnails", Thumbnails);

@@ -51,6 +51,12 @@ export function refusalText(reason: ReadOnlyReason): string {
             return $localize`:why an action is refused:The server isn't allowed to write there on the disk.`;
         case 'fileReadOnly':
             return $localize`:why an action is refused:The disk marks the file read-only.`;
+        case 'connection':
+            return $localize`:why an action is refused:This connection is set read-only.`;
+        case 'level':
+            return $localize`:why an action is refused:This connection is shared with your groups to read only.`;
+        case 'provider':
+            return $localize`:why an action is refused:The storage refuses changes there.`;
         default:
             return $localize`:why an action is refused:Your rights in this space don't include it.`;
     }
@@ -66,13 +72,16 @@ export function accessLines(access: ItemAccess, folder: boolean): AccessLine[] {
     }));
 }
 
-/** What the disk allows where the item is. */
-export function diskText(access: ItemAccess, folder: boolean): string {
-    if (!access.disk)
+/** What the disk allows where the item is; on a connection (`onPlace`), its storage. */
+export function placeText(access: ItemAccess, folder: boolean, onPlace = false): string {
+    if (access.disk) return refusalText(access.disk);
+    if (onPlace)
         return folder
-            ? $localize`:the disk's side:Takes changes in this folder.`
-            : $localize`:the disk's side:Takes changes in the file's folder.`;
-    return refusalText(access.disk);
+            ? $localize`:the storage's side:Takes changes in this folder, as far as it tells.`
+            : $localize`:the storage's side:Takes changes in the file's folder, as far as it tells.`;
+    return folder
+        ? $localize`:the disk's side:Takes changes in this folder.`
+        : $localize`:the disk's side:Takes changes in the file's folder.`;
 }
 
 /** The folder a rule is set on, from `root` (the library's name): "Set on Media / Private". */
