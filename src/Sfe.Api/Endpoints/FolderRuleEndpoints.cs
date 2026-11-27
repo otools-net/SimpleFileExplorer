@@ -93,7 +93,7 @@ public static class FolderRuleEndpoints
     )
     {
         var (rules, accounts, tenants, current, _) = services;
-        if (await SpaceAsync(current, tenants, tenant, cancellationToken) is not { } space)
+        if (await ManagedSpace.FindAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         return TypedResults.Ok(await ViewsAsync(rules, accounts, space, cancellationToken));
     }
@@ -108,7 +108,7 @@ public static class FolderRuleEndpoints
     )
     {
         var (rules, accounts, tenants, current, loggers) = services;
-        if (await SpaceAsync(current, tenants, tenant, cancellationToken) is not { } space)
+        if (await ManagedSpace.FindAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         var principal = new FolderPrincipalRef(change.GroupId, change.UserId);
         var result = await rules.SetAsync(
@@ -171,7 +171,7 @@ public static class FolderRuleEndpoints
     )
     {
         var (rules, accounts, tenants, current, loggers) = services;
-        if (await SpaceAsync(current, tenants, tenant, cancellationToken) is not { } space)
+        if (await ManagedSpace.FindAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         if (space.Paths.TryResolve(change.From, out var from) && (Directory.Exists(from) || File.Exists(from)))
         {
@@ -227,7 +227,7 @@ public static class FolderRuleEndpoints
     )
     {
         var (rules, accounts, tenants, current, _) = services;
-        if (await SpaceAsync(current, tenants, tenant, cancellationToken) is not { } space)
+        if (await ManagedSpace.FindAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         if (!space.Paths.TryResolve(path, out var full) || space.Paths.ToRelative(full) is not { } folder)
         {
@@ -236,79 +236,8 @@ public static class FolderRuleEndpoints
             );
         }
 
-        var all = await rules.GetAsync(space.Id, cancellationToken);
-        var groups = await accounts.GetGroupsAsync(space.Id, cancellationToken);
-        var users = await accounts.GetUsersAsync(space.Id, cancellationToken);
-        var info = await accounts.GetTenantAsync(space.Id, cancellationToken);
-
-        Dictionary<string, FolderLevel> RulesOf(FolderPrincipalRef principal) =>
-            RightsEvaluator.RuleMap(all.Where(r => r.Principal == principal).Select(r => (r.Path, r.Level)));
-
-        bool IsExplicit(FolderPrincipalRef principal) =>
-            all.Any(r => r.Principal == principal && LibraryPaths.PathComparer.Equals(r.Path, folder));
-
-        async Task<(bool Sees, bool ChangesFiles)> EffectiveAsync(int? userId)
-        {
-            var access = (await evaluator.GetAsync(new AccessSubject(space.Id, userId), cancellationToken)).At(folder);
-            return (access.Has(Rights.Browse), RightCatalog.All.Any(r => r.ChangesFiles && access.Has(r.Id)));
-        }
-
-        var groupEntries = groups
-            .Select(g =>
-            {
-                var principal = FolderPrincipalRef.Group(g.Id);
-                var level = FolderPolicy.LevelAt(RulesOf(principal), folder, true);
-                var granted = g.Rights.ToHashSet();
-                return new FolderAccessEntry(
-                    g.Id,
-                    null,
-                    g.Name,
-                    level,
-                    IsExplicit(principal),
-                    level >= FolderLevel.Read && granted.Contains(Rights.Browse),
-                    level == FolderLevel.Write && RightCatalog.All.Any(r => r.ChangesFiles && granted.Contains(r.Id))
-                );
-            })
-            .ToList();
-
-        var accountEntries = new List<FolderAccessEntry>();
-        foreach (var user in users.OrderBy(u => u.DisplayName ?? u.UserName, StringComparer.CurrentCultureIgnoreCase))
-        {
-            var principal = FolderPrincipalRef.Account(user.Id);
-            var (sees, changes) = await EffectiveAsync(user.Id);
-            accountEntries.Add(
-                new FolderAccessEntry(
-                    null,
-                    user.Id,
-                    user.DisplayName ?? user.UserName,
-                    FolderPolicy.LevelAt(RulesOf(principal), folder, false),
-                    IsExplicit(principal),
-                    sees,
-                    changes
-                )
-            );
-        }
-
-        FolderAccessEntry? visitors = null;
-        if (
-            info is { GuestAccess: true }
-            && groups.FirstOrDefault(g => g.BuiltIn == Core.Data.BuiltInGroup.Guests) is { } guests
-        )
-        {
-            var (sees, changes) = await EffectiveAsync(null);
-            visitors = new FolderAccessEntry(
-                guests.Id,
-                null,
-                "Visitors without an account",
-                groupEntries.First(e => e.GroupId == guests.Id).Level,
-                false,
-                sees,
-                changes
-            );
-        }
-
         return TypedResults.Ok(
-            new FolderAccessReport(folder, Directory.Exists(full), groupEntries, accountEntries, visitors)
+            await new FolderAccessReports(rules, accounts, evaluator, space).BuildAsync(folder, full, cancellationToken)
         );
     }
 
@@ -325,7 +254,7 @@ public static class FolderRuleEndpoints
         int? tenant = null
     )
     {
-        if (await SpaceAsync(current, tenants, tenant, cancellationToken) is not { } space)
+        if (await ManagedSpace.FindAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         if (
             !space.Paths.TryResolve(path, out var full)
@@ -360,29 +289,6 @@ public static class FolderRuleEndpoints
             : string.Empty;
         return TypedResults.Ok(new FolderPicker(folder, parent, folders));
     }
-
-    /// <summary>
-    /// The space a request is about, with its library; null when the caller may not manage it (as in
-    /// <see cref="AccessEndpoints"/>).
-    /// </summary>
-    private static async Task<ManagedSpace?> SpaceAsync(
-        CurrentAccess current,
-        TenantRegistry tenants,
-        int? tenant,
-        CancellationToken cancellationToken
-    )
-    {
-        var state = await current.GetAsync();
-        var id =
-            tenant is not { } asked || asked == state.TenantId ? state.TenantId
-            : state.Has(Rights.ManageTenants) ? asked
-            : (int?)null;
-        if (id is not { } spaceId || await tenants.GetAsync(spaceId, cancellationToken) is not { } host)
-            return null;
-        return new ManagedSpace(spaceId, state, host, host.Services.GetRequiredService<LibraryPaths>());
-    }
-
-    private sealed record ManagedSpace(int Id, AccessState State, TenantHost Host, LibraryPaths Paths);
 
     private static async Task<IReadOnlyList<FolderRuleView>> ViewsAsync(
         FolderRuleService rules,

@@ -8,7 +8,7 @@
     "src/Sfe.Api/Endpoints/EpubEndpoints.cs": {"longFunctions":1},
     "src/Sfe.Api/Endpoints/ExploreEndpoints.cs": {"fileLines":1085,"longFunctions":5},
     "src/Sfe.Api/Endpoints/FileEndpoints.cs": {"fileLines":854},
-    "src/Sfe.Api/Endpoints/FolderRuleEndpoints.cs": {"fileLines":415,"longFunctions":1},
+    "src/Sfe.Api/Endpoints/FolderAccessReports.cs": {"longLines":1},
     "src/Sfe.Api/Endpoints/LibraryEndpoints.cs": {"fileLines":557},
     "src/Sfe.Api/Endpoints/ScanEndpoints.cs": {"longFunctions":1},
     "src/Sfe.Api/Endpoints/SessionEndpoints.cs": {"fileLines":465,"longFunctions":1},
