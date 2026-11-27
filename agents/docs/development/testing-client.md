@@ -19,6 +19,9 @@ Rules and helpers: [testing.md](testing.md). Code: `src/Sfe.Web/src/testing/setu
 - Tag picker press flags: see [tags.md](../features/tags.md).
 - One spec file: `npm test -- --include src/app/account/account.spec.ts`; plain `npx vitest run` fails (no Angular
   build: `history is not defined`).
+- Every spec file failing with "Vitest failed to find the runner" (no test run): the folder was reached with a
+  lower-case drive letter (`c:\workspace\…`, VS Code's); run from `C:\…` (`agents/tools/tests/run.mjs` does it,
+  [README](../../tools/tests/README.md)).
 - Use dotless host names in specs ([fully-local.md](fully-local.md)).
 - Settings schema field order is read by a backend test: see [settings-new-key.md](../features/settings-new-key.md).
 - CodeMirror runs in jsdom with the real editor; `setup.ts` stubs `Range.getClientRects`/`getBoundingClientRect`,

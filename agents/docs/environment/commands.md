@@ -1,6 +1,7 @@
 # Commands
 
 ```sh
+node agents/tools/tests/run.mjs [dotnet|web|e2e] [-- <runner arguments>]  # tests, printing only what failed
 dotnet build ; dotnet test                                            # the Sfe.Api build runs npm ci + ng build
 cd src/Sfe.Web ; npm test ; npm run build ; npm start                 # client: Vitest, build into wwwroot, ng serve :4200
 cd tests/e2e ; npm ci ; npm run browsers ; npm run e2e              # end-to-end on phone-sized browsers (testing-e2e.md)
