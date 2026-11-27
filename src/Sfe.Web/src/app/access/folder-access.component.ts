@@ -3,30 +3,12 @@ import { Api } from '../core/api.service';
 import { FolderLevel } from '../core/access.models';
 import { FolderPicker } from '../core/models';
 import { FolderAccessReport, FolderRuleView } from './access.models';
+import { FOLDER_LEVELS } from './folder-levels';
 import { FolderRulesSource, libraryRules, RuleGroup, RuleMember } from './folder-rules-source';
 import { ToastService } from '../core/toast.service';
 import { valueOf } from '../shared/events';
 import { HelpComponent } from '../shared/help.component';
 import { IconComponent } from '../shared/icon.component';
-
-/** The levels a rule sets, as the page names them. */
-export const FOLDER_LEVELS: { level: FolderLevel; label: string; hint: string }[] = [
-    {
-        level: 'hidden',
-        label: $localize`:folder access level:Hidden`,
-        hint: $localize`They don't see the folder (unless another of their groups does)`,
-    },
-    {
-        level: 'read',
-        label: $localize`:folder access level:Read only`,
-        hint: $localize`They see and use its files with their rights, but may not change the files`,
-    },
-    {
-        level: 'write',
-        label: $localize`:folder access level:Read & write`,
-        hint: $localize`Their rights apply in full, those that change files too`,
-    },
-];
 
 /** The rules of one folder, as listed. */
 interface FolderRules {

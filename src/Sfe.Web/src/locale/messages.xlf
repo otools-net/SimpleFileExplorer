@@ -501,7 +501,7 @@
         <note category="location">src/app/tasks/tasks-section.component.html:33,35</note>
         <note category="location">src/app/tokens/token-create.component.html:132,133</note>
         <note category="location">src/app/tracking/duplicate-group.component.html:59,60</note>
-        <note category="location">src/app/wizards/wizard.component.html:107,108</note>
+        <note category="location">src/app/wizards/wizard.component.html:118,119</note>
       </notes>
       <segment>
         <source>Cancel</source>
@@ -1139,7 +1139,7 @@
     <unit id="7174692693389987018">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:138</note>
-        <note category="location">src/app/access/folder-access.component.ts:79</note>
+        <note category="location">src/app/access/folder-access.component.ts:61</note>
       </notes>
       <segment>
         <source>Set the rule</source>
@@ -1268,9 +1268,116 @@
         <source>No folder rules: every group&apos;s rights apply in every folder.</source>
       </segment>
     </unit>
+    <unit id="8446208738228670776">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:60</note>
+      </notes>
+      <segment>
+        <source>Move the rules of the folder that is gone to this one</source>
+      </segment>
+    </unit>
+    <unit id="7460999178838220632">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:90</note>
+      </notes>
+      <segment>
+        <source>Could not load the folder rules: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
+      </segment>
+    </unit>
+    <unit id="6495811023259178469">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:130</note>
+        <note category="location">src/app/access/space-editor.component.ts:106</note>
+        <note category="location">src/app/account/installation-form.component.ts:77</note>
+      </notes>
+      <segment>
+        <source>Could not list the folders: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
+      </segment>
+    </unit>
+    <unit id="3798029821709249924">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:144</note>
+      </notes>
+      <segment>
+        <source>The rules of <ph id="0" equiv="from" disp="this.named(from)"/> now apply to <ph id="1" equiv="to" disp="this.named(draft.path)"/>.</source>
+      </segment>
+    </unit>
+    <unit id="7196451864977072773">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:156</note>
+      </notes>
+      <segment>
+        <source>Rule set on <ph id="0" equiv="folder" disp="this.named(draft.path)"/>.</source>
+      </segment>
+    </unit>
+    <unit id="3738647824286040467">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:170</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="name" disp="rule.name"/>” follows the folder above again at <ph id="1" equiv="folder" disp="folder"/>.</source>
+      </segment>
+    </unit>
+    <unit id="980653266017985726">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:171</note>
+      </notes>
+      <segment>
+        <source>Rule changed for “<ph id="0" equiv="name" disp="rule.name"/>” at <ph id="1" equiv="folder" disp="folder"/>.</source>
+      </segment>
+    </unit>
+    <unit id="4493088896104402967">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:188</note>
+      </notes>
+      <segment>
+        <source>Could not find who has access to <ph id="0" equiv="folder" disp="folder"/>: <ph id="1" equiv="reason" disp="reason"/></source>
+      </segment>
+    </unit>
+    <unit id="1733708630052525345">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:193</note>
+      </notes>
+      <segment>
+        <source>Level of <ph id="0" equiv="name" disp="name"/> at <ph id="1" equiv="folder" disp="path || this.rootName()"/></source>
+      </segment>
+    </unit>
+    <unit id="2807800733729323332">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:197</note>
+      </notes>
+      <segment>
+        <source>Yes</source>
+      </segment>
+    </unit>
+    <unit id="3542042671420335679">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:197</note>
+      </notes>
+      <segment>
+        <source>No</source>
+      </segment>
+    </unit>
+    <unit id="5426474758678480564">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:202</note>
+        <note category="description">a folder quoted in a sentence</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="folder" disp="path || this.rootName()"/>”</source>
+      </segment>
+    </unit>
+    <unit id="2982988752598348849">
+      <notes>
+        <note category="location">src/app/access/folder-access.component.ts:213</note>
+      </notes>
+      <segment>
+        <source>Could not change the rule: <ph id="0" equiv="reason" disp="reason"/></source>
+      </segment>
+    </unit>
     <unit id="996392855508119363">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:16</note>
+        <note category="location">src/app/access/folder-levels.ts:7</note>
         <note category="location">src/app/tags/tag-editor.dialog.html:112</note>
         <note category="description">folder access level</note>
       </notes>
@@ -1280,7 +1387,7 @@
     </unit>
     <unit id="7293360178743983133">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:17</note>
+        <note category="location">src/app/access/folder-levels.ts:8</note>
       </notes>
       <segment>
         <source>They don&apos;t see the folder (unless another of their groups does)</source>
@@ -1288,7 +1395,7 @@
     </unit>
     <unit id="9215033217818992636">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:21</note>
+        <note category="location">src/app/access/folder-levels.ts:12</note>
         <note category="location">src/app/connections/connections-section.component.html:64,65</note>
         <note category="location">src/app/connections/connections-section.component.html:112</note>
         <note category="location">src/app/library/read-only.ts:5</note>
@@ -1300,7 +1407,7 @@
     </unit>
     <unit id="3069975744800070083">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:22</note>
+        <note category="location">src/app/access/folder-levels.ts:13</note>
       </notes>
       <segment>
         <source>They see and use its files with their rights, but may not change the files</source>
@@ -1308,7 +1415,7 @@
     </unit>
     <unit id="3386403882634729076">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:26</note>
+        <note category="location">src/app/access/folder-levels.ts:17</note>
         <note category="description">folder access level</note>
       </notes>
       <segment>
@@ -1317,117 +1424,10 @@
     </unit>
     <unit id="7267189747387494656">
       <notes>
-        <note category="location">src/app/access/folder-access.component.ts:27</note>
+        <note category="location">src/app/access/folder-levels.ts:18</note>
       </notes>
       <segment>
         <source>Their rights apply in full, those that change files too</source>
-      </segment>
-    </unit>
-    <unit id="8446208738228670776">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:78</note>
-      </notes>
-      <segment>
-        <source>Move the rules of the folder that is gone to this one</source>
-      </segment>
-    </unit>
-    <unit id="7460999178838220632">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:108</note>
-      </notes>
-      <segment>
-        <source>Could not load the folder rules: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
-      </segment>
-    </unit>
-    <unit id="6495811023259178469">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:148</note>
-        <note category="location">src/app/access/space-editor.component.ts:106</note>
-        <note category="location">src/app/account/installation-form.component.ts:77</note>
-      </notes>
-      <segment>
-        <source>Could not list the folders: <ph id="0" equiv="reason" disp="error as Error).message"/></source>
-      </segment>
-    </unit>
-    <unit id="3798029821709249924">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:162</note>
-      </notes>
-      <segment>
-        <source>The rules of <ph id="0" equiv="from" disp="this.named(from)"/> now apply to <ph id="1" equiv="to" disp="this.named(draft.path)"/>.</source>
-      </segment>
-    </unit>
-    <unit id="7196451864977072773">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:174</note>
-      </notes>
-      <segment>
-        <source>Rule set on <ph id="0" equiv="folder" disp="this.named(draft.path)"/>.</source>
-      </segment>
-    </unit>
-    <unit id="3738647824286040467">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:188</note>
-      </notes>
-      <segment>
-        <source>“<ph id="0" equiv="name" disp="rule.name"/>” follows the folder above again at <ph id="1" equiv="folder" disp="folder"/>.</source>
-      </segment>
-    </unit>
-    <unit id="980653266017985726">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:189</note>
-      </notes>
-      <segment>
-        <source>Rule changed for “<ph id="0" equiv="name" disp="rule.name"/>” at <ph id="1" equiv="folder" disp="folder"/>.</source>
-      </segment>
-    </unit>
-    <unit id="4493088896104402967">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:206</note>
-      </notes>
-      <segment>
-        <source>Could not find who has access to <ph id="0" equiv="folder" disp="folder"/>: <ph id="1" equiv="reason" disp="reason"/></source>
-      </segment>
-    </unit>
-    <unit id="1733708630052525345">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:211</note>
-      </notes>
-      <segment>
-        <source>Level of <ph id="0" equiv="name" disp="name"/> at <ph id="1" equiv="folder" disp="path || this.rootName()"/></source>
-      </segment>
-    </unit>
-    <unit id="2807800733729323332">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:215</note>
-      </notes>
-      <segment>
-        <source>Yes</source>
-      </segment>
-    </unit>
-    <unit id="3542042671420335679">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:215</note>
-      </notes>
-      <segment>
-        <source>No</source>
-      </segment>
-    </unit>
-    <unit id="5426474758678480564">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:220</note>
-        <note category="description">a folder quoted in a sentence</note>
-      </notes>
-      <segment>
-        <source>“<ph id="0" equiv="folder" disp="path || this.rootName()"/>”</source>
-      </segment>
-    </unit>
-    <unit id="2982988752598348849">
-      <notes>
-        <note category="location">src/app/access/folder-access.component.ts:231</note>
-      </notes>
-      <segment>
-        <source>Could not change the rule: <ph id="0" equiv="reason" disp="reason"/></source>
       </segment>
     </unit>
     <unit id="4333046839966733410">
@@ -3405,7 +3405,7 @@ Space “Holiday photos”
         <note category="location">src/app/account/setup-page.component.html:278,279</note>
         <note category="location">src/app/menus/context-menu.html:28,29</note>
         <note category="location">src/app/menus/context-menu.ts:338</note>
-        <note category="location">src/app/wizards/wizard.component.html:118,119</note>
+        <note category="location">src/app/wizards/wizard.component.html:129,130</note>
       </notes>
       <segment>
         <source>Back</source>
@@ -3875,7 +3875,7 @@ Space “Holiday photos”
         <note category="location">src/app/account/setup-page.component.html:113,114</note>
         <note category="location">src/app/account/setup-page.component.html:147,148</note>
         <note category="location">src/app/formats/text/text-texts.ts:86</note>
-        <note category="location">src/app/wizards/wizard.component.html:139,140</note>
+        <note category="location">src/app/wizards/wizard.component.html:150,151</note>
       </notes>
       <segment>
         <source>Next</source>
@@ -5584,7 +5584,7 @@ Space “Holiday photos”
         <note category="location">src/app/tasks/tasks.ts:205</note>
         <note category="location">src/app/tokens/token-create.component.html:122,123</note>
         <note category="location">src/app/wizards/wizard.component.html:63,64</note>
-        <note category="location">src/app/wizards/wizard.component.html:98,99</note>
+        <note category="location">src/app/wizards/wizard.component.html:109,110</note>
       </notes>
       <segment>
         <source>Done</source>
@@ -27410,7 +27410,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1089620475808014435">
       <notes>
-        <note category="location">src/app/wizards/wizard.component.html:85,86</note>
+        <note category="location">src/app/wizards/wizard.component.html:96,97</note>
       </notes>
       <segment>
         <source>Start this wizard again, with nothing chosen</source>
@@ -27418,7 +27418,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6186101642106373118">
       <notes>
-        <note category="location">src/app/wizards/wizard.component.html:89,90</note>
+        <note category="location">src/app/wizards/wizard.component.html:100,101</note>
       </notes>
       <segment>
         <source>Run again</source>
@@ -27426,7 +27426,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7295206196705371007">
       <notes>
-        <note category="location">src/app/wizards/wizard.component.html:94,95</note>
+        <note category="location">src/app/wizards/wizard.component.html:105,106</note>
       </notes>
       <segment>
         <source>Close the wizard</source>
@@ -27434,7 +27434,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1868176808226170309">
       <notes>
-        <note category="location">src/app/wizards/wizard.component.html:103,104</note>
+        <note category="location">src/app/wizards/wizard.component.html:114,115</note>
       </notes>
       <segment>
         <source>Leave the wizard without saving anything</source>
@@ -27442,7 +27442,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3392858157819664227">
       <notes>
-        <note category="location">src/app/wizards/wizard.component.html:113,114</note>
+        <note category="location">src/app/wizards/wizard.component.html:124,125</note>
       </notes>
       <segment>
         <source>Go back to the previous step; what you chose stays</source>
@@ -27450,7 +27450,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1720288428448966820">
       <notes>
-        <note category="location">src/app/wizards/wizard.component.html:124,125</note>
+        <note category="location">src/app/wizards/wizard.component.html:135,136</note>
       </notes>
       <segment>
         <source>Save everything chosen in the wizard</source>
@@ -27458,7 +27458,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="65984904390749158">
       <notes>
-        <note category="location">src/app/wizards/wizard.component.html:129,130</note>
+        <note category="location">src/app/wizards/wizard.component.html:140,141</note>
       </notes>
       <segment>
         <source>Finish</source>
@@ -27466,7 +27466,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5083332799173510429">
       <notes>
-        <note category="location">src/app/wizards/wizard.component.html:134,135</note>
+        <note category="location">src/app/wizards/wizard.component.html:145,146</note>
       </notes>
       <segment>
         <source>Go on to the next step (Enter)</source>
