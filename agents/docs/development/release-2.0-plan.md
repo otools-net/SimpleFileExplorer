@@ -534,7 +534,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   it under a read-only route (no right needed beyond being signed in; setup pages too), a `help` route rendering it
   with the Markdown viewer, Help in the ⋮ menu, a "?" on each admin sub-page opening its page, search over titles and
   headings (index built at build time). English only (2.2).
-- [ ] **5.2 Getting-started checklist** (IDEA-001 part 1, S–M). Setup is already a 3-step wizard. After it, the
+- [x] **5.2 Getting-started checklist** (IDEA-001 part 1, S–M). Done 2026-11-27: note
+  [getting-started](../features/getting-started.md). At the top of the administration overview (phones: above the
+  list of sections); the setup now ends there. `GET api/access/getting-started` says which items the session sees (by
+  the rights of their pages) and which are done (one `EXISTS` each); the client names them and links them
+  (`folders` → wizard `share-folder`, `connection` → `add-connection` once registered). Hidden per browser, account
+  and space (`localStorage`, like notifications), a link left while items remain. Screenshot
+  `admin-getting-started.png` (scene `admin`; `admin-overview.png`, `phone-admin.png` retaken). Baselines raised by
+  the added lines: `admin-page.component.ts` 540 → 542, its `.html` 505 → 509, `api.service.ts` 766 → 768.
+  Was: setup is already a 3-step wizard. After it, the
   administrator's start shows a checklist: library folder, a group and its rights, folder access, an account,
   a connection; each item opens the wizard or the page, ticks itself when done, can be dismissed. Done after 5.3a:
   an item names a wizard by its registry id (no wizard code in the checklist); items without a wizard yet open
@@ -665,9 +673,9 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-27):** **5.3a** (wizard framework + new-space wizard) done. Next: **5.2** (the
-  checklist: an item names a wizard by its registry id, `findWizard` / `canOpenWizard`, and links to
-  `wizard?id=…`), then **5.3b** and **5.3c** (adding a wizard: [wizards](../features/wizards.md#adding-a-wizard)).
+- **Last session (2026-11-27):** **5.2** (getting-started checklist) done, after **5.3a**. Next: **5.3b** and
+  **5.3c** (adding a wizard: [wizards](../features/wizards.md#adding-a-wizard)); register them under the ids the
+  checklist already names (`share-folder`, `add-connection`) and its items switch to them by themselves.
   Wizards link their help with `helpLink` from `help/help-files.ts` (no markdown-it in their chunk).
 - A heading renamed in `docs/administration/` must be renamed in `help/admin-help.ts` too (`admin-help.spec.ts`
   fails otherwise).

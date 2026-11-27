@@ -173,12 +173,13 @@ export class SetupPageComponent implements OnInit {
             });
             this.config.clear();
             if (this.restartRequired()) this.step.set('restart');
-            else this.finish();
+            // A new administrator starts on the administration page, at the getting-started checklist.
+            else this.finish(this.info()?.recover ? '/' : '/admin');
         });
     }
 
-    protected finish(): void {
-        void this.router.navigate(['/'], { replaceUrl: true });
+    protected finish(url = '/'): void {
+        void this.router.navigate([url], { replaceUrl: true });
     }
 
     /** Runs a request of the page: its errors are shown by their fields, or above the button. */

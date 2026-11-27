@@ -1130,6 +1130,9 @@ const scenes = {
         // The overview of the sections, which /admin opens on.
         await b.open('admin', 3000);
         await b.shot(OUT + 'admin-overview.png');
+        // The getting-started checklist at its top (the seed made a group and accounts: some items are ticked).
+        const list = await b.rect('.getting-started');
+        await b.shot(OUT + 'admin-getting-started.png', { x: list.x - 8, y: list.y - 8, width: list.width + 16, height: list.height + 16 });
         await b.close();
     },
     /**

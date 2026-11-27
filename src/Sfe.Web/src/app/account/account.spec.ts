@@ -289,7 +289,7 @@ describe('SetupPageComponent', () => {
         expect(element.querySelector('.wizard-progress')!.textContent).toBe('Step 1 of 3');
     });
 
-    it('checks the code, picks the library folder, then creates the administrator and opens the library', async () => {
+    it('checks the code, picks the library folder, makes the administrator, opens the administration', async () => {
         await create(setup());
         api.saveInstallation.mockImplementation(async (_token, input) => ({
             settings: installationView({ root: { value: input.root!, locked: false, lockedBy: null } }),
@@ -320,7 +320,7 @@ describe('SetupPageComponent', () => {
             libraryName: 'Family',
             fastSignIn: false,
         });
-        expect(navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
+        expect(navigate).toHaveBeenCalledWith(['/admin'], { replaceUrl: true });
     });
 
     it("asks no code of a new install opened on the server's own computer", async () => {
@@ -454,6 +454,7 @@ describe('SetupPageComponent', () => {
         expect(api.completeSetup).toHaveBeenCalledWith(
             expect.objectContaining({ userName: 'admin', libraryName: null }),
         );
+        expect(navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
     });
 
     it('leaves when there is nothing to set up', async () => {

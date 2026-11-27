@@ -1,0 +1,111 @@
+/* ---------- The getting-started checklist (admin/getting-started) on the administration overview ---------- */
+
+.getting-started {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+/* On phones, above the list of sections: the list's own rules (rows with borders) don't apply to it. */
+.admin-nav .getting-started {
+    margin: 14px 0 0;
+}
+.getting-started li + li {
+    border-top: 0;
+}
+.getting-started header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.getting-started h3 {
+    margin: 0;
+    font-size: 15px;
+}
+.getting-started-count {
+    flex: 1;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+.getting-started-all {
+    margin: 0;
+    font-size: 13px;
+}
+.getting-started ol {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.getting-started li {
+    display: grid;
+    grid-template-columns: 20px auto 1fr;
+    align-items: center;
+    column-gap: 10px;
+}
+.getting-started li .icon {
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
+}
+/* The theme's green (that of pictures) marks what is done. */
+.getting-started li.done .icon,
+.getting-started-done {
+    color: var(--image);
+}
+.getting-started li a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-weight: 600;
+}
+.getting-started li.done a {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+.getting-started-done {
+    justify-self: start;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+.getting-started li small {
+    grid-column: 2 / -1;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+.getting-started-show {
+    align-self: flex-start;
+    margin: 0;
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.admin-nav .getting-started-show {
+    margin: 10px 4px 0;
+}
+
+@media (max-width: 760px) {
+    /* Targets of 44 px on phones (agents/docs/development/frontend.md). */
+    .getting-started li a {
+        min-height: 44px;
+    }
+    .getting-started-show,
+    .getting-started header .icon-button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}

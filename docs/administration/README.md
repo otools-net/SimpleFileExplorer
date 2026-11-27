@@ -35,6 +35,25 @@ title opens the part of the [help](../user-guide/help.md) about that page, in a 
 | | [System](system.md) | About, Installation, Start-up, Maintenance |
 | | [Connections](connections.md) | Connections, Dropbox, Settings |
 
+## Getting started
+
+![The getting-started checklist](../images/admin-getting-started.png)
+
+At the top of the overview (on phones, above the list of sections), **Getting started** lists the first things to set
+up in a space:
+
+- **Library folder**: the folder of the server whose files SFE shows ([Installation](system.md#installation)).
+- **A group and its rights**: a group for people who may do the same things ([Groups](spaces-and-accounts.md#groups)).
+- **Folder access**: folders a group may only read, or doesn't see ([Folder access](spaces-and-accounts.md#folder-access)).
+- **An account** for each person who will use SFE ([Accounts](spaces-and-accounts.md#accounts); not on a Local server, where only its administrators sign in).
+- **A connection**: storage elsewhere, like Dropbox ([Connections](connections.md)).
+
+Each one opens the page doing it, or its [wizard](wizards.md) when there is one, and is ticked **Done** by itself once
+it is: a folder that exists, a group you made, a folder rule, another account in the space, a connection the space can
+see. You see only the items you have the rights for. The **✕** hides the list in this browser for your account and
+this space; while something is left to do, a **Getting started: 2 of 5 done** link stays in its place to show it again.
+A new server's setup ends on this page.
+
 Addresses of pages that moved (a bookmark of the old **System › Video streams**, now **Playback › Video streams**)
 still open them.
 

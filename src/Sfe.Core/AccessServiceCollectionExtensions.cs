@@ -109,6 +109,7 @@ public static class AccessServiceCollectionExtensions
         services.AddSingleton<QuickLinkService>();
         services.AddSingleton<FolderRuleService>();
         services.AddSingleton<AccessTokens>();
+        services.AddSingleton<GettingStarted>();
     }
 
     /// <summary>

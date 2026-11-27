@@ -86,8 +86,9 @@ External):
    portable package and the AppImage set up as Local, **Sign me in when SFE starts on this computer** turns on
    [fast sign-in](#fast-sign-in).
 
-The administrator is signed in at once and is a **server administrator**: every right in every space. If the network
-setting changed, the page asks you to start SFE again.
+The administrator is signed in at once and is a **server administrator**: every right in every space. The
+administration page opens, with the [getting-started checklist](administration/README.md#getting-started) of what to
+set up next. If the network setting changed, the page asks you to start SFE again first.
 
 **Help** at the top right of the setup page opens this page in [the help](user-guide/help.md), in a new tab: the help
 comes with SFE, so it works before the setup too.

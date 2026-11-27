@@ -58,3 +58,8 @@ export interface SystemInfo {
     /** `path` null: not found where `configured` says. */
     ffmpeg: { configured: string; path: string | null; version: string | null };
 }
+
+/** `api/access/getting-started`: the checklist's items the session sees, in order (getting-started-items.ts). */
+export interface GettingStartedView {
+    items: { id: string; done: boolean }[];
+}

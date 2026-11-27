@@ -88,6 +88,9 @@
                         }
                     </ul>
                 }
+                @if (sectionList() && !searching()) {
+                    <sfe-getting-started [state]="linkState()" [replaceUrl]="false" />
+                }
                 @for (group of searching() ? [] : groups(); track group.id) {
                     <h2>{{ group.title }}</h2>
                     <ul>
@@ -159,6 +162,7 @@
                     <p i18n>Everything you can change or look at, by section.</p>
                 </header>
                 <div class="admin-overview">
+                    <sfe-getting-started [state]="historyState" />
                     @for (group of groups(); track group.id) {
                         <section class="admin-overview-group" [attr.aria-labelledby]="groupId(group.id)">
                             <h3 [id]="groupId(group.id)">{{ group.title }}</h3>

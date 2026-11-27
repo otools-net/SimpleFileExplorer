@@ -14,7 +14,7 @@ import {
     UserInfo,
 } from '../access/access.models';
 import { InstallationInput, InstallationSaved, SetupInfo } from '../account/account.models';
-import { KeepAliveView, StreamingStatus, SystemInfo } from '../admin/admin.models';
+import { GettingStartedView, KeepAliveView, StreamingStatus, SystemInfo } from '../admin/admin.models';
 import { EditedImageAccess } from '../editor/editor.models';
 import {
     AccessGain,
@@ -311,6 +311,8 @@ export class Api {
 
     /** Whether the space's library folder is kept alive on its file server, and what the last pings found. */
     keepAlive = () => this.get<KeepAliveView>('keep-alive');
+    /** The getting-started checklist: which first things to set up are done. */
+    gettingStarted = () => this.get<GettingStartedView>('access/getting-started');
     /** Pings the space's folders now (also while keep alive is off). */
     pingKeepAlive = () => this.post<KeepAliveView>('keep-alive/ping');
 

@@ -7,6 +7,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Getting started**: the administration page's overview (on phones, the list of sections) starts with the first
+  things to set up in a space: library folder, a group and its rights, folder access, an account, a connection. Each
+  opens its page (or its wizard, once there is one) and is ticked by itself when done; only the items of your rights
+  show. Its **✕** hides it in this browser, for your account and space, leaving a link to show it again while
+  something is left. A new server's setup now ends on this page. API: `GET api/access/getting-started`.
 - **Wizards**: administration jobs step by step, each step explained with a link to its help, nothing saved before
   **Finish**, a review of everything chosen first, and what was made with links to it at the end. Found by the
   administration search (under **Wizards**). The first one, **New space**, also opens from **Step by step** next to

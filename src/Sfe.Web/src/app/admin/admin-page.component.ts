@@ -38,6 +38,7 @@ import { IconComponent } from '../shared/icon.component';
 import { TagEditorDialog } from '../tags/tag-editor.dialog';
 import { TagListComponent } from '../tags/tag-list.component';
 import { TasksSectionComponent } from '../tasks/tasks-section.component';
+import { GettingStartedComponent } from './getting-started/getting-started.component';
 import { TrackingSectionComponent } from '../tracking/tracking-section.component';
 import { TrickplayActivityComponent } from '../trickplay/trickplay-activity.component';
 import { ConnectionsSectionComponent } from '../connections/connections-section.component';
@@ -125,6 +126,7 @@ export class ChipInViewDirective {
         TasksSectionComponent,
         TrickplayActivityComponent,
         KeepAliveStatusComponent,
+        GettingStartedComponent,
         SystemSectionComponent,
         AccessSectionComponent,
         AccountSectionComponent,

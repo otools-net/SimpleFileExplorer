@@ -86,6 +86,29 @@ test.describe('sign-in', () => {
     });
 });
 
+test('the getting-started list fits above the sections, opens an item, hides by finger', async ({ page }) => {
+    await page.goto('./admin');
+    const list = page.locator('.admin-nav .getting-started');
+    await expect(list).toBeVisible();
+    await expect(list.locator('li').first()).toBeVisible();
+    await expectFitsScreen(page);
+    await expectNothingCut(page);
+    await expectTapTargets(page, '.getting-started', 44);
+
+    await list.getByRole('link', { name: 'A group and its rights' }).tap();
+    await expect(page).toHaveURL(/section=access&page=groups/);
+    await page.goBack();
+    await list.getByRole('button', { name: 'Hide the list' }).tap();
+    await expect(list).toBeHidden();
+    // Other specs may have done everything (then nothing stays in its place).
+    const view = (await (await page.request.get('api/v1/access/getting-started')).json()) as {
+        items: { done: boolean }[];
+    };
+    if (view.items.every((item) => item.done)) return;
+    await page.getByRole('button', { name: /^Getting started: \d of \d done$/ }).tap();
+    await expect(list).toBeVisible();
+});
+
 // Found by the suite (2026-10-29): names without spaces (camera files, hashes) in the trash widened the page.
 test('long names in the trash keep the page within the screen', async ({ page, scratch }) => {
     const folder = `${scratch}/A_folder_named_without_any_space_${'x'.repeat(40)}`;

@@ -40,6 +40,7 @@ public static class ApiEndpoints
         api.MapLogEndpoints();
         api.MapKeepAliveEndpoints();
         api.MapHelpEndpoints();
+        api.MapGettingStartedEndpoints();
         MapConnectionEndpoints(api);
         return api;
     }

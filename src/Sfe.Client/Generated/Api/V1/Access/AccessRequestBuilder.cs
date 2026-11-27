@@ -5,6 +5,7 @@ using Microsoft.Kiota.Abstractions;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Access.FolderAccess;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Access.FolderRules;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Access.Folders;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Access.GettingStarted;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Access.Groups;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Access.Rights;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Access.Tenant;
@@ -36,6 +37,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Access
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Access.Folders.FoldersRequestBuilder Folders
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Access.Folders.FoldersRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The gettingStarted property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Access.GettingStarted.GettingStartedRequestBuilder GettingStarted
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Access.GettingStarted.GettingStartedRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The groups property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Access.Groups.GroupsRequestBuilder Groups

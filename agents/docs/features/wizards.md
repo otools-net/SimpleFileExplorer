@@ -11,9 +11,10 @@ with (`TenantEndpoints.Create`). User docs: `docs/administration/wizards.md`.
   `finish(draft)`. A step: id, title, component, explanation, `helpAnchor`, `fields` (the request's field names it
   fills), `valid`, optional `skip` and `check`, `review` lines. Who may open it is **not** in the definition: it is in
   the registry line only (right, `onlyIn`, `home`), so it is written once.
-- **Registry** (`WIZARDS`): one line per wizard, read by the page, the administration search and (5.2) the
-  checklist. `load: () => import('./<id>/<id>.wizard')`: a wizard's code is a lazy chunk; nothing eager imports a
-  wizard folder (`wizard-registry.spec.ts` checks the registry, the routes and the search).
+- **Registry** (`WIZARDS`): one line per wizard, read by the page, the administration search and the
+  [getting-started checklist](getting-started.md) (an item names its wizard by id).
+  `load: () => import('./<id>/<id>.wizard')`: a wizard's code is a lazy chunk; nothing eager imports a wizard folder
+  (`wizard-registry.spec.ts` checks the registry, the routes and the search).
 - **Page**: one route `wizard?id=<id>` (one level deep like every route: [client-routes](../architecture/client-routes.md)),
   guard `leaveWizard`. It refuses an unknown id or a session without the right / in the other mode, sets the title,
   loads the definition. Cancel, Done and the arrow go to `admin?section=&page=` of the line's `home`.

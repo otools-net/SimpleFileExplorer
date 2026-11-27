@@ -3188,6 +3188,37 @@
         ]
       }
     },
+    "/api/v1/access/getting-started": {
+      "get": {
+        "tags": [
+          "Access"
+        ],
+        "summary": "The first things to set up in the space, and which of them are done.",
+        "description": "Items, in order: `library` (the space's library folder is there; `server.settings`), `groups` (a group made\nby an administrator; `tenant.members`), `folders` (a folder rule; `tenant.members`), `accounts` (another\naccount in the space; `tenant.members` or `server.users`), `connection` (a connection the space can see:\nits own, one the server offers it, or the account's; `connections.library` or `connections.server`). Only\nthose whose right the session holds are listed.",
+        "operationId": "GetGettingStarted",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GettingStartedView"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "server.settings",
+            "tenant.members",
+            "server.users",
+            "connections.library",
+            "connections.server"
+          ]
+        ]
+      }
+    },
     "/api/v1/connections/{id}/search": {
       "get": {
         "tags": [
@@ -13986,6 +14017,35 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "GettingStartedItem": {
+        "required": [
+          "id",
+          "done"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "done": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GettingStartedView": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GettingStartedItem"
+            }
           }
         }
       },

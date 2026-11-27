@@ -1,0 +1,52 @@
+@if (lines().length) {
+    @if (hidden()) {
+        @if (!allDone()) {
+            <button
+                type="button"
+                class="getting-started-show"
+                title="Show the list of the first things to set up again"
+                i18n-title
+                (click)="hide(false)"
+                i18n
+            >Getting started: {{ doneCount() }} of {{ lines().length }} done</button>
+        }
+    } @else {
+        <section class="getting-started" aria-labelledby="getting-started-title">
+            <header>
+                <h3 id="getting-started-title" i18n>Getting started</h3>
+                <span class="getting-started-count" i18n>{{ doneCount() }} of {{ lines().length }} done</span>
+                <button
+                    type="button"
+                    class="icon-button ghost small"
+                    aria-label="Hide the list"
+                    i18n-aria-label
+                    title="Hide this list (a link stays in its place while something is left to do)"
+                    i18n-title
+                    (click)="hide(true)"
+                >
+                    <svg sfeIcon="close"></svg>
+                </button>
+            </header>
+            @if (allDone()) {
+                <p class="getting-started-all" i18n>All set. You can hide this list.</p>
+            }
+            <ol>
+                @for (line of lines(); track line.id) {
+                    <li [class.done]="line.done">
+                        <svg [sfeIcon]="line.done ? 'check' : line.icon"></svg>
+                        <a
+                            [routerLink]="line.link.path"
+                            [queryParams]="line.link.params"
+                            [state]="state()"
+                            [replaceUrl]="replaceUrl() && line.link.path === '/admin'"
+                        >{{ line.title }}</a>
+                        @if (line.done) {
+                            <span class="getting-started-done" i18n>Done</span>
+                        }
+                        <small>{{ line.text }}</small>
+                    </li>
+                }
+            </ol>
+        </section>
+    }
+}
