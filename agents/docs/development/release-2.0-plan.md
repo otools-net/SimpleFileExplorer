@@ -692,6 +692,10 @@ Where the work stands, for a session that picks it up. Update it at the end of e
 
 - **Added 2026-11-27:** step **1.5** (little-used functions made optional). **1.5a** done 2026-11-27; next **1.5b**
   (`AllowedRoots` behind a switch), then **5.3b**.
+- **e2e failing before 1.5a** (seen 2026-11-27, same on f7a3b95c): `tags.spec.ts:9` (phones: the selection bar's
+  Tags button not found by `/^(Tags|Add or remove tags)/`), `connection-tags.spec.ts:85` (same wait),
+  `connection-viewer.spec.ts:84` (a console 404 from `api/v1/connections/3/storage`); also once in the full quick
+  set: `pages.spec.ts:18` and the admin getting-started spec on `landscape`. Fix before relying on the quick set.
 - **Last session (2026-11-27):** **5.2** (getting-started checklist) done, after **5.3a**. Next: **5.3b** and
   **5.3c** (adding a wizard: [wizards](../features/wizards.md#adding-a-wizard)); register them under the ids the
   checklist already names (`share-folder`, `add-connection`) and its items switch to them by themselves.
