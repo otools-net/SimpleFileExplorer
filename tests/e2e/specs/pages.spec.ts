@@ -1,4 +1,4 @@
-// Pages besides the listing on a phone: a file's own page (`view?path=`), the theme from the
+// Pages besides the listing on a phone: a file's own page (`view?path=`), the help, the theme from the
 // first paint.
 import { expect, test } from '../fixtures/test';
 import { expectFitsScreen, expectNothingCut, expectTapTargets } from '../fixtures/layout';
@@ -13,6 +13,26 @@ test('a file on its own page (view?path=) fits, with buttons big enough', async 
     await expectFitsScreen(page);
     await expectNothingCut(page);
     await expectTapTargets(page, 'sfe-view-page');
+});
+
+test('the help fits, its contents open from the list button and lead to a page', async ({ page }) => {
+    await page.goto('./help');
+    const article = page.locator('sfe-help-page .markdown-content');
+    await expect(article.locator('h1')).toHaveText('SFE documentation');
+    await expectFitsScreen(page);
+    await expectNothingCut(page);
+    await expectTapTargets(page, 'sfe-help-page .help-bar');
+
+    await page.getByRole('button', { name: 'Contents' }).tap();
+    const contents = page.locator('#help-contents');
+    await expect(contents).toBeVisible();
+    await contents.getByRole('link', { name: 'Browsing' }).tap();
+    await expect(article.locator('h1')).toHaveText('Browsing');
+    await expect(contents).toBeHidden();
+    // Its pictures come from the help's own files.
+    const picture = article.locator('img').first();
+    await picture.scrollIntoViewIfNeeded();
+    await expect.poll(() => picture.evaluate((image) => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
 });
 
 for (const scheme of ['light', 'dark'] as const) {

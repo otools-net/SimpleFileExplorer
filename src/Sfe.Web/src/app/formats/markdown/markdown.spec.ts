@@ -95,6 +95,19 @@ describe('markdown', () => {
         },
     );
 
+    it("gives a document's link its section, decoded, for those who keep it (the help)", () => {
+        const view = vi.fn((path: string, fragment?: string) => `${path}|${fragment}`);
+        const rendered = renderMarkdown('[a](other.md#Grid%20view) [b](other.md)', 'Docs/x.md', { ...links, view });
+        const root = document.createElement('div');
+        root.append(rendered.fragment);
+
+        expect(view.mock.calls).toEqual([
+            ['Docs/other.md', 'Grid view'],
+            ['Docs/other.md', undefined],
+        ]);
+        expect(root.querySelector('a')!.dataset['path']).toBe('Docs/other.md');
+    });
+
     it('takes plain names of files as text, not as web addresses', () => {
         const { root } = render('See notes.md, photo.jpg and nas.local; or https://example and www.example.');
         const hrefs = [...root.querySelectorAll('a')].map((a) => a.getAttribute('href'));

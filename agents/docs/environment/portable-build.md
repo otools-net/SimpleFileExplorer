@@ -7,6 +7,7 @@ Code: `build/build.ps1`, `build/build.sh`, `build/portable/appsettings.json`, `b
   attribute, which makes `PortableBuild` use the exe folder as content root (an explicit `--contentRoot` wins: the
   AppImage's `AppRun` passes `~/.config/sfe`).
 - `src/Sfe.Api/data/` is never published.
+- The user docs (`docs/`) are inside `Sfe.Api.dll` (the help: [help](../features/help.md)): no file to copy.
 - `build.ps1` publishes linux-x64 on Windows; only `appimagetool` and the smoke test run in WSL; the AppDir is built
   under `/tmp` (files on `/mnt/c` all look executable).
 - Smoke tests: start the package on a temp library, check version, client (`<sfe-root` + its hashed `main-*.js`),

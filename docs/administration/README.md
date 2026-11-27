@@ -14,7 +14,8 @@ own preferences and password goes straight to **My account**.
 
 Breadcrumbs above the page's title say where you are (**Administration › Library › Tags › All tags**) and follow you
 from page to page: click the section to open its first page, the group to see its sections on the overview, or
-**Administration** for the whole overview. Under the title, a line says what the page holds.
+**Administration** for the whole overview. Under the title, a line says what the page holds; the **?** after the
+title opens the part of the [help](../user-guide/help.md) about that page, in a new tab.
 
 | Group | Section | Pages |
 |---|---|---|

@@ -518,11 +518,22 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 ### Phase 5: guidance
 
-- [ ] **5.1 Help inside the app** (IDEA-012, M). The user docs exist (`docs/`, ~34 pages, screenshots kept by the
-  docs-screenshots tool) but aren't shipped or linked. Ship `docs/` in every package (zip, AppImage, Docker), serve
+- [x] **5.1 Help inside the app** (IDEA-012, M). Done 2026-11-27: `docs/**` built into `Sfe.Api.dll` as resources
+  `help/<path>` (every package, no packaging step; Docker copies `docs/`), `GET api/help` (pages, titles, headings
+  by `HelpOutline`, made once on first use instead of at build time) and `GET api/help/files/{**path}` (pages and
+  pictures, sandboxed, ETag of the build), no right: signed in, a visitor with rights, or before the setup
+  (`RequestGuard` lets `api/help` pass the setup gate). Client route `help?page=…#section` (`help/`:
+  `renderMarkdown` with `helpMarkdownLinks`, `MarkdownLinks.view` now gets the link's fragment), contents by folder,
+  search over titles and headings, Help in the ⋮ menu, a "?" after each admin page's title (`ADMIN_HELP`, checked
+  against `docs/` by a spec), Help on the setup page; all open in a new tab. Note [help](../features/help.md);
+  screenshots `help-page.png`, `help-search.png`, `phone-help.png` (scene `help`). Initial bundle 971 → 974.5 kB,
+  warning raised to 980 kB. OpenAPI baseline and Sfe.Client regenerated. Refactorings first: `ApiEndpoints` (out of
+  `Program.cs`), `api-redirect.ts` (out of `api.service.ts`). Baselines raised by the added lines:
+  `api.service.ts` 758 → 764, `admin-page.component.ts` 532 → 535, its `.html` 502 → 505, `admin-page.spec.ts` 1139 → 1149.
+  Was: the user docs exist (`docs/`, ~34 pages) but aren't shipped or linked. Ship `docs/` in every package, serve
   it under a read-only route (no right needed beyond being signed in; setup pages too), a `help` route rendering it
-  with the Markdown viewer (links and images rewritten to the help route), Help in the ⋮ menu, a "?" on each admin
-  sub-page opening its page, search over titles and headings (index built at build time). English only (2.2).
+  with the Markdown viewer, Help in the ⋮ menu, a "?" on each admin sub-page opening its page, search over titles and
+  headings (index built at build time). English only (2.2).
 - [ ] **5.2 Getting-started checklist** (IDEA-001 part 1, S–M). Setup is already a 3-step wizard. After it, the
   administrator's start shows a checklist: library folder, a group and its rights, folder access, an account,
   a connection; each item opens the wizard or the page, ticks itself when done, can be dismissed.
@@ -597,9 +608,14 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-27):** a fix committed apart (a copy of a file the server's account may not read says so:
-  `UnreadableException`), then **4.6c** (connections) done, which closes **4.6**. Next: phase 5, **5.1** (help
-  inside the app).
+- **Last session (2026-11-27):** **5.1** (help inside the app) done, after two refactorings (`ApiEndpoints`,
+  `api-redirect.ts`). Next: **5.2** (getting-started checklist); 5.3's wizards link their help pages with
+  `helpLink(page, anchor)` (`help/help-links.ts`).
+- A heading renamed in `docs/administration/` must be renamed in `help/admin-help.ts` too (`admin-help.spec.ts`
+  fails otherwise).
+- Never import `help/help-links.ts` (or anything importing `formats/markdown/markdown.ts`) from eager code: it put
+  324 kB of markdown-it and DOMPurify in the initial bundle (the build fails over 1.1 MB). The Api uses
+  `help/help-files.ts`.
 - The tests' `UnreadableFile` (`tests/Sfe.Tests/Infrastructure/`) makes a file unreadable (Windows ACL, Unix mode)
   for a test and gives it back when disposed.
 - Two `[AsParameters]` records on one route must not share a property name (ASP.NET fails every request with "An
@@ -608,7 +624,8 @@ Where the work stands, for a session that picks it up. Update it at the end of e
   answers what puts it back: reuse it for shots of what a read-only user sees.
 - Docs-screenshots scenes can't sign in other accounts: the app runs in Local mode (administrators only). Show what
   another user sees by switching the space's rights for the shot and back (scene `read-only`).
-- `TaskHistory.cs` is at 400 lines (the limit) after 4.5b, `Program.cs` at 399: move something out before adding.
+- `TaskHistory.cs` is at 400 lines (the limit) after 4.5b (`Program.cs` is at 354 since 5.1: route groups in
+  `Endpoints/ApiEndpoints.cs`).
 - A change to an endpoint's OpenAPI description (even re-wrapping a line of it) changes `tests/samples/openapi/v1.json`:
   write the baseline again and run `node agents/tools/client-generation/generate.mjs` in the same commit.
 - A spec spying on `ToastService.show` for a message now shown with `toasts.success` / `warning` sees a second

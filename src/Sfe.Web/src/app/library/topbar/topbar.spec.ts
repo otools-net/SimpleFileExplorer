@@ -226,24 +226,34 @@ describe('MainMenuComponent', () => {
         expect(element.querySelector<HTMLElement>('#menu')!.hidden).toBe(true);
     });
 
-    it('offers the scans, the administration page, full screen and signing out', async () => {
+    it('offers the scans, the administration page, the help, full screen and signing out', async () => {
         await create();
 
         expect(
             [...element.querySelectorAll('[role=menuitem]')].map((e) => e.textContent!.trim().split(/\s+/)[0]),
-        ).toEqual(['admin', 'Scan', 'Remove', 'Administration', 'Full', 'Sign']);
+        ).toEqual(['admin', 'Scan', 'Remove', 'Administration', 'Help', 'Full', 'Sign']);
         expect(element.querySelector('.menu-account')!.textContent).toContain('admin');
         expect(element.querySelector('.menu-account small')!.textContent).toBe('Library');
     });
 
-    it('offers a visitor without an account only full screen and signing in', async () => {
+    it('offers a visitor without an account only the help, full screen and signing in', async () => {
         await create({ rights: [Rights.browse, Rights.viewFiles, Rights.viewTags], user: null, tenants: [] });
 
         expect([...element.querySelectorAll('[role=menuitem]')].map((e) => e.textContent!.trim())).toEqual([
+            'Help',
             'Full screen',
             'Sign in',
         ]);
         expect(element.querySelector('.menu-account')!.textContent).toContain('Visitor');
+    });
+
+    it('opens the help in a new tab', async () => {
+        await create();
+
+        const help = entry('Help') as unknown as HTMLAnchorElement;
+
+        expect(help.getAttribute('href')).toBe('help');
+        expect(help.target).toBe('_blank');
     });
 
     it('shows the administration page to an account with one of its rights only', async () => {

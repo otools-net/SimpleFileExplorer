@@ -122,6 +122,16 @@
     color: var(--text-muted);
     font-size: 13px;
 }
+/* Its help (the first start), at the top right of the card's head. */
+.setup-help {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 13px;
+}
+.account-head:has(.setup-help) {
+    position: relative;
+}
 .setup-actions {
     display: flex;
     flex-wrap: wrap;

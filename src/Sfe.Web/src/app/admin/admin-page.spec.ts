@@ -172,6 +172,16 @@ describe('AdminPageComponent', () => {
         expect(element.querySelector('.tag-row')!.textContent).toContain('Cat');
     });
 
+    it("links the page's title to its help, in a new tab", async () => {
+        api.tags.mockResolvedValue({ matches: [], descendants: [] });
+
+        await open('/admin?section=tags&page=list');
+        const help = element.querySelector<HTMLAnchorElement>('.admin-head h2 a')!;
+
+        expect(help.getAttribute('href')).toBe('help?page=administration%2Ftags.md#all-tags');
+        expect(help.target).toBe('_blank');
+    });
+
     it('still opens from its earlier address', async () => {
         await open('/config?section=tags');
 

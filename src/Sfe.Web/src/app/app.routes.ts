@@ -37,6 +37,8 @@ export const routes: Routes = [
         loadComponent: () => import('./formats/view-page.component').then((m) => m.ViewPageComponent),
         canDeactivate: [leaveViewPage],
     },
+    // The user documentation shipped with the app.
+    { path: 'help', loadComponent: () => import('./help/help-page.component').then((m) => m.HelpPageComponent) },
     { path: 'login', loadComponent: () => import('./account/login-page.component').then((m) => m.LoginPageComponent) },
     { path: 'setup', loadComponent: () => import('./account/setup-page.component').then((m) => m.SetupPageComponent) },
     // The update of an install to this version: the only page working until it is done.

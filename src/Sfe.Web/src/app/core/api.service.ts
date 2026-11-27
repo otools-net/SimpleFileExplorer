@@ -130,6 +130,8 @@ import {
     SignInDone,
     SignInKindName,
 } from './connection.models';
+import { helpFile } from '../help/help-files';
+import { HelpIndex } from '../help/help.models';
 import { encodePath } from './paths';
 import { takeSetupLink } from './setup-link';
 
@@ -162,6 +164,10 @@ export class Api {
     private readonly injector = inject(Injector);
 
     config = () => this.get<ClientConfig>('config');
+    /** The help (no redirect: its page tells a 401 itself); a page of it as Markdown: `helpPage`. */
+    helpIndex = () => this.get<HelpIndex>('help', {}, undefined, false);
+    helpPage = (path: string, signal?: AbortSignal) =>
+        this.send(this.http.get(API_BASE + helpFile(path), { responseType: 'text' }), signal, false);
 
     browse = (query: BrowseAsk, signal?: AbortSignal) => this.get<DirectoryListing>('browse', query, signal);
     /** The folders around `path` in its parent, in the given sort. */

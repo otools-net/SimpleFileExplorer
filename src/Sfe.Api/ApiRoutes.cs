@@ -35,6 +35,7 @@ public static class ApiRoutes
     private static readonly PathString OAuthCallbackPath = OAuthCallback;
     private static readonly PathString DocsPath = Docs;
     private static readonly PathString Migration = Base + "/migration";
+    private static readonly PathString HelpPath = Base + "/help";
 
     // The setup, the installation page, the session and the update page.
     private static readonly PathString[] EntryGroups =
@@ -88,6 +89,9 @@ public static class ApiRoutes
     /// setup, to other computers in Local mode, and need no library.
     /// </summary>
     public static bool IsServerEntry(PathString path) => EntryGroups.Any(group => path.StartsWithSegments(group));
+
+    /// <summary>The help's routes: they also answer before the setup (its page links to them).</summary>
+    public static bool IsHelp(PathString path) => path.StartsWithSegments(HelpPath);
 
     /// <summary>
     /// A link to <paramref name="route"/>, relative to the app's address: <c>api/files/shared/…</c>.

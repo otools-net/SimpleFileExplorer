@@ -15,8 +15,8 @@ import { blockedImageText } from './markdown-texts';
 export interface MarkdownLinks {
     /** The file itself (images, files without a viewer). */
     file(path: string): string;
-    /** A file in its viewer, on a page of its own. */
-    view(path: string): string;
+    /** A file in its viewer, on a page of its own; `fragment`: the link's `#…` part, decoded (the help uses it). */
+    view(path: string, fragment?: string): string;
     /** A folder's listing. */
     folder(path: string): string;
     /** The file `path` has a viewer of the app. */
@@ -162,12 +162,23 @@ function rewriteLink(anchor: HTMLAnchorElement, documentPath: string, links: Mar
     }
     if (/[\\/]$/.test(href.split(/[?#]/)[0])) anchor.setAttribute('href', links.folder(path));
     else if (links.viewable(path)) {
-        anchor.setAttribute('href', links.view(path));
+        anchor.setAttribute('href', links.view(path, linkFragment(href)));
         anchor.dataset['path'] = path;
     } else {
         anchor.setAttribute('href', links.file(path));
         anchor.target = '_blank';
         anchor.rel = 'noopener';
+    }
+}
+
+/** The `#…` part of a link, decoded; undefined without one. */
+function linkFragment(href: string): string | undefined {
+    const hash = href.indexOf('#');
+    if (hash < 0 || hash === href.length - 1) return undefined;
+    try {
+        return decodeURIComponent(href.slice(hash + 1));
+    } catch {
+        return href.slice(hash + 1);
     }
 }
 

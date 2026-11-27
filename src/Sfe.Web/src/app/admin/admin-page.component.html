@@ -261,7 +261,10 @@
                             }
                         </ol>
                     </nav>
-                    <h2>{{ section().subpages.length > 1 ? subpage().title : section().title }}</h2>
+                    <h2>{{ section().subpages.length > 1 ? subpage().title : section().title }}<a
+                           class="admin-help-link" [href]="helpLink()" target="_blank" aria-label="Help" i18n-aria-label
+                           title="Open the help about this page, in a new tab." i18n-title
+                        ><svg sfeIcon="help"></svg></a></h2>
                     <p>{{ subpage().description ?? section().description }}</p>
                 </header>
                 <!-- Phones have no sidebar: the sub-pages are chips. -->

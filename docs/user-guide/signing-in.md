@@ -38,6 +38,7 @@ The ⋮ button at the top right holds:
 - your other spaces, if you have several: picking one switches to it (and reloads the page);
 - **Administration** ([the administration page](../administration/README.md)): settings, tags, duplicates, accounts,
   tasks, and **My account** (your settings, password and access tokens);
+- **Help** ([the help](help.md)): these pages, in a new tab;
 - **Full screen**, which shows the page full screen or leaves it;
 - **Sign out** (or **Sign in** for a visitor, whose name shows as **Visitor**);
 - the version of SFE, at the bottom.

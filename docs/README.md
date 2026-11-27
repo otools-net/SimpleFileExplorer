@@ -31,6 +31,7 @@ Everything about installing, using and administering **SFE — Simple File Explo
 | [Search](user-guide/search.md) | The search box, the query language, explanations, history |
 | [Tags](user-guide/tags.md) | Tagging files, selections, folders and searches; the tag sidebar |
 | [Scanning](user-guide/scanning.md) | Keeping the index current, removing folders from it |
+| [Help](user-guide/help.md) | These pages inside SFE: the contents, searching them, the **?** of the administration pages |
 
 ## Administration
 

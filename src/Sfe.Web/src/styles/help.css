@@ -1,0 +1,191 @@
+/* ---------- The help (help/help-page.component): the user documentation, its contents and its search ---------- */
+
+.help-page {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    height: 100dvh;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.help-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+.help-bar .icon-button {
+    flex-shrink: 0;
+}
+.help-name {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+}
+.help-name svg {
+    width: 20px;
+    height: 20px;
+}
+.help-search {
+    flex: 1;
+    min-width: 0;
+    max-width: 420px;
+    margin-left: auto;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: inherit;
+    font: inherit;
+}
+/* The contents are always beside the page on wide screens: the button only on narrow ones. */
+.help-contents-button {
+    display: none;
+}
+
+.help-body {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    min-height: 0;
+}
+
+.help-contents {
+    overflow: auto;
+    padding: 12px 8px 24px;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
+}
+.help-contents h2 {
+    margin: 14px 8px 4px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.help-contents h2:first-child {
+    margin-top: 0;
+}
+.help-contents ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.help-contents a {
+    display: block;
+    padding: 5px 8px;
+    border-radius: 6px;
+    color: inherit;
+    font-size: 14px;
+    text-decoration: none;
+}
+.help-contents a:hover {
+    background: var(--surface-2);
+}
+.help-contents a[aria-current='page'] {
+    background: var(--surface-3);
+    font-weight: 600;
+}
+
+.help-main {
+    overflow: auto;
+}
+.help-main > .help-reader {
+    display: block;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+}
+.help-reader[hidden] {
+    display: none;
+}
+.help-reader .markdown-body {
+    overflow: visible;
+    padding: 20px 24px 48px;
+}
+.help-message {
+    padding: 24px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.help-results {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 24px 48px;
+}
+.help-results h1 {
+    margin: 0 0 12px;
+    font-size: 20px;
+}
+.help-result {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    color: inherit;
+    text-decoration: none;
+}
+.help-result:hover,
+.help-result:focus-visible {
+    background: var(--surface-2);
+}
+.help-result span {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+@media (max-width: 760px) {
+    .help-contents-button {
+        display: inline-flex;
+    }
+    .help-body {
+        position: relative;
+        grid-template-columns: minmax(0, 1fr);
+    }
+    /* A panel over the page, from the left, while the contents button is on. */
+    .help-contents {
+        position: absolute;
+        z-index: 5;
+        inset: 0 auto 0 0;
+        display: none;
+        width: min(300px, 85vw);
+        box-shadow: var(--shadow);
+    }
+    .help-contents.open {
+        display: block;
+    }
+    .help-reader .markdown-body,
+    .help-results {
+        padding: 16px 14px 40px;
+    }
+}
+
+/* Links to the help from other pages: the "?" after an administration page's title (a new tab). */
+.admin-help-link {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--text-muted);
+    vertical-align: middle;
+}
+.admin-help-link:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+.admin-help-link svg {
+    width: 18px;
+    height: 18px;
+}

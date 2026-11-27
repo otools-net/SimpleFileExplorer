@@ -17,7 +17,8 @@ the reading preferences (prose profile). Tests: `markdown.spec.ts` (security, li
   `data-anchor` (the view scrolls inside itself).
 - Links: `http(s)://`, `//host` and `mailto:` → new tab, `rel="noopener noreferrer nofollow"`, class `external`;
   other schemes and paths leaving the library → no `href`; relative (or `/…` = the library root) →
-  `resolveLibraryPath` (decoded, `..` checked, query/fragment dropped): ending in `/` → the folder's listing
+  `resolveLibraryPath` (decoded, `..` checked, query dropped; the fragment goes to `links.view` as its second argument,
+  for the help): ending in `/` → the folder's listing
   (`./?path=`), a file with a viewer (`formatOf` of a `kind: 'file'` item made from the path) → `view?path=` +
   `data-path`, anything else → the raw file in a new tab.
 - Images: library paths → `urls.file` (raw: sandboxed CSP, data server if any); `data:image/…` kept; other sites

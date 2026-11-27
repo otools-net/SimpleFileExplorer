@@ -48,6 +48,9 @@
     <!-- The earlier major versions, one file each (changelog/1.x.md...). -->
     <EmbeddedResource Include="..\..\changelog\*.md" LogicalName="changelog/%(Filename)%(Extension)"
                       Link="changelog\%(Filename)%(Extension)" />
+    <!-- The user documentation, for the help page (Help/HelpDocs.cs): help/<path under docs/>. -->
+    <EmbeddedResource Include="..\..\docs\**\*" LogicalName="help/%(RecursiveDir)%(Filename)%(Extension)"
+                      Link="help\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <!--

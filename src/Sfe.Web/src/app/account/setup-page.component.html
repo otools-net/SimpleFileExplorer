@@ -11,6 +11,8 @@
         @if (stepNumber(); as number) {
             <p class="setup-progress" i18n>Step {{ number }} of {{ stepCount() }}</p>
         }
+        <a class="setup-help" href="help?page=first-start.md" target="_blank"
+           title="Open the help about the first start in a new tab." i18n-title i18n>Help</a>
     </header>
     @if (loadError(); as error) {
         <p class="form-error" role="alert" i18n>Could not reach the server: {{ error }}</p>

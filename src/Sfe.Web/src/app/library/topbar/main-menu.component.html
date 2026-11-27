@@ -156,6 +156,10 @@
             <svg sfeIcon="settings"></svg><ng-container i18n>Administration</ng-container>
         </a>
     }
+    <a role="menuitem" href="help" target="_blank" (click)="popovers.close()"
+       title="Open the help in a new tab: how to use SFE, its settings and its words." i18n-title>
+        <svg sfeIcon="help"></svg><ng-container i18n="the help pages">Help</ng-container>
+    </a>
     <button
         type="button"
         role="menuitem"

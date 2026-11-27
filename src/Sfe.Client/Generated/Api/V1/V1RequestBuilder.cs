@@ -11,6 +11,7 @@ using Otools.Net.Sfe.Client.Generated.Api.V1.Editor;
 using Otools.Net.Sfe.Client.Generated.Api.V1.FileTags;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Files;
 using Otools.Net.Sfe.Client.Generated.Api.V1.FolderDefaultTags;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Help;
 using Otools.Net.Sfe.Client.Generated.Api.V1.IndexNamespace;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Installation;
 using Otools.Net.Sfe.Client.Generated.Api.V1.KeepAlive;
@@ -88,6 +89,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.FolderDefaultTags.FolderDefaultTagsRequestBuilder FolderDefaultTags
         {
             get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.FolderDefaultTags.FolderDefaultTagsRequestBuilder(PathParameters, RequestAdapter);
+        }
+        /// <summary>The help property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Help.HelpRequestBuilder Help
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Help.HelpRequestBuilder(PathParameters, RequestAdapter);
         }
         /// <summary>The index property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.IndexNamespace.IndexRequestBuilder Index

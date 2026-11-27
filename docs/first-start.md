@@ -89,6 +89,9 @@ External):
 The administrator is signed in at once and is a **server administrator**: every right in every space. If the network
 setting changed, the page asks you to start SFE again.
 
+**Help** at the top right of the setup page opens this page in [the help](user-guide/help.md), in a new tab: the help
+comes with SFE, so it works before the setup too.
+
 A value set by the server's environment (an environment variable or the command line, e.g. `Sfe__Root` in a systemd
 unit) is shown but can't be changed on the page.
 

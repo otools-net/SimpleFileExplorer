@@ -189,6 +189,22 @@ const scenes = {
         await phone.shot(OUT + 'phone-notifications.png');
         await phone.close();
     },
+    /** The help: a page with the contents beside it, a search, and the contents on a phone. */
+    async help() {
+        const b = await session();
+        await b.open('help?page=user-guide%2Fbrowsing.md', 3000);
+        await b.shot(OUT + 'help-page.png');
+        await b.eval(`(() => { const i = document.querySelector('.help-search'); i.value = 'trash'; i.dispatchEvent(new Event('input')); return 1; })()`);
+        await sleep(500);
+        await b.shot(OUT + 'help-search.png');
+        await b.close();
+        const phone = await session({ width: 390, height: 844, mobile: true });
+        await phone.open('help?page=user-guide%2Fbrowsing.md', 3000);
+        await phone.clickTitle("Show the list of the help's pages");
+        await sleep(400);
+        await phone.shot(OUT + 'phone-help.png');
+        await phone.close();
+    },
     /**
      * The keep alive indicator of the ⋮ menu: keep alive turned on with a more folder that doesn't exist, so that its
      * ping fails (the yellow !); then turned off again for the other scenes.

@@ -8056,6 +8056,52 @@
         ]
       }
     },
+    "/api/v1/help": {
+      "get": {
+        "tags": [
+          "Help"
+        ],
+        "summary": "The pages of the help with their titles and headings (for its contents and its search).",
+        "operationId": "GetHelpIndex",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HelpIndex"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/help/files/{path}": {
+      "get": {
+        "tags": [
+          "Help"
+        ],
+        "summary": "A file of the help: a page (Markdown) or one of its pictures.",
+        "description": "Markdown pages as `text/markdown`, their pictures as images; sandboxed as the library's files are. Answers\n`If-None-Match` with 304 until the app is updated (`ETag` of the build).",
+        "operationId": "GetHelpFile",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/v1/connections/providers/{kind}": {
       "get": {
         "tags": [
@@ -14041,6 +14087,62 @@
           }
         }
       },
+      "HelpHeading": {
+        "required": [
+          "level",
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "level": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "HelpIndex": {
+        "required": [
+          "pages"
+        ],
+        "type": "object",
+        "properties": {
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HelpPage"
+            }
+          }
+        }
+      },
+      "HelpPage": {
+        "required": [
+          "path",
+          "title",
+          "headings"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "headings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HelpHeading"
+            }
+          }
+        }
+      },
       "HostingKind": {
         "enum": [
           "windowsService",
@@ -19977,6 +20079,9 @@
     },
     {
       "name": "Keep alive"
+    },
+    {
+      "name": "Help"
     }
   ],
   "x-sfe-problem-types": [

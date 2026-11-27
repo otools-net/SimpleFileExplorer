@@ -3,6 +3,7 @@
 Files: `Dockerfile`, `build/docker/entrypoint.sh`, `.dockerignore`, `docker-compose.yml` (example); user doc
 [docs/docker.md](../../../docs/docker.md). Modes: [server-modes.md](../features/server-modes.md).
 
+- `docs/` is copied into the server stage (the help is built into `Sfe.Api.dll`: [help](../features/help.md)).
 - Three stages: `node:24-bookworm-slim` runs `npm ci` + `npm run build` (writes `src/Sfe.Api/wwwroot`); the SDK stage
   restores with only the project files first (layer cache), then publishes the **portable** build
   (`-p:SfePortable=true -p:SfeSkipWebClient=true`, RID from `TARGETARCH`: `amd64` → `linux-x64`, `arm64` →

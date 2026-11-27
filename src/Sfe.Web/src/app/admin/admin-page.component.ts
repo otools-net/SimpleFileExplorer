@@ -64,6 +64,7 @@ import { UploadsSectionComponent } from '../files/uploads-section.component';
 import { VideoStreamsComponent } from './video-streams.component';
 import { NotificationsComponent } from '../notifications/notifications.component';
 import { ExclusionsSectionComponent } from '../library/scan/exclusions-section.component';
+import { adminHelpLink } from '../help/admin-help';
 
 /** History state of the entries of this page opened from the listing page: "back" returns there. */
 const FROM_LIBRARY = 'sfeFromLibrary';
@@ -168,6 +169,8 @@ export class AdminPageComponent implements OnInit {
     private readonly fragment = toSignal(this.route.fragment, { requireSync: true });
     protected readonly section = computed(() => findSection(this.params().get('section'), this.sections()));
     protected readonly subpage = computed(() => findSubpage(this.section(), this.params().get('page')));
+    /** The help about the sub-page shown (the "?" by its title). */
+    protected readonly helpLink = computed(() => adminHelpLink(this.section().id, this.subpage().id) ?? 'help');
 
     private readonly location = inject(Location);
     /** Opened from the listing page: kept in the entries this page replaces, so that "back" still returns there. */

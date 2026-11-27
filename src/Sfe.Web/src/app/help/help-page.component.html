@@ -1,0 +1,93 @@
+<header class="help-bar">
+    <a class="icon-button" routerLink="/" title="Open the library." i18n-title aria-label="Library" i18n-aria-label>
+        <svg sfeIcon="folder-up"></svg>
+    </a>
+    <a class="help-name" routerLink="/help" title="Open the first page of the help." i18n-title>
+        <svg sfeIcon="help"></svg><span i18n="the help pages">Help</span>
+    </a>
+    <input
+        class="help-search"
+        type="search"
+        placeholder="Search the help"
+        i18n-placeholder
+        aria-label="Search the titles and headings of the help"
+        i18n-aria-label
+        [value]="search()"
+        (input)="search.set($any($event.target).value)"
+        (keydown.escape)="search.set('')"
+    >
+    <button
+        type="button"
+        class="icon-button help-contents-button"
+        title="Show the list of the help's pages."
+        i18n-title
+        aria-label="Contents"
+        i18n-aria-label
+        aria-controls="help-contents"
+        [attr.aria-expanded]="contentsOpen()"
+        (click)="contentsOpen.set(!contentsOpen())"
+    ><svg sfeIcon="list"></svg></button>
+</header>
+<div class="help-body">
+    <nav class="help-contents" id="help-contents" [class.open]="contentsOpen()" aria-label="Contents" i18n-aria-label>
+        @for (group of groups(); track group.title) {
+            <h2>{{ group.title }}</h2>
+            <ul>
+                @for (entry of group.pages; track entry.path) {
+                    <li>
+                        <a
+                            routerLink="/help"
+                            [queryParams]="pageQuery(entry.path)"
+                            [attr.aria-current]="entry.path === page() ? 'page' : null"
+                            (click)="chose(null)"
+                        >{{ entry.title }}</a>
+                    </li>
+                }
+            </ul>
+        }
+    </nav>
+    <main class="help-main" aria-live="polite">
+        @if (search().trim()) {
+            <section class="help-results">
+                <h1 i18n>Search the help</h1>
+                @for (match of matches(); track match.page.path + '#' + match.section) {
+                    <a
+                        class="help-result"
+                        routerLink="/help"
+                        [queryParams]="pageQuery(match.page.path)"
+                        [fragment]="match.section ?? undefined"
+                        (click)="chose(match)"
+                    >
+                        <strong>{{ match.heading?.text ?? match.page.title }}</strong>
+                        @if (match.heading) {
+                            <span>{{ match.page.title }}</span>
+                        }
+                    </a>
+                } @empty {
+                    <p class="help-message" i18n>No title or heading of the help holds these words.</p>
+                }
+            </section>
+        }
+        <div class="text-view prose help-reader" data-reader-theme="app" [style]="style()" [hidden]="search().trim()">
+            @switch (state()) {
+                @case ('loading') {
+                    <p class="help-message" i18n>Loading…</p>
+                }
+                @case ('missing') {
+                    <p class="help-message" i18n>The help has no such page. <a routerLink="/help">Open its first
+                    page</a>.</p>
+                }
+                @case ('signed-out') {
+                    <p class="help-message" i18n>Sign in to read the help.
+                    <a routerLink="/login" [queryParams]="{ return: signInReturn() }">Sign in</a></p>
+                }
+                @case ('unreachable') {
+                    <p class="help-message" i18n>Could not reach the server.</p>
+                }
+            }
+            <article class="markdown-body" [hidden]="state() !== 'ready'" (click)="follow($event)">
+                <div class="markdown-content" #content></div>
+            </article>
+        </div>
+    </main>
+</div>

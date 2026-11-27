@@ -7,6 +7,12 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Help inside SFE**: the user documentation now comes with every package (Docker, portable, AppImage) and opens
+  from **Help** in the ⋮ menu, in a new tab: its contents by part, a search over every page's titles and headings,
+  links between pages kept in the help, your reading settings for prose. Each administration page has a **?** after
+  its title opening the help about it, and the setup page links to the help about the first start. Signed-in
+  accounts, visitors of spaces open to visitors, and anyone before the setup may read it; it works without the
+  internet. API: `GET api/help` (pages, titles, headings), `GET api/help/files/{path}`.
 - **Merge folders**: when a folder is moved, copied, extracted or transferred where a folder of the same name is, the
   operations panel offers **Merge** besides Replace, Skip and Keep both: what the folder holds goes into the one
   there, each name they share asked in turn (files replaced, skipped or kept both; folders merged again). A moved

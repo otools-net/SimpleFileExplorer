@@ -3,10 +3,13 @@
 Code: `src/Sfe.Web/angular.json` (`budgets`), `app/app.routes.ts`, `app/library/library-page.component.ts`,
 `app/library/listing-dialogs.component.ts`. Tools: [agents/tools/bundle-size/](../../tools/bundle-size/README.md).
 
-- The **initial** budget in `angular.json` warns just above the size the app has (960 kB, error at 1.1 MB): a warning
+- The **initial** budget in `angular.json` warns just above the size the app has (980 kB, error at 1.1 MB): a warning
   means something new went into the first download. Find what with the tools, move it out, or raise the budget on
   purpose (say so in the commit).
-- Sizes on 2026-11-26: 944 kB raw, 231 kB gzipped (from 1.08 MB / 253 kB). About 380 kB is Angular (core, router,
+- Sizes on 2026-11-26: 944 kB raw, 231 kB gzipped (from 1.08 MB / 253 kB). 2026-11-27: 971 kB after the read-only
+  marks (release 2.0 step 4.6: Access section, lock marks, their CSS), 974.5 kB with the help (5.1: `help.css`, the
+  menu entry); warning raised from 960 to 980 kB then. The help page itself and the Markdown renderer are lazy: the
+  Api imports `help/help-files.ts` only (importing `help-links.ts` brought 324 kB of markdown-it and DOMPurify). About 380 kB is Angular (core, router,
   common, platform-browser) and rxjs, 151 kB the global CSS, the rest the listing page and the viewer.
 - **Pages other than the listing** are routes with `loadComponent` (`/player` was eager until 2026-11-26).
 - **Listing dialogs** are in `ListingDialogsComponent`, shown in `@defer (on immediate)` by the listing page: a chunk

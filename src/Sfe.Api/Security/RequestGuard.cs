@@ -10,8 +10,8 @@ namespace Otools.Net.Sfe.Api.Security;
 /// <item>while the install waits for its update to this version (<see cref="MigrationCoordinator"/>), only the update
 /// page's routes answer (503 <c>migration-required</c>): nothing may read or change what the update hasn't brought up
 /// yet;</item>
-/// <item>until the first administrator exists, only the setup, the installation page (its own code check) and the
-/// session answer (503 <c>setup-required</c>);</item>
+/// <item>until the first administrator exists, only the setup, the installation page (its own code check), the
+/// session and the help answer (503 <c>setup-required</c>);</item>
 /// <item>once set up, a Local server (<see cref="ServerModes"/>) answers other computers only on the setup, session,
 /// installation and update routes (403 <see cref="ServerModes.LocalOnlyType"/>);</item>
 /// <item>a request changing something must carry <see cref="Header"/>: a page of another site cannot add it without the
@@ -68,7 +68,11 @@ public sealed class RequestGuard(RequestDelegate next)
             return;
         }
 
-        if (!ApiRoutes.IsServerEntry(path) && await setup.IsRequiredAsync(context.RequestAborted))
+        if (
+            !ApiRoutes.IsServerEntry(path)
+            && !ApiRoutes.IsHelp(path)
+            && await setup.IsRequiredAsync(context.RequestAborted)
+        )
         {
             await TypedResults
                 .Problem(
