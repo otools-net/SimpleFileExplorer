@@ -1,14 +1,5 @@
 import { MarkdownLinks, slugify } from '../formats/markdown/markdown';
-import { helpFile } from './help-files';
-
-/** The help's first page (its contents). */
-export const HELP_HOME = 'README.md';
-
-/** The address of a page of the help in the app, at one of its headings: `help?page=…#section`. */
-export function helpLink(page: string, section?: string | null): string {
-    const address = page === HELP_HOME ? 'help' : `help?page=${encodeURIComponent(page)}`;
-    return section ? `${address}#${section}` : address;
-}
+import { HELP_HOME, helpFile, helpLink } from './help-files';
 
 /**
  * Where the links and pictures of a help page lead: other pages to the help page, pictures to the help's files

@@ -17,7 +17,8 @@ import { Api, API_BASE, ApiError } from '../core/api.service';
 import { renderMarkdown, highlightFences } from '../formats/markdown/markdown';
 import { ReadingService } from '../formats/reading/reading.service';
 import { IconComponent } from '../shared/icon.component';
-import { HELP_HOME, helpLink, helpMarkdownLinks } from './help-links';
+import { HELP_HOME, helpLink } from './help-files';
+import { helpMarkdownLinks } from './help-links';
 import { HelpMatch, helpGroups, searchHelp } from './help-search';
 import { HelpPage } from './help.models';
 

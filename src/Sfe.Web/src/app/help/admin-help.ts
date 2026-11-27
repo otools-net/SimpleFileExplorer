@@ -1,4 +1,4 @@
-import { helpLink } from './help-links';
+import { helpLink } from './help-files';
 
 /** The help page of an administration section, and the heading of each of its sub-pages (their GitHub anchors). */
 interface SectionHelp {
