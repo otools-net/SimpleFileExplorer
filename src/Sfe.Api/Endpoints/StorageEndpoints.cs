@@ -55,15 +55,12 @@ public static class StorageEndpoints
     }
 
     private static async Task<Ok<StorageUsage>> Library(
-        LibraryPaths paths,
-        CurrentAccess current,
-        LibraryBrowser browser,
-        Trash trash,
-        StorageUsageCache cache,
+        [AsParameters] StorageServices services,
         CancellationToken cancellationToken,
         string? path = null
     )
     {
+        var (paths, current, browser, trash, cache) = services;
         // A library whose drive did not answer is not asked again for a while: each read would hold a thread.
         var stalled = "library-stalled:" + paths.Root;
         if (cache.Find(stalled) is { } notAnswering)

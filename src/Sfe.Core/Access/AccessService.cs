@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Otools.Net.Sfe.Core.Data;
@@ -12,7 +10,7 @@ namespace Otools.Net.Sfe.Core.Access;
 /// Libraries (tenants), accounts and groups. Checks what keeps the server usable (a name per account, a last
 /// administrator, the built-in groups) but not who asks: the Api decides that from the caller's rights.
 /// </summary>
-public sealed partial class AccessService(
+public sealed class AccessService(
     IDbContextFactory<AccessDbContext> dbFactory,
     AccessChanges changes,
     IOptionsMonitor<SecurityOptions> security
@@ -92,7 +90,7 @@ public sealed partial class AccessService(
         if (existing is not null)
             return ToInfo(existing);
 
-        var tenant = NewTenant(name, DefaultTenantSlug);
+        var tenant = NewTenants.Create(name, DefaultTenantSlug);
         tenant.IsDefault = true;
         db.Tenants.Add(tenant);
         await db.SaveChangesAsync(cancellationToken);
@@ -145,37 +143,15 @@ public sealed partial class AccessService(
         CancellationToken cancellationToken = default
     )
     {
-        var name = input.Name?.Trim();
-        if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
-        {
-            return AccessResult<TenantInfo>.Invalid(
-                "name",
-                $"A space needs a name of at most {MaxNameLength} characters."
-            );
-        }
-
-        var slug = string.IsNullOrWhiteSpace(input.Slug) ? Slugify(name) : input.Slug.Trim().ToLowerInvariant();
-        if (!SlugRegex().IsMatch(slug))
-        {
-            return AccessResult<TenantInfo>.Invalid(
-                "slug",
-                "The short name can only have lowercase letters, digits and “-” (at most 64), "
-                    + "starting with a letter or digit."
-            );
-        }
-
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        if (string.IsNullOrWhiteSpace(input.Slug))
-            slug = await UniqueSlugAsync(db, slug, cancellationToken);
-        else if (await db.Tenants.AnyAsync(t => t.Slug == slug, cancellationToken))
-            return AccessResult<TenantInfo>.Invalid("slug", $"Another space has the short name “{slug}”.");
+        var named = await NewTenants.CheckAsync(db, input, cancellationToken);
+        if (named.Status != AccessStatus.Ok)
+            return named.As<TenantInfo>();
 
-        var tenant = NewTenant(name, slug);
+        var tenant = NewTenants.Create(named.Value.Name, named.Value.Slug);
         tenant.Root = root;
         tenant.GuestAccess = input.GuestAccess;
         tenant.Disabled = input.Disabled;
-        if (DisabledRightsError(input.DisabledRights) is { } error)
-            return AccessResult<TenantInfo>.Invalid("disabledRights", error);
         tenant.DisabledRights = (input.DisabledRights ?? [])
             .Distinct()
             .Select(r => new TenantDisabledRight { Right = r })
@@ -196,15 +172,9 @@ public sealed partial class AccessService(
     )
     {
         var name = input.Name?.Trim();
-        if (string.IsNullOrEmpty(name) || name.Length > MaxNameLength)
-        {
-            return AccessResult<TenantInfo>.Invalid(
-                "name",
-                $"A space needs a name of at most {MaxNameLength} characters."
-            );
-        }
-
-        if (DisabledRightsError(input.DisabledRights) is { } error)
+        if (NewTenants.NameError(name) is { } nameError)
+            return AccessResult<TenantInfo>.Invalid("name", nameError);
+        if (NewTenants.DisabledRightsError(input.DisabledRights) is { } error)
             return AccessResult<TenantInfo>.Invalid("disabledRights", error);
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -216,7 +186,7 @@ public sealed partial class AccessService(
         if (input.Disabled && tenant.IsDefault)
             return AccessResult<TenantInfo>.Conflict("The first space cannot be disabled.");
 
-        tenant.Name = name;
+        tenant.Name = name!;
         tenant.GuestAccess = input.GuestAccess;
         tenant.Disabled = input.Disabled;
         if (input.DisabledRights is { } rights)
@@ -722,11 +692,6 @@ public sealed partial class AccessService(
             ? "A guest account cannot be a server administrator."
             : null;
 
-    private static string? DisabledRightsError(IReadOnlyList<string>? rights) =>
-        rights?.FirstOrDefault(r => !RightCatalog.IsTenantRight(r)) is { } unknown
-            ? $"“{unknown}” is not a right of a space."
-            : null;
-
     private static bool IsLocal(UserAccount user) => user.Source == UserAccount.LocalSource;
 
     private static string? Clean(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
@@ -849,67 +814,6 @@ public sealed partial class AccessService(
         group.ExternalName = Clean(input.ExternalName);
         return null;
     }
-
-    /// <summary>A library with its three built-in groups, granted the catalog's default rights.</summary>
-    private static Tenant NewTenant(string name, string slug) =>
-        new()
-        {
-            Name = name,
-            Slug = slug,
-            Created = DateTime.UtcNow,
-            RightsRevision = RightCatalog.Revision,
-            Groups = Enum.GetValues<BuiltInGroup>()
-                .Select(builtIn => new UserGroup
-                {
-                    Name = builtIn.ToString(),
-                    BuiltIn = builtIn,
-                    Rights = RightCatalog
-                        .TenantRights.Where(r => r.DefaultGroups.Contains(builtIn))
-                        .Select(r => new GroupRight { Right = r.Id })
-                        .ToList(),
-                })
-                .ToList(),
-        };
-
-    private static async Task<string> UniqueSlugAsync(
-        AccessDbContext db,
-        string slug,
-        CancellationToken cancellationToken
-    )
-    {
-        var candidate = slug;
-        for (var n = 2; await db.Tenants.AnyAsync(t => t.Slug == candidate, cancellationToken); n++)
-            candidate = $"{slug[..Math.Min(slug.Length, 60)]}-{n}";
-        return candidate;
-    }
-
-    /// <summary>"Family Photos (2020)" → "family-photos-2020"; accents dropped, other letters left out.</summary>
-    internal static string Slugify(string name)
-    {
-        var builder = new StringBuilder();
-        foreach (var c in name.Normalize(NormalizationForm.FormD).ToLowerInvariant())
-        {
-            if (c is >= 'a' and <= 'z' or >= '0' and <= '9')
-            {
-                builder.Append(c);
-            }
-            else if (
-                builder.Length > 0
-                && builder[^1] != '-'
-                && char.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark
-            )
-            {
-                builder.Append('-');
-            }
-        }
-
-        var slug = builder.ToString().Trim('-');
-        slug = slug.Length > 64 ? slug[..64].TrimEnd('-') : slug;
-        return slug.Length == 0 ? "library" : slug;
-    }
-
-    [GeneratedRegex("^[a-z0-9][a-z0-9-]{0,63}$")]
-    private static partial Regex SlugRegex();
 
     private static TenantInfo ToInfo(Tenant t) =>
         new(

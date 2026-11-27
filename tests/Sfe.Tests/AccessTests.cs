@@ -1218,7 +1218,7 @@ public sealed class AccessTests
     [DataRow("Фильмы", "library")]
     [DataRow("--a--b--", "a-b")]
     public void LibrarySlugsAreMadeFromTheirNames(string name, string slug) =>
-        Assert.AreEqual(slug, AccessService.Slugify(name));
+        Assert.AreEqual(slug, NewTenants.Slugify(name));
 
     private WebApplicationFactory<Program> Factory(Action<IDictionary<string, string?>>? configure = null)
     {
