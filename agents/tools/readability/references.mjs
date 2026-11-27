@@ -7,7 +7,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -114,7 +114,9 @@ function writeClientBuild(out) {
 
 function main() {
     const options = parseArguments(process.argv.slice(2));
-    if (!relative(repo, options.out).startsWith('..'))
+    // Another drive (D: from C:) gives an absolute path, not '..'.
+    const inside = relative(repo, options.out);
+    if (!inside.startsWith('..') && !isAbsolute(inside))
         throw new Error('Write the references outside the repository (a temp folder)');
     mkdirSync(options.out, { recursive: true });
     const steps = { openapi: writeOpenApi, routes: writeRoutes, ef: writeModelCheck, client: writeClientBuild };
