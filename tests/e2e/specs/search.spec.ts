@@ -22,6 +22,12 @@ test.describe('search', () => {
         await expect(page.locator('sfe-listing [data-path="Photos/2025 Mountains/Summit.jpg"]')).toBeVisible();
         await expectFitsScreen(page);
         await expectTapTargets(page, 'header');
+
+        // Found by the suite (2026-11-27): on 360–390 px phones, the explain and syntax buttons beside the
+        // notifications left the box 22–34 px wide once the search showed.
+        await box.evaluate((input) => (input as HTMLInputElement).blur());
+        await expect(page.getByRole('button', { name: 'Explain this search' })).toBeVisible();
+        expect((await box.boundingBox())!.width).toBeGreaterThanOrEqual(44);
     });
 
     test('a recent search is offered on the next tap and runs on a tap', async ({ page }) => {

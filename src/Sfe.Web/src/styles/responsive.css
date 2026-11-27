@@ -90,3 +90,16 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/*
+ * Narrow phones (360–400 px) leave the box little room beside the layout, notifications and ⋮ buttons: the
+ * magnifier goes, and the syntax help gives way to the explain button while a search shows (back once it's cleared).
+ */
+@media (max-width: 400px) {
+    .search .search-icon {
+        display: none;
+    }
+    .search-explain-button:not([hidden]) ~ .search-help-button {
+        display: none;
+    }
+}

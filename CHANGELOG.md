@@ -106,6 +106,8 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- On narrow phones (up to 400 px wide), the search box shrank to a sliver once a search showed: the magnifier is
+  left out there, and the **?** (search syntax) gives way to the explain button until the box is cleared.
 - **Tags per sidebar section** set in your own settings now applies; the sidebar used the space's value.
 - The sidebar's **space used and free** showed the disk of the library's folder everywhere; in a folder that is a
   junction, a mounted folder or a link to another disk (and the folders inside it), it now shows that disk's space,

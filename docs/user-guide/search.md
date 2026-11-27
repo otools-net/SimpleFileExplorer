@@ -32,6 +32,7 @@ Search only finds indexed files: **Scan this folder** in the ⋮ menu brings the
 Search is case-insensitive. Every term, its units and the fine print are in the
 [search syntax reference](../reference/search-syntax.md). The **?** button in the box (or the `?` key, anywhere
 on the page but in a text box) opens a summary by theme, with a few tips; click an example to add it to your search.
+On narrow phones it gives way to the explain button while a search shows: clear the box to get it back.
 Press `/` to jump to the search box.
 
 ![The search syntax summary](../images/search-help.png)
