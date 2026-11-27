@@ -536,12 +536,58 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   headings (index built at build time). English only (2.2).
 - [ ] **5.2 Getting-started checklist** (IDEA-001 part 1, S–M). Setup is already a 3-step wizard. After it, the
   administrator's start shows a checklist: library folder, a group and its rights, folder access, an account,
-  a connection; each item opens the wizard or the page, ticks itself when done, can be dismissed.
-- [ ] **5.3 Wizards** (IDEA-001 part 2, M each, one per session): **a** new space (folder picker, name, visitors);
-  **b** share a folder with someone (account or group → Hidden/Read/Write rule, shows "who has access" at the end);
-  **c** add a connection (app key for the provider if missing, then sign in, test, who may use it). Each step has
-  an explanation (`sfe-help`) and a link to its help page (5.1), Back is allowed, nothing saved before the last
-  step, connections tested before saving. The wizards are found by the admin search; the normal pages stay.
+  a connection; each item opens the wizard or the page, ticks itself when done, can be dismissed. Done after 5.3a:
+  an item names a wizard by its registry id (no wizard code in the checklist); items without a wizard yet open
+  their page and switch to the wizard when it is registered.
+- [ ] **5.3 Wizards** (IDEA-001 part 2, one per session). More wizards will come after 2.0, so what every wizard
+  does is written **once**, in a wizard framework (`app/wizards/`), and a wizard only declares its own steps and
+  its one save. Rules for every wizard: each step has an explanation (`sfe-help`) and a link to its help page
+  (`helpLink`, 5.1), Back keeps what was typed, nothing is saved before the last step, the normal pages stay, each
+  wizard is found by the admin search. Adding a wizard never touches the framework's files, the routes, the admin
+  search or the checklist (5.2); a need two wizards share goes into the framework, in a commit of its own.
+  - [ ] **5.3a The framework, with the new-space wizard as its first user** (M–L). The framework without a user
+    can't be tested, so it comes with one wizard; any piece only that wizard needs stays in its folder.
+    - **Definition** (`wizard-definition.ts`): what a wizard declares, nothing else: id, title, right (and server
+      mode, `onlyIn`), its draft (`initialDraft()`), its steps, `finish(draft)` (the one save) and what the end shows.
+      A step: id, title, component, help anchor, `valid(draft)`, `skip(draft)` (steps left out by earlier answers),
+      optional `check(draft)` (an async check on Next, e.g. a connection test), its lines in the review.
+    - **Registry** (`wizard-registry.ts`): one line per wizard (id, title, search words, right, `onlyIn`, lazy
+      `load: () => import(…)`). The registry is what the rest reads: **one** lazy route `admin/wizards/:id`, the
+      admin search (`admin-search.ts` lists every wizard the user may open), the checklist (5.2) and menus open a
+      wizard by id. A wizard's code is never in the initial bundle ([bundle-size](bundle-size.md)).
+    - **Shell** (`wizard.component.*`, `sfe-wizard`): the only place with the shared behaviour: "Step n of m" and the
+      list of steps (skipped ones left out), Back / Next / Finish / Cancel, busy state, errors by field or above the
+      buttons (the setup page's `run`, moved into `wizard-run.ts` and used by both), the step's `sfe-help` and help
+      link, Enter = Next, focus on the step's title when it changes, the guard against leaving with a draft (the
+      text editor's unsaved-changes guard, reused), the review step before Finish (from each step's lines), the end
+      step (what was made, links to it, "Run again"), phone layout ([frontend](frontend.md) sheets, 44 px targets).
+      Draft kept in memory only (a reload starts again, said by the guard), never in `localStorage`.
+    - **Step context** (`WIZARD_CONTEXT` injection token): a step component gets the draft (a signal it updates),
+      its field errors and `busy`; steps don't know the shell, the shell doesn't know a step's fields.
+    - **Shared steps** (`wizards/steps/`): pieces more than one wizard asks for, made on their first second use:
+      pick a library folder (wraps `folder-picker`), pick an account or a group, the review, the end.
+    - **Server side:** a wizard's `finish` is **one request**: when it writes several things (space + rights +
+      folder), one route does them in one transaction, with its right named ([rights](../features/rights.md)), never a
+      chain of client calls that can stop half-way. Its checks are the route's own validation run with
+      `validateOnly` (a step's `check`), so rules live once, on the server. Both DB providers, OpenAPI baseline.
+    - **Tests made once for all wizards:** `testing/wizard-harness.ts` walks any definition (Next / Back keep the
+      draft, skipped steps, nothing sent before Finish, a refused Finish shows the field's error on its step, the
+      guard); a registry spec over **every** registered wizard (its help page and anchors exist in `docs/` like
+      `admin-help.spec.ts`, its right exists in `core/rights.ts`, the admin search finds it, its chunk is lazy); one
+      e2e phone spec run over every registered wizard (open, Next / Back, cancel). A new wizard adds only the specs
+      of its own steps and its `finish` route's tests.
+    - **The new-space wizard:** folder picker, name, visitors; ends on the new space.
+    - Docs: feature note `agents/docs/features/wizards.md` with the **adding a wizard** checklist (definition,
+      steps, registry line, help page, route if it saves several things, step specs; nothing else), its line in
+      `AGENTS.md`; user docs `docs/administration/wizards.md` (one section per wizard), screenshots.
+    - The setup page (pre-sign-in, saves at step 2, restart step) is not moved onto the framework: it shares
+      `wizard-run.ts` and the shell's progress / actions styles only; moving it is a later refactoring, if ever.
+  - [ ] **5.3b Share a folder with someone** (M): account or group → Hidden / Read / Write rule; the end shows "who
+    has access". Only a definition, its steps and its route.
+  - [ ] **5.3c Add a connection** (M): app key for the provider if missing, then sign in, test (`check` on Next,
+    tested before saving), who may use it. Only a definition, its steps and its route; the OAuth return lands back
+    on the wizard's step (a framework need: a draft kept across the sign-in's redirect, in `sessionStorage` without
+    secrets, added to the shell in its own commit).
 - [ ] **5.4 Home folder** (IDEA-027 part 2, S–M). A home folder per account: default per group set by an
   administrator, changeable by the user (user setting, [settings-levels](../features/settings-levels.md)); never
   created automatically. Shown on the dashboard (5.5) and as "Home" in the sidebar. Library folders only.
@@ -609,8 +655,9 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
 - **Last session (2026-11-27):** **5.1** (help inside the app) done, after two refactorings (`ApiEndpoints`,
-  `api-redirect.ts`). Next: **5.2** (getting-started checklist); 5.3's wizards link their help pages with
-  `helpLink(page, anchor)` (`help/help-links.ts`).
+  `api-redirect.ts`). Next: **5.3a** (the wizard framework with the new-space wizard), then **5.2** (the
+  checklist opens wizards through the registry); wizards link their help pages with `helpLink(page, anchor)`
+  (`help/help-links.ts`), loaded lazily with the wizard (never from eager code, see below).
 - A heading renamed in `docs/administration/` must be renamed in `help/admin-help.ts` too (`admin-help.spec.ts`
   fails otherwise).
 - Never import `help/help-links.ts` (or anything importing `formats/markdown/markdown.ts`) from eager code: it put
