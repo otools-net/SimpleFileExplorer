@@ -472,9 +472,7 @@ public sealed class FileOperations(
             FileOperationStatus.Failed,
             ex switch
             {
-                UnauthorizedAccessException =>
-                    $"{what}: the server's account may not change files there (it needs write access to the library's "
-                        + $"folder).",
+                UnauthorizedAccessException refused => $"{what}: {DiskRefusals.Reason(refused)}",
                 IOException io when IsInUse(io) =>
                     $"{what}: it is in use, by another program or a video playing. Close it and try again.",
                 // Windows answers "access denied" when a folder holds an open file, as when the account may not write.

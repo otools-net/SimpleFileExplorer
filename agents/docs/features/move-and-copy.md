@@ -35,6 +35,11 @@ Extractions are jobs of the same kind: [archive-extraction](archive-extraction.m
   cancelled or failed item deletes its partial file/folder; leftovers of a stopped job in the target are removed first. Links and work folders are never copied (reported). Free space: refused when the volume would keep less
   than `Files:MinimumFreeSpaceMegabytes` (the volume the target really is on: [storage-usage](storage-usage.md)). Then the originals' thumbnail/trickplay caches are copied, files indexed at
   once (`IndexFilesAsync`), folders by a scan of each (`ScanCoordinator.TryStart`, skipped while another scan runs).
+- Disk refusals: an original the server's account may not read throws `UnreadableException` (an
+  `UnauthorizedAccessException`, so every catch still takes it) from `LibraryCopies.OpenSource`; a copied folder
+  rethrows it with the file's library path (`Inside`). `FileOperations.DiskFailure` then says "may not read it" /
+  "may not read “path” in it" instead of "may not change files there", which only fits writes. Transfers do the
+  same for library files read or folders listed (`LibraryTransferEndpoint.OpenReadAsync`, `LibraryDisk.Children`).
 - Clash: see [Name clashes](#name-clashes).
 - Scan gate: each item takes `ScanCoordinator.TryBeginOperation` (source and destination); a scan over it = that item
   fails with "a scan is running".

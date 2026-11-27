@@ -440,6 +440,9 @@ A name starting with a dot (`.config`) is a hidden item: the listing shows it on
 - **The file is in use**: another program has it open, or a video is playing. Close it and try again.
 - **The server's account may not change files there**: the server was installed with read-only access to the library
   ([Installation](../installation.md) says how to give it write access).
+- **The server's account may not read it**: the file (or one inside the folder copied, which is named) cannot be
+  read by the account SFE runs as, often a file put on a shared drive by another user. Give that account read access
+  to it.
 - **Folder access rules are set for a folder of that name** (rules left from a folder that was deleted or moved outside
   SFE): an administrator can remove them or point them elsewhere in
   [Folder access](../administration/spaces-and-accounts.md#folder-access).

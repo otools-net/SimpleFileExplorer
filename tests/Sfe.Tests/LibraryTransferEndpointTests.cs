@@ -55,6 +55,19 @@ public sealed class LibraryTransferEndpointTests
     }
 
     [TestMethod]
+    public async Task AFileTheServerMayNotReadIsToldAsSuch()
+    {
+        await using var side = Open();
+        var entry = (await side.GetAsync("ChildDir/AFile1.txt", Token))!;
+        using var denied = UnreadableFile.Make(_library.FullPath("ChildDir/AFile1.txt"));
+
+        var error = await Assert.ThrowsAsync<RemoteStorageException>(() => side.OpenReadAsync(entry, 0, Token));
+
+        Assert.AreEqual(RemoteErrorKind.Refused, error.Kind);
+        Assert.AreEqual("“AFile1.txt” could not be read: the server's account may not read it.", error.Message);
+    }
+
+    [TestMethod]
     public async Task ListsAFolderWithoutWhatThePersonMayNotOpen()
     {
         await using var side = Open(new FakeAccess { Refuse = (path, _) => path == "RepeatedDir/ChildDir" });

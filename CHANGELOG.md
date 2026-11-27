@@ -73,6 +73,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Fixed
 
+- A copy (or a transfer from the library) of a file the server's account may not read said it "may not change
+  files there", sending you to check the target folder; it now says the server's account may not read the file,
+  naming it when it is inside a copied folder.
 - **Requests made with an access token** (Sfe.Client, scripts) answer several milliseconds sooner: the server's
   settings were worked out again twice for each of them. Many small files uploaded through Sfe.Client go about three
   times as fast (13 to 42 files a second on a test computer).

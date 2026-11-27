@@ -80,7 +80,11 @@ public sealed class LibraryTransferEndpoint : ITransferEndpoint
         {
             return LibraryDisk.OpenAt(full, offset);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
+        {
+            throw FromDisk(new UnreadableException(null, ex), $"“{file.Name}” could not be read");
+        }
+        catch (IOException ex)
         {
             throw FromDisk(ex, $"“{file.Name}” could not be read");
         }

@@ -76,7 +76,14 @@ public sealed class LibraryCopies(
             }
             else
             {
-                await FileAsync(job, entry.FullName, Path.Combine(destination, entry.Name), token);
+                try
+                {
+                    await FileAsync(job, entry.FullName, Path.Combine(destination, entry.Name), token);
+                }
+                catch (UnreadableException ex) when (ex.Inside is null)
+                {
+                    throw new UnreadableException(entryPath, ex.InnerException!);
+                }
             }
         }
     }
@@ -87,14 +94,7 @@ public sealed class LibraryCopies(
     /// </summary>
     internal static async Task FileAsync(JobRun job, string source, string destination, CancellationToken token)
     {
-        await using var input = new FileStream(
-            source,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.Read,
-            CopyBuffer,
-            FileOptions.Asynchronous | FileOptions.SequentialScan
-        );
+        await using var input = OpenSource(source);
         try
         {
             await using var output = new FileStream(
@@ -119,6 +119,26 @@ public sealed class LibraryCopies(
             throw;
         }
         File.SetLastWriteTimeUtc(destination, File.GetLastWriteTimeUtc(source));
+    }
+
+    /// <summary>The original opened for reading; refused, an <see cref="UnreadableException"/>.</summary>
+    private static FileStream OpenSource(string source)
+    {
+        try
+        {
+            return new FileStream(
+                source,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                CopyBuffer,
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new UnreadableException(null, ex);
+        }
     }
 
     /// <summary>

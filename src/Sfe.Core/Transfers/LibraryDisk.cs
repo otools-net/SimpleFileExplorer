@@ -1,3 +1,4 @@
+using Otools.Net.Sfe.Core.Files;
 using static Otools.Net.Sfe.Core.Transfers.LibraryTransferErrors;
 
 namespace Otools.Net.Sfe.Core.Transfers;
@@ -53,7 +54,11 @@ internal static class LibraryDisk
             {
                 more = entries.MoveNext();
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
+            {
+                throw FromDisk(new UnreadableException(null, ex), $"“{Path.GetFileName(full)}” could not be listed");
+            }
+            catch (IOException ex)
             {
                 throw FromDisk(ex, $"“{Path.GetFileName(full)}” could not be listed");
             }
