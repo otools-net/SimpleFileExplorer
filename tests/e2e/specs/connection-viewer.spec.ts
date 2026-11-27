@@ -49,6 +49,10 @@ async function fakeConnection(page: Page): Promise<{ asked: string[] }> {
         directoryCount: 0,
         fileCount: 1,
     };
+    // The sidebar's storage bar asks the connection's account too.
+    await page.route('**/api/v1/connections/3/storage', (route) =>
+        route.fulfill({ json: { reported: true, used: 2_000_000, total: 10_000_000, free: 8_000_000 } }),
+    );
     await page.route('**/api/v1/connections/3/browse?*', (route) =>
         route.fulfill({
             json: {

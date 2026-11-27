@@ -88,7 +88,8 @@ test.describe('sign-in', () => {
 
 test('the getting-started list fits above the sections, opens an item, hides by finger', async ({ page }) => {
     await page.goto('./admin');
-    const list = page.locator('.admin-nav .getting-started');
+    // Phones in portrait: above the list of sections; wider (landscape): at the top of the overview.
+    const list = page.locator('.admin-nav .getting-started, .admin-overview .getting-started');
     await expect(list).toBeVisible();
     await expect(list.locator('li').first()).toBeVisible();
     await expectFitsScreen(page);
@@ -97,7 +98,8 @@ test('the getting-started list fits above the sections, opens an item, hides by 
 
     await list.getByRole('link', { name: 'A group and its rights' }).tap();
     await expect(page).toHaveURL(/section=access&page=groups/);
-    await page.goBack();
+    // Wide screens replace the address on the way (as the sections do there): back by the address.
+    await page.goto('./admin');
     await list.getByRole('button', { name: 'Hide the list' }).tap();
     await expect(list).toBeHidden();
     // Other specs may have done everything (then nothing stays in its place).

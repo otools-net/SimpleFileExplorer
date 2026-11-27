@@ -23,12 +23,15 @@ test('the help fits, its contents open from the list button and lead to a page',
     await expectNothingCut(page);
     await expectTapTargets(page, 'sfe-help-page .help-bar');
 
-    await page.getByRole('button', { name: 'Contents' }).tap();
+    // Narrow screens open the contents from the button; wider ones (landscape) keep them beside the page.
+    const button = page.getByRole('button', { name: 'Contents' });
+    const narrow = await button.isVisible();
+    if (narrow) await button.tap();
     const contents = page.locator('#help-contents');
     await expect(contents).toBeVisible();
     await contents.getByRole('link', { name: 'Browsing' }).tap();
     await expect(article.locator('h1')).toHaveText('Browsing');
-    await expect(contents).toBeHidden();
+    if (narrow) await expect(contents).toBeHidden();
     // Its pictures come from the help's own files.
     const picture = article.locator('img').first();
     await picture.scrollIntoViewIfNeeded();

@@ -17,7 +17,7 @@ test.describe('tags', () => {
         // Icon only on phones: named by its title.
         await page
             .locator('.selection-bar')
-            .getByRole('button', { name: /^(Tags|Add or remove tags)/ })
+            .getByRole('button', { name: /^(Tags|Add or remove tags|See or change the tags)/ })
             .tap();
         const dialog = page.locator('dialog.sheet[open]');
         await expect(dialog).toBeVisible();

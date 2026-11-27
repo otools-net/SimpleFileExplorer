@@ -40,6 +40,10 @@ async function fakeConnection(page: Page): Promise<{ changes: unknown[] }> {
     await page.route('**/api/v1/connections', (route) =>
         route.fulfill({ json: { usable: [usable], managed: [], groups: [], libraries: [] } }),
     );
+    // The sidebar's storage bar asks the connection's account too.
+    await page.route('**/api/v1/connections/3/storage', (route) =>
+        route.fulfill({ json: { reported: true, used: 2_000_000, total: 10_000_000, free: 8_000_000 } }),
+    );
     await page.route('**/api/v1/connections/3/browse?*', (route) =>
         route.fulfill({
             json: {
@@ -96,7 +100,7 @@ test.describe('tags on a connection', () => {
         await tile.locator('.select-box').tap();
         await page
             .locator('.selection-bar')
-            .getByRole('button', { name: /^(Tags|Add or remove tags)/ })
+            .getByRole('button', { name: /^(Tags|Add or remove tags|See or change the tags)/ })
             .tap();
         const dialog = page.locator('dialog.sheet[open]');
         await expect(dialog).toBeVisible();
