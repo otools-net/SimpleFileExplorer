@@ -87,6 +87,10 @@ export interface ConnectRequest {
     method: SignInKindName;
     rootPath?: string;
     fields?: Record<string, string>;
+    /** Library and server levels: the space's groups that use it once made, by group id. */
+    groups?: Record<string, 'read' | 'write'>;
+    /** `wizard`: the provider's redirect comes back to the add-a-connection wizard. */
+    return?: 'connections' | 'wizard';
 }
 
 /** A field the person fills (described by the server, so the form needs no code per kind). */

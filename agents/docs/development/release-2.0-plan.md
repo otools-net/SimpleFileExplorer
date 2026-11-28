@@ -568,7 +568,7 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   a connection; each item opens the wizard or the page, ticks itself when done, can be dismissed. Done after 5.3a:
   an item names a wizard by its registry id (no wizard code in the checklist); items without a wizard yet open
   their page and switch to the wizard when it is registered.
-- [ ] **5.3 Wizards** (IDEA-001 part 2, one per session). More wizards will come after 2.0, so what every wizard
+- [x] **5.3 Wizards** (IDEA-001 part 2, one per session). More wizards will come after 2.0, so what every wizard
   does is written **once**, in a wizard framework (`app/wizards/`), and a wizard only declares its own steps and
   its one save. Rules for every wizard: each step has an explanation (`sfe-help`) and a link to its help page
   (`helpLink`, 5.1), Back keeps what was typed, nothing is saved before the last step, the normal pages stay, each
@@ -631,10 +631,16 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     `wizards`, level step, not finished so the seed keeps no rule). OpenAPI baseline and Sfe.Client regenerated.
     Was: account or group → Hidden / Read / Write rule; the end shows "who has access". Only a definition, its steps
     and its route.
-  - [ ] **5.3c Add a connection** (M): app key for the provider if missing, then sign in, test (`check` on Next,
-    tested before saving), who may use it. Only a definition, its steps and its route; the OAuth return lands back
-    on the wizard's step (a framework need: a draft kept across the sign-in's redirect, in `sessionStorage` without
-    secrets, added to the shell in its own commit).
+  - [x] **5.3c Add a connection** (M). Done 2026-11-28: `wizards/add-connection/` (kind, who uses it: level and the
+    space's groups Read / Write, name and folder, sign in). The sign-in is the one save: `POST connections/authorize`
+    takes `groups` (made with the connection, `ConnectionFirstUses`) and `return: wizard` (the callback lands on
+    `wizard?id=add-connection&made=`); `validateOnly=true` (`ConnectionSignInFlow.CheckAsync`; a password tried at
+    the provider). Framework commit first: `WizardRedirect` / `WizardResume` (draft in `sessionStorage` without
+    secrets). Refactoring first: `METHOD_NAMES` and `problemOf` into `connections/sign-in.ts`. **Step by step** on
+    Administration › Connections; the checklist's item opens it. Screenshot `wizard-add-connection.png` (scene
+    `wizards`, who step, app key set for the shot). OpenAPI baseline and Sfe.Client regenerated. **Not done: the app
+    key typed in the wizard** (moved to 6.3, see Decisions). Was: app key for the provider if missing, then sign in,
+    test (`check` on Next, tested before saving), who may use it.
 - [ ] **5.4 Home folder** (IDEA-027 part 2, S–M). A home folder per account: default per group set by an
   administrator, changeable by the user (user setting, [settings-levels](../features/settings-levels.md)); never
   created automatically. Shown on the dashboard (5.5) and as "Home" in the sidebar. Library folders only.
@@ -658,7 +664,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   same storage vs. "can't be undone" — per provider table, who sees entries, retention. Owner reviews before 6.5.
 - [ ] **6.3 Generic provider setup** (IDEA-009 prep, S–M). Remove the Dropbox-only places outside its folder:
   `DropboxOptions` in `ConnectionOptions`, the Dropbox settings group, `<sfe-provider-setup kind="dropbox">`, the
-  admin entry — each provider declares its app settings and setup page. A route listing all known kinds.
+  admin entry — each provider declares its app settings and setup page. A route listing all known kinds. Then the
+  add-a-connection wizard (5.3c) offers the kinds not set up yet to `server.settings` holders with a step typing their
+  app settings, saved by the wizard's one request (its kind step links to the Dropbox setup page until then; its
+  "Set up Dropbox" link and words are the Dropbox-only places to replace).
 - [ ] **6.4 Kinds and levels picked, not typed** (IDEA-005, S–M). `connections.providers` and `connections.levels`
   are `list` textareas. New `multi-select` settings field type (checkboxes); kinds from 6.3's route (empty = all,
   shown as "All kinds"), levels fixed (account, library, server). Kinds validated against registered providers;
@@ -701,9 +710,11 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-28):** **5.3b** (share-a-folder wizard) done, with a framework commit (`WizardEnd.details`)
-  and two refactorings before it. Next: **5.3c** (add a connection: its `sessionStorage` draft across the sign-in's
-  redirect is a framework commit first).
+- **Last session (2026-11-28):** **5.3c** (add-a-connection wizard) done, with a framework commit (redirect and
+  resume) and a refactoring before it; 5.3 is complete. Next: **5.4** (home folder), then **5.5** (dashboard).
+- A wizard reaching another site: `finish` answers `{ redirect }`, `resume` ends it on the way back
+  ([wizards](../features/wizards.md)); a server redirect into a wizard names a fixed page (`SignInReturn`), never an
+  address from the request.
 - e2e on `landscape` (800 × 360) gets the wide layouts (admin page, help at > 760 px): a spec on phones that needs
   the phone layout locates both places or checks which one shows.
 - **5.2** (getting-started checklist) done, after **5.3a**. Then **5.3b** and
@@ -796,7 +807,9 @@ nuget.org public; one path-agnostic client API; watch open folders (disk and con
 
 Defaults taken (change here if the owner disagrees): UK English; Windows-Explorer-like menu order; admin pages in
 ≤3 clicks; XxHash128; notifications kept in the browser (server events pushed, not stored); undo per tab, 20 steps;
-dashboard fixed columns; home folder never auto-created; menus (2.9): greyed only for the rights of file actions
+dashboard fixed columns; home folder never auto-created; the add-a-connection wizard (5.3c) doesn't type a kind's app
+key: it would be Dropbox-only code that 6.3 removes, and a setting saved before Finish; it links to the setup page
+until 6.3 makes app settings generic (2026-11-28); menus (2.9): greyed only for the rights of file actions
 (Scans and previews…, quick links, Copy full path hidden instead), the selection bar never greyed; scan-as-you-go not recursive, 10 minutes; storage bar
 thresholds 85/95 %; sync jobs for administrators only; `AllowedRoots` off (1.5b) means spaces inside `Sfe:Root`
 only, not anywhere on the server (2026-11-27).

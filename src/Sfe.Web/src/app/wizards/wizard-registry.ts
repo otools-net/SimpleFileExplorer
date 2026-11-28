@@ -44,6 +44,16 @@ read it, or may change its files.`,
         home: { section: 'access', page: 'folders' },
         load: () => import('./share-folder/share-folder.wizard').then((m) => m.SHARE_FOLDER_WIZARD),
     },
+    {
+        id: 'add-connection',
+        title: $localize`:wizard:Add a connection`,
+        description: $localize`Step by step: a storage such as Dropbox, who uses it, its name and folder, then the \
+sign-in at the provider.`,
+        words: $localize`wizard connection storage dropbox cloud external remote sign in groups`,
+        right: Rights.libraryConnections,
+        home: { section: 'connections', page: 'connections' },
+        load: () => import('./add-connection/add-connection.wizard').then((m) => m.ADD_CONNECTION_WIZARD),
+    },
 ];
 
 /** The wizard `id`, if there is one. */

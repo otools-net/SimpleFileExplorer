@@ -18,6 +18,10 @@ public sealed class ConnectionSignInFlow(
 {
     public const string TooManyProblem = "Too many sign-ins are waiting: try again in a few minutes.";
 
+    public const string MethodProblem = "This kind of connection does not sign in this way.";
+
+    public const string RefusedProblem = "The storage did not accept these details.";
+
     /// <summary>Begins making a connection.</summary>
     public async Task<AccessResult<SignInBegun>> BeginAsync(
         ConnectRequest request,
@@ -25,19 +29,49 @@ public sealed class ConnectionSignInFlow(
         CancellationToken cancellationToken = default
     )
     {
-        var draft = new ConnectionDraft(
-            request.Kind,
-            request.Name,
-            request.Level,
-            request.Level == ConnectionLevel.Account ? context.UserId : null,
-            request.Level == ConnectionLevel.Library ? context.TenantId : null,
-            request.RootPath
-        );
+        var draft = DraftOf(request, context);
         var checkedDraft = await connections.CheckAsync(draft, cancellationToken);
         if (checkedDraft.Status != AccessStatus.Ok)
             return checkedDraft.As<SignInBegun>();
-        return await StartAsync(new(draft, null, request.Method, request.Fields), context, cancellationToken);
+        var plan = new SignInPlan(draft, null, request.Method, request.Fields, request.Return);
+        return await StartAsync(plan, context, cancellationToken);
     }
+
+    /// <summary>
+    /// Whether <see cref="BeginAsync"/> would go through, nothing made nor kept (<c>validateOnly</c>): the draft's
+    /// checks and the way to sign in; a way needing no browser (a password) is tried at the provider, its grant
+    /// thrown away.
+    /// </summary>
+    public async Task<AccessResult<bool>> CheckAsync(
+        ConnectRequest request,
+        SignInContext context,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var checkedDraft = await connections.CheckAsync(DraftOf(request, context), cancellationToken);
+        if (checkedDraft.Status != AccessStatus.Ok)
+            return checkedDraft.As<bool>();
+        var options = Options();
+        var provider = providers.Find(request.Kind)!;
+        if (provider.SignInMethods(options).All(m => m.Kind != request.Method))
+            return AccessResult<bool>.Invalid("method", MethodProblem);
+        if (request.Method is SignInKind.OAuthRedirect or SignInKind.OAuthCode)
+            return AccessResult<bool>.Ok(true);
+        try
+        {
+            var start = new SignInStart(request.Method, options, null, PendingSignIns.NewState(), Fields(request));
+            var step = await provider.BeginSignInAsync(start, cancellationToken);
+            return step.Grant is null ? AccessResult<bool>.Conflict(RefusedProblem) : AccessResult<bool>.Ok(true);
+        }
+        catch (RemoteStorageException error)
+        {
+            return AccessResult<bool>.Conflict(error.Message);
+        }
+    }
+
+    /// <summary>Where the redirect of <paramref name="state"/>'s sign-in lands, before it ends.</summary>
+    public SignInReturn ReturnOf(string? state, int userId) =>
+        pending.Peek(state, userId)?.Return ?? SignInReturn.Connections;
 
     /// <summary>
     /// Begins signing connection <paramref name="connectionId"/> in again; not found when <paramref name="mayManage"/>
@@ -65,7 +99,8 @@ public sealed class ConnectionSignInFlow(
             return AccessResult<SignInBegun>.Missing();
         if (providers.Find(connection.Kind) is null)
             return AccessResult<SignInBegun>.Conflict(ConnectionService.UnusableProblem);
-        return await StartAsync(new(draft, connectionId, request.Method, request.Fields), context, cancellationToken);
+        var plan = new SignInPlan(draft, connectionId, request.Method, request.Fields, SignInReturn.Connections);
+        return await StartAsync(plan, context, cancellationToken);
     }
 
     /// <summary>
@@ -113,7 +148,7 @@ public sealed class ConnectionSignInFlow(
         var options = Options();
         var provider = providers.Find(plan.Draft.Kind)!;
         if (provider.SignInMethods(options).All(m => m.Kind != plan.Method))
-            return AccessResult<SignInBegun>.Invalid("method", "This kind of connection does not sign in this way.");
+            return AccessResult<SignInBegun>.Invalid("method", MethodProblem);
 
         var state = PendingSignIns.NewState();
         var back = plan.Method == SignInKind.OAuthRedirect ? context.ReturnAddress : null;
@@ -144,7 +179,8 @@ public sealed class ConnectionSignInFlow(
             plan.Method,
             step.Pending,
             back,
-            plan.ConnectionId
+            plan.ConnectionId,
+            Return: plan.Return
         );
         if (!pending.Add(waiting))
             return AccessResult<SignInBegun>.Conflict(TooManyProblem);
@@ -172,11 +208,27 @@ public sealed class ConnectionSignInFlow(
 
     private Options.ConnectionOptions Options() => settings.ServerLevel().Connections;
 
+    /// <summary>What a request asks to make: its owner or library from the session, its groups the library's.</summary>
+    private static ConnectionDraft DraftOf(ConnectRequest request, SignInContext context) =>
+        new(
+            request.Kind,
+            request.Name,
+            request.Level,
+            request.Level == ConnectionLevel.Account ? context.UserId : null,
+            request.Level == ConnectionLevel.Library ? context.TenantId : null,
+            request.RootPath,
+            request.Groups is { Count: > 0 } groups ? new ConnectionUses(context.TenantId, groups) : null
+        );
+
+    private static IReadOnlyDictionary<string, string> Fields(ConnectRequest request) =>
+        request.Fields ?? new Dictionary<string, string>();
+
     /// <summary>A sign-in about to start: for a new connection, or for <see cref="ConnectionId"/>.</summary>
     private sealed record SignInPlan(
         ConnectionDraft Draft,
         int? ConnectionId,
         SignInKind Method,
-        IReadOnlyDictionary<string, string>? Fields
+        IReadOnlyDictionary<string, string>? Fields,
+        SignInReturn Return
     );
 }

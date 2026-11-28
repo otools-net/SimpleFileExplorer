@@ -74,6 +74,13 @@ The one place routes and jobs ask; `null` = the connection does not exist for th
   provider's address and a state, or the connection when nothing more is needed (password kinds). The draft is
   checked first (`ConnectionService.CheckAsync`), so nobody is sent to the provider for a connection that can't be
   made. Account level: the caller owns it; library level: the request's library. The root folder is typed.
+- `groups` (group id → `read` / `write`, the request's library's, library and server levels, needs
+  `connections.library`) travels in the draft (`ConnectionDraft.Uses`, kept in `PendingSignIn`) and is saved with
+  the connection by `ConnectionFirstUses` (a server-level one gets a `ConnectionTenant` row for that library); an
+  account-level one given groups is refused (`groups`). `return: wizard` (`SignInReturn`) makes the callback land on
+  `wizard?id=add-connection&…` instead of `connections?…` (found by `PendingSignIns.Peek` before the state is spent;
+  unknown or late states land on `connections`). `validateOnly=true`: `ConnectionSignInFlow.CheckAsync`, 204
+  ([wizards](wizards.md)).
 - `PendingSignIns` keeps the provider's `Pending` (PKCE verifier) server side, by a random 32-byte state: used once by
   any attempt (another account's try spends it), 10 minutes, at most 1000 waiting; a restart forgets them.
 - `GET api/connections/oauth/callback` (needs the session, 401 signed out; not in `ApiRoutes.IsServerEntry`) changes

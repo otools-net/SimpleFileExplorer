@@ -7,6 +7,13 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Add a connection wizard**: makes a connection step by step: the kind of storage, who uses it (only you, or the
+  space's groups you choose, to read only or to change its files too), its name and folder, then the sign-in at the
+  provider. The connection and its groups are made together once the sign-in goes through: after Dropbox's page the
+  browser comes back to the wizard's end (what was chosen is kept in the tab meanwhile, never a password). Opens
+  from the administration search, **Step by step** next to the add buttons on the Connections page, and the
+  getting-started list's **A connection** item. API: `POST api/connections/authorize` takes `groups` and
+  `return`, and `validateOnly=true` runs its checks without signing in (a password is tried at the storage).
 - **Share a folder wizard**: sets one folder rule step by step: a folder, a group or one account, and whether they
   don't see it, only read it or may change its files, with what they have there today shown before you choose. The
   end lists who has access to the folder now. Opens from the administration search, **Step by step** next to

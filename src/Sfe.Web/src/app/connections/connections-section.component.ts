@@ -1,5 +1,6 @@
 import { Api } from '../core/api.service';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ConnectionLevelName } from '../core/config.models';
 import { ConfigService } from '../core/config.service';
 import { icu } from '../core/i18n/icu';
@@ -31,7 +32,7 @@ import { describeIndex } from './connection-index';
  */
 @Component({
     selector: 'sfe-connections-section',
-    imports: [ConnectDialog, IconComponent, ProviderSetupComponent, FolderAccessComponent],
+    imports: [ConnectDialog, IconComponent, ProviderSetupComponent, FolderAccessComponent, RouterLink],
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: { class: 'connections-section' },
     templateUrl: './connections-section.component.html',

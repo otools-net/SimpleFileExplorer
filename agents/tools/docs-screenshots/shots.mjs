@@ -207,7 +207,7 @@ const scenes = {
     },
     /**
      * The new-space wizard: its folder step with Photos picked, its review, and the folder step on a phone; the
-     * share-a-folder wizard's level step.
+     * share-a-folder wizard's level step; the add-a-connection wizard's who step (a Dropbox app key set meanwhile).
      */
     async wizards() {
         const pickPhotos = async (b) => {
@@ -249,6 +249,27 @@ const scenes = {
         await sleep(1000);
         await b.clickText('.wizard-fields label.check', 'Read only');
         await b.shot(OUT + 'wizard-share-folder.png');
+        // The add-a-connection wizard on its who step (not finished: no Dropbox account here). Dropbox is offered
+        // once it has an app key: set for the shot, cleared after.
+        const appKey = (key) => `fetch('api/v1/settings?level=server', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-SFE-Request': '1' }, body: JSON.stringify({ values: { 'connections.dropbox.appKey': ${JSON.stringify(key)} } }) }).then(r => r.status)`;
+        await b.eval(appKey('docsappkey123'));
+        await b.open('wizard?id=add-connection', 2500);
+        await b.clickText('.wizard-fields label.check', 'Dropbox');
+        await b.click('.wizard-actions [type="submit"]');
+        await sleep(1000);
+        await b.clickText('.wizard-fields label.check', 'This space');
+        await sleep(500);
+        await b.eval(`(() => {
+            const select = [...document.querySelectorAll('.add-connection-group')]
+                .find((label) => label.textContent.includes('Users'))?.querySelector('select');
+            if (!select) return 0;
+            select.value = 'read';
+            select.dispatchEvent(new Event('change'));
+            return 1;
+        })()`);
+        await sleep(300);
+        await b.shot(OUT + 'wizard-add-connection.png');
+        await b.eval(appKey(null));
         await b.close();
         const phone = await session({ width: 390, height: 844, mobile: true });
         await phone.open('wizard?id=new-space', 2500);

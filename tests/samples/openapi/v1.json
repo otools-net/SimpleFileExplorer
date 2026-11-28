@@ -8333,7 +8333,18 @@
           "Connections"
         ],
         "summary": "Begins making a connection: checks what is asked, then answers the provider's address to send the browser to (and the state it comes back with), or the connection when no more is needed.",
+        "description": "`groups` (library and server levels, needs `connections.library`): the request's library's groups that use it once made, `read` or `write`, saved with it (a server-level one is then offered to that library). `return`: `wizard` brings the provider's redirect back to the add-a-connection wizard. With `validateOnly=true`, only the checks run (a wizard's step): a way to sign in needing no browser is tried at the provider; 204, nothing made.",
         "operationId": "AuthorizeConnection",
+        "parameters": [
+          {
+            "name": "validateOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -8354,6 +8365,9 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "description": "Bad Request",
@@ -11993,6 +12007,18 @@
             "additionalProperties": {
               "type": "string"
             }
+          },
+          "groups": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "$ref": "#/components/schemas/FolderLevel"
+            }
+          },
+          "return": {
+            "$ref": "#/components/schemas/SignInReturn"
           }
         }
       },
@@ -17349,6 +17375,13 @@
             "default": false
           }
         }
+      },
+      "SignInReturn": {
+        "enum": [
+          "connections",
+          "wizard"
+        ],
+        "default": "connections"
       },
       "SimilarVideo": {
         "required": [

@@ -93,14 +93,18 @@ public sealed class ConnectionService(
             CreatedById = createdById,
         };
         SignIn(connection, grant);
+        await ConnectionFirstUses.AddAsync(db, connection, draft, cancellationToken);
         db.Connections.Add(connection);
         await db.SaveChangesAsync(cancellationToken);
+        if (connection.Groups.Count > 0)
+            changes.Changed();
 
         logger.LogSecurityWarning(
             "Connection {Connection} made by account {UserId}",
             ConnectionRows.Describe(connection),
             createdById
         );
+        ConnectionFirstUses.Log(logger, connection, draft);
         return AccessResult<ConnectionInfo>.Ok(ConnectionRows.ToInfo(connection));
     }
 
@@ -114,17 +118,19 @@ public sealed class ConnectionService(
         CancellationToken cancellationToken = default
     )
     {
-        if (DraftError(draft) is { } error)
-            return AccessResult<(string, string)>.Invalid(error.Key, error.Message);
+        if (DraftError(draft) is { } draftError)
+            return AccessResult<(string, string)>.Invalid(draftError.Key, draftError.Message);
         if (NameError(draft.Name, out var name) is { } nameError)
             return AccessResult<(string, string)>.Invalid("name", nameError);
         if (RemotePaths.Normalize(draft.RootPath) is not { } rootPath)
             return AccessResult<(string, string)>.Invalid("rootPath", "Not a folder path.");
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        if (await OwnerErrorAsync(db, draft, cancellationToken) is { } ownerError)
-            return AccessResult<(string, string)>.Invalid(ownerError.Key, ownerError.Message);
-        return AccessResult<(string, string)>.Ok((name, rootPath));
+        var error = await OwnerErrorAsync(db, draft, cancellationToken)
+            ?? await ConnectionFirstUses.ErrorAsync(db, draft, cancellationToken);
+        return error is { } found
+            ? AccessResult<(string, string)>.Invalid(found.Key, found.Message)
+            : AccessResult<(string, string)>.Ok((name, rootPath));
     }
 
     /// <summary>Renames it, turns it off or on, read only or not, or roots it at another folder.</summary>

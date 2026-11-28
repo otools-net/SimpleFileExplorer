@@ -28,7 +28,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public AuthorizeRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/connections/authorize", pathParameters)
+        public AuthorizeRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/connections/authorize{?validateOnly*}", pathParameters)
         {
         }
         /// <summary>
@@ -36,11 +36,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public AuthorizeRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/connections/authorize", rawUrl)
+        public AuthorizeRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/connections/authorize{?validateOnly*}", rawUrl)
         {
         }
         /// <summary>
-        /// Begins making a connection: checks what is asked, then answers the provider&apos;s address to send the browser to (and the state it comes back with), or the connection when no more is needed.
+        /// `groups` (library and server levels, needs `connections.library`): the request&apos;s library&apos;s groups that use it once made, `read` or `write`, saved with it (a server-level one is then offered to that library). `return`: `wizard` brings the provider&apos;s redirect back to the add-a-connection wizard. With `validateOnly=true`, only the checks run (a wizard&apos;s step): a way to sign in needing no browser is tried at the provider; 204, nothing made.
         /// </summary>
         /// <returns>A <see cref="global::Otools.Net.Sfe.Client.Generated.Models.SignInBegun"/></returns>
         /// <param name="body">The request body</param>
@@ -49,11 +49,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize
         /// <exception cref="global::Otools.Net.Sfe.Client.Generated.Models.HttpValidationProblemDetails">When receiving a 400 status code</exception>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.SignInBegun?> PostAsync(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.SignInBegun?> PostAsync(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest body, Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>>? requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #nullable restore
 #else
-        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.SignInBegun> PostAsync(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
+        public async Task<global::Otools.Net.Sfe.Client.Generated.Models.SignInBegun> PostAsync(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest body, Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>> requestConfiguration = default, CancellationToken cancellationToken = default)
         {
 #endif
             if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
@@ -65,18 +65,18 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize
             return await RequestAdapter.SendAsync<global::Otools.Net.Sfe.Client.Generated.Models.SignInBegun>(requestInfo, global::Otools.Net.Sfe.Client.Generated.Models.SignInBegun.CreateFromDiscriminatorValue, errorMapping, cancellationToken).ConfigureAwait(false);
         }
         /// <summary>
-        /// Begins making a connection: checks what is asked, then answers the provider&apos;s address to send the browser to (and the state it comes back with), or the connection when no more is needed.
+        /// `groups` (library and server levels, needs `connections.library`): the request&apos;s library&apos;s groups that use it once made, `read` or `write`, saved with it (a server-level one is then offered to that library). `return`: `wizard` brings the provider&apos;s redirect back to the add-a-connection wizard. With `validateOnly=true`, only the checks run (a wizard&apos;s step): a way to sign in needing no browser is tried at the provider; 204, nothing made.
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="body">The request body</param>
         /// <param name="requestConfiguration">Configuration for the request such as headers, query parameters, and middleware options.</param>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
-        public RequestInformation ToPostRequestInformation(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest body, Action<RequestConfiguration<DefaultQueryParameters>>? requestConfiguration = default)
+        public RequestInformation ToPostRequestInformation(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest body, Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>>? requestConfiguration = default)
         {
 #nullable restore
 #else
-        public RequestInformation ToPostRequestInformation(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest body, Action<RequestConfiguration<DefaultQueryParameters>> requestConfiguration = default)
+        public RequestInformation ToPostRequestInformation(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest body, Action<RequestConfiguration<global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize.AuthorizeRequestBuilder.AuthorizeRequestBuilderPostQueryParameters>> requestConfiguration = default)
         {
 #endif
             if(ReferenceEquals(body, null)) throw new ArgumentNullException(nameof(body));
@@ -94,6 +94,17 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize.AuthorizeRequestBuilder WithUrl(string rawUrl)
         {
             return new global::Otools.Net.Sfe.Client.Generated.Api.V1.Connections.Authorize.AuthorizeRequestBuilder(rawUrl, RequestAdapter);
+        }
+        /// <summary>
+        /// `groups` (library and server levels, needs `connections.library`): the request&apos;s library&apos;s groups that use it once made, `read` or `write`, saved with it (a server-level one is then offered to that library). `return`: `wizard` brings the provider&apos;s redirect back to the add-a-connection wizard. With `validateOnly=true`, only the checks run (a wizard&apos;s step): a way to sign in needing no browser is tried at the provider; 204, nothing made.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
+        public partial class AuthorizeRequestBuilderPostQueryParameters 
+        {
+            #pragma warning disable CS1591
+            [QueryParameter("validateOnly")]
+            public bool? ValidateOnly { get; set; }
+            #pragma warning restore CS1591
         }
     }
 }

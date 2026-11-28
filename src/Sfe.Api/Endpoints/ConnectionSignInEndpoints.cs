@@ -15,6 +15,11 @@ public static class ConnectionSignInEndpoints
     /// <summary>Where the browser lands in the client after the redirect sign-in (under the app's address).</summary>
     public const string ClientPage = "/connections";
 
+    /// <summary>
+    /// Where it lands when the add-a-connection wizard began the sign-in (<see cref="SignInReturn.Wizard"/>).
+    /// </summary>
+    public const string WizardPage = "/wizard?id=add-connection&";
+
     public static RouteGroupBuilder MapConnectionSignInEndpoints(this RouteGroupBuilder api)
     {
         var connections = api.MapGroup("/connections").WithTags("Connections");
@@ -26,6 +31,13 @@ public static class ConnectionSignInEndpoints
             .WithSummary(
                 "Begins making a connection: checks what is asked, then answers the provider's address to send the "
                     + "browser to (and the state it comes back with), or the connection when no more is needed."
+            )
+            .WithDescription(
+                "`groups` (library and server levels, needs `connections.library`): the request's library's groups "
+                    + "that use it once made, `read` or `write`, saved with it (a server-level one is then offered "
+                    + "to that library). `return`: `wizard` brings the provider's redirect back to the "
+                    + "add-a-connection wizard. With `validateOnly=true`, only the checks run (a wizard's step): a "
+                    + "way to sign in needing no browser is tried at the provider; 204, nothing made."
             );
 
         connections
@@ -59,8 +71,13 @@ public static class ConnectionSignInEndpoints
     }
 
     private static async Task<
-        Results<Ok<SignInBegun>, ValidationProblem, ProblemHttpResult, ForbidHttpResult>
-    > Authorize(ConnectRequest request, [AsParameters] SignInServices services, CancellationToken cancellationToken)
+        Results<Ok<SignInBegun>, NoContent, ValidationProblem, ProblemHttpResult, ForbidHttpResult>
+    > Authorize(
+        ConnectRequest request,
+        [AsParameters] SignInServices services,
+        CancellationToken cancellationToken,
+        bool validateOnly = false
+    )
     {
         var (http, current, flow) = services;
         var state = await current.GetAsync();
@@ -74,10 +91,20 @@ public static class ConnectionSignInEndpoints
             state.TenantId,
             request.RootPath
         );
-        if (!ConnectionManagers.MayManage(state, draft))
+        if (!ConnectionManagers.MayManage(state, draft) || !MayGiveGroups(state, request))
             return TypedResults.Forbid();
 
         var context = new SignInContext(user.Id, state.TenantId, ConnectionProviderEndpoints.ReturnAddress(http));
+        if (validateOnly)
+        {
+            var check = await flow.CheckAsync(request, context, cancellationToken);
+            return check.Status switch
+            {
+                AccessStatus.Ok => TypedResults.NoContent(),
+                AccessStatus.Invalid => TypedResults.ValidationProblem(check.Errors!),
+                _ => TypedResults.Problem(check.Problem, statusCode: StatusCodes.Status409Conflict),
+            };
+        }
         var begun = await flow.BeginAsync(request, context, cancellationToken);
         return begun.Status switch
         {
@@ -158,11 +185,12 @@ public static class ConnectionSignInEndpoints
         var (code, state, error, http) = answer;
         var access = await current.GetAsync();
         if (access.User is not { } user)
-            return Back(http, "error=signed-out");
+            return Back(http, SignInReturn.Connections, "error=signed-out");
+        var page = flow.ReturnOf(state, user.Id);
         if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
         {
             flow.Abandon(state, user.Id);
-            return Back(http, "error=refused");
+            return Back(http, page, "error=refused");
         }
 
         var done = await flow.CompleteAsync(
@@ -174,9 +202,9 @@ public static class ConnectionSignInEndpoints
         );
         return done.Status switch
         {
-            AccessStatus.Ok => Back(http, Landing(done.Value!)),
-            AccessStatus.NotFound => Back(http, "error=expired"),
-            _ => Back(http, "error=failed"),
+            AccessStatus.Ok => Back(http, page, Landing(done.Value!)),
+            AccessStatus.NotFound => Back(http, page, "error=expired"),
+            _ => Back(http, page, "error=failed"),
         };
     }
 
@@ -190,8 +218,15 @@ public static class ConnectionSignInEndpoints
         };
 
     /// <summary>
-    /// Into the client, under the app's own address only (never an address from the request's query).
+    /// Into the client, under the app's own address only (never an address from the request's query): the
+    /// connections' landing page, or the wizard that began the sign-in.
     /// </summary>
-    private static RedirectHttpResult Back(HttpRequest http, string query) =>
-        TypedResults.Redirect($"{http.PathBase}{ClientPage}?{query}");
+    private static RedirectHttpResult Back(HttpRequest http, SignInReturn page, string query) =>
+        TypedResults.Redirect(
+            page == SignInReturn.Wizard ? $"{http.PathBase}{WizardPage}{query}" : $"{http.PathBase}{ClientPage}?{query}"
+        );
+
+    /// <summary>Giving groups a connection at once is what <c>connections.library</c> allows.</summary>
+    private static bool MayGiveGroups(AccessState state, ConnectRequest request) =>
+        request.Groups is not { Count: > 0 } || state.Has(Rights.LibraryConnections);
 }

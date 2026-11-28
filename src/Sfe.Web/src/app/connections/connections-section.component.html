@@ -19,6 +19,16 @@
             ><svg sfeIcon="plus"></svg><ng-container i18n>{level, select, library {Add for this space}
                 server {Add for the server} other {Add}}</ng-container></button>
         }
+        @if (tab() === 'shared' && addable().length) {
+            <a
+                class="button"
+                routerLink="/wizard"
+                [queryParams]="{ id: 'add-connection' }"
+                title="Add a connection step by step, with an explanation at each step"
+                i18n-title
+                i18n
+            >Step by step</a>
+        }
     </div>
     @if (view() && shown().length === 0) {
         <p class="field-hint" data-none i18n>No connections yet. Add one to reach files kept in a storage outside the

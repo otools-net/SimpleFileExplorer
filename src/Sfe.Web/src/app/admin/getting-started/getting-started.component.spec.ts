@@ -60,7 +60,8 @@ describe('Getting started', () => {
         expect(items[0].textContent).toContain('Done');
         expect(text()).toContain('2 of 5 done');
         expect(items[1].querySelector('a')!.getAttribute('href')).toBe('/admin?section=access&page=groups');
-        expect(items[4].querySelector('a')!.getAttribute('href')).toBe('/admin?section=connections&page=connections');
+        // Its wizard is registered: the item opens it.
+        expect(items[4].querySelector('a')!.getAttribute('href')).toBe('/wizard?id=add-connection');
     });
 
     it('leaves out the accounts on a Local server, where only administrators sign in', async () => {

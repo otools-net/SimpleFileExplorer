@@ -263,13 +263,13 @@ describe('WizardComponent leaving for another site', () => {
     const away = { alpha: 'a', skipBeta: false, gamma: '' };
 
     it('keeps the draft in the tab without its secrets, and leaves without asking', async () => {
-        finish.mockResolvedValueOnce({ redirect: 'https://provider.test/sign-in' });
+        finish.mockResolvedValueOnce({ redirect: 'https://provider/sign-in' });
         const wizard = await open();
         const leave = vi.spyOn(wizard.wizard, 'leaveFor').mockImplementation(() => {});
         await wizard.fill({ alpha: 'a', gamma: 'secret' });
         for (let i = 0; i < 4; i++) await wizard.next();
 
-        expect(leave).toHaveBeenCalledWith('https://provider.test/sign-in');
+        expect(leave).toHaveBeenCalledWith('https://provider/sign-in');
         expect(JSON.parse(sessionStorage.getItem('sfe.wizard.test')!).draft).toEqual(away);
         expect(wizard.wizard.dirty()).toBe(false);
     });

@@ -1,0 +1,73 @@
+@if (methods().length > 1) {
+    <fieldset class="access-choices">
+        <legend class="field-label" i18n>How to sign in</legend>
+        @for (method of methods(); track method.kind) {
+            <label class="check">
+                <input
+                    type="radio"
+                    name="add-connection-method"
+                    [value]="method.kind"
+                    [checked]="wizard.draft().method === method.kind"
+                    (change)="pick(method.kind)"
+                >
+                <span>{{ methodNames[method.kind] ?? method.kind }}</span>
+            </label>
+        }
+    </fieldset>
+}
+@switch (wizard.draft().method) {
+    @case ('oAuthRedirect') {
+        <p class="field-hint" data-redirect i18n>Finish takes you to {{ kindName() }}: sign in there and allow
+            access, then you come back here and the connection is made.</p>
+    }
+    @case ('oAuthCode') {
+        <p class="field-hint" i18n>Open the sign-in page of {{ kindName() }}, sign in and allow access, then
+            paste here the code it shows.</p>
+        <p>
+            <button
+                type="button"
+                class="button"
+                data-open-sign-in
+                title="Open the provider's sign-in page in a new tab"
+                i18n-title
+                [sfeBusy]="opening()"
+                [disabled]="opening()"
+                (click)="openSignIn()"
+                i18n
+            >Open the sign-in page</button>
+        </p>
+        @if (problem(); as problem) {
+            <span class="field-error">{{ problem }}</span>
+        }
+        @if (begun()) {
+            <label class="field">
+                <span i18n>Code</span>
+                <input
+                    type="text"
+                    autocomplete="off"
+                    data-code
+                    [value]="wizard.draft().code"
+                    (input)="wizard.change({ code: value($event) })"
+                >
+            </label>
+        }
+    }
+}
+@for (field of fields(); track field.id) {
+    <label class="field">
+        <span>{{ field.label }}</span>
+        <input
+            [type]="field.type === 'secret' ? 'password' : 'text'"
+            autocomplete="off"
+            [attr.data-field]="field.id"
+            [value]="wizard.draft().fields[field.id] ?? ''"
+            (input)="setField(field.id, value($event))"
+        >
+        @if (wizard.errors()[field.id]; as error) {
+            <span class="field-error">{{ error }}</span>
+        }
+    </label>
+}
+@if (wizard.errors()['method']; as error) {
+    <span class="field-error">{{ error }}</span>
+}

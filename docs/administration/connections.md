@@ -61,6 +61,9 @@ for all of it).
 
 A sign-in lasts 10 minutes and works once, for the account that started it.
 
+**Step by step** next to the add buttons opens the [Add a connection wizard](wizards.md#add-a-connection), which also
+gives the connection to the space's groups before the sign-in.
+
 ## Managing a connection
 
 **Manage** opens what you may do with it:

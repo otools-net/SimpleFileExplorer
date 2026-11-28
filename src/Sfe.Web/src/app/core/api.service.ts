@@ -647,7 +647,8 @@ export class Api {
         this.getOrRefused<FolderPicker>(`connections/${id}/folders`, { path });
     connectionIndex = (id: number) => this.get<ConnectionIndexStatus>(`connections/${id}/index`);
     syncConnectionIndex = (id: number) => this.post<ConnectionIndexStatus>(`connections/${id}/index/sync`);
-    authorizeConnection = (request: ConnectRequest) => this.post<SignInBegun>('connections/authorize', request);
+    authorizeConnection = (request: ConnectRequest, validateOnly?: true) =>
+        this.post<SignInBegun>(withQuery('connections/authorize', { validateOnly }), request);
     reauthorizeConnection = (id: number, method: SignInKindName, fields: Record<string, string> = {}) =>
         this.post<SignInBegun>(`connections/${id}/reauthorize`, { method, fields });
     completeConnection = (state: string, fields: Record<string, string>) =>

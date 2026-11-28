@@ -1,0 +1,44 @@
+<fieldset class="access-choices">
+    <legend class="field-label" i18n>For</legend>
+    @for (level of levels(); track level) {
+        <label class="check">
+            <input
+                type="radio"
+                name="add-connection-level"
+                [value]="level"
+                [checked]="wizard.draft().level === level"
+                (change)="wizard.change({ level })"
+            >
+            <span>{{ levelNames[level] }} <span class="field-hint">{{ levelHints[level] }}</span></span>
+        </label>
+    }
+</fieldset>
+@if (wizard.errors()['level']; as error) {
+    <span class="field-error">{{ error }}</span>
+}
+@if (shared()) {
+    <fieldset class="access-choices" data-groups>
+        <legend class="field-label" i18n>Groups of this space that use it</legend>
+        @if (failed(); as reason) {
+            <span class="field-error" i18n>Could not list the groups: {{ reason }}</span>
+        }
+        @for (group of groups(); track group.id) {
+            <label class="field add-connection-group">
+                <span>{{ group.name }}</span>
+                <select [attr.data-group]="group.id" (change)="use(group, value($event))">
+                    <option value="" [selected]="!wizard.draft().groups[group.id]" i18n>Doesn't use it</option>
+                    @for (use of uses; track use) {
+                        <option [value]="use" [selected]="wizard.draft().groups[group.id] === use">
+                            {{ useNames[use] }}
+                        </option>
+                    }
+                </select>
+            </label>
+        }
+        <span class="field-hint" i18n>The space's rights still apply inside it (who may change files). More
+            groups, and other spaces, later on the Connections page.</span>
+    </fieldset>
+    @if (wizard.errors()['groups']; as error) {
+        <span class="field-error">{{ error }}</span>
+    }
+}

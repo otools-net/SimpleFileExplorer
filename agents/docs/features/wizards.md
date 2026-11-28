@@ -2,8 +2,9 @@
 
 Code: `src/Sfe.Web/src/app/wizards/` (`wizard-definition.ts`, `wizard-registry.ts`, `wizard.component.*`,
 `wizard-context.ts`, `wizard-run.ts`, `wizard-kept.ts`, `wizard-page.component.ts`, `leave-wizard.ts`, one folder per wizard:
-`new-space/`, `share-folder/`), `styles/wizards.css`, `testing/wizard-harness.ts`; server: `validateOnly` on the route a wizard saves
-with (`TenantEndpoints.Create`, `FolderRuleEndpoints.Set`). User docs: `docs/administration/wizards.md`.
+`new-space/`, `share-folder/`, `add-connection/`), `styles/wizards.css`, `testing/wizard-harness.ts`; server: `validateOnly`
+on the route a wizard saves with (`TenantEndpoints.Create`, `FolderRuleEndpoints.Set`,
+`ConnectionSignInEndpoints.Authorize`). User docs: `docs/administration/wizards.md`.
 
 ## How it is put together
 
@@ -45,6 +46,9 @@ with (`TenantEndpoints.Create`, `FolderRuleEndpoints.Set`). User docs: `docs/adm
   (`NewTenants.CheckAsync`: name, short name, rights switched off).
   `PUT access/folder-rules?validateOnly=true` runs `FolderRuleService.CheckAsync` (the checks of `SetAsync`, in its
   order: path, level, principal (`userId` when none is named), the 250-rule cap).
+  `POST connections/authorize?validateOnly=true` runs `ConnectionSignInFlow.CheckAsync`: the draft's checks
+  (`ConnectionService.CheckAsync`, groups by `ConnectionFirstUses`), the way to sign in, and a way needing no browser
+  (password, key) tried at the provider, its grant thrown away.
 
 ## The wizards
 
@@ -55,6 +59,17 @@ with (`TenantEndpoints.Create`, `FolderRuleEndpoints.Set`). User docs: `docs/adm
   `PUT access/folder-rules`, then the end's `details` from `access/folder-access` (accounts and visitors; left out if
   that read fails, the rule being set). Session's space only: **Step by step** shows on the Folder access card only
   without `source` (connections) and `space` (another space).
+- `add-connection` (5.3c): kind (`config.connections.kinds`; none offered: a link to the Dropbox setup page for
+  `server.settings`), who uses it (levels of the server's settings and the session's rights; for library and server
+  levels the space's groups from `GET connections`, Read or Write), name and folder, sign in. **The sign-in is the
+  one save**: `POST connections/authorize` carries `groups` and `return: 'wizard'`; the connection and its groups
+  (`ConnectionFirstUses`; a server-level one is offered to the request's space) are made together when the sign-in
+  completes. Redirect: `finish` answers `{ redirect }`, the callback lands on `wizard?id=add-connection&made=7` (or
+  `&error=`, the landing page's words), `resume.run` ends there; `keep` drops `fields` and `code`. Code flow: the
+  step's **Open the sign-in page** begins it (nothing made; `begunFor` = `requestKey(draft)`, an earlier step changed
+  asks for it again), Finish = `authorize/complete`. Password: tried by the step's check, made by Finish. `valid`
+  and `review` run outside an injection context: what they need (`kindName`, `fieldIds`) is in the draft. Entry:
+  **Step by step** next to the add buttons on Administration › Connections (`shared` tab).
 
 ## Adding a wizard
 

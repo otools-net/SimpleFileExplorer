@@ -527,7 +527,7 @@
         <note category="location">src/app/account/account-section.component.html:73,74</note>
         <note category="location">src/app/admin/admin-page.component.html:469,470</note>
         <note category="location">src/app/admin/installation-section.component.html:57,58</note>
-        <note category="location">src/app/connections/connections-section.component.html:48,49</note>
+        <note category="location">src/app/connections/connections-section.component.html:58,59</note>
         <note category="location">src/app/editor/image-editor.dialog.html:64,65</note>
         <note category="location">src/app/formats/text/text-edit-bar.component.html:94,95</note>
         <note category="location">src/app/formats/text/text-edit.component.html:25,27</note>
@@ -815,7 +815,7 @@
       <notes>
         <note category="location">src/app/access/accounts-page.component.html:153</note>
         <note category="location">src/app/access/space-members.component.html:111</note>
-        <note category="location">src/app/connections/connections-section.component.html:220,221</note>
+        <note category="location">src/app/connections/connections-section.component.html:230,231</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:125,126</note>
         <note category="location">src/app/notifications/notifications.component.html:61</note>
         <note category="location">src/app/tracking/duplicate-group.component.html:16,17</note>
@@ -1035,6 +1035,7 @@
       <notes>
         <note category="location">src/app/access/folder-access.component.html:39,40</note>
         <note category="location">src/app/access/spaces-page.component.html:84,85</note>
+        <note category="location">src/app/connections/connections-section.component.html:30,31</note>
       </notes>
       <segment>
         <source>Step by step</source>
@@ -1057,6 +1058,8 @@
         <note category="location">src/app/library/scan/exclusions-section.component.html:22,23</note>
         <note category="location">src/app/library/scan/exclusions-section.component.html:76,77</note>
         <note category="location">src/app/tasks/schedule-form.component.html:19,20</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-name.step.ts:28</note>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:113</note>
         <note category="location">src/app/wizards/new-space/new-space.wizard.ts:35</note>
         <note category="location">src/app/wizards/share-folder/share-folder.wizard.ts:26</note>
         <note category="location">src/app/wizards/share-folder/share-folder.wizard.ts:34</note>
@@ -1105,6 +1108,8 @@
     <unit id="5758092745052900088">
       <notes>
         <note category="location">src/app/access/folder-access.component.html:87,88</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-draft.ts:112</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:24,25</note>
       </notes>
       <segment>
         <source>For</source>
@@ -1118,6 +1123,7 @@
         <note category="location">src/app/access/space-groups.component.html:5</note>
         <note category="location">src/app/access/spaces-page.component.ts:49,50</note>
         <note category="location">src/app/admin/admin-sections.ts:335</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-draft.ts:120</note>
       </notes>
       <segment>
         <source>Groups</source>
@@ -1419,9 +1425,10 @@
     <unit id="9215033217818992636">
       <notes>
         <note category="location">src/app/access/folder-levels.ts:12</note>
-        <note category="location">src/app/connections/connections-section.component.html:64,65</note>
-        <note category="location">src/app/connections/connections-section.component.html:112</note>
+        <note category="location">src/app/connections/connections-section.component.html:74,75</note>
+        <note category="location">src/app/connections/connections-section.component.html:122</note>
         <note category="location">src/app/library/read-only.ts:5</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-draft.ts:106</note>
         <note category="description">folder access level</note>
       </notes>
       <segment>
@@ -1439,6 +1446,7 @@
     <unit id="3386403882634729076">
       <notes>
         <note category="location">src/app/access/folder-levels.ts:17</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-draft.ts:107</note>
         <note category="description">folder access level</note>
       </notes>
       <segment>
@@ -1485,6 +1493,8 @@
         <note category="location">src/app/library/location/location.component.ts:31</note>
         <note category="location">src/app/tags/tag-editor.dialog.html:5,6</note>
         <note category="location">src/app/tokens/token-create.component.html:37,38</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-name.step.ts:13</note>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:112</note>
         <note category="location">src/app/wizards/new-space/new-space-name.step.ts:12,13</note>
         <note category="location">src/app/wizards/new-space/new-space.wizard.ts:39</note>
         <note category="location">src/app/wizards/new-space/new-space.wizard.ts:48</note>
@@ -3320,6 +3330,7 @@ Space “Holiday photos”
         <note category="location">src/app/account/login-page.component.html:8</note>
         <note category="location">src/app/account/login-page.component.html:135,136</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:185</note>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:118</note>
       </notes>
       <segment>
         <source>Sign in</source>
@@ -4255,7 +4266,7 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/admin/admin-page.component.html:338</note>
         <note category="location">src/app/admin/admin-page.component.ts:80</note>
-        <note category="location">src/app/core/connection.models.ts:133</note>
+        <note category="location">src/app/core/connection.models.ts:137</note>
       </notes>
       <segment>
         <source>This space</source>
@@ -6067,6 +6078,9 @@ Space “Holiday photos”
         <note category="location">src/app/connections/connect.dialog.html:30,31</note>
         <note category="location">src/app/files/properties.dialog.html:14</note>
         <note category="location">src/app/files/properties.dialog.html:48</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-kind.step.ts:17,18</note>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:81</note>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:87</note>
         <note category="description">the kind of storage, such as Dropbox</note>
       </notes>
       <segment>
@@ -6084,6 +6098,7 @@ Space “Holiday photos”
     <unit id="4081216171436739694">
       <notes>
         <note category="location">src/app/connections/connect.dialog.html:50,51</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-name.step.ts:29,30</note>
       </notes>
       <segment>
         <source>Shown as the top of the connection. Leave it empty for all of it.</source>
@@ -6092,6 +6107,7 @@ Space “Holiday photos”
     <unit id="3042658343326962386">
       <notes>
         <note category="location">src/app/connections/connect.dialog.html:57</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-name.step.ts:35</note>
         <note category="description">an example of a folder</note>
       </notes>
       <segment>
@@ -6101,6 +6117,7 @@ Space “Holiday photos”
     <unit id="7709180100710535745">
       <notes>
         <note category="location">src/app/connections/connect.dialog.html:68,69</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:23,24</note>
       </notes>
       <segment>
         <source>How to sign in</source>
@@ -6450,9 +6467,17 @@ Space “Holiday photos”
         <source>{VAR_SELECT, select, library {Add for this space} server {Add for the server} other {Add}}</source>
       </segment>
     </unit>
+    <unit id="2150881019967303567">
+      <notes>
+        <note category="location">src/app/connections/connections-section.component.html:27,28</note>
+      </notes>
+      <segment>
+        <source>Add a connection step by step, with an explanation at each step</source>
+      </segment>
+    </unit>
     <unit id="253050740734315231">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:24,25</note>
+        <note category="location">src/app/connections/connections-section.component.html:34,35</note>
       </notes>
       <segment>
         <source>No connections yet. Add one to reach files kept in a storage outside the library.</source>
@@ -6460,7 +6485,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2945150453065668148">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:44,45</note>
+        <note category="location">src/app/connections/connections-section.component.html:54,55</note>
       </notes>
       <segment>
         <source>Save the name</source>
@@ -6468,8 +6493,8 @@ Space “Holiday photos”
     </unit>
     <unit id="4991358387795601748">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:58,59</note>
-        <note category="location">src/app/connections/connections-section.component.html:81,82</note>
+        <note category="location">src/app/connections/connections-section.component.html:68,69</note>
+        <note category="location">src/app/connections/connections-section.component.html:91,92</note>
         <note category="location">src/app/library/sidebar/connection-links.component.ts:47,48</note>
       </notes>
       <segment>
@@ -6478,8 +6503,8 @@ Space “Holiday photos”
     </unit>
     <unit id="3500458863157551898">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:61,63</note>
-        <note category="location">src/app/connections/connections-section.component.html:123,124</note>
+        <note category="location">src/app/connections/connections-section.component.html:71,73</note>
+        <note category="location">src/app/connections/connections-section.component.html:133,134</note>
         <note category="location">src/app/settings/tabs/system-settings.ts:109</note>
         <note category="location">src/app/tasks/tasks-section.component.ts:51</note>
         <note category="location">src/app/tasks/tasks.ts:203</note>
@@ -6491,7 +6516,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1222108121975334759">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:77,78</note>
+        <note category="location">src/app/connections/connections-section.component.html:87,88</note>
       </notes>
       <segment>
         <source>Sign in to the storage again (the same connection, for the same people)</source>
@@ -6499,7 +6524,7 @@ Space “Holiday photos”
     </unit>
     <unit id="560677588056073573">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:87,88</note>
+        <note category="location">src/app/connections/connections-section.component.html:97,98</note>
       </notes>
       <segment>
         <source>Rename it, make it read only, turn it off, choose who uses it or remove it</source>
@@ -6507,7 +6532,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3897348120591552265">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:92,93</note>
+        <note category="location">src/app/connections/connections-section.component.html:102,103</note>
       </notes>
       <segment>
         <source>Manage</source>
@@ -6515,7 +6540,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6437367682275810633">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:100,101</note>
+        <note category="location">src/app/connections/connections-section.component.html:110,111</note>
       </notes>
       <segment>
         <source>Rename the connection</source>
@@ -6523,7 +6548,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6041115344061899387">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:104,105</note>
+        <note category="location">src/app/connections/connections-section.component.html:114,115</note>
         <note category="location">src/app/files/access-texts.ts:27</note>
         <note category="location">src/app/files/batch-rename.dialog.html:1</note>
         <note category="location">src/app/files/batch-rename.dialog.ts:141</note>
@@ -6537,7 +6562,7 @@ Space “Holiday photos”
     </unit>
     <unit id="300092246368146069">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:113,114</note>
+        <note category="location">src/app/connections/connections-section.component.html:123,124</note>
       </notes>
       <segment>
         <source>Nothing in it is changed through SFE.</source>
@@ -6545,7 +6570,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4808125825586374717">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:124,125</note>
+        <note category="location">src/app/connections/connections-section.component.html:134,135</note>
       </notes>
       <segment>
         <source>It is kept, with who uses it, but nobody can open it.</source>
@@ -6553,7 +6578,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5101360111956147263">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:130,131</note>
+        <note category="location">src/app/connections/connections-section.component.html:140,141</note>
       </notes>
       <segment>
         <source>Index in this space</source>
@@ -6561,7 +6586,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3243640855656612591">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:136,137</note>
+        <note category="location">src/app/connections/connections-section.component.html:146,147</note>
       </notes>
       <segment>
         <source>Read what changed in the storage now and update this space&apos;s index of it</source>
@@ -6569,7 +6594,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1498168401303816680">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:141,142</note>
+        <note category="location">src/app/connections/connections-section.component.html:151,152</note>
       </notes>
       <segment>
         <source>Sync now</source>
@@ -6577,7 +6602,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7099012818264483454">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:144,145</note>
+        <note category="location">src/app/connections/connections-section.component.html:154,155</note>
       </notes>
       <segment>
         <source>Spaces it is offered to</source>
@@ -6585,7 +6610,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6934147017898922922">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:152,153</note>
+        <note category="location">src/app/connections/connections-section.component.html:162,163</note>
       </notes>
       <segment>
         <source>Every space, including those made later</source>
@@ -6593,7 +6618,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2725633160680595767">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:168,169</note>
+        <note category="location">src/app/connections/connections-section.component.html:178,179</note>
       </notes>
       <segment>
         <source>Groups of this space</source>
@@ -6601,7 +6626,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3716063446310319590">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:177,178</note>
+        <note category="location">src/app/connections/connections-section.component.html:187,188</note>
         <note category="location">src/app/wizards/share-folder/share-folder-draft.ts:37</note>
       </notes>
       <segment>
@@ -6610,7 +6635,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8353337353686902137">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:182,183</note>
+        <note category="location">src/app/connections/connections-section.component.html:192,193</note>
       </notes>
       <segment>
         <source>Reads it</source>
@@ -6618,7 +6643,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2780949742370177570">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:187,188</note>
+        <note category="location">src/app/connections/connections-section.component.html:197,198</note>
       </notes>
       <segment>
         <source>Reads and changes it</source>
@@ -6626,7 +6651,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3742465337477738849">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:195,196</note>
+        <note category="location">src/app/connections/connections-section.component.html:205,206</note>
       </notes>
       <segment>
         <source>Hide some of its folders from groups or accounts, or make them read only</source>
@@ -6634,7 +6659,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4661571960091472498">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:200,201</note>
+        <note category="location">src/app/connections/connections-section.component.html:210,211</note>
       </notes>
       <segment>
         <source>Folder rules…</source>
@@ -6642,7 +6667,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7941692847572231326">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.html:216,217</note>
+        <note category="location">src/app/connections/connections-section.component.html:226,227</note>
       </notes>
       <segment>
         <source>Remove the connection; its files stay where they are (asks first)</source>
@@ -6650,7 +6675,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2571764721437198025">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:110</note>
+        <note category="location">src/app/connections/connections-section.component.ts:111</note>
       </notes>
       <segment>
         <source>Connection “<ph id="0" equiv="name" disp="connection.name"/>” added.</source>
@@ -6658,7 +6683,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6306133157821268698">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:116,117</note>
+        <note category="location">src/app/connections/connections-section.component.ts:117,118</note>
       </notes>
       <segment>
         <source>{level, select, account {Sign in to a storage and add it for yourself only} library {Sign in to a storage and add it for this space} other {Sign in to a storage and add it for the server}}</source>
@@ -6666,8 +6691,8 @@ Space “Holiday photos”
     </unit>
     <unit id="9147614054874195214">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:137</note>
-        <note category="location">src/app/connections/connections-section.component.ts:140</note>
+        <note category="location">src/app/connections/connections-section.component.ts:138</note>
+        <note category="location">src/app/connections/connections-section.component.ts:141</note>
       </notes>
       <segment>
         <source>Could not sync the connection: <ph id="0" equiv="reason" disp="problem"/></source>
@@ -6675,7 +6700,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3470486596097281500">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:163</note>
+        <note category="location">src/app/connections/connections-section.component.ts:164</note>
       </notes>
       <segment>
         <source>Could not change the connection: <ph id="0" equiv="reason" disp="reason"/></source>
@@ -6683,7 +6708,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6503715491638325135">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:171,172</note>
+        <note category="location">src/app/connections/connections-section.component.ts:172,173</note>
       </notes>
       <segment>
         <source>Remove the connection “<ph id="0" equiv="name" disp="name"/>”? Its files stay where they are; whoever used it here no longer sees it.</source>
@@ -6691,7 +6716,7 @@ Space “Holiday photos”
     </unit>
     <unit id="55369361836963560">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:178</note>
+        <note category="location">src/app/connections/connections-section.component.ts:179</note>
       </notes>
       <segment>
         <source>Could not remove the connection “<ph id="0" equiv="name" disp="name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -6699,7 +6724,7 @@ Space “Holiday photos”
     </unit>
     <unit id="65386017477778715">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:180</note>
+        <note category="location">src/app/connections/connections-section.component.ts:181</note>
       </notes>
       <segment>
         <source>Connection “<ph id="0" equiv="name" disp="name"/>” removed.</source>
@@ -6707,7 +6732,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7140380351490894903">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:196</note>
+        <note category="location">src/app/connections/connections-section.component.ts:197</note>
       </notes>
       <segment>
         <source>Could not change who uses “<ph id="0" equiv="name" disp="connection.name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -6715,7 +6740,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8753270679830900135">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:210</note>
+        <note category="location">src/app/connections/connections-section.component.ts:211</note>
       </notes>
       <segment>
         <source>Could not change the spaces “<ph id="0" equiv="name" disp="connection.name"/>” is offered to: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -6976,7 +7001,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4645609569705949286">
       <notes>
-        <note category="location">src/app/core/connection.models.ts:132</note>
+        <note category="location">src/app/core/connection.models.ts:136</note>
         <note category="description">level of a connection</note>
       </notes>
       <segment>
@@ -6985,7 +7010,7 @@ Space “Holiday photos”
     </unit>
     <unit id="44436403874863322">
       <notes>
-        <note category="location">src/app/core/connection.models.ts:134</note>
+        <note category="location">src/app/core/connection.models.ts:138</note>
         <note category="description">level of a connection</note>
       </notes>
       <segment>
@@ -27233,6 +27258,266 @@ The search index is updated in the background. This can take a while on large fo
         <source>{more, select, yes {{count, number}+ to do} other {{count, number} to do}}</source>
       </segment>
     </unit>
+    <unit id="471838574391227263">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-draft.ts:120</note>
+      </notes>
+      <segment>
+        <source>None yet: only the server&apos;s administrators use it</source>
+      </segment>
+    </unit>
+    <unit id="2183372268409163334">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-kind.step.ts:32,33</note>
+      </notes>
+      <segment>
+        <source>No kind of connection is set up on this server yet: a kind is offered once whoever runs the server has registered SFE at the provider (Dropbox: its app key).</source>
+      </segment>
+    </unit>
+    <unit id="3307036047138270297">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-kind.step.ts:39,40</note>
+      </notes>
+      <segment>
+        <source>How to register SFE at Dropbox, and where its app key goes</source>
+      </segment>
+    </unit>
+    <unit id="5054612023138380057">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-kind.step.ts:42,43</note>
+      </notes>
+      <segment>
+        <source>Set up Dropbox</source>
+      </segment>
+    </unit>
+    <unit id="8565752157202786713">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-name.step.ts:14,15</note>
+      </notes>
+      <segment>
+        <source>As people will see it, in the sidebar.</source>
+      </segment>
+    </unit>
+    <unit id="9016426082612921920">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:40,41</note>
+      </notes>
+      <segment>
+        <source>Finish takes you to <ph id="0" equiv="INTERPOLATION" disp="{{ kindName() }}"/>: sign in there and allow access, then you come back here and the connection is made.</source>
+      </segment>
+    </unit>
+    <unit id="814837778616542415">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:44,45</note>
+      </notes>
+      <segment>
+        <source>Open the sign-in page of <ph id="0" equiv="INTERPOLATION" disp="{{ kindName() }}"/>, sign in and allow access, then paste here the code it shows.</source>
+      </segment>
+    </unit>
+    <unit id="5839200317893048101">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:51,52</note>
+      </notes>
+      <segment>
+        <source>Open the provider&apos;s sign-in page in a new tab</source>
+      </segment>
+    </unit>
+    <unit id="6853992909709408112">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:57,58</note>
+      </notes>
+      <segment>
+        <source>Open the sign-in page</source>
+      </segment>
+    </unit>
+    <unit id="8186013988289067040">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:64,65</note>
+      </notes>
+      <segment>
+        <source>Code</source>
+      </segment>
+    </unit>
+    <unit id="6335507621370522035">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:43,44</note>
+      </notes>
+      <segment>
+        <source>Groups of this space that use it</source>
+      </segment>
+    </unit>
+    <unit id="7005504919813610565">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:45,46</note>
+      </notes>
+      <segment>
+        <source>Could not list the groups: <ph id="0" equiv="INTERPOLATION" disp="{{ reason }}"/></source>
+      </segment>
+    </unit>
+    <unit id="4788589243559236463">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:51,52</note>
+      </notes>
+      <segment>
+        <source>Doesn&apos;t use it</source>
+      </segment>
+    </unit>
+    <unit id="4198250969938166283">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:60,61</note>
+      </notes>
+      <segment>
+        <source>The space&apos;s rights still apply inside it (who may change files). More groups, and other spaces, later on the Connections page.</source>
+      </segment>
+    </unit>
+    <unit id="1043561580811554451">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:77</note>
+      </notes>
+      <segment>
+        <source>Your own storage: nobody else sees it, administrators neither.</source>
+      </segment>
+    </unit>
+    <unit id="6948193223943368557">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:78</note>
+      </notes>
+      <segment>
+        <source>A storage of this space, for the groups you choose.</source>
+      </segment>
+    </unit>
+    <unit id="1497458997799531399">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:79</note>
+      </notes>
+      <segment>
+        <source>A storage of the whole server, offered to spaces; here, for the groups you choose.</source>
+      </segment>
+    </unit>
+    <unit id="6954410426361725437">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:46</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="name" disp="draft.name"/>” is connected: it is in the sidebar, under the quick links.</source>
+      </segment>
+    </unit>
+    <unit id="7005696348026356790">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:47</note>
+      </notes>
+      <segment>
+        <source>Who may use it</source>
+      </segment>
+    </unit>
+    <unit id="3219261187618965031">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:50</note>
+      </notes>
+      <segment>
+        <source>Open the connection</source>
+      </segment>
+    </unit>
+    <unit id="7797775080253497361">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:51</note>
+      </notes>
+      <segment>
+        <source>Its files, at the folder chosen as its top</source>
+      </segment>
+    </unit>
+    <unit id="2212751064096445785">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:56</note>
+      </notes>
+      <segment>
+        <source>Open the Connections page</source>
+      </segment>
+    </unit>
+    <unit id="7687401601307654298">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:57</note>
+      </notes>
+      <segment>
+        <source>Rename it, give it to more groups or spaces, sign it in again</source>
+      </segment>
+    </unit>
+    <unit id="4425338907525868348">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:75</note>
+        <note category="location">src/app/wizards/wizard-registry.ts:49</note>
+        <note category="description">wizard</note>
+      </notes>
+      <segment>
+        <source>Add a connection</source>
+      </segment>
+    </unit>
+    <unit id="74422995027080866">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:83</note>
+      </notes>
+      <segment>
+        <source>The storage to reach: its files are browsed like the library&apos;s, beside it.</source>
+      </segment>
+    </unit>
+    <unit id="9204259170049384070">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:91</note>
+        <note category="description">wizard step</note>
+      </notes>
+      <segment>
+        <source>Who uses it</source>
+      </segment>
+    </unit>
+    <unit id="8877457469672075692">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:93</note>
+      </notes>
+      <segment>
+        <source>Only you: your own storage, nobody else opens it. This space or the server: the groups you choose use it, to read only or to change its files too.</source>
+      </segment>
+    </unit>
+    <unit id="5682081396712833536">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:103</note>
+        <note category="description">wizard step</note>
+      </notes>
+      <segment>
+        <source>Name and folder</source>
+      </segment>
+    </unit>
+    <unit id="6277807750020370057">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:105</note>
+      </notes>
+      <segment>
+        <source>The name people see it by, and the folder of the storage shown as its top (all of it when left empty).</source>
+      </segment>
+    </unit>
+    <unit id="1178683289993349774">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:113</note>
+      </notes>
+      <segment>
+        <source>All of it</source>
+      </segment>
+    </unit>
+    <unit id="926478661754235394">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:120</note>
+      </notes>
+      <segment>
+        <source>SFE signs in to the storage on your behalf and keeps that sign-in, protected, on the server: never your password at the provider.</source>
+      </segment>
+    </unit>
+    <unit id="2818550867885371385">
+      <notes>
+        <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:126</note>
+      </notes>
+      <segment>
+        <source>How</source>
+      </segment>
+    </unit>
     <unit id="3385864060614579578">
       <notes>
         <note category="location">src/app/wizards/new-space/new-space-folder.step.ts:22,23</note>
@@ -27571,6 +27856,22 @@ The search index is updated in the background. This can take a while on large fo
       </notes>
       <segment>
         <source>wizard folder access rule permission share hidden read only write group account</source>
+      </segment>
+    </unit>
+    <unit id="3741947768764198527">
+      <notes>
+        <note category="location">src/app/wizards/wizard-registry.ts:50</note>
+      </notes>
+      <segment>
+        <source>Step by step: a storage such as Dropbox, who uses it, its name and folder, then the sign-in at the provider.</source>
+      </segment>
+    </unit>
+    <unit id="6001674027698896380">
+      <notes>
+        <note category="location">src/app/wizards/wizard-registry.ts:51</note>
+      </notes>
+      <segment>
+        <source>wizard connection storage dropbox cloud external remote sign in groups</source>
       </segment>
     </unit>
     <unit id="219550497670413357">

@@ -22,6 +22,14 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest_fields Fields { get; set; }
 #endif
+        /// <summary>The groups property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest_groups? Groups { get; set; }
+#nullable restore
+#else
+        public global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest_groups Groups { get; set; }
+#endif
         /// <summary>The kind property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -42,6 +50,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public string Name { get; set; }
 #endif
+        /// <summary>The return property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Models.SignInReturn? Return { get; set; }
         /// <summary>The rootPath property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -56,6 +66,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public ConnectRequest()
         {
             AdditionalData = new Dictionary<string, object>();
+            Return = global::Otools.Net.Sfe.Client.Generated.Models.SignInReturn.Connections;
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -76,10 +87,12 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "fields", n => { Fields = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest_fields>(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest_fields.CreateFromDiscriminatorValue); } },
+                { "groups", n => { Groups = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest_groups>(global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest_groups.CreateFromDiscriminatorValue); } },
                 { "kind", n => { Kind = n.GetStringValue(); } },
                 { "level", n => { Level = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectionLevel>(); } },
                 { "method", n => { Method = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.SignInKind>(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
+                { "return", n => { Return = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.SignInReturn>(); } },
                 { "rootPath", n => { RootPath = n.GetStringValue(); } },
             };
         }
@@ -91,10 +104,12 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest_fields>("fields", Fields);
+            writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectRequest_groups>("groups", Groups);
             writer.WriteStringValue("kind", Kind);
             writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.ConnectionLevel>("level", Level);
             writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.SignInKind>("method", Method);
             writer.WriteStringValue("name", Name);
+            writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.SignInReturn>("return", Return);
             writer.WriteStringValue("rootPath", RootPath);
             writer.WriteAdditionalData(AdditionalData);
         }

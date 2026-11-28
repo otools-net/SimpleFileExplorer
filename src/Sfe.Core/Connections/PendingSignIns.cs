@@ -43,6 +43,15 @@ public sealed class PendingSignIns(TimeProvider clock)
         return signIn.UserId == userId && signIn.Expires > clock.GetUtcNow() ? signIn : null;
     }
 
+    /// <summary>
+    /// The sign-in of <paramref name="state"/> begun by <paramref name="userId"/>, left waiting (where it lands once
+    /// ended); null when unknown or another account's.
+    /// </summary>
+    public PendingSignIn? Peek(string? state, int userId) =>
+        !string.IsNullOrEmpty(state) && _byState.TryGetValue(state, out var signIn) && signIn.UserId == userId
+            ? signIn
+            : null;
+
     public int Count => _byState.Count;
 
     private void Sweep()

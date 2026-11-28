@@ -11,7 +11,8 @@ rather be guided.
 - Search for it in the box of the [administration page](README.md#finding-a-setting): its name, or what it does
   (**space**, **visitors**, **share**…). Wizards are listed under **Wizards** among what is found.
 - Or click **Step by step** next to the button that does the same job on its page (**New space** on
-  **Spaces & accounts › Spaces**, **New rule** on **Spaces & accounts › Folder access**).
+  **Spaces & accounts › Spaces**, **New rule** on **Spaces & accounts › Folder access**, **Add for this space** on
+  **Connections › Connections**).
 - The [getting-started list](README.md#getting-started) of the administration overview opens them too.
 
 Only the wizards you have the [rights](../reference/rights.md) for are found; one opened from a link you may not use
@@ -33,6 +34,9 @@ says so.
   goes back to the administration page.
 - **Cancel**, the arrow at the top left, or leaving the page in any other way asks first when you have chosen
   something: nothing is kept. A reload of the page starts the wizard again.
+- A wizard whose **Finish** signs in somewhere else ([Add a connection](#add-a-connection)) sends the browser there
+  and comes back to the wizard's end. Meanwhile what you chose is kept in this browser tab only, without any password,
+  for 15 minutes.
 
 ![The review before Finish](../images/wizard-review.png)
 
@@ -105,3 +109,55 @@ folder is replaced.
 **Finish** sets the rule. The end lists **who has access now**: every account of the space (and the visitors, when the
 space lets them in) with whether they see the folder and may change its files, all groups and rules counted. **Open
 the Folder access page** leads to every rule of the space.
+
+## Add a connection
+
+Makes a [connection](connections.md): a storage outside the libraries (Dropbox…) browsed beside the library, and
+gives it to the groups of the space that use it. For those who may manage the space's connections (the right
+**Manage the space's connections**). The same as **Add for this space** or **Add for the server** on the
+**Connections** page, with the groups chosen before the sign-in, in four steps.
+
+![The add-a-connection wizard](../images/wizard-add-connection.png)
+
+### Add a connection: kind
+
+The kind of storage, among those this server offers. A kind is offered once whoever runs the server has registered
+SFE at the provider ([Setting up Dropbox](connections.md#setting-up-dropbox-server-administrators)); until then the
+step says so, with a link to that page for server administrators. The connection is named after the kind until you
+type another name.
+
+### Add a connection: who uses it
+
+- **Only me**: a storage of your own account. Nobody else opens it, administrators neither.
+- **This space**: a storage of the space you are browsing, for the groups you choose below it.
+- **The server**: a storage of the whole server; here it is offered to this space, for the groups you choose. Other
+  spaces are offered it later on the **Connections** page.
+
+Each group of the space either **doesn't use it**, uses it **read only**, or **read & write**. Inside it the space's
+rights still apply (who may delete, upload…). A connection given to no group is used by the server's administrators
+only, until groups are given it on the **Connections** page. Only the levels the server allows and your rights let
+you make are listed.
+
+### Add a connection: name and folder
+
+The **Name** people see it by in the sidebar, and the **Folder** of the storage shown as the top of the connection
+(`/Photos`): empty for all of it.
+
+### Add a connection: sign in
+
+How SFE signs in to the storage; SFE keeps the sign-in, protected, on the server, never your password at the
+provider.
+
+- **Sign in at the provider and come back here**: **Finish** sends the browser to the provider's page; you sign in
+  there and allow SFE in, and the provider sends you back to the wizard, which ends. If you refuse there, or the
+  sign-in fails, the wizard is back at its review with the reason: **Finish** tries again.
+- **Sign in at the provider and copy the code it shows**: **Open the sign-in page** opens the provider in a new tab;
+  paste the code it shows, then **Next** and **Finish**. Changing an earlier step after that asks for the page again.
+- **Name and password** (or a key): typed here, and tried with the storage on **Next**.
+
+A sign-in lasts 10 minutes and works once.
+
+### Add a connection: the end
+
+The connection is made with its groups at once. The end lists who uses it, **Open the connection** shows its files,
+**Open the Connections page** leads to where it is renamed, given to more groups or spaces, or signed in again.

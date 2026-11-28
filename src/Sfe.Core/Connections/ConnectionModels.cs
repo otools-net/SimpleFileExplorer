@@ -34,14 +34,19 @@ public sealed record ConnectionGroupInfo(int GroupId, int TenantId, FolderLevel 
 /// <param name="TenantId">Library level: whose it is.</param>
 /// <param name="RootPath">The folder of the remote storage it shows (<see cref="RemotePaths"/>); empty or null for
 /// all of it.</param>
+/// <param name="Uses">The groups that use it as soon as it is made (<see cref="ConnectionFirstUses"/>).</param>
 public sealed record ConnectionDraft(
     string Kind,
     string? Name,
     ConnectionLevel Level,
     int? OwnerId = null,
     int? TenantId = null,
-    string? RootPath = null
+    string? RootPath = null,
+    ConnectionUses? Uses = null
 );
+
+/// <summary>Groups of library <paramref name="TenantId"/> that use a connection, Read or Write.</summary>
+public sealed record ConnectionUses(int TenantId, IReadOnlyDictionary<int, FolderLevel> Groups);
 
 /// <summary>What a manager changes in a connection; null keeps the value.</summary>
 public sealed record ConnectionChange(
@@ -75,13 +80,18 @@ public sealed record UsableConnection(
 /// <summary>What a person asks to connect (<see cref="ConnectionSignInFlow.BeginAsync"/>).</summary>
 /// <param name="Method">One of the kind's <see cref="IConnectionProvider.SignInMethods"/>.</param>
 /// <param name="Fields">The method's fields as filled, by id.</param>
+/// <param name="Groups">The groups of the request's library that use it once made (library and server levels), Read
+/// or Write, by group id.</param>
+/// <param name="Return">Where the provider's redirect lands in the web client.</param>
 public sealed record ConnectRequest(
     string Kind,
     ConnectionLevel Level,
     string? Name,
     SignInKind Method,
     string? RootPath = null,
-    IReadOnlyDictionary<string, string>? Fields = null
+    IReadOnlyDictionary<string, string>? Fields = null,
+    IReadOnlyDictionary<int, FolderLevel>? Groups = null,
+    SignInReturn Return = SignInReturn.Connections
 );
 
 /// <summary>Who signs in, and where it goes back to (<see cref="ConnectionSignInFlow"/>).</summary>
@@ -92,6 +102,7 @@ public sealed record SignInContext(int UserId, int TenantId, string ReturnAddres
 /// <summary>A sign-in waiting for the person (<see cref="PendingSignIns"/>).</summary>
 /// <param name="Pending">The provider's <see cref="SignInStep.Pending"/>: server side only.</param>
 /// <param name="ConnectionId">Set when an existing connection is signed in to again.</param>
+/// <param name="Return">Where the provider's redirect lands in the web client.</param>
 public sealed record PendingSignIn(
     string State,
     int UserId,
@@ -100,7 +111,8 @@ public sealed record PendingSignIn(
     string? Pending,
     string? ReturnAddress,
     int? ConnectionId = null,
-    DateTimeOffset Expires = default
+    DateTimeOffset Expires = default,
+    SignInReturn Return = SignInReturn.Connections
 );
 
 /// <summary>A sign-in ended: the connection made, or signed in to again.</summary>
