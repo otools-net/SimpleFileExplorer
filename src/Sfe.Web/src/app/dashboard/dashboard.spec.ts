@@ -39,6 +39,17 @@ describe('dashboard', () => {
         api.quickLinks.mockResolvedValue(LINKS);
         api.storage.mockResolvedValue({ reported: true, used: 90, total: 100, free: 10 });
         api.uploads.mockResolvedValue([]);
+        api.browse.mockResolvedValue({
+            path: '',
+            name: '',
+            parentPath: null,
+            items: [],
+            offset: 0,
+            limit: 13,
+            total: 0,
+            directoryCount: 0,
+            fileCount: 0,
+        });
         api.tagSidebar.mockResolvedValue({ popular: [], searched: [], viewed: [], lucky: [], historyEnabled: true });
         TestBed.configureTestingModule({
             providers: [
@@ -71,12 +82,12 @@ describe('dashboard', () => {
         it('puts the default widgets in their columns for whoever may see them', () => {
             const config = fakeConfig({ connections: { levels: ['account'], kinds: [] } });
             const all = arrangeLayout(DEFAULT_LAYOUT, can(ALL_RIGHTS), config);
-            expect(all[1].map((widget) => widget.id)).toEqual(['storage', 'uploads', 'connections']);
+            expect(all[1].map((widget) => widget.id)).toEqual(['storage', 'uploads', 'connections', 'tags']);
 
             const columns = arrangeLayout(DEFAULT_LAYOUT, can(ALL_RIGHTS));
             expect(columns.map((column) => column.map((widget) => widget.id))).toEqual([
-                ['places', 'notifications', 'tags'],
-                ['storage', 'uploads'],
+                ['files', 'places', 'notifications'],
+                ['storage', 'uploads', 'tags'],
             ]);
         });
 
@@ -153,7 +164,7 @@ describe('dashboard', () => {
         it('shows the home folder, the quick links and the storage', async () => {
             const element = await openDashboard(fakeConfig());
 
-            expect(cards(element)).toEqual(['places', 'notifications', 'tags', 'storage', 'uploads']);
+            expect(cards(element)).toEqual(['files', 'places', 'notifications', 'storage', 'uploads', 'tags']);
             const places = element.querySelector('[data-widget="places"]')!;
             expect([...places.querySelectorAll('.quick-link-name')].map((name) => name.textContent)).toEqual([
                 'Home',
@@ -173,7 +184,7 @@ describe('dashboard', () => {
 
         it('shows only the cards the account may use', async () => {
             const element = await openDashboard(limitedConfig([Rights.browse]));
-            expect(cards(element)).toEqual(['notifications', 'storage']);
+            expect(cards(element)).toEqual(['files', 'notifications', 'storage']);
             expect(element.querySelector('a[href="/admin"]')).toBeNull();
         });
 

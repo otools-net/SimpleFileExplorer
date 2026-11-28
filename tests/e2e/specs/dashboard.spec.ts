@@ -11,6 +11,7 @@ test('the dashboard shows its cards in one column and leads to the files', async
     await expect(places).toBeVisible();
     await expect(storage.locator('.storage-line')).toBeVisible();
     await expect(page.locator('[data-widget="notifications"]')).toBeVisible();
+    await expect(page.locator('[data-widget="files"] [data-folder]').first()).toBeVisible();
     await expect(page.locator('[data-widget="uploads"]')).toContainText('No uploads under way');
     await expect(page.locator('[data-widget="tags"] [data-history="viewed"]')).toBeVisible();
 

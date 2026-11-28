@@ -16,6 +16,9 @@ its keyboard shortcut, if any) when you rest the mouse on it.
 SFE's address alone (a bookmark of the server, a new tab) opens the dashboard: cards with what you use most, side by
 side, one under the other on a phone.
 
+- **Files**: the folder **Files** opens: the top of the library or, when you may only see folders further down,
+  the first of them. Its folders (the first twelve, by name) each open their listing, and it says how many folders
+  and files it holds.
 - **Home and quick links**: your [home folder](#home-folder) and your [quick links](#quick-links). A folder opens
   its listing, a file the folder holding it; those not there any more show faded.
 - **Notifications**: the last five messages of the [bell](#notifications), newest first; the bell

@@ -15,8 +15,8 @@ export const DASHBOARD_COLUMNS = 2;
 /** The layout of an account that has made none of its own. */
 export const DEFAULT_LAYOUT: DashboardLayout = {
     columns: [
-        ['places', 'notifications', 'tags'],
-        ['storage', 'uploads', 'connections'],
+        ['files', 'places', 'notifications'],
+        ['storage', 'uploads', 'connections', 'tags'],
     ],
 };
 

@@ -21,6 +21,13 @@ export interface DashboardWidget {
 /** Every widget the dashboard can show, in the order a list of them is offered. */
 export const DASHBOARD_WIDGETS: readonly DashboardWidget[] = [
     {
+        id: 'files',
+        title: $localize`Files`,
+        icon: 'folder',
+        shown: (can) => can(Rights.browse),
+        load: () => import('./widgets/files-widget.component').then((m) => m.FilesWidgetComponent),
+    },
+    {
         id: 'places',
         title: $localize`Home and quick links`,
         icon: 'home',

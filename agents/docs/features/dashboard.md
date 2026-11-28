@@ -25,6 +25,10 @@ User docs: `docs/user-guide/browsing.md#dashboard`, `docs/administration/interfa
   and opens the top of the library when there is none or it is not there. Everything injected **before** the first
   `await` (the injection context ends there).
 - Widgets so far (`widgets/`, specs in `widgets/widgets.spec.ts`):
+  - `files` (`library.browse`): the folder Files opens: `api/browse` of the top (first page, 13 items: folders
+    come first), then of `access.start` when the server names one (folder rules leading one way down, as
+    `ListingStore.start`). Its first 12 folders and the counts (`directoryCount`, `fileCount`). Spec
+    `widgets/files-widget.spec.ts`.
   - `places`: home folder and quick links; a file's link opens its folder, as the store's `reveal` would act on a
     listing that isn't shown.
   - `notifications` (`library.browse`): the latest 5 of `Notifications`, read only (the header's bell acts on them);

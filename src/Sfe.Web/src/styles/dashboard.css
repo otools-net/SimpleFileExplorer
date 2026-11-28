@@ -80,6 +80,20 @@
     border-radius: 4px;
 }
 
+/* Files: the folder Files opens, then its folders. */
+.dashboard-files-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+.dashboard-files-top .icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+}
 .dashboard-card-subtitle {
     margin: 4px 0 0;
     color: var(--text-muted);

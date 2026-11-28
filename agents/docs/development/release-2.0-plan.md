@@ -665,7 +665,9 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   - [x] **b: the users' widgets from what the client already reads.** Done 2026-11-28 (step b split in four: b–e).
     `notifications` (latest 5, read only), `tags` (last searched and viewed), `uploads` (the tab's batches and
     the interrupted ones, each linking to its folder), `connections` (state words, `?c=` links). `shown(can,
-    config)`: the server's `connections` too. `DEFAULT_LAYOUT` two columns of three. Client only: no route.
+    config)`: the server's `connections` too. Then, asked by the owner,
+    `files` (the folder Files opens, its folders) first in `DEFAULT_LAYOUT` (`files`, `places`, `notifications` |
+    `storage`, `uploads`, `connections`, `tags`). Client only: no route.
     Screenshot `dashboard.png` taller (640 px).
   - [ ] **c: the administrators' widgets:** scan status (`api/scan`), failed tasks (`api/tasks`, last runs that
     failed), keep-alive (`api/keep-alive`, `settings.keepAlive`). Each with the rights of its route.

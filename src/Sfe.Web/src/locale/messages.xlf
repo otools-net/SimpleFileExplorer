@@ -4688,7 +4688,7 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-sections.ts:358</note>
         <note category="location">src/app/admin/admin-sections.ts:365</note>
         <note category="location">src/app/connections/connection-settings.ts:10</note>
-        <note category="location">src/app/dashboard/dashboard-widgets.ts:53</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:60</note>
         <note category="location">src/app/library/sidebar/connection-links.component.ts:25</note>
       </notes>
       <segment>
@@ -4962,7 +4962,7 @@ Space “Holiday photos”
     <unit id="1604823060459595401">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:199</note>
-        <note category="location">src/app/dashboard/dashboard-widgets.ts:39</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:46</note>
       </notes>
       <segment>
         <source>Uploads</source>
@@ -7240,6 +7240,7 @@ Space “Holiday photos”
     <unit id="4116911651502837995">
       <notes>
         <note category="location">src/app/dashboard/dashboard-page.component.html:17,19</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:25</note>
         <note category="location">src/app/library/items/listing.component.html:82,83</note>
         <note category="description">the button opening the library&apos;s listing</note>
       </notes>
@@ -7298,7 +7299,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3707727924343293218">
       <notes>
-        <note category="location">src/app/dashboard/dashboard-widgets.ts:25</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:32</note>
       </notes>
       <segment>
         <source>Home and quick links</source>
@@ -7306,7 +7307,7 @@ Space “Holiday photos”
     </unit>
     <unit id="57403663622654391">
       <notes>
-        <note category="location">src/app/dashboard/dashboard-widgets.ts:32</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:39</note>
         <note category="location">src/app/files/properties.dialog.html:14</note>
       </notes>
       <segment>
@@ -7315,7 +7316,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5851560788527570644">
       <notes>
-        <note category="location">src/app/dashboard/dashboard-widgets.ts:46</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:53</note>
         <note category="location">src/app/notifications/notifications.component.html:29,30</note>
       </notes>
       <segment>
@@ -7324,7 +7325,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6107582405090544953">
       <notes>
-        <note category="location">src/app/dashboard/dashboard-widgets.ts:60</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:67</note>
       </notes>
       <segment>
         <source>Tag history</source>
@@ -7332,7 +7333,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4017213999599806422">
       <notes>
-        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:33,34</note>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:35,36</note>
       </notes>
       <segment>
         <source>No connections you may use in this space.</source>
@@ -7340,7 +7341,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5737179919407324059">
       <notes>
-        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:57</note>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:59</note>
         <note category="description">a connection&apos;s state</note>
       </notes>
       <segment>
@@ -7349,7 +7350,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2910323172611942014">
       <notes>
-        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:59</note>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:61</note>
         <note category="description">a connection&apos;s state</note>
       </notes>
       <segment>
@@ -7358,7 +7359,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6434545439194956654">
       <notes>
-        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:60</note>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:62</note>
         <note category="description">a connection&apos;s state</note>
       </notes>
       <segment>
@@ -7367,7 +7368,7 @@ Space “Holiday photos”
     </unit>
     <unit id="1087023933658984616">
       <notes>
-        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:67</note>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:69</note>
         <note category="location">src/app/library/sidebar/connection-links.component.ts:103</note>
       </notes>
       <segment>
@@ -7376,10 +7377,34 @@ Space “Holiday photos”
     </unit>
     <unit id="5093112531842324112">
       <notes>
-        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:68</note>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:70</note>
       </notes>
       <segment>
         <source>Open the files of <ph id="0" equiv="connection" disp="name"/> (<ph id="1" equiv="kind" disp="kind"/>).</source>
+      </segment>
+    </unit>
+    <unit id="3660437078041293724">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/files-widget.component.ts:55,56</note>
+      </notes>
+      <segment>
+        <source>The files could not be read.</source>
+      </segment>
+    </unit>
+    <unit id="4649301328244791270">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/files-widget.component.ts:80,81</note>
+      </notes>
+      <segment>
+        <source>{folders, plural, =0 {No folders} one {# folder} other {# folders}}, {files, plural, =0 {no files} one {# file} other {# files}}.</source>
+      </segment>
+    </unit>
+    <unit id="269809185769170686">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/files-widget.component.ts:95</note>
+      </notes>
+      <segment>
+        <source>Browse the files of <ph id="0" equiv="folder" disp="this.name()"/>.</source>
       </segment>
     </unit>
     <unit id="6947285566424751639">
