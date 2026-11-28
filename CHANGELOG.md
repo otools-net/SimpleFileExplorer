@@ -7,6 +7,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Share a folder wizard**: sets one folder rule step by step: a folder, a group or one account, and whether they
+  don't see it, only read it or may change its files, with what they have there today shown before you choose. The
+  end lists who has access to the folder now. Opens from the administration search, **Step by step** next to
+  **New rule** on the Folder access page, and the getting-started list's **Folder access** item. API:
+  `validateOnly=true` on `PUT api/access/folder-rules` runs a rule's checks without setting it (204).
 - **Getting started**: the administration page's overview (on phones, the list of sections) starts with the first
   things to set up in a space: library folder, a group and its rights, folder access, an account, a connection. Each
   opens its page (or its wizard, once there is one) and is ticked by itself when done; only the items of your rights

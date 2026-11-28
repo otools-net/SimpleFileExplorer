@@ -596,9 +596,9 @@ export class Api {
     tenantAccess = () => this.get<TenantAccess>('access/tenant');
     /** The space's folder rules. */
     folderRules = (tenant?: number | null) => this.get<FolderRuleView[]>('access/folder-rules', { tenant });
-    /** Sets (or with `level` null removes) a rule; answers every rule. */
-    setFolderRule = (change: FolderRuleChange, tenant?: number | null) =>
-        this.put<FolderRuleView[]>(withQuery('access/folder-rules', { tenant }), change);
+    /** Sets (or with `level` null removes) a rule; answers every rule. `validateOnly`: its checks only (204). */
+    setFolderRule = (change: FolderRuleChange, tenant?: number | null, validateOnly?: true) =>
+        this.put<FolderRuleView[]>(withQuery('access/folder-rules', { tenant, validateOnly }), change);
     /** Moves the rules of a folder gone outside SFE to `to`; answers every rule. */
     repointFolderRules = (from: string, to: string, tenant?: number | null) =>
         this.post<FolderRuleView[]>(withQuery('access/folder-rules/repoint', { tenant }), { from, to });

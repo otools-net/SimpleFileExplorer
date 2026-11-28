@@ -622,8 +622,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
       `AGENTS.md`; user docs `docs/administration/wizards.md` (one section per wizard), screenshots.
     - The setup page (pre-sign-in, saves at step 2, restart step) is not moved onto the framework: it shares
       `wizard-run.ts` and the shell's progress / actions styles only; moving it is a later refactoring, if ever.
-  - [ ] **5.3b Share a folder with someone** (M): account or group → Hidden / Read / Write rule; the end shows "who
-    has access". Only a definition, its steps and its route.
+  - [x] **5.3b Share a folder with someone** (M). Done 2026-11-28: `wizards/share-folder/` (folder, who, level with
+    what they have there today; one `PUT access/folder-rules`, the end lists who has access); `validateOnly=true` on
+    that route (`FolderRuleService.CheckAsync`, the checks of `SetAsync` in order); **Step by step** on the Folder
+    access card (session's space only). Framework commit first: `WizardEnd.details` (lines under a heading at the
+    end). Refactorings first: `FolderAccessReports` and `ManagedSpace` out of `FolderRuleEndpoints` (415 → 321
+    lines), `FOLDER_LEVELS` into `access/folder-levels.ts`. Screenshot `wizard-share-folder.png` (scene
+    `wizards`, level step, not finished so the seed keeps no rule). OpenAPI baseline and Sfe.Client regenerated.
+    Was: account or group → Hidden / Read / Write rule; the end shows "who has access". Only a definition, its steps
+    and its route.
   - [ ] **5.3c Add a connection** (M): app key for the provider if missing, then sign in, test (`check` on Next,
     tested before saving), who may use it. Only a definition, its steps and its route; the OAuth return lands back
     on the wizard's step (a framework need: a draft kept across the sign-in's redirect, in `sessionStorage` without
@@ -694,10 +701,9 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-27, later):** **1.5b** done (step 1.5 finished); the e2e specs failing since 2.9 / 4.x fixed
-  in their own commit (a one-file selection's Tags button is titled "See or change the tags of this file."; fake
-  connections answer `connections/{id}/storage`; `landscape` (800 px) is not the admin page's phone layout and keeps
-  the help's contents beside the page); the 360–400 px search box fixed (it shrank to 22 px). Next: **5.3b**.
+- **Last session (2026-11-28):** **5.3b** (share-a-folder wizard) done, with a framework commit (`WizardEnd.details`)
+  and two refactorings before it. Next: **5.3c** (add a connection: its `sessionStorage` draft across the sign-in's
+  redirect is a framework commit first).
 - e2e on `landscape` (800 × 360) gets the wide layouts (admin page, help at > 760 px): a spec on phones that needs
   the phone layout locates both places or checks which one shows.
 - **5.2** (getting-started checklist) done, after **5.3a**. Then **5.3b** and

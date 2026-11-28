@@ -1534,7 +1534,7 @@
           "Access"
         ],
         "summary": "Sets the level of a group or an account at a folder (`hidden`, `read`, `write`), or removes its rule (`level: null`); answers every rule.",
-        "description": "The nearest rule above a path decides each group's and account's level there; a group without one has\n`write`. An account rule only adds to what its groups give. A space has at most\n250 rules. `tenant`: the id of another space than the request's one (server administrators only).",
+        "description": "The nearest rule above a path decides each group's and account's level there; a group without one has\n`write`. An account rule only adds to what its groups give. A space has at most\n250 rules. With `validateOnly=true`, only the checks run (a wizard's step): 204,\nnothing changed. `tenant`: the id of another space than the request's one (server administrators only).",
         "operationId": "SetFolderRule",
         "parameters": [
           {
@@ -1547,6 +1547,14 @@
                 "string"
               ],
               "format": "int32"
+            }
+          },
+          {
+            "name": "validateOnly",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
             }
           }
         ],
@@ -1573,6 +1581,9 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "description": "Bad Request",

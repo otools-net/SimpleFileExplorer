@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Api } from '../core/api.service';
 import { FolderLevel } from '../core/access.models';
 import { FolderPicker } from '../core/models';
@@ -27,7 +28,7 @@ type PrincipalKey = `g${number}` | `u${number}`;
  */
 @Component({
     selector: 'sfe-folder-access',
-    imports: [IconComponent, HelpComponent],
+    imports: [IconComponent, HelpComponent, RouterLink],
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './folder-access.component.html',
 })

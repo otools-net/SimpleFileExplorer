@@ -95,7 +95,8 @@ everything below it, for a group (Guests included: visitors without an account) 
 - Server administrators always see everything. A space has at most 250 rules.
 
 **New rule** picks the folder (every folder of the space, whatever rules apply to you; **Top of the library** for the
-whole library), who it is for and the level.
+whole library), who it is for and the level. **Step by step** next to it opens the
+[share-a-folder wizard](wizards.md#share-a-folder): the same, one question at a time, ending on who has access.
 Each rule's list changes its level, or **Inherit (remove)** drops it. **Who has access** lists every account (and the
 visitors) with whether they see the folder and may change its files, all groups and rules counted.
 

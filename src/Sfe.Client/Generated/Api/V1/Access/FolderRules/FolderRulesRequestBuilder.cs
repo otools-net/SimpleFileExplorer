@@ -28,7 +28,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Access.FolderRules
         /// </summary>
         /// <param name="pathParameters">Path parameters for the request</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public FolderRulesRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/access/folder-rules{?tenant*}", pathParameters)
+        public FolderRulesRequestBuilder(Dictionary<string, object> pathParameters, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/access/folder-rules{?tenant*,validateOnly*}", pathParameters)
         {
         }
         /// <summary>
@@ -36,7 +36,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Access.FolderRules
         /// </summary>
         /// <param name="rawUrl">The raw URL to use for the request builder.</param>
         /// <param name="requestAdapter">The request adapter to use to execute the requests.</param>
-        public FolderRulesRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/access/folder-rules{?tenant*}", rawUrl)
+        public FolderRulesRequestBuilder(string rawUrl, IRequestAdapter requestAdapter) : base(requestAdapter, "{+baseurl}/api/v1/access/folder-rules{?tenant*,validateOnly*}", rawUrl)
         {
         }
         /// <summary>
@@ -59,7 +59,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Access.FolderRules
             return collectionResult?.AsList();
         }
         /// <summary>
-        /// The nearest rule above a path decides each group&apos;s and account&apos;s level there; a group without one has`write`. An account rule only adds to what its groups give. A space has at most250 rules. `tenant`: the id of another space than the request&apos;s one (server administrators only).
+        /// The nearest rule above a path decides each group&apos;s and account&apos;s level there; a group without one has`write`. An account rule only adds to what its groups give. A space has at most250 rules. With `validateOnly=true`, only the checks run (a wizard&apos;s step): 204,nothing changed. `tenant`: the id of another space than the request&apos;s one (server administrators only).
         /// </summary>
         /// <returns>A List&lt;global::Otools.Net.Sfe.Client.Generated.Models.FolderRuleView&gt;</returns>
         /// <param name="body">The request body</param>
@@ -104,7 +104,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Access.FolderRules
             return requestInfo;
         }
         /// <summary>
-        /// The nearest rule above a path decides each group&apos;s and account&apos;s level there; a group without one has`write`. An account rule only adds to what its groups give. A space has at most250 rules. `tenant`: the id of another space than the request&apos;s one (server administrators only).
+        /// The nearest rule above a path decides each group&apos;s and account&apos;s level there; a group without one has`write`. An account rule only adds to what its groups give. A space has at most250 rules. With `validateOnly=true`, only the checks run (a wizard&apos;s step): 204,nothing changed. `tenant`: the id of another space than the request&apos;s one (server administrators only).
         /// </summary>
         /// <returns>A <see cref="RequestInformation"/></returns>
         /// <param name="body">The request body</param>
@@ -146,7 +146,7 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Access.FolderRules
             #pragma warning restore CS1591
         }
         /// <summary>
-        /// The nearest rule above a path decides each group&apos;s and account&apos;s level there; a group without one has`write`. An account rule only adds to what its groups give. A space has at most250 rules. `tenant`: the id of another space than the request&apos;s one (server administrators only).
+        /// The nearest rule above a path decides each group&apos;s and account&apos;s level there; a group without one has`write`. An account rule only adds to what its groups give. A space has at most250 rules. With `validateOnly=true`, only the checks run (a wizard&apos;s step): 204,nothing changed. `tenant`: the id of another space than the request&apos;s one (server administrators only).
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
         public partial class FolderRulesRequestBuilderPutQueryParameters 
@@ -154,6 +154,10 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Access.FolderRules
             #pragma warning disable CS1591
             [QueryParameter("tenant")]
             public int? Tenant { get; set; }
+            #pragma warning restore CS1591
+            #pragma warning disable CS1591
+            [QueryParameter("validateOnly")]
+            public bool? ValidateOnly { get; set; }
             #pragma warning restore CS1591
         }
     }

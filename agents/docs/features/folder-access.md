@@ -134,6 +134,8 @@ deny per folder), NTFS (nearest rule wins), Seafile (read-only / read-write per 
 - As built: `FolderRuleEndpoints` (`GET/PUT api/access/folder-rules`, `POST api/access/folder-rules/repoint`,
   `GET api/access/folder-access`, `GET api/access/folders`), right `tenant.members`, `tenant` for other spaces (server
   administrators), like `AccessEndpoints`; another space's paths come from its `TenantHost` (`TenantRegistry`).
+  The report is built by `FolderAccessReports`, the space by `ManagedSpace.FindAsync`. `PUT …?validateOnly=true`
+  runs `FolderRuleService.CheckAsync` (204, nothing set): the [share-a-folder wizard](wizards.md#the-wizards).
   Re-pointing refuses a `from` that still exists (409) and is `BeginMoveAsync` + `CompleteAsync` without a disk step.
   Rules giving Guests Read/Write and re-points are `LogSecurityWarning`, other changes `LogInformation`.
 - `GET api/browse` carries `access` (`FolderAccessView`: rights here, `pathOnly`, `children` that differ, by name) for

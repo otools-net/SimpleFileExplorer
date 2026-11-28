@@ -205,7 +205,10 @@ const scenes = {
         await phone.shot(OUT + 'phone-help.png');
         await phone.close();
     },
-    /** The new-space wizard: its folder step with Photos picked, its review, and the folder step on a phone. */
+    /**
+     * The new-space wizard: its folder step with Photos picked, its review, and the folder step on a phone; the
+     * share-a-folder wizard's level step.
+     */
     async wizards() {
         const pickPhotos = async (b) => {
             // The allowed root here is tests/samples: its sample library holds Photos.
@@ -235,6 +238,17 @@ const scenes = {
         await sleep(1000);
         await maskSamples(b);
         await b.shot(OUT + 'wizard-review.png');
+        // The share-a-folder wizard on its level step (not finished: the rule would change the other scenes).
+        await b.open('wizard?id=share-folder', 2500);
+        await b.clickText('.folder-picker button', 'Photos');
+        await b.clickText('.folder-picker button', 'Family');
+        await b.click('.wizard-actions [type="submit"]');
+        await sleep(1000);
+        await b.clickText('.wizard-fields label.check', 'Users');
+        await b.click('.wizard-actions [type="submit"]');
+        await sleep(1000);
+        await b.clickText('.wizard-fields label.check', 'Read only');
+        await b.shot(OUT + 'wizard-share-folder.png');
         await b.close();
         const phone = await session({ width: 390, height: 844, mobile: true });
         await phone.open('wizard?id=new-space', 2500);

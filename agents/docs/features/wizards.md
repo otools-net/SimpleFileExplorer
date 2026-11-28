@@ -2,8 +2,8 @@
 
 Code: `src/Sfe.Web/src/app/wizards/` (`wizard-definition.ts`, `wizard-registry.ts`, `wizard.component.*`,
 `wizard-context.ts`, `wizard-run.ts`, `wizard-page.component.ts`, `leave-wizard.ts`, one folder per wizard:
-`new-space/`), `styles/wizards.css`, `testing/wizard-harness.ts`; server: `validateOnly` on the route a wizard saves
-with (`TenantEndpoints.Create`). User docs: `docs/administration/wizards.md`.
+`new-space/`, `share-folder/`), `styles/wizards.css`, `testing/wizard-harness.ts`; server: `validateOnly` on the route a wizard saves
+with (`TenantEndpoints.Create`, `FolderRuleEndpoints.Set`). User docs: `docs/administration/wizards.md`.
 
 ## How it is put together
 
@@ -36,6 +36,18 @@ with (`TenantEndpoints.Create`). User docs: `docs/administration/wizards.md`.
 - Server side, a step's `check` is the save route run with `validateOnly=true`: same checks, 204, nothing made.
   `POST tenants?validateOnly=true` runs the folder's checks (`RootError`) then `AccessService.CheckNewTenantAsync`
   (`NewTenants.CheckAsync`: name, short name, rights switched off).
+  `PUT access/folder-rules?validateOnly=true` runs `FolderRuleService.CheckAsync` (the checks of `SetAsync`, in its
+  order: path, level, principal (`userId` when none is named), the 250-rule cap).
+
+## The wizards
+
+- `new-space` (5.3a): folder, name, visitors; `POST tenants`. Entry: **Step by step** on the Spaces page.
+- `share-folder` (5.3b): folder (`access/folders`, every folder; the root can't be picked: the picker emits no empty
+  path, so a rule on the root stays on the page), who (groups then accounts, radio buttons, `g12` / `u5` as in the
+  card), level (`FOLDER_LEVELS` from `access/folder-levels.ts`; "Today …" from `access/folder-access`); one
+  `PUT access/folder-rules`, then the end's `details` from `access/folder-access` (accounts and visitors; left out if
+  that read fails, the rule being set). Session's space only: **Step by step** shows on the Folder access card only
+  without `source` (connections) and `space` (another space).
 
 ## Adding a wizard
 

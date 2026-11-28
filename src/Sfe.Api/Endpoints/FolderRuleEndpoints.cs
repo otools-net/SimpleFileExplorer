@@ -8,6 +8,8 @@ using Otools.Net.Sfe.Core.Paths;
 
 namespace Otools.Net.Sfe.Api.Endpoints;
 
+using SetResult = Results<Ok<IReadOnlyList<FolderRuleView>>, NoContent, ValidationProblem, NotFound, ProblemHttpResult>;
+
 /// <summary>
 /// Folder rules of a space (agents/docs/features/folder-access.md): who may see or change each folder. For those who
 /// manage the space's groups (<see cref="Rights.ManageMembers"/>); server administrators name any space with
@@ -24,7 +26,8 @@ public static class FolderRuleEndpoints
     private static readonly string SetFolderRuleDescription = $"""
         The nearest rule above a path decides each group's and account's level there; a group without one has
         `write`. An account rule only adds to what its groups give. A space has at most
-        {FolderRuleService.MaxRules} rules. {TenantParameter}
+        {FolderRuleService.MaxRules} rules. With `validateOnly=true`, only the checks run (a wizard's step): 204,
+        nothing changed. {TenantParameter}
         """;
 
     private static readonly string RepointFolderRulesDescription = $"""
@@ -98,36 +101,32 @@ public static class FolderRuleEndpoints
         return TypedResults.Ok(await ViewsAsync(rules, accounts, space, cancellationToken));
     }
 
-    private static async Task<
-        Results<Ok<IReadOnlyList<FolderRuleView>>, ValidationProblem, NotFound, ProblemHttpResult>
-    > Set(
+    private static async Task<SetResult> Set(
         [AsParameters] FolderRuleServices services,
         FolderRuleChange change,
         CancellationToken cancellationToken,
-        int? tenant = null
+        int? tenant = null,
+        bool validateOnly = false
     )
     {
         var (rules, accounts, tenants, current, loggers) = services;
         if (await ManagedSpace.FindAsync(current, tenants, tenant, cancellationToken) is not { } space)
             return TypedResults.NotFound();
         var principal = new FolderPrincipalRef(change.GroupId, change.UserId);
-        var result = await rules.SetAsync(
-            space.Id,
-            change.Path,
-            principal,
-            change.Level,
-            space.State.User?.Id,
-            cancellationToken
-        );
-        switch (result.Status)
-        {
-            case AccessStatus.Invalid:
-                return TypedResults.ValidationProblem(result.Errors!);
-            case AccessStatus.Conflict:
-                return TypedResults.Problem(result.Problem, statusCode: StatusCodes.Status409Conflict);
-            case AccessStatus.NotFound:
-                return TypedResults.NotFound();
-        }
+        var result = validateOnly
+            ? await rules.CheckAsync(space.Id, change.Path, principal, change.Level, cancellationToken)
+            : await rules.SetAsync(
+                space.Id,
+                change.Path,
+                principal,
+                change.Level,
+                space.State.User?.Id,
+                cancellationToken
+            );
+        if (Refusal(result) is { } refused)
+            return refused;
+        if (validateOnly)
+            return TypedResults.NoContent();
 
         var logger = loggers.CreateLogger(typeof(FolderRuleEndpoints));
         var who = space.State.User?.UserName;
@@ -160,6 +159,16 @@ public static class FolderRuleEndpoints
 
         return TypedResults.Ok(await ViewsAsync(rules, accounts, space, cancellationToken));
     }
+
+    /// <summary>The answer to a refused rule change; null when it was not refused.</summary>
+    private static SetResult? Refusal(AccessResult<FolderRuleInfo?> result) =>
+        result.Status switch
+        {
+            AccessStatus.Invalid => TypedResults.ValidationProblem(result.Errors!),
+            AccessStatus.Conflict => TypedResults.Problem(result.Problem, statusCode: StatusCodes.Status409Conflict),
+            AccessStatus.NotFound => TypedResults.NotFound(),
+            _ => null,
+        };
 
     private static async Task<
         Results<Ok<IReadOnlyList<FolderRuleView>>, ValidationProblem, NotFound, ProblemHttpResult>

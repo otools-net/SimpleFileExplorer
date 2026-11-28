@@ -34,6 +34,16 @@ export const WIZARDS: readonly WizardEntry[] = [
         home: { section: 'access', page: 'spaces' },
         load: () => import('./new-space/new-space.wizard').then((m) => m.NEW_SPACE_WIZARD),
     },
+    {
+        id: 'share-folder',
+        title: $localize`:wizard:Share a folder`,
+        description: $localize`Step by step: a folder, a group or an account, and whether they don't see it, only \
+read it, or may change its files.`,
+        words: $localize`wizard folder access rule permission share hidden read only write group account`,
+        right: Rights.manageMembers,
+        home: { section: 'access', page: 'folders' },
+        load: () => import('./share-folder/share-folder.wizard').then((m) => m.SHARE_FOLDER_WIZARD),
+    },
 ];
 
 /** The wizard `id`, if there is one. */

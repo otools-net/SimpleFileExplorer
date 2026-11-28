@@ -9,9 +9,10 @@ rather be guided.
 ## Opening a wizard
 
 - Search for it in the box of the [administration page](README.md#finding-a-setting): its name, or what it does
-  (**space**, **visitors**…). Wizards are listed under **Wizards** among what is found.
+  (**space**, **visitors**, **share**…). Wizards are listed under **Wizards** among what is found.
 - Or click **Step by step** next to the button that does the same job on its page (**New space** on
-  **Spaces & accounts › Spaces**).
+  **Spaces & accounts › Spaces**, **New rule** on **Spaces & accounts › Folder access**).
+- The [getting-started list](README.md#getting-started) of the administration overview opens them too.
 
 Only the wizards you have the [rights](../reference/rights.md) for are found; one opened from a link you may not use
 says so.
@@ -69,3 +70,38 @@ Local mode nobody comes in without an account until it is in External mode
 
 **Finish** creates the space with the groups **Administrators**, **Users** and **Guests**, and its index. **Open the
 space's page** leads to it, where you add accounts, groups and folder rules.
+
+## Share a folder
+
+Sets one [folder rule](spaces-and-accounts.md#folder-access): what a group, or one account, may do in a folder and
+everything below it. For those who may manage the space's groups (the right **Manage the space's accounts and
+groups**). The same as **New rule** on the **Folder access** page, in three steps, for the space you are browsing.
+
+![The share-a-folder wizard](../images/wizard-share-folder.png)
+
+### Share a folder: folder
+
+The folder to share. Click a folder to choose it, click again inside it to go deeper, **‥** to go up. Every folder of
+the space is listed, whatever rules apply to you. A folder further down can have a rule of its own, which decides
+there. A rule on the top of the library is set on the **Folder access** page.
+
+### Share a folder: who
+
+A **group** of the space (the rule decides for everyone in it), or **one account**. Groups add up: someone sees a
+folder when any of their groups does. An account's own rule only adds to what its groups allow, so to keep a folder
+from someone, set the rule on their groups.
+
+### Share a folder: level
+
+- **Hidden**: they don't see the folder (unless another of their groups does).
+- **Read only**: they see its files and use them with their rights (play, download, tag), but may not change them.
+- **Read & write**: their rights apply in full, those that change files too.
+
+Above the levels, the wizard says what the group or the account has there today. A rule they already have on this
+folder is replaced.
+
+### Share a folder: the end
+
+**Finish** sets the rule. The end lists **who has access now**: every account of the space (and the visitors, when the
+space lets them in) with whether they see the folder and may change its files, all groups and rules counted. **Open
+the Folder access page** leads to every rule of the space.

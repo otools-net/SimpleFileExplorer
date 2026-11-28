@@ -52,38 +52,23 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
         CancellationToken cancellationToken = default
     )
     {
-        if (PathError(path, out var normalized) is { } error)
-            return AccessResult<FolderRuleInfo?>.Invalid("path", error);
-        if (level is { } value && !Enum.IsDefined(value))
-            return AccessResult<FolderRuleInfo?>.Invalid("level", "Unknown level.");
+        if (InputRefusal(path, level, out var normalized) is { } refused)
+            return refused;
 
         var gate = Gate(tenantId);
         await gate.WaitAsync(cancellationToken);
         try
         {
             await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-            if (await PrincipalErrorAsync(db, tenantId, principal, cancellationToken) is { } principalError)
-            {
-                return AccessResult<FolderRuleInfo?>.Invalid(
-                    principal.GroupId is null ? "userId" : "groupId",
-                    principalError
-                );
-            }
-
             var rules = await db.FolderRules.Where(r => r.TenantId == tenantId).ToListAsync(cancellationToken);
-            var existing = rules
-                .Where(r => principal.Owns(r) && LibraryPaths.PathComparer.Equals(r.Path, normalized))
-                .ToList();
+            var existing = Existing(rules, principal, normalized);
+            var overTheCap = level is not null && existing.Count == 0 && rules.Count >= MaxRules;
+            if (await RefusalAsync(db, tenantId, principal, overTheCap, cancellationToken) is { } refusal)
+                return refusal;
+
             FolderRule? kept = null;
             if (level is { } wanted)
             {
-                if (existing.Count == 0 && rules.Count >= MaxRules)
-                {
-                    return AccessResult<FolderRuleInfo?>.Conflict(
-                        $"A space can have at most {MaxRules} folder rules: remove some first."
-                    );
-                }
-
                 kept = existing.FirstOrDefault();
                 if (kept is null)
                 {
@@ -109,6 +94,70 @@ public sealed class FolderRuleService(IDbContextFactory<AccessDbContext> dbFacto
         {
             gate.Release();
         }
+    }
+
+    /// <summary>
+    /// The checks of <see cref="SetAsync"/>, in the same order, with nothing changed (a wizard's step asks before its
+    /// save): the refusal <see cref="SetAsync"/> would answer, or <c>Ok(null)</c> when it would set the rule.
+    /// </summary>
+    public async Task<AccessResult<FolderRuleInfo?>> CheckAsync(
+        int tenantId,
+        string? path,
+        FolderPrincipalRef principal,
+        FolderLevel? level,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (InputRefusal(path, level, out var normalized) is { } refused)
+            return refused;
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var rules = await db.FolderRules.Where(r => r.TenantId == tenantId).ToListAsync(cancellationToken);
+        var overTheCap =
+            level is not null && Existing(rules, principal, normalized).Count == 0 && rules.Count >= MaxRules;
+        return await RefusalAsync(db, tenantId, principal, overTheCap, cancellationToken)
+            ?? AccessResult<FolderRuleInfo?>.Ok(null);
+    }
+
+    /// <summary>The refusal of a path or a level read wrong, before anything is read from the database.</summary>
+    private static AccessResult<FolderRuleInfo?>? InputRefusal(string? path, FolderLevel? level, out string normalized)
+    {
+        if (PathError(path, out normalized) is { } error)
+            return AccessResult<FolderRuleInfo?>.Invalid("path", error);
+        if (level is { } value && !Enum.IsDefined(value))
+            return AccessResult<FolderRuleInfo?>.Invalid("level", "Unknown level.");
+        return null;
+    }
+
+    /// <summary>The rules of <paramref name="principal"/> at <paramref name="path"/> (two after concurrent
+    /// edits).</summary>
+    private static List<FolderRule> Existing(List<FolderRule> rules, FolderPrincipalRef principal, string path) =>
+        [.. rules.Where(r => principal.Owns(r) && LibraryPaths.PathComparer.Equals(r.Path, path))];
+
+    /// <summary>
+    /// The refusal of a principal that isn't the space's, or of one rule too many (<paramref name="overTheCap"/>: a
+    /// new rule while the space has <see cref="MaxRules"/>).
+    /// </summary>
+    private static async Task<AccessResult<FolderRuleInfo?>?> RefusalAsync(
+        AccessDbContext db,
+        int tenantId,
+        FolderPrincipalRef principal,
+        bool overTheCap,
+        CancellationToken cancellationToken
+    )
+    {
+        if (await PrincipalErrorAsync(db, tenantId, principal, cancellationToken) is { } principalError)
+        {
+            return AccessResult<FolderRuleInfo?>.Invalid(
+                principal.GroupId is null ? "userId" : "groupId",
+                principalError
+            );
+        }
+
+        return overTheCap
+            ? AccessResult<FolderRuleInfo?>.Conflict(
+                $"A space can have at most {MaxRules} folder rules: remove some first."
+            )
+            : null;
     }
 
     /// <summary>

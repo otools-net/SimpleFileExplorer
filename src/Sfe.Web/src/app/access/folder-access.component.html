@@ -28,6 +28,16 @@
         >
             <svg sfeIcon="plus"></svg><span i18n>New rule</span>
         </button>
+        @if (!source() && space() === null) {
+            <a
+                class="button small"
+                routerLink="/wizard"
+                [queryParams]="{ id: 'share-folder' }"
+                title="Share a folder step by step, with an explanation at each step"
+                i18n-title
+                i18n
+            >Step by step</a>
+        }
     </header>
 
     @if (draft(); as draft) {
