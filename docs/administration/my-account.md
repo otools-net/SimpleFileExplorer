@@ -10,8 +10,8 @@ any right to change something sees. Clicking your name at the top of the ⋮ men
 Your own settings, used instead of the space's. The server keeps them, so they follow you on every device you sign in on.
 A setting locked by the space or the server can't be changed here. Right: `account.preferences`.
 
-They include the theme (and **This browser's theme**, kept in this browser only), items and results per page, pictures
-per folder, the display of resolutions, durations and HR/LR marks, the player's jump and loop, play on hover (videos
+They include the theme (and **This browser's theme**, kept in this browser only), the start page, items and results
+per page, pictures per folder, the display of resolutions, durations and HR/LR marks, the player's jump and loop, play on hover (videos
 and animated images), searches remembered, tags per sidebar section, and how [text files read](../user-guide/text-files.md#reading-settings)
 (also saved from the reading settings with **Save as my default**). Each has the same meaning as on the
 [Interface](interface.md), [Playback](playback.md), [Thumbnails](thumbnails.md), [Trickplay](trickplay.md#settings)

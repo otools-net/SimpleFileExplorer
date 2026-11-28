@@ -1465,6 +1465,7 @@
     <unit id="4333046839966733410">
       <notes>
         <note category="location">src/app/access/folder-rules-source.ts:34</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:53</note>
       </notes>
       <segment>
         <source>Top of the library</source>
@@ -1632,6 +1633,7 @@
         <note category="location">src/app/access/group-editor.component.html:130</note>
         <note category="location">src/app/access/group-editor.component.html:132</note>
         <note category="location">src/app/library/home-folder/home-link.component.ts:58</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:52</note>
       </notes>
       <segment>
         <source>Home folder</source>
@@ -3373,7 +3375,7 @@ Space “Holiday photos”
         <note category="location">src/app/account/local-only-page.component.ts:63,64</note>
         <note category="location">src/app/account/login-page.component.html:8</note>
         <note category="location">src/app/account/login-page.component.html:135,136</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:185</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:189</note>
         <note category="location">src/app/wizards/add-connection/add-connection.wizard.ts:118</note>
       </notes>
       <segment>
@@ -3818,8 +3820,9 @@ Space “Holiday photos”
       <notes>
         <note category="location">src/app/account/setup-page.component.html:16</note>
         <note category="location">src/app/admin/admin-page.component.html:269</note>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:39</note>
         <note category="location">src/app/help/help-page.component.html:6,8</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:161,163</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:165,167</note>
       </notes>
       <segment>
         <source>Help</source>
@@ -4154,8 +4157,9 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-page.component.html:225,226</note>
         <note category="location">src/app/admin/admin-page.component.html:234,235</note>
         <note category="location">src/app/admin/admin-page.component.ts:271</note>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:26,27</note>
         <note category="location">src/app/help/help-search.ts:59</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:156</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:160</note>
       </notes>
       <segment>
         <source>Administration</source>
@@ -4761,7 +4765,7 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-sections.ts:114</note>
         <note category="location">src/app/library/topbar/search-box.component.html:11</note>
         <note category="location">src/app/library/topbar/search-box.component.ts:264</note>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:120</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:133</note>
       </notes>
       <segment>
         <source>Search</source>
@@ -7194,6 +7198,188 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>It was done in “<ph id="0" equiv="connection" disp="place.name"/>”: open it to undo it.</source>
+      </segment>
+    </unit>
+    <unit id="8300600606768002646">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:2</note>
+      </notes>
+      <segment>
+        <source>The server is not reachable</source>
+      </segment>
+    </unit>
+    <unit id="8417177278759545638">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:5</note>
+        <note category="location">src/app/library/topbar/topbar.component.ts:42,43</note>
+      </notes>
+      <segment>
+        <source>Go to the top of the library.</source>
+      </segment>
+    </unit>
+    <unit id="6570363013146073520">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:9,10</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:154</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:51</note>
+      </notes>
+      <segment>
+        <source>Dashboard</source>
+      </segment>
+    </unit>
+    <unit id="829116027903409144">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:14,15</note>
+      </notes>
+      <segment>
+        <source>Browse the files of <ph id="0" equiv="INTERPOLATION" disp="{{ libraryName() }}"/>, from the top.</source>
+      </segment>
+    </unit>
+    <unit id="4116911651502837995">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:17,19</note>
+        <note category="location">src/app/library/items/listing.component.html:82,83</note>
+        <note category="description">the button opening the library&apos;s listing</note>
+      </notes>
+      <segment>
+        <source>Files</source>
+      </segment>
+    </unit>
+    <unit id="6838525961169604506">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:24,25</note>
+      </notes>
+      <segment>
+        <source>Open the administration: settings, tags, tasks, spaces, accounts, your account and more.</source>
+      </segment>
+    </unit>
+    <unit id="1104901375659860006">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:36,37</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:164</note>
+      </notes>
+      <segment>
+        <source>Open the help in a new tab: how to use SFE, its settings and its words.</source>
+      </segment>
+    </unit>
+    <unit id="8303969221131202840">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:49,50</note>
+      </notes>
+      <segment>
+        <source>Nothing to show here</source>
+      </segment>
+    </unit>
+    <unit id="2400036339222838796">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:51,52</note>
+      </notes>
+      <segment>
+        <source>Your account may not use any of the dashboard&apos;s cards. Files opens the library.</source>
+      </segment>
+    </unit>
+    <unit id="5719535399514498803">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.html:66,67</note>
+      </notes>
+      <segment>
+        <source>This card could not be loaded. Reload the page.</source>
+      </segment>
+    </unit>
+    <unit id="3787321175148022630">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-page.component.ts:68</note>
+      </notes>
+      <segment>
+        <source>Dashboard – SFE</source>
+      </segment>
+    </unit>
+    <unit id="3707727924343293218">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:24</note>
+      </notes>
+      <segment>
+        <source>Home and quick links</source>
+      </segment>
+    </unit>
+    <unit id="57403663622654391">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:31</note>
+        <note category="location">src/app/files/properties.dialog.html:14</note>
+      </notes>
+      <segment>
+        <source>Storage</source>
+      </segment>
+    </unit>
+    <unit id="2821179408673282599">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/places-widget.component.ts:26,27</note>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:44,45</note>
+      </notes>
+      <segment>
+        <source>Home</source>
+      </segment>
+    </unit>
+    <unit id="4800046176958733918">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/places-widget.component.ts:40,41</note>
+      </notes>
+      <segment>
+        <source>No quick links yet. Pin a folder or file to see it here.</source>
+      </segment>
+    </unit>
+    <unit id="9067326429065781018">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/places-widget.component.ts:61</note>
+        <note category="location">src/app/dashboard/widgets/places-widget.component.ts:77</note>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:71</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:106</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="name" disp="home.name"/> (the top of the library)</source>
+      </segment>
+    </unit>
+    <unit id="1191205700086852305">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/places-widget.component.ts:63</note>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:75</note>
+      </notes>
+      <segment>
+        <source>Open your home folder, <ph id="0" equiv="place" disp="where"/>.</source>
+      </segment>
+    </unit>
+    <unit id="7658162392907186257">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/places-widget.component.ts:64</note>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>Your home folder, <ph id="0" equiv="place" disp="where"/>, is not there: not made yet, moved or deleted.</source>
+      </segment>
+    </unit>
+    <unit id="9102819389198549610">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/places-widget.component.ts:78</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:107</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="place" disp="where"/>: not there any more (moved, renamed or deleted).</source>
+      </segment>
+    </unit>
+    <unit id="5816020432656633921">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/places-widget.component.ts:79</note>
+      </notes>
+      <segment>
+        <source>Open the folder holding <ph id="0" equiv="place" disp="where"/>.</source>
+      </segment>
+    </unit>
+    <unit id="213546283644319421">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/storage-widget.component.ts:27,28</note>
+      </notes>
+      <segment>
+        <source>The space used could not be read.</source>
       </segment>
     </unit>
     <unit id="5891064527381218201">
@@ -10358,14 +10544,6 @@ Space “Holiday photos”
         <source>Could not read the properties: <ph id="0" equiv="INTERPOLATION" disp="{{ error }}"/></source>
       </segment>
     </unit>
-    <unit id="57403663622654391">
-      <notes>
-        <note category="location">src/app/files/properties.dialog.html:14</note>
-      </notes>
-      <segment>
-        <source>Storage</source>
-      </segment>
-    </unit>
     <unit id="2841739558138901231">
       <notes>
         <note category="location">src/app/files/properties.dialog.html:18</note>
@@ -13189,7 +13367,7 @@ Space “Holiday photos”
     <unit id="4088802997354529592">
       <notes>
         <note category="location">src/app/formats/flash/flash-view.component.html:68,69</note>
-        <note category="location">src/app/library/topbar/main-menu.component.html:169</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:173</note>
         <note category="location">src/app/player/player-texts.ts:22</note>
       </notes>
       <segment>
@@ -15846,39 +16024,6 @@ Space “Holiday photos”
         <source>{action, select, load {Could not read your home folder: <ph id="0" equiv="reason"/>} set {Could not change your home folder: <ph id="1" equiv="reason"/>} other {Could not go back to your group&apos;s home folder: <ph id="2" equiv="reason"/>}}</source>
       </segment>
     </unit>
-    <unit id="2821179408673282599">
-      <notes>
-        <note category="location">src/app/library/home-folder/home-link.component.ts:44,45</note>
-      </notes>
-      <segment>
-        <source>Home</source>
-      </segment>
-    </unit>
-    <unit id="9067326429065781018">
-      <notes>
-        <note category="location">src/app/library/home-folder/home-link.component.ts:71</note>
-        <note category="location">src/app/library/quick-links/quick-links.component.ts:106</note>
-      </notes>
-      <segment>
-        <source><ph id="0" equiv="name" disp="home.name"/> (the top of the library)</source>
-      </segment>
-    </unit>
-    <unit id="7658162392907186257">
-      <notes>
-        <note category="location">src/app/library/home-folder/home-link.component.ts:73</note>
-      </notes>
-      <segment>
-        <source>Your home folder, <ph id="0" equiv="place" disp="where"/>, is not there: not made yet, moved or deleted.</source>
-      </segment>
-    </unit>
-    <unit id="1191205700086852305">
-      <notes>
-        <note category="location">src/app/library/home-folder/home-link.component.ts:75</note>
-      </notes>
-      <segment>
-        <source>Open your home folder, <ph id="0" equiv="place" disp="where"/>.</source>
-      </segment>
-    </unit>
     <unit id="8445041228146141923">
       <notes>
         <note category="location">src/app/library/home-folder/home-link.component.ts:76</note>
@@ -16198,14 +16343,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>This folder is empty</source>
-      </segment>
-    </unit>
-    <unit id="4116911651502837995">
-      <notes>
-        <note category="location">src/app/library/items/listing.component.html:82,83</note>
-      </notes>
-      <segment>
-        <source>Files</source>
       </segment>
     </unit>
     <unit id="1707402501375484712">
@@ -16729,14 +16866,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Take “<ph id="0" equiv="name" disp="link.name"/>” out of the quick links. The file stays where it is.</source>
-      </segment>
-    </unit>
-    <unit id="9102819389198549610">
-      <notes>
-        <note category="location">src/app/library/quick-links/quick-links.component.ts:107</note>
-      </notes>
-      <segment>
-        <source><ph id="0" equiv="place" disp="where"/>: not there any more (moved, renamed or deleted).</source>
       </segment>
     </unit>
     <unit id="3797189335784451616">
@@ -18642,25 +18771,25 @@ The search index is updated in the background. This can take a while on large fo
         <source>Switch to the space “<ph id="0" equiv="INTERPOLATION" disp="{{ tenant.name }}"/>”: its own library, tags and settings.</source>
       </segment>
     </unit>
+    <unit id="2663504939140134650">
+      <notes>
+        <note category="location">src/app/library/topbar/main-menu.component.html:153</note>
+      </notes>
+      <segment>
+        <source>Open the dashboard: your home folder, quick links, storage and more.</source>
+      </segment>
+    </unit>
     <unit id="7444103529530945506">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:154,155</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:158,159</note>
       </notes>
       <segment>
         <source>Open the administration: settings, tags, duplicates, tasks, spaces, accounts, your account and more.</source>
       </segment>
     </unit>
-    <unit id="1104901375659860006">
-      <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:160</note>
-      </notes>
-      <segment>
-        <source>Open the help in a new tab: how to use SFE, its settings and its words.</source>
-      </segment>
-    </unit>
     <unit id="7511633018413962253">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:166,167</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:170,171</note>
       </notes>
       <segment>
         <source>Show the page full screen, or leave full screen.</source>
@@ -18668,7 +18797,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5391547839460262973">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:174,175</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:178,179</note>
       </notes>
       <segment>
         <source>Sign out on this browser.</source>
@@ -18676,7 +18805,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2949848596707725099">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:177</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:181</note>
       </notes>
       <segment>
         <source>Sign out</source>
@@ -18684,7 +18813,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7796345692884547147">
       <notes>
-        <note category="location">src/app/library/topbar/main-menu.component.html:182,183</note>
+        <note category="location">src/app/library/topbar/main-menu.component.html:186,187</note>
       </notes>
       <segment>
         <source>Sign in with an account.</source>
@@ -19361,14 +19490,6 @@ The search index is updated in the background. This can take a while on large fo
       </notes>
       <segment>
         <source>Sidebar</source>
-      </segment>
-    </unit>
-    <unit id="8417177278759545638">
-      <notes>
-        <note category="location">src/app/library/topbar/topbar.component.ts:42,43</note>
-      </notes>
-      <segment>
-        <source>Go to the top of the library.</source>
       </segment>
     </unit>
     <unit id="732713143617662315">
@@ -21248,7 +21369,7 @@ The search index is updated in the background. This can take a while on large fo
     <unit id="2136618163523034774">
       <notes>
         <note category="location">src/app/settings/tabs/browsing-settings.ts:29</note>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:135</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:148</note>
       </notes>
       <segment>
         <source>Largest page</source>
@@ -21286,9 +21407,33 @@ The search index is updated in the background. This can take a while on large fo
         <source>Only the grid and one-per-row views show them, where folders are cards.</source>
       </segment>
     </unit>
-    <unit id="5434308546778594758">
+    <unit id="6593605408340100149">
       <notes>
         <note category="location">src/app/settings/tabs/browsing-settings.ts:48</note>
+      </notes>
+      <segment>
+        <source>Start page</source>
+      </segment>
+    </unit>
+    <unit id="6223311578732779927">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:55</note>
+      </notes>
+      <segment>
+        <source>What opens at SFE&apos;s address alone, from a bookmark or a new tab.</source>
+      </segment>
+    </unit>
+    <unit id="4029077668297072219">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:56,57</note>
+      </notes>
+      <segment>
+        <source>Home folder opens the top of the library when there is none, or when it is not there. Links to a folder or a search still open it. The dashboard is always in the ⋮ menu.</source>
+      </segment>
+    </unit>
+    <unit id="5434308546778594758">
+      <notes>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:61</note>
       </notes>
       <segment>
         <source>Show changes made outside SFE</source>
@@ -21296,7 +21441,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2770965948060932189">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:50</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:63</note>
       </notes>
       <segment>
         <source>The folder you view is listed again when another program changes it on the disk, not only when SFE does.</source>
@@ -21304,7 +21449,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3956004315654493058">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:52,53</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:65,66</note>
       </notes>
       <segment>
         <source>The server watches only the folders open in a browser. On a network folder it may read the folder again every 10 seconds instead, which takes longer on very large folders. In a connection, it asks the storage service what changed every 30 seconds. Off, a folder shows such changes when you open it again.</source>
@@ -21312,7 +21457,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7678252496891159074">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:58</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:71</note>
       </notes>
       <segment>
         <source>Copy full paths</source>
@@ -21320,7 +21465,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="393467800418041198">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:60</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:73</note>
       </notes>
       <segment>
         <source>Adds buttons that copy the full path of a folder or file on the server.</source>
@@ -21328,7 +21473,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1446821861757584432">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:61</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:74</note>
       </notes>
       <segment>
         <source>For example D:\Media\Photos\beach.jpg. The buttons sit next to the location for the current folder, on each folder and file, and in the viewer. Everyone who sees them learns where the library is on the server&apos;s disk.</source>
@@ -21336,7 +21481,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4999860378494617470">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:68</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:81</note>
       </notes>
       <segment>
         <source>Resolution and duration</source>
@@ -21344,7 +21489,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1776210421325891412">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:69</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:82</note>
       </notes>
       <segment>
         <source>These need the resolutions and durations read by scans (Scanning › Indexing › Read resolutions and durations).</source>
@@ -21352,7 +21497,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4099423086858001962">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:74</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:87</note>
       </notes>
       <segment>
         <source>Show resolutions</source>
@@ -21360,7 +21505,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8277290844782775112">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:76</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:89</note>
       </notes>
       <segment>
         <source>Shows the size in pixels of photos and videos (e.g. 1920×1080) next to their file size, in listings and in the viewer.</source>
@@ -21368,7 +21513,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2541108176217297048">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:81</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:94</note>
       </notes>
       <segment>
         <source>Show durations</source>
@@ -21376,7 +21521,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8864695421690998465">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:83</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:96</note>
       </notes>
       <segment>
         <source>Shows how long each video and audio file lasts (e.g. 1:23:45) next to its file size, in listings and in the viewer.</source>
@@ -21384,7 +21529,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7025005937924653776">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:88</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:101</note>
       </notes>
       <segment>
         <source>Mark high and low resolution</source>
@@ -21392,7 +21537,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="367195855763293344">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:90</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:103</note>
       </notes>
       <segment>
         <source>Labels the preview of each photo and video HR (high resolution) or LR (low resolution) in its bottom-right corner, by the thresholds below.</source>
@@ -21400,7 +21545,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4371436865301707523">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:95</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:108</note>
       </notes>
       <segment>
         <source>Photos are high resolution from (pixels)</source>
@@ -21408,7 +21553,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2211103591967290516">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:99</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:112</note>
       </notes>
       <segment>
         <source>A photo whose shorter side reaches this many pixels is HR.</source>
@@ -21416,7 +21561,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7832799081905460617">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:100</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:113</note>
       </notes>
       <segment>
         <source>With 1500, a 2000×1500 photo (or a portrait one of 1500×2000) is HR, and a 1000×1000 one is LR.</source>
@@ -21424,7 +21569,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8500080773753869573">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:105</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:118</note>
       </notes>
       <segment>
         <source>Videos are high resolution from (pixels)</source>
@@ -21432,7 +21577,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5090246463923808326">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:109</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:122</note>
       </notes>
       <segment>
         <source>A video whose shorter side reaches this many pixels is HR.</source>
@@ -21440,7 +21585,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6627281149276913890">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:110</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:123</note>
       </notes>
       <segment>
         <source>With 720, videos of 1280×720 and 1000×1000 are HR, and one of 854×480 is LR. The searches r:hr and r:lr use both thresholds, whether the marks are shown or not.</source>
@@ -21448,7 +21593,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5968132631442328843">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:123</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:136</note>
       </notes>
       <segment>
         <source>Results</source>
@@ -21456,7 +21601,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="341618940227092764">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:127</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:140</note>
       </notes>
       <segment>
         <source>Results per page</source>
@@ -21464,7 +21609,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3661145885986683522">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:131</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:144</note>
       </notes>
       <segment>
         <source>Search results loaded at a time; more load as you scroll.</source>
@@ -21472,7 +21617,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2841612508133195877">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:139</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:152</note>
       </notes>
       <segment>
         <source>The most results a single request can ask for.</source>
@@ -21480,7 +21625,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8724969247795731822">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:145</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:158</note>
       </notes>
       <segment>
         <source>Search box</source>
@@ -21488,7 +21633,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7466220890637811224">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:150</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:163</note>
       </notes>
       <segment>
         <source>Explain searches</source>
@@ -21496,7 +21641,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7601240027795705190">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:152</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:165</note>
       </notes>
       <segment>
         <source>Adds a button to the search box that puts the search into words as you type.</source>
@@ -21504,7 +21649,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3306747909054935461">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:153</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:166</note>
       </notes>
       <segment>
         <source>It also points out the parts of a search that are ignored, or that don&apos;t work the way they may seem to.</source>
@@ -21512,7 +21657,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5949463342923797801">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:158</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:171</note>
       </notes>
       <segment>
         <source>Searches remembered</source>
@@ -21520,7 +21665,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3228224542697626101">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:162</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:175</note>
       </notes>
       <segment>
         <source>The last searches each browser keeps and suggests again as you type, newest first. 0 keeps none.</source>
@@ -21528,7 +21673,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5152929430307007483">
       <notes>
-        <note category="location">src/app/settings/tabs/browsing-settings.ts:164</note>
+        <note category="location">src/app/settings/tabs/browsing-settings.ts:177</note>
       </notes>
       <segment>
         <source>Each browser keeps its own searches: they never reach the server or other devices.</source>

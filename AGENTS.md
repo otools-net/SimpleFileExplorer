@@ -155,6 +155,7 @@ photo/video/audio, index, search, tag, find duplicates and similar videos), with
 | [scroll-progress](agents/docs/features/scroll-progress.md) | position counter in the listing | `ScrollProgressComponent` |
 | [scrollbar-gutter](agents/docs/features/scrollbar-gutter.md) | stable scrollbar gutter | `styles/base.css` |
 | [quick-links](agents/docs/features/quick-links.md) | each user's quick links | `QuickLinkService`, `app/library/quick-links/` |
+| [dashboard](agents/docs/features/dashboard.md) | the dashboard page: widget registry (lazy cards), fixed-column layout, the start page setting and its guard (first navigation, fresh entry only) | `app/dashboard/`, `StartPage` |
 | [home-folder](agents/docs/features/home-folder.md) | each account's home folder per space: own choice over a group's default (`{user}`), never created, the sidebar's Home, Set as home folder, following renames | `HomeFolderService`, `HomeFolderEndpoints`, `app/library/home-folder/` |
 | [tags](agents/docs/features/tags.md) | tag model, tag dialogs, picker | `Core/Tagging/`, `app/tags/` |
 | [scope-tagging](agents/docs/features/scope-tagging.md) | tagging a whole folder or search | `ScopeTagger`, `ScopeTagsDialog` |

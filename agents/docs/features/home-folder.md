@@ -28,4 +28,4 @@ group editor's **Home folder** field. User docs: `docs/user-guide/browsing.md#ho
   and without a home; reuses the quick links' styles (`.quick-link`, `.missing`, `.current`). Menu ids: `homeFolder`
   in the item menu and the current folder's menu (`FolderMenu.shared`) — **Set as home folder**, or **Stop using as
   home folder** on the chosen one, hidden on the one a group gives; `clearHomeFolder` in Home's own menu.
-- The dashboard (2.0 step 5.5) shows it too.
+- The [dashboard](dashboard.md)'s `places` card shows it too, and the start page `home` opens it.

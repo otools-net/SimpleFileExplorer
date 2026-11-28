@@ -2,7 +2,9 @@
 
 Code: `src/Sfe.Web/src/app/app.routes.ts`, `admin/leave-admin-page.ts`; server fallback in `src/Sfe.Api/Program.cs`.
 
-- `''` = `LibraryPageComponent` (the query string `?path=&q=&sort=&desc=1` says what it lists), `admin` =
+- `''` = `LibraryPageComponent` (the query string `?path=&q=&sort=&desc=1` says what it lists; its guard
+  `startPage` opens the user's start page on a fresh first visit: [dashboard](../features/dashboard.md)),
+  `dashboard` = `DashboardPageComponent`, `admin` =
   `AdminPageComponent` (`config`, its former address, redirects there), `player` = `PlayerPageComponent`, `view` =
   `ViewPageComponent` (`formats/view-page.component.ts`: a file in its format's viewer, `?path=…&asText=1`), `help` =
   `HelpPageComponent` (`?page=…#section`: [help](../features/help.md)), `wizard` = `WizardPageComponent`

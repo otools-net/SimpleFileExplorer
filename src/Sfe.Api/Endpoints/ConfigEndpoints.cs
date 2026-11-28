@@ -134,7 +134,8 @@ public static class ConfigEndpoints
                     : null,
                 ConnectionsOf(state, server.Connections, services.Connections),
                 TokensOf(state, services.Tokens),
-                settings.Browse.LiveChanges
+                settings.Browse.LiveChanges,
+                settings.Browse.StartPage
             )
         );
     }

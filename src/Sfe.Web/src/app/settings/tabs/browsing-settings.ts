@@ -44,6 +44,19 @@ show up faster on slow drives.`,
                     help: $localize`Only the grid and one-per-row views show them, where folders are cards.`,
                 },
                 {
+                    key: 'browse.startPage',
+                    label: $localize`Start page`,
+                    type: 'select',
+                    options: [
+                        ['dashboard', $localize`Dashboard`],
+                        ['home', $localize`Home folder`],
+                        ['root', $localize`Top of the library`],
+                    ],
+                    hint: $localize`What opens at SFE's address alone, from a bookmark or a new tab.`,
+                    help: $localize`Home folder opens the top of the library when there is none, or when it is not \
+there. Links to a folder or a search still open it. The dashboard is always in the ⋮ menu.`,
+                },
+                {
                     key: 'browse.liveChanges',
                     label: $localize`Show changes made outside SFE`,
                     type: 'checkbox',

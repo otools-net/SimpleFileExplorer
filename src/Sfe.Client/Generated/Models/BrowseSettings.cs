@@ -32,6 +32,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public bool? ShowDuration { get; set; }
         /// <summary>The showResolution property</summary>
         public bool? ShowResolution { get; set; }
+        /// <summary>The startPage property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Models.StartPage? StartPage { get; set; }
         /// <summary>The videoHighResolutionPixels property</summary>
         public int? VideoHighResolutionPixels { get; set; }
         /// <summary>
@@ -40,6 +42,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public BrowseSettings()
         {
             AdditionalData = new Dictionary<string, object>();
+            StartPage = global::Otools.Net.Sfe.Client.Generated.Models.StartPage.Dashboard;
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -68,6 +71,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "resolutionMark", n => { ResolutionMark = n.GetBoolValue(); } },
                 { "showDuration", n => { ShowDuration = n.GetBoolValue(); } },
                 { "showResolution", n => { ShowResolution = n.GetBoolValue(); } },
+                { "startPage", n => { StartPage = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.StartPage>(); } },
                 { "videoHighResolutionPixels", n => { VideoHighResolutionPixels = n.GetIntValue(); } },
             };
         }
@@ -87,6 +91,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteBoolValue("resolutionMark", ResolutionMark);
             writer.WriteBoolValue("showDuration", ShowDuration);
             writer.WriteBoolValue("showResolution", ShowResolution);
+            writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.StartPage>("startPage", StartPage);
             writer.WriteIntValue("videoHighResolutionPixels", VideoHighResolutionPixels);
             writer.WriteAdditionalData(AdditionalData);
         }

@@ -10912,6 +10912,9 @@
           "liveChanges": {
             "type": "boolean"
           },
+          "startPage": {
+            "$ref": "#/components/schemas/StartPage"
+          },
           "showResolution": {
             "type": "boolean"
           },
@@ -11345,6 +11348,9 @@
           "liveChanges": {
             "type": "boolean",
             "default": true
+          },
+          "startPage": {
+            "$ref": "#/components/schemas/StartPage"
           }
         }
       },
@@ -17784,6 +17790,14 @@
             "format": "int32"
           }
         }
+      },
+      "StartPage": {
+        "enum": [
+          "dashboard",
+          "home",
+          "root"
+        ],
+        "default": "dashboard"
       },
       "StorageUsage": {
         "required": [

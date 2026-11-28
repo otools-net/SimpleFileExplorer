@@ -55,7 +55,7 @@
     "src/Sfe.Core/Library/LibraryBrowser.cs": {"fileLines":490,"manyParameterFunctions":1},
     "src/Sfe.Core/Search/FileSearchService.cs": {"manyParameterFunctions":1},
     "src/Sfe.Core/Settings/EditableSettings.cs": {"longFunctions":1},
-    "src/Sfe.Core/Settings/SettingsService.cs": {"fileLines":1128,"longLines":1,"longFunctions":2,"manyParameterFunctions":1},
+    "src/Sfe.Core/Settings/SettingsService.cs": {"fileLines":1129,"longLines":1,"longFunctions":2,"manyParameterFunctions":1},
     "src/Sfe.Core/Streaming/VideoStreams.cs": {"manyParameterFunctions":2},
     "src/Sfe.Core/Tagging/ScopeTagger.cs": {"longFunctions":1},
     "src/Sfe.Core/Tagging/TagService.cs": {"fileLines":710,"longFunctions":2},

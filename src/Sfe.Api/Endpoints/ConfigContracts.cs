@@ -99,6 +99,7 @@ public sealed record ConnectionsConfig(IReadOnlyList<string> Levels, IReadOnlyLi
 /// </param>
 /// <param name="LiveChanges">The folder listed is watched for changes made outside SFE (`PUT files/changes/watch`),
 /// and such changes are heeded.</param>
+/// <param name="StartPage">The page opened at the client's address alone (`browse.startPage`, the user's).</param>
 /// <param name="AccessTokens">
 /// Personal access tokens on this server; null when the session may neither have tokens nor manage them
 /// (<c>account.tokens</c>, <c>access.tokens</c>).
@@ -142,7 +143,8 @@ public sealed record ClientConfig(
     ArchivesConfig? Archives = null,
     ConnectionsConfig? Connections = null,
     AccessTokensConfig? AccessTokens = null,
-    bool LiveChanges = true
+    bool LiveChanges = true,
+    StartPage StartPage = StartPage.Dashboard
 );
 
 /// <param name="MaxCompressedTarMegabytes">Compressed tars (<c>.tar.gz</c>…) larger than this aren't explored (listing

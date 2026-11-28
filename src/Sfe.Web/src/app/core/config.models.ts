@@ -5,6 +5,9 @@ import type { AccessTokensConfig } from './access-token.models';
 
 export type Theme = 'system' | 'light' | 'dark';
 
+/** Where the app opens at its address alone (`browse.startPage`): the dashboard, the home folder, the library's top. */
+export type StartPage = 'dashboard' | 'home' | 'root';
+
 export interface ClientConfig {
     /** How the server is used (Sfe:Mode); missing from older servers. */
     mode?: ServerMode;
@@ -34,6 +37,8 @@ export interface ClientConfig {
     showDuration: boolean;
     /** The folder listed follows changes made outside SFE too (Browse:LiveChanges, each user's). */
     liveChanges: boolean;
+    /** The page opened at the app's address alone (Browse:StartPage, each user's); absent from older servers. */
+    startPage?: StartPage;
     /**
      * Smallest shorter side, in pixels, of a high-resolution image and video (HR/LR marks on previews); null = no
      * marks.

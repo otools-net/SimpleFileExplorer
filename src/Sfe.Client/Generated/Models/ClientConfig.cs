@@ -158,6 +158,8 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         public bool? ShowResolution { get; set; }
         /// <summary>The singleViewOriginals property</summary>
         public bool? SingleViewOriginals { get; set; }
+        /// <summary>The startPage property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Models.StartPage? StartPage { get; set; }
         /// <summary>The streaming property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -226,6 +228,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             AdditionalData = new Dictionary<string, object>();
             Flash = false;
             LiveChanges = true;
+            StartPage = global::Otools.Net.Sfe.Client.Generated.Models.StartPage.Dashboard;
         }
         /// <summary>
         /// Creates a new instance of the appropriate class based on discriminator value
@@ -275,6 +278,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
                 { "showDuration", n => { ShowDuration = n.GetBoolValue(); } },
                 { "showResolution", n => { ShowResolution = n.GetBoolValue(); } },
                 { "singleViewOriginals", n => { SingleViewOriginals = n.GetBoolValue(); } },
+                { "startPage", n => { StartPage = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.StartPage>(); } },
                 { "streaming", n => { Streaming = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.StreamingConfig>(global::Otools.Net.Sfe.Client.Generated.Models.StreamingConfig.CreateFromDiscriminatorValue); } },
                 { "tagColors", n => { TagColors = n.GetCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagColor>(global::Otools.Net.Sfe.Client.Generated.Models.TagColor.CreateFromDiscriminatorValue)?.AsList(); } },
                 { "tenant", n => { Tenant = n.GetObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.SessionTenant>(global::Otools.Net.Sfe.Client.Generated.Models.SessionTenant.CreateFromDiscriminatorValue); } },
@@ -323,6 +327,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             writer.WriteBoolValue("showDuration", ShowDuration);
             writer.WriteBoolValue("showResolution", ShowResolution);
             writer.WriteBoolValue("singleViewOriginals", SingleViewOriginals);
+            writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.StartPage>("startPage", StartPage);
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.StreamingConfig>("streaming", Streaming);
             writer.WriteCollectionOfObjectValues<global::Otools.Net.Sfe.Client.Generated.Models.TagColor>("tagColors", TagColors);
             writer.WriteObjectValue<global::Otools.Net.Sfe.Client.Generated.Models.SessionTenant>("tenant", Tenant);

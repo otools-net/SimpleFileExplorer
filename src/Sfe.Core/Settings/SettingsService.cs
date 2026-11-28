@@ -1080,6 +1080,7 @@ public sealed class SettingsService(
         foreach (var (key, message) in s.Connections.Errors().Concat(s.Security.Errors()))
             Check(false, key, message);
         Check(Enum.IsDefined(s.Appearance.Theme), "appearance.theme", "Choose a theme from the list.");
+        Check(Enum.IsDefined(s.Browse.StartPage), "browse.startPage", "Choose a start page from the list.");
         Check(
             s.Reading.Theme is { } readerTheme && ReadingOptions.Themes.Contains(readerTheme),
             "reading.theme",

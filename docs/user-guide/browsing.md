@@ -9,6 +9,25 @@ The top bar holds, from left to right: the sidebar's button ([quick links](#quic
 [search box](search.md), the three layouts, the [notifications](#notifications) bell and the [⋮ menu](signing-in.md#the--menu). Every button shows a hint (and
 its keyboard shortcut, if any) when you rest the mouse on it.
 
+## Dashboard
+
+![The dashboard](../images/dashboard.png)
+
+SFE's address alone (a bookmark of the server, a new tab) opens the dashboard: cards with what you use most, side by
+side, one under the other on a phone.
+
+- **Home and quick links**: your [home folder](#home-folder) and your [quick links](#quick-links). A folder opens
+  its listing, a file the folder holding it; those not there any more show faded.
+- **Storage**: the space used and free on the disk holding the library, as the sidebar's bar shows it.
+
+<img src="../images/phone-dashboard.png" alt="The dashboard on a phone: its cards one under the other" width="300">
+
+Each card shows only with its rights. **Files** (or **SFE**) opens the top of the library; **Dashboard** in the
+[⋮ menu](signing-in.md#the--menu) comes back. To open something else at the start, choose **Start page** in your
+settings ([My account](../administration/my-account.md) › Settings): **Home folder** (the top of the
+library while you have none) or **Top of the library**. Links to a folder, a search or a file still open them, and
+reloading a page keeps it.
+
 ## Layouts
 
 The three buttons at the top right switch between:

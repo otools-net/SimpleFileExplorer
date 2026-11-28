@@ -26,6 +26,12 @@ public sealed class BrowseOptions
     public bool LiveChanges { get; set; } = true;
 
     /// <summary>
+    /// The page the web client opens at the server's address alone: the dashboard, the home folder or the top of the
+    /// library. A user setting (a library's default, each account's own).
+    /// </summary>
+    public StartPage StartPage { get; set; } = StartPage.Dashboard;
+
+    /// <summary>
     /// The web client shows the resolution of images and videos (e.g. 1920×1080) next to their size, when the index
     /// has it (<see cref="ScanOptions.ReadResolution"/>).
     /// </summary>

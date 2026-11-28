@@ -12,6 +12,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { redirected } from '../core/api.service';
 import { ConfigService } from '../core/config.service';
+import { takeStartConfig } from '../dashboard/start-page';
 import { baseName, parentPath } from '../core/paths';
 import { ThemeService } from '../core/theme.service';
 import { ItemMenu } from '../files/item-menu';
@@ -134,7 +135,8 @@ export class LibraryPageComponent implements OnInit {
         const restore = created ? readRestoreState(history.state) : initialHistoryState;
         created = true;
         try {
-            await this.config.load();
+            // Just loaded by the start page's guard when the app opened here.
+            if (!takeStartConfig()) await this.config.load();
         } catch (error) {
             // Not signed in, or the server is not set up: the sign-in or setup page opens instead.
             if (!redirected(error)) this.unreachable.set((error as Error).message);

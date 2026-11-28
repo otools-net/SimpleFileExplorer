@@ -13,6 +13,7 @@ public sealed class BrowseSettings : PageSettings
     public int FolderPictures { get; set; }
     public bool CopyPaths { get; set; }
     public bool LiveChanges { get; set; }
+    public StartPage StartPage { get; set; }
     public bool ShowResolution { get; set; }
     public bool ShowDuration { get; set; }
     public bool ResolutionMark { get; set; }

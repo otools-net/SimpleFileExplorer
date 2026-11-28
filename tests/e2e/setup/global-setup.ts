@@ -66,6 +66,8 @@ export default async function globalSetup(): Promise<void> {
         disabled: false,
         groupIds: [users.id],
     });
+    // The specs opening `./` expect the listing: the library's start page is its top (dashboard.spec opens its own).
+    await call(admin, 'PATCH', 'api/v1/settings?level=tenant', { values: { 'browse.startPage': 'root' } });
     await saveSignIn(admin, auth('admin'), scanStartedAt);
     await admin.dispose();
 

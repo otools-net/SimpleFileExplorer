@@ -36,6 +36,7 @@ The ⋮ button at the top right holds:
   and [access tokens](../administration/my-account.md#access-tokens) for your programs);
 - **Scan this folder** and **Remove from index…** ([Scanning](scanning.md));
 - your other spaces, if you have several: picking one switches to it (and reloads the page);
+- **Dashboard** ([the dashboard](browsing.md#dashboard)): your home folder, quick links and storage at a glance;
 - **Administration** ([the administration page](../administration/README.md)): settings, tags, duplicates, accounts,
   tasks, and **My account** (your settings, password and access tokens);
 - **Help** ([the help](help.md)): these pages, in a new tab;

@@ -1,21 +1,25 @@
 import { Routes } from '@angular/router';
 import { leaveAdminPage } from './admin/leave-admin-page';
 import { connectionsLanding } from './connections/connections-landing';
+import { startPage } from './dashboard/start-page';
 import { LibraryPageComponent } from './library/library-page.component';
 import { leaveViewer, leaveViewPage } from './library/viewer/leave-viewer';
 import { leaveWizard } from './wizards/leave-wizard';
 
 /**
- * The listing page at the root (its query string says what it lists), the administration page, the video player
- * alone, a file in its viewer (`view`: text...), the sign-in page, the setup page (the first administrator) and the
- * update page (after an upgrade). All are one level deep, so the relative <base href="./"> holds under a virtual
- * directory. The pages other than the listing load when first opened: the listing doesn't need them.
+ * The listing page at the root (its query string says what it lists), the dashboard, the administration page, the
+ * video player alone, a file in its viewer (`view`: text...), the sign-in page, the setup page (the first
+ * administrator) and the update page (after an upgrade). All are one level deep, so the relative <base href="./">
+ * holds under a virtual directory. The pages other than the listing load when first opened: the listing doesn't
+ * need them.
  */
 export const routes: Routes = [
     // Its query changes ask too, as the viewer may hold unsaved changes.
     {
         path: '',
         component: LibraryPageComponent,
+        // Opened at its address alone: the start page the user chose.
+        canActivate: [startPage],
         canDeactivate: [leaveViewer],
         runGuardsAndResolvers: 'paramsOrQueryParamsChange',
     },
@@ -25,6 +29,11 @@ export const routes: Routes = [
         canDeactivate: [leaveAdminPage],
     },
     // Where the server sends the browser back after signing in at a provider: it opens the page of the connection.
+    // The dashboard: the start page unless the user chose another (dashboard/start-page.ts).
+    {
+        path: 'dashboard',
+        loadComponent: () => import('./dashboard/dashboard-page.component').then((m) => m.DashboardPageComponent),
+    },
     { path: 'connections', canActivate: [connectionsLanding], children: [] },
     // Its earlier address, still in bookmarks.
     { path: 'config', redirectTo: 'admin' },

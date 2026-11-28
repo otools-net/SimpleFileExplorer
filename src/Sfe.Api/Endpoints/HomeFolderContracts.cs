@@ -1,8 +1,8 @@
 namespace Otools.Net.Sfe.Api.Endpoints;
 
-/// <param name="Path">The home folder in effect, relative to the library root (empty for the root); null for none.</param>
+/// <param name="Path">The home folder in effect, root-relative (empty for the root); null for none.</param>
 /// <param name="Name">The folder's name (the library's name for the root); null for none.</param>
-/// <param name="Exists">It is a folder the account sees: false once it was moved, deleted, never made, or hidden.</param>
+/// <param name="Exists">A folder the account sees: false once it was moved, deleted, never made, or hidden.</param>
 /// <param name="Chosen">The account chose it; false when it is its groups' default (or there is none).</param>
 /// <param name="Group">The group whose default the account gets when it chooses none; null for none.</param>
 /// <param name="GroupPath">That default for this account (relative to the library root), what removing the choice

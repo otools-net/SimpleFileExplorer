@@ -654,11 +654,20 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
   group set by an administrator, changeable by the user; never created automatically. Shown on the dashboard (5.5)
   and as "Home" in the sidebar. Library folders only.
 - [ ] **5.5 Dashboard as the start page** (IDEA-019, L, split in two). Owner's choice: **dashboard first**.
-  **a:** route, widget registry, default layout, start page setting (user can choose dashboard / home / library
-  root). **b:** widgets from what exists: home and quick links, recent files (new per-user store, last 50),
+  - [x] **a: route, widget registry, default layout, start page setting.** Done 2026-11-28: note
+    [dashboard](../features/dashboard.md). `dashboard` (lazy, its own header: Files, bell, Administration, Help),
+    `DASHBOARD_WIDGETS` (id, title, icon, `shown(can)`, lazy `load()`), `DEFAULT_LAYOUT` in 2 fixed columns
+    (`arrangeLayout`; one column ≤ 760 px). User setting `browse.startPage` (`Dashboard` default, `Home`, `Root`;
+    `api/config` answers `startPage`); the guard `startPage` on `''` acts only on a fresh first visit to the
+    address alone (see Decisions). First widgets `places` (home and quick links) and `storage`. ⋮ menu
+    **Dashboard**. e2e library set to `root` (`global-setup.ts`), `dashboard.spec.ts`; screenshots
+    `dashboard.png`, `phone-dashboard.png` (scene `dashboard`), `admin-interface-browsing.png` retaken.
+  - [ ] **b:** widgets from what exists: home and quick links, recent files (new per-user store, last 50),
   storage (3.4), uploads in progress (4.3), notifications (4.5), connections and their state, tag history;
   administrators: scan status, failed tasks, keep-alive. Layout: fixed columns with add / remove / reorder (no free
   grid), saved per user; administrators set the default layout. Works on phones (one column). After 3.4, 4.5, 5.4.
+    Already there from a: `places` (home and quick links) and `storage` (library disk only: a connection's
+    account could be its own card).
 
 ### Phase 6: connections
 
@@ -719,8 +728,13 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-28):** **5.4** (home folder) done, after a refactoring (`GroupChanges`). Next: **5.5a**
-  (dashboard: route, widget registry, start page setting), then **5.5b** (widgets; Home from `HomeFolderService`).
+- **Last session (2026-11-28):** **5.5a** (dashboard route, widget registry, default layout, start page) done.
+  Next: **5.5b** (more widgets, layouts saved per user, the administrators' default; a new widget = a line in
+  `DASHBOARD_WIDGETS` and a component in `dashboard/widgets/`).
+- A spec of a page whose parts load by dynamic import (the dashboard's cards) waits with `vi.waitFor` until they
+  show: `settle()` was enough alone, not in the full run.
+- The e2e specs and the docs-screenshots scenes opening `./` (the address alone) get the listing only because the
+  library's start page is set to `root` (e2e) or the scene opens `?path=` (docs): a new one does the same.
 - A new right for existing installs: `since: RightCatalog.Revision + 1` (15 after 5.4), and its update test sets
   `RightsRevision` to the one before and the installed version **below** the current one (the same version: "No
   update is due").
@@ -823,7 +837,9 @@ nuget.org public; one path-agnostic client API; watch open folders (disk and con
 
 Defaults taken (change here if the owner disagrees): UK English; Windows-Explorer-like menu order; admin pages in
 ≤3 clicks; XxHash128; notifications kept in the browser (server events pushed, not stored); undo per tab, 20 steps;
-dashboard fixed columns; home folder never auto-created; the add-a-connection wizard (5.3c) doesn't type a kind's app
+dashboard fixed columns; home folder never auto-created; the start page (5.5a) applies only to a fresh first visit to
+the address alone (a bookmark, a typed address, a new tab), never to a reload or the app's own links to the top
+(2026-11-28); a file's quick link on the dashboard opens its folder, not the viewer (2026-11-28); the add-a-connection wizard (5.3c) doesn't type a kind's app
 key: it would be Dropbox-only code that 6.3 removes, and a setting saved before Finish; it links to the setup page
 until 6.3 makes app settings generic (2026-11-28); the home folder (5.4) is not a user setting but its own table
 (user, space) with a group column: user settings have no space and a home is a path of one space; a group's default

@@ -149,6 +149,10 @@
         }
     }
     <hr>
+    <a role="menuitem" routerLink="/dashboard" (click)="popovers.close()"
+       title="Open the dashboard: your home folder, quick links, storage and more." i18n-title>
+        <svg sfeIcon="grid"></svg><ng-container i18n>Dashboard</ng-container>
+    </a>
     @if (adminVisible()) {
         <a role="menuitem" routerLink="/admin" [state]="{ sfeFromLibrary: true }" (click)="popovers.close()"
            title="Open the administration: settings, tags, duplicates, tasks, spaces, accounts, your account and more."

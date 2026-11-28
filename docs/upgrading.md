@@ -38,6 +38,10 @@ to the earlier version by installing it again.
   changes in the databases or the settings file.
 - The groups Administrators and Users of existing spaces get the new right `account.homeFolder` once, at the update;
   guests don't. Nobody has a home folder until one is chosen or a group is given one.
+- SFE's address alone now opens the [dashboard](user-guide/browsing.md#dashboard) (bookmarks of a folder still open
+  it). To keep the top of the library for everyone, set **Start page** to **Top of the library** in each space's
+  settings (Interface › Browsing), or `Sfe:Browse:StartPage` to `Root` in the configuration; each user may still
+  choose their own.
 
 ## To 1.86
 

@@ -1,0 +1,77 @@
+@if (problem(); as problem) {
+    <sfe-empty-state icon="close" heading="The server is not reachable" i18n-heading [text]="problem" />
+} @else if (columns(); as columns) {
+    <header class="topbar dashboard-topbar">
+        <a class="brand" routerLink="/" title="Go to the top of the library." i18n-title>
+            <svg sfeIcon="folder"></svg>
+            <span translate="no">SFE</span>
+        </a>
+        <h1 class="dashboard-title" i18n>Dashboard</h1>
+        <div class="actions">
+            <a
+                class="button dashboard-files"
+                routerLink="/"
+                title="Browse the files of {{ libraryName() }}, from the top."
+                i18n-title
+            >
+                <svg sfeIcon="folder"></svg><span i18n="the button opening the library's listing">Files</span>
+            </a>
+            <sfe-notifications />
+            @if (adminVisible()) {
+                <a
+                    class="icon-button ghost"
+                    routerLink="/admin"
+                    title="Open the administration: settings, tags, tasks, spaces, accounts, your account and more."
+                    i18n-title
+                    aria-label="Administration"
+                    i18n-aria-label
+                >
+                    <svg sfeIcon="settings"></svg>
+                </a>
+            }
+            <a
+                class="icon-button ghost"
+                href="help"
+                target="_blank"
+                title="Open the help in a new tab: how to use SFE, its settings and its words."
+                i18n-title
+                aria-label="Help"
+                i18n-aria-label
+            >
+                <svg sfeIcon="help"></svg>
+            </a>
+        </div>
+    </header>
+    <main class="dashboard">
+        @if (empty()) {
+            <sfe-empty-state
+                icon="grid"
+                heading="Nothing to show here"
+                i18n-heading
+                text="Your account may not use any of the dashboard's cards. Files opens the library."
+                i18n-text
+            />
+        }
+        @for (column of columns; track $index) {
+            <div class="dashboard-column">
+                @for (card of column; track card.widget.id) {
+                    <section class="dashboard-card" [attr.data-widget]="card.widget.id"
+                             [attr.aria-labelledby]="'widget-' + card.widget.id">
+                        <h2 class="dashboard-card-title" [id]="'widget-' + card.widget.id">
+                            <svg [sfeIcon]="card.widget.icon"></svg>{{ card.widget.title }}
+                        </h2>
+                        @if (card.content(); as content) {
+                            <ng-container *ngComponentOutlet="content" />
+                        } @else if (card.failed()) {
+                            <p class="dashboard-card-note" i18n>This card could not be loaded. Reload the page.</p>
+                        } @else {
+                            <span class="spinner"></span>
+                        }
+                    </section>
+                }
+            </div>
+        }
+    </main>
+} @else {
+    <div class="tag-loading"><span class="spinner"></span></div>
+}

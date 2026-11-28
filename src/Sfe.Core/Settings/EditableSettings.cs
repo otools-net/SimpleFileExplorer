@@ -56,6 +56,7 @@ public sealed class EditableSettings
                 FolderPictures = options.Browse.FolderPictures,
                 CopyPaths = options.Browse.CopyPaths,
                 LiveChanges = options.Browse.LiveChanges,
+                StartPage = options.Browse.StartPage,
                 ShowResolution = options.Browse.ShowResolution,
                 ShowDuration = options.Browse.ShowDuration,
                 ResolutionMark = options.Browse.ResolutionMark,
@@ -196,6 +197,7 @@ public sealed class EditableSettings
         options.Browse.FolderPictures = Browse.FolderPictures;
         options.Browse.CopyPaths = Browse.CopyPaths;
         options.Browse.LiveChanges = Browse.LiveChanges;
+        options.Browse.StartPage = Browse.StartPage;
         options.Browse.ShowResolution = Browse.ShowResolution;
         options.Browse.ShowDuration = Browse.ShowDuration;
         options.Browse.ResolutionMark = Browse.ResolutionMark;

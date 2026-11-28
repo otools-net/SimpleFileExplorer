@@ -97,7 +97,8 @@ const scenes = {
     },
     async library() {
         const b = await session();
-        await b.open('');
+        // `?path=`: the top of the library; the address alone opens the start page (the dashboard).
+        await b.open('?path=');
         await b.shot(OUT + 'library-root.png');
         await b.goto(BASE + '?path=Photos%2F2024%20Beach%20trip', 3000);
         await b.shot(OUT + 'scan-finished.png', { x: 0, y: 0, width: 1280, height: 120 });
@@ -112,6 +113,23 @@ const scenes = {
         await b.clickTitle('Show the items as a grid');
         await b.open('?path=Photos');
         await b.shot(OUT + 'library-folders.png');
+        await b.close();
+    },
+    /**
+     * The dashboard, the start page: Home (the administrator's own choice, forgotten after, as in `homeFolder`), the
+     * quick links and the storage; on a phone, its cards in one column.
+     */
+    async dashboard() {
+        const b = await session();
+        await b.open('?path=Photos');
+        await b.eval(api('PUT', 'api/v1/me/home-folder', { path: 'Photos/2025 Mountains' }));
+        await b.open('', 3000);
+        await b.shot(OUT + 'dashboard.png', { x: 0, y: 0, width: 1280, height: 420 });
+        const phone = await session({ width: 390, height: 844, mobile: true });
+        await phone.open('dashboard', 3000);
+        await phone.shot(OUT + 'phone-dashboard.png');
+        await phone.close();
+        await b.eval(api('DELETE', 'api/v1/me/home-folder'));
         await b.close();
     },
     async quickLinks() {

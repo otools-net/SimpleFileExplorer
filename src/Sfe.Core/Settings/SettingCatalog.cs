@@ -47,6 +47,7 @@ public static class SettingCatalog
         "search.defaultPageSize",
         "browse.folderPictures",
         "browse.liveChanges",
+        "browse.startPage",
         "browse.showResolution",
         "browse.showDuration",
         "browse.resolutionMark",
