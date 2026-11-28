@@ -29,6 +29,25 @@ export interface WizardEnd {
     links: WizardLink[];
 }
 
+/** A Finish that sends the browser to another site (a provider's sign-in page), which sends it back to the wizard. */
+export interface WizardRedirect {
+    redirect: string;
+}
+
+/**
+ * How a wizard goes on when the browser comes back to `wizard?id=…&…` after a `WizardRedirect`: the shell kept the
+ * draft in the tab (wizard-kept.ts) and hands it back with the address's query.
+ */
+export interface WizardResume<D> {
+    /** What is kept of the draft while away: never a secret (a password typed). The whole draft when left out. */
+    keep?(draft: D): D;
+    /**
+     * Ends the wizard from what the address says (`made=7`, `error=refused`), or throws: the review shows the
+     * refusal, Finish tries again. Runs in an injection context, as `finish`.
+     */
+    run(draft: D, query: Record<string, string>): Promise<WizardEnd>;
+}
+
 export interface WizardStep<D> {
     id: string;
     title: string;
@@ -67,9 +86,12 @@ export interface WizardDefinition<D> {
     steps: readonly WizardStep<D>[];
     /**
      * The one save, after the review: a single request (a route doing everything in one transaction when it writes
-     * several things). Throws the server's refusal. Runs in an injection context, as `check`.
+     * several things). Throws the server's refusal. Runs in an injection context, as `check`. A redirect (only with
+     * `resume`) leaves for another site, which ends the save and sends the browser back.
      */
-    finish(draft: D): Promise<WizardEnd>;
+    finish(draft: D): Promise<WizardEnd | WizardRedirect>;
+    /** Needed when `finish` may redirect. */
+    resume?: WizardResume<D>;
 }
 
 /**

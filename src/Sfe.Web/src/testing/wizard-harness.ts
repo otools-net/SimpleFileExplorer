@@ -14,9 +14,14 @@ export class WizardHarness {
         readonly closed: { count: number },
     ) {}
 
-    static async open(definition: WizardDefinition<unknown>): Promise<WizardHarness> {
+    /** `returned`: the page's query when the browser comes back from another site (`WizardResume`). */
+    static async open(
+        definition: WizardDefinition<unknown>,
+        returned: Record<string, string> = {},
+    ): Promise<WizardHarness> {
         const fixture = TestBed.createComponent(WizardComponent);
         fixture.componentRef.setInput('definition', definition);
+        fixture.componentRef.setInput('returned', returned);
         const closed = { count: 0 };
         fixture.componentInstance.closed.subscribe(() => closed.count++);
         fixture.autoDetectChanges();

@@ -1,7 +1,7 @@
 # Wizards
 
 Code: `src/Sfe.Web/src/app/wizards/` (`wizard-definition.ts`, `wizard-registry.ts`, `wizard.component.*`,
-`wizard-context.ts`, `wizard-run.ts`, `wizard-page.component.ts`, `leave-wizard.ts`, one folder per wizard:
+`wizard-context.ts`, `wizard-run.ts`, `wizard-kept.ts`, `wizard-page.component.ts`, `leave-wizard.ts`, one folder per wizard:
 `new-space/`, `share-folder/`), `styles/wizards.css`, `testing/wizard-harness.ts`; server: `validateOnly` on the route a wizard saves
 with (`TenantEndpoints.Create`, `FolderRuleEndpoints.Set`). User docs: `docs/administration/wizards.md`.
 
@@ -27,8 +27,15 @@ with (`TenantEndpoints.Create`, `FolderRuleEndpoints.Set`). User docs: `docs/adm
   step when it names a field of this step or an earlier one; a refusal of a later step's field lets it go on (the
   server checks everything at once and stops at the first error, in field order). A refused Finish goes to the first
   step whose `fields` holds a refused field; a refusal of no step's field shows above the buttons.
-- **Drafts are plain JSON values** (no `Set`, no `Date`): `dirty` compares `JSON.stringify`, and 5.3c keeps one in
-  `sessionStorage` across a sign-in's redirect.
+- **Drafts are plain JSON values** (no `Set`, no `Date`): `dirty` compares `JSON.stringify`, and a redirect keeps one
+  in `sessionStorage`.
+- **Leaving for another site** (a provider's sign-in): `finish` answers `{ redirect: address }` (only with `resume`).
+  The shell keeps `resume.keep(draft)` (secrets left out) in `sessionStorage` (`sfe.wizard.<id>`, wizard-kept.ts),
+  stops the leave guard and calls `leaveFor(address)` (`location.assign`; specs spy on it). The other site sends the
+  browser back to `wizard?id=<id>&…`: the page hands the query besides `id` to the shell (`returned`), which takes
+  the kept draft (once; left when older than 15 minutes), shows the review and runs `resume.run(draft, query)`: the
+  end, or its refusal above Finish (Finish starts again). A kept draft without a query, or a query without one,
+  starts the wizard afresh.
 - `wizard-run.ts`: `runRequest` (busy, field errors, the problem above the buttons, 429 in words) is the setup page's
   former `run`; the setup page and the shell share it and `.wizard-progress` / `.wizard-actions` (`wizards.css`).
   The setup page itself stays outside the framework (pre-sign-in, saves at step 2, restart step).

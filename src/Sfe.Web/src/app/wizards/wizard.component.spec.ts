@@ -6,7 +6,8 @@ import { Api } from '../core/api.service';
 import { mockApi, settle, testProviders, type } from '../../testing/fakes';
 import { WizardHarness } from '../../testing/wizard-harness';
 import { injectWizard } from './wizard-context';
-import { defineWizard, WizardEnd } from './wizard-definition';
+import { defineWizard, WizardEnd, WizardRedirect } from './wizard-definition';
+import { keepDraft } from './wizard-kept';
 
 interface TestDraft {
     alpha: string;
@@ -33,7 +34,8 @@ class AlphaStep {
 class EmptyStep {}
 
 let check: Mock<(draft: TestDraft, api: Api) => Promise<void>>;
-let finish: Mock<(draft: TestDraft) => Promise<WizardEnd>>;
+let finish: Mock<(draft: TestDraft) => Promise<WizardEnd | WizardRedirect>>;
+let resume: Mock<(draft: TestDraft, query: Record<string, string>) => Promise<WizardEnd>>;
 
 function testWizard() {
     return defineWizard<TestDraft>({
@@ -76,6 +78,8 @@ function testWizard() {
             },
         ],
         finish: (draft) => finish(draft),
+        // `gamma` stands for a secret: never kept in the tab.
+        resume: { keep: (draft) => ({ ...draft, gamma: '' }), run: (draft, query) => resume(draft, query) },
     });
 }
 
@@ -85,14 +89,16 @@ const end: WizardEnd = {
     links: [{ label: 'See it', title: 'Open what was made', route: 'admin', query: { section: 'access' } }],
 };
 
-async function open(): Promise<WizardHarness> {
+async function open(returned: Record<string, string> = {}): Promise<WizardHarness> {
     TestBed.configureTestingModule({ providers: testProviders(mockApi()) });
-    return WizardHarness.open(testWizard());
+    return WizardHarness.open(testWizard(), returned);
 }
 
 beforeEach(() => {
     check = vi.fn(() => Promise.resolve());
     finish = vi.fn(() => Promise.resolve(end));
+    resume = vi.fn(() => Promise.resolve(end));
+    sessionStorage.clear();
 });
 
 describe('WizardComponent', () => {
@@ -250,6 +256,54 @@ describe('WizardComponent', () => {
 
         expect(wizard.title()).toBe('Beta');
         expect(document.activeElement).toBe(wizard.element.querySelector('.wizard-stage h2'));
+    });
+});
+
+describe('WizardComponent leaving for another site', () => {
+    const away = { alpha: 'a', skipBeta: false, gamma: '' };
+
+    it('keeps the draft in the tab without its secrets, and leaves without asking', async () => {
+        finish.mockResolvedValueOnce({ redirect: 'https://provider.test/sign-in' });
+        const wizard = await open();
+        const leave = vi.spyOn(wizard.wizard, 'leaveFor').mockImplementation(() => {});
+        await wizard.fill({ alpha: 'a', gamma: 'secret' });
+        for (let i = 0; i < 4; i++) await wizard.next();
+
+        expect(leave).toHaveBeenCalledWith('https://provider.test/sign-in');
+        expect(JSON.parse(sessionStorage.getItem('sfe.wizard.test')!).draft).toEqual(away);
+        expect(wizard.wizard.dirty()).toBe(false);
+    });
+
+    it('comes back to the end with the kept draft and the query, once', async () => {
+        keepDraft('test', away);
+        const wizard = await open({ made: '7' });
+
+        expect(resume).toHaveBeenCalledWith(away, { made: '7' });
+        expect(wizard.title()).toBe('Done');
+        expect(sessionStorage.getItem('sfe.wizard.test')).toBeNull();
+    });
+
+    it('shows a refusal at the review, the draft kept for Finish to try again', async () => {
+        keepDraft('test', away);
+        resume.mockRejectedValueOnce(new Error('The storage refused.'));
+        const wizard = await open({ error: 'refused' });
+
+        expect(wizard.title()).toBe('Review');
+        expect(wizard.errors()).toEqual(['The storage refused.']);
+        expect(wizard.draft<TestDraft>().alpha).toBe('a');
+        expect(wizard.button('Finish')!.disabled).toBe(false);
+    });
+
+    it('starts again without a kept draft, or without a query', async () => {
+        const wizard = await open({ made: '7' });
+        expect(wizard.title()).toBe('Alpha');
+        TestBed.resetTestingModule();
+        keepDraft('test', away);
+
+        const again = await open();
+        expect(again.title()).toBe('Alpha');
+        expect(resume).not.toHaveBeenCalled();
+        expect(sessionStorage.getItem('sfe.wizard.test')).toBeNull();
     });
 });
 

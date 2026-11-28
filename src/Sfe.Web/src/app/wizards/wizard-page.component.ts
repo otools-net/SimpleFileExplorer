@@ -37,7 +37,7 @@ import { canOpenWizard, findWizard } from './wizard-registry';
                 </button>
                 <span class="brand"><svg sfeIcon="folder"></svg><span translate="no">SFE</span></span>
             </header>
-            <sfe-wizard [definition]="definition" (closed)="leave()" />
+            <sfe-wizard [definition]="definition" [returned]="returned()" (closed)="leave()" />
         } @else {
             <div class="tag-loading"><span class="spinner"></span></div>
         }
@@ -52,6 +52,11 @@ export class WizardPageComponent implements OnInit {
     private readonly wizard = viewChild(WizardComponent);
 
     protected readonly entry = computed(() => findWizard(this.params().get('id')));
+    /** What another site sent back after the wizard's Finish left for it (`made=7`): the query besides `id`. */
+    protected readonly returned = computed(() => {
+        const params = this.params();
+        return Object.fromEntries(params.keys.filter((key) => key !== 'id').map((key) => [key, params.get(key)!]));
+    });
     protected readonly definition = signal<WizardDefinition<unknown> | null>(null);
     protected readonly problem = signal<string | null>(null);
     protected readonly backHint = $localize`Back to the administration`;

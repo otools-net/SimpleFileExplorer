@@ -19,7 +19,8 @@ import { helpLink } from '../help/help-files';
 import { HelpComponent } from '../shared/help.component';
 import { IconComponent } from '../shared/icon.component';
 import { WIZARD_CONTEXT, WizardContext } from './wizard-context';
-import { WizardDefinition, WizardEnd, WizardStep } from './wizard-definition';
+import { WizardDefinition, WizardEnd, WizardRedirect, WizardStep } from './wizard-definition';
+import { keepDraft, takeDraft } from './wizard-kept';
 import { requestFieldErrors, requestProblem } from './wizard-run';
 
 /** Where the wizard stands: one of its steps, the review before Finish, or the end once saved. */
@@ -31,7 +32,8 @@ type Step = WizardStep<unknown>;
  * Runs a wizard (wizard-definition.ts): its steps one after the other ("Step n of m", the steps left out by earlier
  * answers not counted), Back keeping what was typed, each step's check on Next, the review, the one save on Finish and
  * the end. A refusal is shown by its field on the step that asks for it. The draft lives here only: a reload starts
- * again (the page's guard says so), nothing is kept in the browser.
+ * again (the page's guard says so). Only a Finish that sends the browser to another site keeps it in the tab until it
+ * comes back (`WizardResume`, wizard-kept.ts).
  */
 @Component({
     selector: 'sfe-wizard',
@@ -42,6 +44,8 @@ type Step = WizardStep<unknown>;
 })
 export class WizardComponent implements OnInit {
     readonly definition = input.required<WizardDefinition<unknown>>();
+    /** The page's query besides `id`: what another site sent back after a Finish's redirect (`made=7`). */
+    readonly returned = input<Record<string, string>>({});
     /** Cancel, or Done at the end: the page goes back to where the wizard belongs. */
     readonly closed = output<void>();
 
@@ -56,6 +60,8 @@ export class WizardComponent implements OnInit {
     readonly ended = signal<WizardEnd | null>(null);
     /** The draft as it started, to tell whether anything was typed. */
     private initial = '';
+    /** Off to another site with the draft kept: leaving is no loss. */
+    private readonly away = signal(false);
 
     /** The steps not left out by the answers so far. */
     readonly steps = computed(() => this.definition().steps.filter((step) => !step.skip?.(this.draft())));
@@ -75,7 +81,7 @@ export class WizardComponent implements OnInit {
         return !this.busy() && (step ? step.valid(this.draft()) : this.stage().kind === 'review');
     });
     /** Something was typed and not saved yet. */
-    readonly dirty = computed(() => !this.ended() && JSON.stringify(this.draft()) !== this.initial);
+    readonly dirty = computed(() => !this.ended() && !this.away() && JSON.stringify(this.draft()) !== this.initial);
     readonly review = computed(() => this.steps().map((step) => ({ step, lines: step.review(this.draft()) })));
 
     /** What the steps' components get. */
@@ -93,7 +99,10 @@ export class WizardComponent implements OnInit {
     protected readonly helpHref = (step: Step) => helpLink(this.definition().helpPage, step.helpAnchor);
 
     ngOnInit(): void {
-        this.start();
+        const kept = takeDraft(this.definition().id);
+        const resume = this.definition().resume;
+        if (kept !== null && resume && Object.keys(this.returned()).length) void this.resume(kept);
+        else this.start();
     }
 
     /** A new draft, at the first step (also "Run again" at the end). */
@@ -158,17 +167,50 @@ export class WizardComponent implements OnInit {
         }
     }
 
-    /** The one save: the end, or back to the step whose field was refused. */
+    /** The browser leaves for `address` (another site, which sends it back to the wizard). */
+    leaveFor(address: string): void {
+        window.location.assign(address);
+    }
+
+    /** The one save: the end, off to another site, or back to the step whose field was refused. */
     private async finish(): Promise<void> {
         try {
             const end = await this.request(() => this.definition().finish(this.draft()));
+            if ('redirect' in end) return this.redirect(end);
             this.ended.set(end);
             this.go({ kind: 'end' });
         } catch (error) {
-            const refused = requestFieldErrors(error);
-            if (refused) this.showOn(refused);
-            else this.error.set(requestProblem(error));
+            this.refused(error);
         }
+    }
+
+    /** Keeps the draft in the tab (without what `keep` leaves out) and leaves. */
+    private redirect(away: WizardRedirect): void {
+        const definition = this.definition();
+        keepDraft(definition.id, definition.resume?.keep?.(this.draft()) ?? this.draft());
+        this.away.set(true);
+        this.leaveFor(away.redirect);
+    }
+
+    /** Back from another site: the kept draft at the review, then the end (or the refusal above Finish). */
+    private async resume(kept: unknown): Promise<void> {
+        this.initial = JSON.stringify(this.definition().initialDraft());
+        this.draft.set(kept);
+        this.go({ kind: 'review' });
+        try {
+            const end = await this.request(() => this.definition().resume!.run(kept, this.returned()));
+            this.ended.set(end);
+            this.go({ kind: 'end' });
+        } catch (error) {
+            this.refused(error);
+        }
+    }
+
+    /** The save's refusal: on the step of its field, or above the buttons. */
+    private refused(error: unknown): void {
+        const fields = requestFieldErrors(error);
+        if (fields) this.showOn(fields);
+        else this.error.set(requestProblem(error));
     }
 
     /** Runs a check or the save in an injection context, busy meanwhile. */
