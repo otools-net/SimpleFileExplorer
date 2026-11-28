@@ -7,7 +7,8 @@ import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
 import { checkedOf, valueOf } from '../shared/events';
 import { IconComponent } from '../shared/icon.component';
-import { ConnectDialog, ConnectPurpose, problemOf } from './connect.dialog';
+import { ConnectDialog, ConnectPurpose } from './connect.dialog';
+import { problemOf } from './sign-in';
 import {
     ConnectionChange,
     ConnectionIndexStatus,

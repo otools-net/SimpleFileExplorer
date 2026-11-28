@@ -8,17 +8,10 @@ import { valueOf } from '../shared/events';
 import { SheetComponent } from '../shared/sheet.component';
 import { ConnectionInfo, SignInBegun, SignInField, SignInKindName } from '../core/connection.models';
 import { icu } from '../core/i18n/icu';
+import { METHOD_NAMES, problemOf } from './sign-in';
 
 /** What the dialog does: make a connection at a level, or sign one in again. */
 export type ConnectPurpose = { level: ConnectionLevelName } | { reconnect: ConnectionInfo };
-
-/** The words of the ways to sign in. */
-export const METHOD_NAMES: Record<string, string> = {
-    oAuthRedirect: $localize`:a way to sign in:Sign in at the provider and come back here`,
-    oAuthCode: $localize`:a way to sign in:Sign in at the provider and copy the code it shows`,
-    password: $localize`:a way to sign in:Name and password`,
-    key: $localize`:a way to sign in:Name and key`,
-};
 
 /**
  * Add a connection (or sign one in again): the kind, then a form built from what the server says the kind asks
@@ -171,13 +164,6 @@ library {Add a connection for this space} other {Add a connection for the server
         }
         return null;
     }
-}
-
-/** A 409 resolves with its problem (`Api`): its words, or null for an answer that is not one. */
-export function problemOf(result: unknown): string | null {
-    if (!result || typeof result !== 'object' || !('status' in result) || !('title' in result)) return null;
-    const problem = result as { detail?: string; title?: string };
-    return problem.detail ?? problem.title ?? $localize`The server refused.`;
 }
 
 function messagesOf(errors: Record<string, string[]>): Record<string, string> {

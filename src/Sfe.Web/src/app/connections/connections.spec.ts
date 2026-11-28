@@ -15,7 +15,8 @@ import {
 import { ConnectionsConfig } from '../core/config.models';
 import { Rights } from '../core/rights';
 import { ToastService } from '../core/toast.service';
-import { ConnectDialog, problemOf } from './connect.dialog';
+import { ConnectDialog } from './connect.dialog';
+import { problemOf } from './sign-in';
 import { ConnectionInfo, ConnectionsView } from '../core/connection.models';
 import { connectionsLanding } from './connections-landing';
 import { ConnectionsSectionComponent } from './connections-section.component';

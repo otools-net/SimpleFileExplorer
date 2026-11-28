@@ -6146,45 +6146,9 @@ Space “Holiday photos”
         <source>Continue</source>
       </segment>
     </unit>
-    <unit id="4392282689309541057">
-      <notes>
-        <note category="location">src/app/connections/connect.dialog.ts:17</note>
-        <note category="description">a way to sign in</note>
-      </notes>
-      <segment>
-        <source>Sign in at the provider and come back here</source>
-      </segment>
-    </unit>
-    <unit id="5023616495605426591">
-      <notes>
-        <note category="location">src/app/connections/connect.dialog.ts:18</note>
-        <note category="description">a way to sign in</note>
-      </notes>
-      <segment>
-        <source>Sign in at the provider and copy the code it shows</source>
-      </segment>
-    </unit>
-    <unit id="2266080571098149629">
-      <notes>
-        <note category="location">src/app/connections/connect.dialog.ts:19</note>
-        <note category="description">a way to sign in</note>
-      </notes>
-      <segment>
-        <source>Name and password</source>
-      </segment>
-    </unit>
-    <unit id="8697104145975833142">
-      <notes>
-        <note category="location">src/app/connections/connect.dialog.ts:20</note>
-        <note category="description">a way to sign in</note>
-      </notes>
-      <segment>
-        <source>Name and key</source>
-      </segment>
-    </unit>
     <unit id="5621007634647947405">
       <notes>
-        <note category="location">src/app/connections/connect.dialog.ts:69</note>
+        <note category="location">src/app/connections/connect.dialog.ts:62</note>
       </notes>
       <segment>
         <source>Sign “<ph id="0" equiv="connection" disp="again.name"/>” in again</source>
@@ -6192,7 +6156,7 @@ Space “Holiday photos”
     </unit>
     <unit id="4663546352192132772">
       <notes>
-        <note category="location">src/app/connections/connect.dialog.ts:73,74</note>
+        <note category="location">src/app/connections/connect.dialog.ts:66,67</note>
       </notes>
       <segment>
         <source>{level, select, account {Add a connection for yourself} library {Add a connection for this space} other {Add a connection for the server}}</source>
@@ -6200,18 +6164,10 @@ Space “Holiday photos”
     </unit>
     <unit id="626020177375002643">
       <notes>
-        <note category="location">src/app/connections/connect.dialog.ts:169</note>
+        <note category="location">src/app/connections/connect.dialog.ts:162</note>
       </notes>
       <segment>
         <source>This sign-in has ended (too late, or already used). Start again.</source>
-      </segment>
-    </unit>
-    <unit id="4340552138631629069">
-      <notes>
-        <note category="location">src/app/connections/connect.dialog.ts:180</note>
-      </notes>
-      <segment>
-        <source>The server refused.</source>
       </segment>
     </unit>
     <unit id="7778749517730911604">
@@ -6694,7 +6650,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2571764721437198025">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:109</note>
+        <note category="location">src/app/connections/connections-section.component.ts:110</note>
       </notes>
       <segment>
         <source>Connection “<ph id="0" equiv="name" disp="connection.name"/>” added.</source>
@@ -6702,7 +6658,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6306133157821268698">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:115,116</note>
+        <note category="location">src/app/connections/connections-section.component.ts:116,117</note>
       </notes>
       <segment>
         <source>{level, select, account {Sign in to a storage and add it for yourself only} library {Sign in to a storage and add it for this space} other {Sign in to a storage and add it for the server}}</source>
@@ -6710,8 +6666,8 @@ Space “Holiday photos”
     </unit>
     <unit id="9147614054874195214">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:136</note>
-        <note category="location">src/app/connections/connections-section.component.ts:139</note>
+        <note category="location">src/app/connections/connections-section.component.ts:137</note>
+        <note category="location">src/app/connections/connections-section.component.ts:140</note>
       </notes>
       <segment>
         <source>Could not sync the connection: <ph id="0" equiv="reason" disp="problem"/></source>
@@ -6719,7 +6675,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3470486596097281500">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:162</note>
+        <note category="location">src/app/connections/connections-section.component.ts:163</note>
       </notes>
       <segment>
         <source>Could not change the connection: <ph id="0" equiv="reason" disp="reason"/></source>
@@ -6727,7 +6683,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6503715491638325135">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:170,171</note>
+        <note category="location">src/app/connections/connections-section.component.ts:171,172</note>
       </notes>
       <segment>
         <source>Remove the connection “<ph id="0" equiv="name" disp="name"/>”? Its files stay where they are; whoever used it here no longer sees it.</source>
@@ -6735,7 +6691,7 @@ Space “Holiday photos”
     </unit>
     <unit id="55369361836963560">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:177</note>
+        <note category="location">src/app/connections/connections-section.component.ts:178</note>
       </notes>
       <segment>
         <source>Could not remove the connection “<ph id="0" equiv="name" disp="name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -6743,7 +6699,7 @@ Space “Holiday photos”
     </unit>
     <unit id="65386017477778715">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:179</note>
+        <note category="location">src/app/connections/connections-section.component.ts:180</note>
       </notes>
       <segment>
         <source>Connection “<ph id="0" equiv="name" disp="name"/>” removed.</source>
@@ -6751,7 +6707,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7140380351490894903">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:195</note>
+        <note category="location">src/app/connections/connections-section.component.ts:196</note>
       </notes>
       <segment>
         <source>Could not change who uses “<ph id="0" equiv="name" disp="connection.name"/>”: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -6759,7 +6715,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8753270679830900135">
       <notes>
-        <note category="location">src/app/connections/connections-section.component.ts:209</note>
+        <note category="location">src/app/connections/connections-section.component.ts:210</note>
       </notes>
       <segment>
         <source>Could not change the spaces “<ph id="0" equiv="name" disp="connection.name"/>” is offered to: <ph id="1" equiv="reason" disp="reason"/></source>
@@ -6930,6 +6886,50 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Remove the app secret? Sign-ins go on without it (PKCE).</source>
+      </segment>
+    </unit>
+    <unit id="4392282689309541057">
+      <notes>
+        <note category="location">src/app/connections/sign-in.ts:8</note>
+        <note category="description">a way to sign in</note>
+      </notes>
+      <segment>
+        <source>Sign in at the provider and come back here</source>
+      </segment>
+    </unit>
+    <unit id="5023616495605426591">
+      <notes>
+        <note category="location">src/app/connections/sign-in.ts:9</note>
+        <note category="description">a way to sign in</note>
+      </notes>
+      <segment>
+        <source>Sign in at the provider and copy the code it shows</source>
+      </segment>
+    </unit>
+    <unit id="2266080571098149629">
+      <notes>
+        <note category="location">src/app/connections/sign-in.ts:10</note>
+        <note category="description">a way to sign in</note>
+      </notes>
+      <segment>
+        <source>Name and password</source>
+      </segment>
+    </unit>
+    <unit id="8697104145975833142">
+      <notes>
+        <note category="location">src/app/connections/sign-in.ts:11</note>
+        <note category="description">a way to sign in</note>
+      </notes>
+      <segment>
+        <source>Name and key</source>
+      </segment>
+    </unit>
+    <unit id="4340552138631629069">
+      <notes>
+        <note category="location">src/app/connections/sign-in.ts:18</note>
+      </notes>
+      <segment>
+        <source>The server refused.</source>
       </segment>
     </unit>
     <unit id="4316877962520039251">
@@ -27511,7 +27511,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1008846354597048987">
       <notes>
-        <note category="location">src/app/wizards/wizard-page.component.ts:57</note>
+        <note category="location">src/app/wizards/wizard-page.component.ts:62</note>
       </notes>
       <segment>
         <source>Back to the administration</source>
@@ -27519,7 +27519,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3568179602342456985">
       <notes>
-        <note category="location">src/app/wizards/wizard-page.component.ts:64</note>
+        <note category="location">src/app/wizards/wizard-page.component.ts:69</note>
       </notes>
       <segment>
         <source>There is no such wizard.</source>
@@ -27527,7 +27527,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2428033851044257374">
       <notes>
-        <note category="location">src/app/wizards/wizard-page.component.ts:66</note>
+        <note category="location">src/app/wizards/wizard-page.component.ts:71</note>
       </notes>
       <segment>
         <source>You may not use this wizard.</source>
@@ -27535,7 +27535,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4185773854505896066">
       <notes>
-        <note category="location">src/app/wizards/wizard-page.component.ts:67</note>
+        <note category="location">src/app/wizards/wizard-page.component.ts:72</note>
       </notes>
       <segment>
         <source><ph id="0" equiv="wizard" disp="entry.title"/> – SFE</source>
@@ -27696,7 +27696,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7848568840065605741">
       <notes>
-        <note category="location">src/app/wizards/wizard.component.ts:135</note>
+        <note category="location">src/app/wizards/wizard.component.ts:144</note>
       </notes>
       <segment>
         <source>Leave the wizard? What you have chosen so far is lost.</source>
