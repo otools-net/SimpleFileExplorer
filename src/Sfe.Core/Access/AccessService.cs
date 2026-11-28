@@ -582,7 +582,7 @@ public sealed class AccessService(
             return AccessResult<GroupInfo>.Missing();
 
         var group = new UserGroup { TenantId = tenantId };
-        if (await ApplyGroupAsync(db, group, input, membersOfTenantOnly, cancellationToken) is { } error)
+        if (await GroupChanges.ApplyAsync(db, group, input, membersOfTenantOnly, cancellationToken) is { } error)
             return error.As<GroupInfo>();
 
         db.Groups.Add(group);
@@ -611,7 +611,7 @@ public sealed class AccessService(
             .FirstOrDefaultAsync(g => g.Id == id && g.TenantId == tenantId, cancellationToken);
         if (group is null)
             return AccessResult<GroupInfo>.Missing();
-        if (await ApplyGroupAsync(db, group, input, membersOfTenantOnly, cancellationToken) is { } error)
+        if (await GroupChanges.ApplyAsync(db, group, input, membersOfTenantOnly, cancellationToken) is { } error)
             return error.As<GroupInfo>();
 
         await db.SaveChangesAsync(cancellationToken);
@@ -744,88 +744,6 @@ public sealed class AccessService(
             );
         }
 
-        return null;
-    }
-
-    private static async Task<AccessResult<UserGroup>?> ApplyGroupAsync(
-        AccessDbContext db,
-        UserGroup group,
-        GroupInput input,
-        bool membersOfTenantOnly,
-        CancellationToken cancellationToken
-    )
-    {
-        var name = input.Name?.Trim();
-        if (string.IsNullOrEmpty(name) || name.Length > 100)
-            return AccessResult<UserGroup>.Invalid("name", "A group needs a name of at most 100 characters.");
-        if (
-            await db.Groups.AnyAsync(
-                g => g.TenantId == group.TenantId && g.Id != group.Id && g.Name == name,
-                cancellationToken
-            )
-        )
-        {
-            return AccessResult<UserGroup>.Invalid("name", $"There is already a group named “{name}”.");
-        }
-
-        if (input.ExternalName is { Length: > 400 })
-        {
-            return AccessResult<UserGroup>.Invalid(
-                "externalName",
-                "The sign-in directory's group can have at most 400 characters."
-            );
-        }
-
-        if (input.Rights is { } rights)
-        {
-            if (rights.FirstOrDefault(r => !RightCatalog.IsTenantRight(r)) is { } unknown)
-                return AccessResult<UserGroup>.Invalid("rights", $"“{unknown}” is not a right of a space.");
-            if (
-                group.BuiltIn == BuiltInGroup.Guests
-                && rights.FirstOrDefault(r => RightCatalog.Find(r) is { GuestAllowed: false }) is { } forbidden
-            )
-            {
-                return AccessResult<UserGroup>.Invalid(
-                    "rights",
-                    $"Visitors and guest accounts can never have the right “{RightCatalog.Find(forbidden)!.Title}”."
-                );
-            }
-
-            group.Rights.RemoveAll(r => !rights.Contains(r.Right));
-            foreach (var right in rights.Distinct().Where(r => group.Rights.All(existing => existing.Right != r)))
-                group.Rights.Add(new GroupRight { Right = right });
-        }
-
-        if (input.MemberIds is { } memberIds)
-        {
-            var wanted = memberIds.Distinct().ToList();
-            if (await db.Users.CountAsync(u => wanted.Contains(u.Id), cancellationToken) != wanted.Count)
-                return AccessResult<UserGroup>.Invalid("memberIds", "An account no longer exists: reload the page.");
-            var joining = wanted.Where(u => group.Members.All(m => m.UserId != u)).ToList();
-            if (
-                membersOfTenantOnly
-                && joining.Count > 0
-                && await db.Users.AnyAsync(
-                    u => joining.Contains(u.Id) && !u.Groups.Any(m => m.Group!.TenantId == group.TenantId),
-                    cancellationToken
-                )
-            )
-            {
-                return AccessResult<UserGroup>.Invalid(
-                    "memberIds",
-                    "Only accounts of this space can join its groups: a server administrator adds the others."
-                );
-            }
-
-            group.Members.RemoveAll(m => !wanted.Contains(m.UserId));
-            foreach (var userId in wanted.Where(u => group.Members.All(m => m.UserId != u)))
-                group.Members.Add(new GroupMember { UserId = userId });
-        }
-
-        // Built-in groups keep their name: the pages and the guest rules find them by it.
-        if (group.BuiltIn is null)
-            group.Name = name;
-        group.ExternalName = Clean(input.ExternalName);
         return null;
     }
 
