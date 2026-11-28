@@ -2008,6 +2008,7 @@
         <note category="location">src/app/admin/keep-alive-status.component.html:31,32</note>
         <note category="location">src/app/admin/system-section.component.html:43</note>
         <note category="location">src/app/admin/system-section.component.html:66</note>
+        <note category="location">src/app/dashboard/widgets/keep-alive-widget.component.ts:80</note>
         <note category="location">src/app/wizards/new-space/new-space.wizard.ts:27</note>
       </notes>
       <segment>
@@ -4987,6 +4988,7 @@ Space “Holiday photos”
     <unit id="3237669241623156165">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:213</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:88</note>
         <note category="location">src/app/settings/tabs/system-settings.ts:95</note>
       </notes>
       <segment>
@@ -5331,6 +5333,7 @@ Space “Holiday photos”
     <unit id="3015544348988736098">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:382</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:81</note>
       </notes>
       <segment>
         <source>Background tasks</source>
@@ -5792,6 +5795,7 @@ Space “Holiday photos”
     <unit id="6082060965495469743">
       <notes>
         <note category="location">src/app/admin/keep-alive-status.component.ts:54</note>
+        <note category="location">src/app/dashboard/widgets/keep-alive-widget.component.ts:56</note>
       </notes>
       <segment>
         <source>{failing, plural, one {# folder not answering} other {# folders not answering}}</source>
@@ -7331,6 +7335,15 @@ Space “Holiday photos”
         <source>Tag history</source>
       </segment>
     </unit>
+    <unit id="847124162117254237">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:74</note>
+        <note category="location">src/app/tasks/tasks.ts:12</note>
+      </notes>
+      <segment>
+        <source>Index scan</source>
+      </segment>
+    </unit>
     <unit id="4017213999599806422">
       <notes>
         <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:35,36</note>
@@ -7405,6 +7418,54 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Browse the files of <ph id="0" equiv="folder" disp="this.name()"/>.</source>
+      </segment>
+    </unit>
+    <unit id="930093693455938606">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/keep-alive-widget.component.ts:35,36</note>
+      </notes>
+      <segment>
+        <source>The keep-alive status could not be read.</source>
+      </segment>
+    </unit>
+    <unit id="4006108994954452346">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/keep-alive-widget.component.ts:46</note>
+      </notes>
+      <segment>
+        <source>Open the keep-alive status: every folder&apos;s last ping, and Ping now.</source>
+      </segment>
+    </unit>
+    <unit id="3488824910081780223">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/keep-alive-widget.component.ts:54</note>
+      </notes>
+      <segment>
+        <source>Off: the library folder isn&apos;t pinged.</source>
+      </segment>
+    </unit>
+    <unit id="541493235803422102">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/keep-alive-widget.component.ts:60</note>
+      </notes>
+      <segment>
+        <source>On for folders on a network share.</source>
+      </segment>
+    </unit>
+    <unit id="4730949747253166884">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/keep-alive-widget.component.ts:61</note>
+      </notes>
+      <segment>
+        <source>On: the folders are pinged.</source>
+      </segment>
+    </unit>
+    <unit id="6296012437895950070">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/keep-alive-widget.component.ts:68</note>
+      </notes>
+      <segment>
+        <source>Last ping <ph id="0" equiv="when" disp="formatRelative(last)"/></source>
       </segment>
     </unit>
     <unit id="6947285566424751639">
@@ -7486,6 +7547,76 @@ Space “Holiday photos”
         <source>Open the folder holding <ph id="0" equiv="place" disp="where"/>.</source>
       </segment>
     </unit>
+    <unit id="7483242695989639441">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/scan-widget.component.ts:25,26</note>
+      </notes>
+      <segment>
+        <source>No scan since the server started. Scans start from a folder&apos;s menu, or on a schedule (Administration › Background tasks).</source>
+      </segment>
+    </unit>
+    <unit id="597709137116441119">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/scan-widget.component.ts:36,37</note>
+      </notes>
+      <segment>
+        <source>The scan&apos;s progress could not be read.</source>
+      </segment>
+    </unit>
+    <unit id="8887327375566577982">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/scan-widget.component.ts:50</note>
+      </notes>
+      <segment>
+        <source>Open this folder: its scan panel shows the progress and cancels the scan.</source>
+      </segment>
+    </unit>
+    <unit id="6247406239497317409">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/scan-widget.component.ts:55</note>
+      </notes>
+      <segment>
+        <source>The whole library (<ph id="0" equiv="library" disp="library"/>)</source>
+      </segment>
+    </unit>
+    <unit id="2956098160626271284">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/scan-widget.component.ts:67</note>
+        <note category="location">src/app/tasks/tasks-section.component.ts:50</note>
+        <note category="location">src/app/tasks/tasks.ts:47</note>
+        <note category="description">a scan&apos;s state</note>
+      </notes>
+      <segment>
+        <source>Running</source>
+      </segment>
+    </unit>
+    <unit id="3466059885780251192">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/scan-widget.component.ts:69</note>
+        <note category="description">a scan&apos;s state</note>
+      </notes>
+      <segment>
+        <source>Completed <ph id="0" equiv="when" disp="ago"/></source>
+      </segment>
+    </unit>
+    <unit id="1764448132922131502">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/scan-widget.component.ts:71</note>
+        <note category="description">a scan&apos;s state</note>
+      </notes>
+      <segment>
+        <source>Cancelled <ph id="0" equiv="when" disp="ago"/></source>
+      </segment>
+    </unit>
+    <unit id="6353900049023260187">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/scan-widget.component.ts:73</note>
+        <note category="description">a scan&apos;s state</note>
+      </notes>
+      <segment>
+        <source>Failed <ph id="0" equiv="when" disp="ago"/></source>
+      </segment>
+    </unit>
     <unit id="213546283644319421">
       <notes>
         <note category="location">src/app/dashboard/widgets/storage-widget.component.ts:27,28</note>
@@ -7536,6 +7667,40 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Find the files tagged “<ph id="0" equiv="tag" disp="tag.displayName"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="7688216521206280558">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/tasks-widget.component.ts:49,50</note>
+      </notes>
+      <segment>
+        <source>Nothing running, and no last run went wrong.</source>
+      </segment>
+    </unit>
+    <unit id="6506166487042985337">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/tasks-widget.component.ts:52,53</note>
+      </notes>
+      <segment>
+        <source>The background tasks could not be read.</source>
+      </segment>
+    </unit>
+    <unit id="6887211865730581099">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/tasks-widget.component.ts:90</note>
+        <note category="description">a task running</note>
+      </notes>
+      <segment>
+        <source>Started <ph id="0" equiv="when" disp="since"/></source>
+      </segment>
+    </unit>
+    <unit id="2969650007208710203">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/tasks-widget.component.ts:98</note>
+        <note category="description">a task&apos;s last run</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="outcome" disp="outcome"/> <ph id="1" equiv="when" disp="when"/></source>
       </segment>
     </unit>
     <unit id="8583107444885675754">
@@ -25586,16 +25751,6 @@ The search index is updated in the background. This can take a while on large fo
         <source>Idle</source>
       </segment>
     </unit>
-    <unit id="2956098160626271284">
-      <notes>
-        <note category="location">src/app/tasks/tasks-section.component.ts:50</note>
-        <note category="location">src/app/tasks/tasks.ts:47</note>
-        <note category="description">state of a background task</note>
-      </notes>
-      <segment>
-        <source>Running</source>
-      </segment>
-    </unit>
     <unit id="5643561794785412000">
       <notes>
         <note category="location">src/app/tasks/tasks-section.component.ts:52</note>
@@ -25827,15 +25982,6 @@ The search index is updated in the background. This can take a while on large fo
       </notes>
       <segment>
         <source>Next: <ph id="0" equiv="task" disp="name"/> of <ph id="1" equiv="folder" disp="target(&apos;scan&apos;, next.schedule.path)"/>, <ph id="2" equiv="moment" disp="when"/></source>
-      </segment>
-    </unit>
-    <unit id="847124162117254237">
-      <notes>
-        <note category="location">src/app/tasks/tasks.ts:12</note>
-        <note category="description">background task</note>
-      </notes>
-      <segment>
-        <source>Index scan</source>
       </segment>
     </unit>
     <unit id="4143903274782459181">

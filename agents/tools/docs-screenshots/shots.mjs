@@ -117,14 +117,15 @@ const scenes = {
     },
     /**
      * The dashboard, the start page: Home (the administrator's own choice, forgotten after, as in `homeFolder`), the
-     * files (the top's folders), quick links, notifications, tag history, storage and uploads; on a phone, its cards in one column.
+     * files (the top's folders), quick links, notifications, tag history, storage and uploads, then the administrators'
+     * index scan, background tasks and keep alive; on a phone, its cards in one column.
      */
     async dashboard() {
-        const b = await session();
+        const b = await session({ height: 840 });
         await b.open('?path=Photos');
         await b.eval(api('PUT', 'api/v1/me/home-folder', { path: 'Photos/2025 Mountains' }));
         await b.open('', 3000);
-        await b.shot(OUT + 'dashboard.png', { x: 0, y: 0, width: 1280, height: 720 });
+        await b.shot(OUT + 'dashboard.png', { x: 0, y: 0, width: 1280, height: 800 });
         const phone = await session({ width: 390, height: 844, mobile: true });
         await phone.open('dashboard', 3000);
         await phone.shot(OUT + 'phone-dashboard.png');

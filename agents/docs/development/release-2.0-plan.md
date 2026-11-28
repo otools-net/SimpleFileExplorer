@@ -669,8 +669,10 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     `files` (the folder Files opens, its folders) first in `DEFAULT_LAYOUT` (`files`, `places`, `notifications` |
     `storage`, `uploads`, `connections`, `tags`). Client only: no route.
     Screenshot `dashboard.png` taller (640 px).
-  - [ ] **c: the administrators' widgets:** scan status (`api/scan`), failed tasks (`api/tasks`, last runs that
-    failed), keep-alive (`api/keep-alive`, `settings.keepAlive`). Each with the rights of its route.
+  - [x] **c: the administrators' widgets.** Done 2026-11-28: `scan` (`api/scan`; `index.scan` and the route's
+    `library.browse`; read again while it runs), `tasks` (`api/tasks` once: running ones, then those whose
+    `lastRun` failed or was interrupted, linking to the run), `keepAlive` (`api/keep-alive`, `settings.keepAlive`:
+    folders not answering). Client only. Spec `widgets/admin-widgets.spec.ts`; `dashboard.png` 800 px tall.
   - [ ] **d: recent files:** a new per-user store (last 50 opened, per space; a table, both providers, migration),
     recorded when the viewer opens a file, following renames (`PathMoves`), a route (`account.*` right) and the
     widget. Already there: `file-tags/viewed` records viewed tags only.
@@ -736,10 +738,11 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-28):** **5.5b** (users' widgets: notifications, tag history, uploads, connections) done.
-  Next: **5.5c** (administrators' widgets), then d (recent files), e (layouts). A new widget = a line in
+- **Last session (2026-11-28):** **5.5c** (administrators' widgets: scan, tasks, keep alive) done.
+  Next: **5.5d** (recent files: a table, migration, route, widget), then e (layouts). A new widget = a line in
   `DASHBOARD_WIDGETS`, a component in `dashboard/widgets/` and a case in `widgets/widgets.spec.ts` (rendered alone
-  with `TestBed.createComponent`: no dynamic import to wait for).
+  with `TestBed.createComponent`: no dynamic import to wait for); a widget polling (`scan`) is tested with
+  `vi.useFakeTimers({ shouldAdvanceTime: true })`: plain fake timers hang `settle()` (it waits on a `setTimeout`).
 - The dashboard page spec waits until no card shows a spinner: a new widget whose route the spec's `mockApi`
   doesn't answer keeps spinning (unanswered mocks never resolve): mock it in `setUp`.
 - A spec of a page whose parts load by dynamic import (the dashboard's cards) waits with `vi.waitFor` until they

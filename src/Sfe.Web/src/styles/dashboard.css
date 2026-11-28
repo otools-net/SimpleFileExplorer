@@ -134,6 +134,38 @@
     margin-left: auto;
     padding-left: 8px;
 }
+/* Index scan, background tasks, keep alive: what went wrong stands out. */
+.scan-widget,
+.keep-alive-widget,
+.dashboard-task,
+.dashboard-keep-alive {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.scan-widget,
+.keep-alive-widget {
+    align-items: flex-start;
+}
+.dashboard-task > a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.dashboard-task .icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+}
+.dashboard-scan-state {
+    margin: 0;
+    font-weight: 600;
+}
+.dashboard-scan-state.warning,
+.dashboard-task.warning .dashboard-card-note,
+.keep-alive-widget a.warning,
 .dashboard-state.warning {
     color: var(--danger);
     font-weight: 600;

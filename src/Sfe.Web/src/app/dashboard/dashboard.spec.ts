@@ -39,6 +39,29 @@ describe('dashboard', () => {
         api.quickLinks.mockResolvedValue(LINKS);
         api.storage.mockResolvedValue({ reported: true, used: 90, total: 100, free: 10 });
         api.uploads.mockResolvedValue([]);
+        api.scanStatus.mockResolvedValue({
+            state: 'idle',
+            path: null,
+            startedAt: null,
+            finishedAt: null,
+            directoriesScanned: 0,
+            directoriesQueued: 0,
+            filesIndexed: 0,
+            removed: 0,
+            errors: 0,
+            currentDirectory: null,
+            message: null,
+            relinked: 0,
+            missing: null,
+        });
+        api.tasks.mockResolvedValue({
+            tasks: [],
+            schedules: [],
+            serverTime: '',
+            timeZone: 'UTC',
+            logRetentionDays: 30,
+        });
+        api.keepAlive.mockResolvedValue({ mode: 'off', intervalSeconds: 60, method: 'list', folders: [] });
         api.browse.mockResolvedValue({
             path: '',
             name: '',
@@ -82,12 +105,19 @@ describe('dashboard', () => {
         it('puts the default widgets in their columns for whoever may see them', () => {
             const config = fakeConfig({ connections: { levels: ['account'], kinds: [] } });
             const all = arrangeLayout(DEFAULT_LAYOUT, can(ALL_RIGHTS), config);
-            expect(all[1].map((widget) => widget.id)).toEqual(['storage', 'uploads', 'connections', 'tags']);
+            expect(all[1].map((widget) => widget.id)).toEqual([
+                'storage',
+                'uploads',
+                'connections',
+                'tags',
+                'tasks',
+                'keepAlive',
+            ]);
 
             const columns = arrangeLayout(DEFAULT_LAYOUT, can(ALL_RIGHTS));
             expect(columns.map((column) => column.map((widget) => widget.id))).toEqual([
-                ['files', 'places', 'notifications'],
-                ['storage', 'uploads', 'tags'],
+                ['files', 'places', 'notifications', 'scan'],
+                ['storage', 'uploads', 'tags', 'tasks', 'keepAlive'],
             ]);
         });
 
@@ -164,7 +194,17 @@ describe('dashboard', () => {
         it('shows the home folder, the quick links and the storage', async () => {
             const element = await openDashboard(fakeConfig());
 
-            expect(cards(element)).toEqual(['files', 'places', 'notifications', 'storage', 'uploads', 'tags']);
+            expect(cards(element)).toEqual([
+                'files',
+                'places',
+                'notifications',
+                'scan',
+                'storage',
+                'uploads',
+                'tags',
+                'tasks',
+                'keepAlive',
+            ]);
             const places = element.querySelector('[data-widget="places"]')!;
             expect([...places.querySelectorAll('.quick-link-name')].map((name) => name.textContent)).toEqual([
                 'Home',

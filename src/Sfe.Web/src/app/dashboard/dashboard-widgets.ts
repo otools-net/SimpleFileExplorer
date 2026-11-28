@@ -69,6 +69,27 @@ export const DASHBOARD_WIDGETS: readonly DashboardWidget[] = [
         shown: (can) => can(Rights.viewTags),
         load: () => import('./widgets/tag-history-widget.component').then((m) => m.TagHistoryWidgetComponent),
     },
+    {
+        id: 'scan',
+        title: $localize`Index scan`,
+        icon: 'scan',
+        shown: (can) => can(Rights.scan) && can(Rights.browse),
+        load: () => import('./widgets/scan-widget.component').then((m) => m.ScanWidgetComponent),
+    },
+    {
+        id: 'tasks',
+        title: $localize`Background tasks`,
+        icon: 'clock',
+        shown: (can) => can(Rights.viewTasks),
+        load: () => import('./widgets/tasks-widget.component').then((m) => m.TasksWidgetComponent),
+    },
+    {
+        id: 'keepAlive',
+        title: $localize`Keep alive`,
+        icon: 'refresh',
+        shown: (can) => can(Rights.keepAliveSettings),
+        load: () => import('./widgets/keep-alive-widget.component').then((m) => m.KeepAliveWidgetComponent),
+    },
 ];
 
 export function findWidget(id: string): DashboardWidget | undefined {

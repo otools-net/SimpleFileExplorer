@@ -14,6 +14,12 @@ test('the dashboard shows its cards in one column and leads to the files', async
     await expect(page.locator('[data-widget="files"] [data-folder]').first()).toBeVisible();
     await expect(page.locator('[data-widget="uploads"]')).toContainText('No uploads under way');
     await expect(page.locator('[data-widget="tags"] [data-history="viewed"]')).toBeVisible();
+    // The administrators' cards (the e2e account is one).
+    for (const widget of ['scan', 'tasks', 'keepAlive']) {
+        await expect(page.locator(`[data-widget="${widget}"]`)).toBeVisible();
+        await expect(page.locator(`[data-widget="${widget}"] .spinner`)).toHaveCount(0);
+    }
+    await expect(page.locator('[data-widget="keepAlive"] a')).toBeVisible();
 
     const width = page.viewportSize()!.width;
     if (width <= 760) {

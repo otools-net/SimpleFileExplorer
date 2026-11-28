@@ -41,6 +41,14 @@ User docs: `docs/user-guide/browsing.md#dashboard`, `docs/administration/interfa
     on the card.
   - `connections` (`connections.use` and `config.connections`): `UsableConnections.load(true)`, each linking to
     `?c=`, its state words (sign in again, read only, read and change).
+  - Administrators' widgets (spec `widgets/admin-widgets.spec.ts`), each shown with the right of the route it reads:
+    - `scan` (`index.scan` and `library.browse`, the route's): `api/scan`, the space's scan running or the last
+      one since the server started (`describeScan` for the counts); read again every `SCAN_POLL_MS` while it runs and
+      the page shows. Its folder opens the listing (the scan panel cancels).
+    - `tasks` (`tasks.view`): `api/tasks` once; the tasks running (progress, `detail`), then those whose
+      `lastRun` failed or was interrupted, a run linking to `admin?section=tasks&page=history&run=`.
+    - `keepAlive` (`settings.keepAlive`): `api/keep-alive` once; mode, folders with an `error`, the last ping;
+      links to Keep alive › Status.
 - e2e: `global-setup.ts` sets the e2e library's start page to `root` (the specs opening `./` expect the listing);
   `dashboard.spec.ts` opens `./dashboard`. The docs-screenshots `library` scene opens `?path=` for the same reason;
   scene `dashboard` takes `dashboard.png` and `phone-dashboard.png`.

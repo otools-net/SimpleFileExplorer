@@ -32,6 +32,15 @@ side, one under the other on a phone.
 - **Connections**: the [connections](../administration/connections.md) you may use in this space, each opening its files, with
   **sign in again** when it needs it, else **read only** or **read and change**.
 
+For administrators (those with the rights of each), three more cards:
+
+- **Index scan**: the [scan](scanning.md) running now and its counts, or how the last one ended (since the server
+  started) and when. Its folder opens the listing, whose scan panel cancels a running scan.
+- **Background tasks**: the [tasks](../administration/background-tasks.md) running now, with their progress, then
+  those whose last run failed or was cut off by a restart; each opens the Background tasks page, a run its log.
+- **Keep alive**: whether the library folder is [kept alive](../administration/keep-alive.md), and the folders not
+  answering with why; it opens the keep-alive status.
+
 <img src="../images/phone-dashboard.png" alt="The dashboard on a phone: its cards one under the other" width="300">
 
 Each card shows only with its rights. **Files** (or **SFE**) opens the top of the library; **Dashboard** in the
