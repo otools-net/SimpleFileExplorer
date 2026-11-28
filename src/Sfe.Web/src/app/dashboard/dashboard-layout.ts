@@ -1,3 +1,4 @@
+import { ClientConfig } from '../core/config.models';
 import { DashboardWidget, findWidget } from './dashboard-widgets';
 
 /**
@@ -13,7 +14,10 @@ export const DASHBOARD_COLUMNS = 2;
 
 /** The layout of an account that has made none of its own. */
 export const DEFAULT_LAYOUT: DashboardLayout = {
-    columns: [['places'], ['storage']],
+    columns: [
+        ['places', 'notifications', 'tags'],
+        ['storage', 'uploads', 'connections'],
+    ],
 };
 
 /**
@@ -21,14 +25,18 @@ export const DEFAULT_LAYOUT: DashboardLayout = {
  * version, a widget removed) and widgets it may not see are left out, each widget once, extra columns appended to
  * the last one.
  */
-export function arrangeLayout(layout: DashboardLayout, can: (right: string) => boolean): DashboardWidget[][] {
+export function arrangeLayout(
+    layout: DashboardLayout,
+    can: (right: string) => boolean,
+    config: ClientConfig | null = null,
+): DashboardWidget[][] {
     const seen = new Set<string>();
     const columns: DashboardWidget[][] = Array.from({ length: DASHBOARD_COLUMNS }, () => []);
     layout.columns.forEach((ids, index) => {
         const column = columns[Math.min(index, DASHBOARD_COLUMNS - 1)];
         for (const id of ids) {
             const widget = findWidget(id);
-            if (!widget || seen.has(id) || !widget.shown(can)) continue;
+            if (!widget || seen.has(id) || !widget.shown(can, config)) continue;
             seen.add(id);
             column.push(widget);
         }

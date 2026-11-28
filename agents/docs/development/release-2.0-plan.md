@@ -662,12 +662,18 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     address alone (see Decisions). First widgets `places` (home and quick links) and `storage`. ⋮ menu
     **Dashboard**. e2e library set to `root` (`global-setup.ts`), `dashboard.spec.ts`; screenshots
     `dashboard.png`, `phone-dashboard.png` (scene `dashboard`), `admin-interface-browsing.png` retaken.
-  - [ ] **b:** widgets from what exists: home and quick links, recent files (new per-user store, last 50),
-  storage (3.4), uploads in progress (4.3), notifications (4.5), connections and their state, tag history;
-  administrators: scan status, failed tasks, keep-alive. Layout: fixed columns with add / remove / reorder (no free
-  grid), saved per user; administrators set the default layout. Works on phones (one column). After 3.4, 4.5, 5.4.
-    Already there from a: `places` (home and quick links) and `storage` (library disk only: a connection's
-    account could be its own card).
+  - [x] **b: the users' widgets from what the client already reads.** Done 2026-11-28 (step b split in four: b–e).
+    `notifications` (latest 5, read only), `tags` (last searched and viewed), `uploads` (the tab's batches and
+    the interrupted ones, each linking to its folder), `connections` (state words, `?c=` links). `shown(can,
+    config)`: the server's `connections` too. `DEFAULT_LAYOUT` two columns of three. Client only: no route.
+    Screenshot `dashboard.png` taller (640 px).
+  - [ ] **c: the administrators' widgets:** scan status (`api/scan`), failed tasks (`api/tasks`, last runs that
+    failed), keep-alive (`api/keep-alive`, `settings.keepAlive`). Each with the rights of its route.
+  - [ ] **d: recent files:** a new per-user store (last 50 opened, per space; a table, both providers, migration),
+    recorded when the viewer opens a file, following renames (`PathMoves`), a route (`account.*` right) and the
+    widget. Already there: `file-tags/viewed` records viewed tags only.
+  - [ ] **e: layouts:** fixed columns with add / remove / reorder (no free grid), saved per user; administrators set
+    the default layout. Works on phones (one column). A connection's account could be its own storage card.
 
 ### Phase 6: connections
 
@@ -728,9 +734,12 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-28):** **5.5a** (dashboard route, widget registry, default layout, start page) done.
-  Next: **5.5b** (more widgets, layouts saved per user, the administrators' default; a new widget = a line in
-  `DASHBOARD_WIDGETS` and a component in `dashboard/widgets/`).
+- **Last session (2026-11-28):** **5.5b** (users' widgets: notifications, tag history, uploads, connections) done.
+  Next: **5.5c** (administrators' widgets), then d (recent files), e (layouts). A new widget = a line in
+  `DASHBOARD_WIDGETS`, a component in `dashboard/widgets/` and a case in `widgets/widgets.spec.ts` (rendered alone
+  with `TestBed.createComponent`: no dynamic import to wait for).
+- The dashboard page spec waits until no card shows a spinner: a new widget whose route the spec's `mockApi`
+  doesn't answer keeps spinning (unanswered mocks never resolve): mock it in `setUp`.
 - A spec of a page whose parts load by dynamic import (the dashboard's cards) waits with `vi.waitFor` until they
   show: `settle()` was enough alone, not in the full run.
 - The e2e specs and the docs-screenshots scenes opening `./` (the address alone) get the listing only because the

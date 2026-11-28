@@ -66,7 +66,8 @@ export class DashboardPageComponent implements OnInit {
             return;
         }
         this.title.setTitle($localize`Dashboard – SFE`);
-        const columns = arrangeLayout(DEFAULT_LAYOUT, (right) => this.config.can(right)).map((column) =>
+        const can = (right: string) => this.config.can(right);
+        const columns = arrangeLayout(DEFAULT_LAYOUT, can, this.config.config()).map((column) =>
             column.map((widget) => ({ widget, content: signal<Type<unknown> | null>(null), failed: signal(false) })),
         );
         this.columns.set(columns);

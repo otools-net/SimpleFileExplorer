@@ -1,4 +1,5 @@
 import { Type } from '@angular/core';
+import { ClientConfig } from '../core/config.models';
 import { Rights } from '../core/rights';
 
 /**
@@ -11,8 +12,8 @@ export interface DashboardWidget {
     /** The card's heading. */
     readonly title: string;
     readonly icon: string;
-    /** Shown to this session: what it reads needs these rights. */
-    shown(can: (right: string) => boolean): boolean;
+    /** Shown to this session: what it reads needs these rights (and the server, what `config` says it has). */
+    shown(can: (right: string) => boolean, config: ClientConfig | null): boolean;
     /** The card's content, a component without inputs. */
     load(): Promise<Type<unknown>>;
 }
@@ -32,6 +33,34 @@ export const DASHBOARD_WIDGETS: readonly DashboardWidget[] = [
         icon: 'storage',
         shown: (can) => can(Rights.browse),
         load: () => import('./widgets/storage-widget.component').then((m) => m.StorageWidgetComponent),
+    },
+    {
+        id: 'uploads',
+        title: $localize`Uploads`,
+        icon: 'upload',
+        shown: (can) => can(Rights.uploadFiles),
+        load: () => import('./widgets/uploads-widget.component').then((m) => m.UploadsWidgetComponent),
+    },
+    {
+        id: 'notifications',
+        title: $localize`Notifications`,
+        icon: 'bell',
+        shown: (can) => can(Rights.browse),
+        load: () => import('./widgets/notifications-widget.component').then((m) => m.NotificationsWidgetComponent),
+    },
+    {
+        id: 'connections',
+        title: $localize`Connections`,
+        icon: 'globe',
+        shown: (can, config) => Boolean(config?.connections) && can(Rights.useConnections),
+        load: () => import('./widgets/connections-widget.component').then((m) => m.ConnectionsWidgetComponent),
+    },
+    {
+        id: 'tags',
+        title: $localize`Tag history`,
+        icon: 'tag',
+        shown: (can) => can(Rights.viewTags),
+        load: () => import('./widgets/tag-history-widget.component').then((m) => m.TagHistoryWidgetComponent),
     },
 ];
 

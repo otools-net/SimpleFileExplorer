@@ -80,6 +80,51 @@
     border-radius: 4px;
 }
 
+.dashboard-card-subtitle {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+.dashboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+/* Uploads: the folder, the bar, the files and bytes sent. */
+.dashboard-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.dashboard-upload > a {
+    overflow-wrap: anywhere;
+}
+/* Notifications: the bell's look, the time under the message. */
+.dashboard-notification {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-wrap: anywhere;
+}
+.dashboard-list .notification + .notification {
+    margin-top: 0;
+}
+/* Connections: the state at the end of the line. */
+.dashboard-state {
+    flex-shrink: 0;
+    margin-left: auto;
+    padding-left: 8px;
+}
+.dashboard-state.warning {
+    color: var(--danger);
+    font-weight: 600;
+}
+
 @media (max-width: 760px) {
     .dashboard {
         grid-template-columns: minmax(0, 1fr);

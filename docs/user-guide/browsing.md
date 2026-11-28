@@ -18,7 +18,16 @@ side, one under the other on a phone.
 
 - **Home and quick links**: your [home folder](#home-folder) and your [quick links](#quick-links). A folder opens
   its listing, a file the folder holding it; those not there any more show faded.
+- **Notifications**: the last five messages of the [bell](#notifications), newest first; the bell
+  lists them all and acts on them.
+- **Tag history**: the tags you last searched for and those of the files you last viewed, as in the sidebar. A tag
+  finds its files.
 - **Storage**: the space used and free on the disk holding the library, as the sidebar's bar shows it.
+- **Uploads**: the uploads under way in this tab (they go on while the dashboard is open) and those a reload cut
+  off. Each opens the folder it goes into, where the [operations panel](managing-files.md#upload) pauses, resumes or
+  cancels it.
+- **Connections**: the [connections](../administration/connections.md) you may use in this space, each opening its files, with
+  **sign in again** when it needs it, else **read only** or **read and change**.
 
 <img src="../images/phone-dashboard.png" alt="The dashboard on a phone: its cards one under the other" width="300">
 

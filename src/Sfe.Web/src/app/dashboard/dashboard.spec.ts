@@ -38,6 +38,8 @@ describe('dashboard', () => {
         api.homeFolder.mockResolvedValue(HOME);
         api.quickLinks.mockResolvedValue(LINKS);
         api.storage.mockResolvedValue({ reported: true, used: 90, total: 100, free: 10 });
+        api.uploads.mockResolvedValue([]);
+        api.tagSidebar.mockResolvedValue({ popular: [], searched: [], viewed: [], lucky: [], historyEnabled: true });
         TestBed.configureTestingModule({
             providers: [
                 { provide: Api, useValue: api },
@@ -67,8 +69,15 @@ describe('dashboard', () => {
         const can = (rights: string[]) => (right: string) => rights.includes(right);
 
         it('puts the default widgets in their columns for whoever may see them', () => {
+            const config = fakeConfig({ connections: { levels: ['account'], kinds: [] } });
+            const all = arrangeLayout(DEFAULT_LAYOUT, can(ALL_RIGHTS), config);
+            expect(all[1].map((widget) => widget.id)).toEqual(['storage', 'uploads', 'connections']);
+
             const columns = arrangeLayout(DEFAULT_LAYOUT, can(ALL_RIGHTS));
-            expect(columns.map((column) => column.map((widget) => widget.id))).toEqual([['places'], ['storage']]);
+            expect(columns.map((column) => column.map((widget) => widget.id))).toEqual([
+                ['places', 'notifications', 'tags'],
+                ['storage', 'uploads'],
+            ]);
         });
 
         it('leaves out unknown widgets, those the session may not see, and repeats', () => {
@@ -144,7 +153,7 @@ describe('dashboard', () => {
         it('shows the home folder, the quick links and the storage', async () => {
             const element = await openDashboard(fakeConfig());
 
-            expect(cards(element)).toEqual(['places', 'storage']);
+            expect(cards(element)).toEqual(['places', 'notifications', 'tags', 'storage', 'uploads']);
             const places = element.querySelector('[data-widget="places"]')!;
             expect([...places.querySelectorAll('.quick-link-name')].map((name) => name.textContent)).toEqual([
                 'Home',
@@ -164,7 +173,7 @@ describe('dashboard', () => {
 
         it('shows only the cards the account may use', async () => {
             const element = await openDashboard(limitedConfig([Rights.browse]));
-            expect(cards(element)).toEqual(['storage']);
+            expect(cards(element)).toEqual(['notifications', 'storage']);
             expect(element.querySelector('a[href="/admin"]')).toBeNull();
         });
 

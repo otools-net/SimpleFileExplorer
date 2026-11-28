@@ -4688,6 +4688,7 @@ Space “Holiday photos”
         <note category="location">src/app/admin/admin-sections.ts:358</note>
         <note category="location">src/app/admin/admin-sections.ts:365</note>
         <note category="location">src/app/connections/connection-settings.ts:10</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:53</note>
         <note category="location">src/app/library/sidebar/connection-links.component.ts:25</note>
       </notes>
       <segment>
@@ -4961,6 +4962,7 @@ Space “Holiday photos”
     <unit id="1604823060459595401">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:199</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:39</note>
       </notes>
       <segment>
         <source>Uploads</source>
@@ -7296,7 +7298,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3707727924343293218">
       <notes>
-        <note category="location">src/app/dashboard/dashboard-widgets.ts:24</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:25</note>
       </notes>
       <segment>
         <source>Home and quick links</source>
@@ -7304,11 +7306,96 @@ Space “Holiday photos”
     </unit>
     <unit id="57403663622654391">
       <notes>
-        <note category="location">src/app/dashboard/dashboard-widgets.ts:31</note>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:32</note>
         <note category="location">src/app/files/properties.dialog.html:14</note>
       </notes>
       <segment>
         <source>Storage</source>
+      </segment>
+    </unit>
+    <unit id="5851560788527570644">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:46</note>
+        <note category="location">src/app/notifications/notifications.component.html:29,30</note>
+      </notes>
+      <segment>
+        <source>Notifications</source>
+      </segment>
+    </unit>
+    <unit id="6107582405090544953">
+      <notes>
+        <note category="location">src/app/dashboard/dashboard-widgets.ts:60</note>
+      </notes>
+      <segment>
+        <source>Tag history</source>
+      </segment>
+    </unit>
+    <unit id="4017213999599806422">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:33,34</note>
+      </notes>
+      <segment>
+        <source>No connections you may use in this space.</source>
+      </segment>
+    </unit>
+    <unit id="5737179919407324059">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:57</note>
+        <note category="description">a connection&apos;s state</note>
+      </notes>
+      <segment>
+        <source>sign in again</source>
+      </segment>
+    </unit>
+    <unit id="2910323172611942014">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:59</note>
+        <note category="description">a connection&apos;s state</note>
+      </notes>
+      <segment>
+        <source>read and change</source>
+      </segment>
+    </unit>
+    <unit id="6434545439194956654">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:60</note>
+        <note category="description">a connection&apos;s state</note>
+      </notes>
+      <segment>
+        <source>read only</source>
+      </segment>
+    </unit>
+    <unit id="1087023933658984616">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:67</note>
+        <note category="location">src/app/library/sidebar/connection-links.component.ts:103</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="connection" disp="name"/> (<ph id="1" equiv="kind" disp="kind"/>): sign in to it again to use it.</source>
+      </segment>
+    </unit>
+    <unit id="5093112531842324112">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/connections-widget.component.ts:68</note>
+      </notes>
+      <segment>
+        <source>Open the files of <ph id="0" equiv="connection" disp="name"/> (<ph id="1" equiv="kind" disp="kind"/>).</source>
+      </segment>
+    </unit>
+    <unit id="6947285566424751639">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/notifications-widget.component.ts:31,32</note>
+      </notes>
+      <segment>
+        <source>No notifications. Messages about what you do show here.</source>
+      </segment>
+    </unit>
+    <unit id="8155511858463992252">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/notifications-widget.component.ts:42</note>
+      </notes>
+      <segment>
+        <source>{count, plural, one {# more} other {# more}}: the bell above lists them all.</source>
       </segment>
     </unit>
     <unit id="2821179408673282599">
@@ -7380,6 +7467,66 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>The space used could not be read.</source>
+      </segment>
+    </unit>
+    <unit id="7625273744815171890">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/tag-history-widget.component.ts:26,27</note>
+      </notes>
+      <segment>
+        <source>The tag history is switched off (Administration › Tags).</source>
+      </segment>
+    </unit>
+    <unit id="4834949616839211158">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/tag-history-widget.component.ts:37,38</note>
+      </notes>
+      <segment>
+        <source>None yet.</source>
+      </segment>
+    </unit>
+    <unit id="4359345885548201383">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/tag-history-widget.component.ts:54</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:41</note>
+      </notes>
+      <segment>
+        <source>Last searched</source>
+      </segment>
+    </unit>
+    <unit id="3986427785789440498">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/tag-history-widget.component.ts:55</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:49</note>
+      </notes>
+      <segment>
+        <source>Last viewed</source>
+      </segment>
+    </unit>
+    <unit id="3407763813495289837">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/tag-history-widget.component.ts:64</note>
+        <note category="location">src/app/library/items/item-parts.ts:89</note>
+        <note category="location">src/app/tags/tag-menu.ts:45</note>
+      </notes>
+      <segment>
+        <source>Find the files tagged “<ph id="0" equiv="tag" disp="tag.displayName"/>”.</source>
+      </segment>
+    </unit>
+    <unit id="8583107444885675754">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/uploads-widget.component.ts:45,46</note>
+      </notes>
+      <segment>
+        <source>No uploads under way. Drop files on a folder of the listing to send them.</source>
+      </segment>
+    </unit>
+    <unit id="458933697129411931">
+      <notes>
+        <note category="location">src/app/dashboard/widgets/uploads-widget.component.ts:55</note>
+      </notes>
+      <segment>
+        <source>Open the folder they go into: its operations panel pauses or cancels them.</source>
       </segment>
     </unit>
     <unit id="5891064527381218201">
@@ -16255,15 +16402,6 @@ Space “Holiday photos”
         <source><ph id="0" equiv="percent" disp="this.percent()"/> % written</source>
       </segment>
     </unit>
-    <unit id="3407763813495289837">
-      <notes>
-        <note category="location">src/app/library/items/item-parts.ts:89</note>
-        <note category="location">src/app/tags/tag-menu.ts:45</note>
-      </notes>
-      <segment>
-        <source>Find the files tagged “<ph id="0" equiv="tag" disp="tag"/>”.</source>
-      </segment>
-    </unit>
     <unit id="5599067651621305731">
       <notes>
         <note category="location">src/app/library/items/item-parts.ts:110</note>
@@ -18428,14 +18566,6 @@ The search index is updated in the background. This can take a while on large fo
         <source>Select every file and folder listed (Ctrl+A).</source>
       </segment>
     </unit>
-    <unit id="1087023933658984616">
-      <notes>
-        <note category="location">src/app/library/sidebar/connection-links.component.ts:103</note>
-      </notes>
-      <segment>
-        <source><ph id="0" equiv="connection" disp="name"/> (<ph id="1" equiv="kind" disp="kind"/>): sign in to it again to use it.</source>
-      </segment>
-    </unit>
     <unit id="187761424342507433">
       <notes>
         <note category="location">src/app/library/sidebar/connection-links.component.ts:105</note>
@@ -18515,28 +18645,12 @@ The search index is updated in the background. This can take a while on large fo
         <source>No file is tagged yet.</source>
       </segment>
     </unit>
-    <unit id="4359345885548201383">
-      <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:41</note>
-      </notes>
-      <segment>
-        <source>Last searched</source>
-      </segment>
-    </unit>
     <unit id="5345892093755679629">
       <notes>
         <note category="location">src/app/library/sidebar/sidebar.component.ts:42</note>
       </notes>
       <segment>
         <source>Search with t:name to see the tags here.</source>
-      </segment>
-    </unit>
-    <unit id="3986427785789440498">
-      <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:49</note>
-      </notes>
-      <segment>
-        <source>Last viewed</source>
       </segment>
     </unit>
     <unit id="6619670854407107450">
@@ -20273,14 +20387,6 @@ The search index is updated in the background. This can take a while on large fo
       </notes>
       <segment>
         <source>Update the databases and settings to SFE <ph id="0" equiv="version" disp="info.appVersion"/>? Earlier versions cannot use them afterwards: this cannot be undone.</source>
-      </segment>
-    </unit>
-    <unit id="5851560788527570644">
-      <notes>
-        <note category="location">src/app/notifications/notifications.component.html:29,30</note>
-      </notes>
-      <segment>
-        <source>Notifications</source>
       </segment>
     </unit>
     <unit id="5808524961280583399">

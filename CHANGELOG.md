@@ -8,7 +8,9 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 ### Added
 
 - **Dashboard, the new start page**: SFE's address alone (a bookmark of the server, a new tab) opens a dashboard of
-  cards: your home folder and quick links, and the storage used and free. One column on phones. **Dashboard** in
+  cards: your home folder and quick links, the latest notifications, the tags last searched and viewed, the storage
+  used and free, the uploads under way and the connections you may use (with those to sign in to again). One column
+  on phones. **Dashboard** in
   the ⋮ menu opens it; **Files** goes to the library. A new setting, **Start page** (Interface › Browsing, and each
   user's own), opens the home folder or the top of the library instead (`Sfe:Browse:StartPage`: `Dashboard`,
   `Home`, `Root`). Links to a folder or a search, and reloads, still open what they show. API: `api/config`
