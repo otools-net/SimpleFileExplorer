@@ -14,15 +14,16 @@ interface GroupDraft {
     id: number | null;
     name: string;
     externalName: string;
+    homeFolder: string;
     builtIn: BuiltInGroup | null;
     rights: ReadonlySet<string>;
     memberIds: ReadonlySet<number>;
 }
 
 /**
- * Creates or changes a group of a space: its name, what its members may do (rights), and its members. The built-in
- * Guests group has no members: its rights are what visitors without an account get, so the rights guests may never
- * have can't be given to it.
+ * Creates or changes a group of a space: its name, what its members may do (rights), its members and their home
+ * folder. The built-in Guests group has no members: its rights are what visitors without an account get, so the rights
+ * guests may never have can't be given to it (nor a home folder).
  */
 @Component({
     selector: 'sfe-group-editor',
@@ -73,6 +74,7 @@ export class GroupEditorComponent {
             id: group?.id ?? null,
             name: group?.name ?? '',
             externalName: group?.externalName ?? '',
+            homeFolder: group?.homeFolder ?? '',
             builtIn: group?.builtIn ?? null,
             rights: new Set(group?.rights ?? [Rights.browse, Rights.viewFiles, Rights.viewTags]),
             memberIds: new Set(group?.memberIds ?? []),
@@ -122,6 +124,8 @@ export class GroupEditorComponent {
         const input = {
             name: draft.name.trim(),
             externalName: draft.externalName.trim() || null,
+            // Empty: none; the Guests group never shows it (guests have no home folder): kept as it is.
+            homeFolder: draft.builtIn === 'guests' ? null : draft.homeFolder.trim(),
             rights: [...draft.rights],
             memberIds: draft.builtIn === 'guests' ? null : [...draft.memberIds],
         };

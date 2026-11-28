@@ -24,6 +24,14 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public string ExternalName { get; set; }
 #endif
+        /// <summary>The homeFolder property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? HomeFolder { get; set; }
+#nullable restore
+#else
+        public string HomeFolder { get; set; }
+#endif
         /// <summary>The id property</summary>
         public int? Id { get; set; }
         /// <summary>The memberIds property</summary>
@@ -79,6 +87,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             {
                 { "builtIn", n => { BuiltIn = n.GetEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.BuiltInGroup>(); } },
                 { "externalName", n => { ExternalName = n.GetStringValue(); } },
+                { "homeFolder", n => { HomeFolder = n.GetStringValue(); } },
                 { "id", n => { Id = n.GetIntValue(); } },
                 { "memberIds", n => { MemberIds = n.GetCollectionOfPrimitiveValues<int?>()?.AsList(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
@@ -95,6 +104,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteEnumValue<global::Otools.Net.Sfe.Client.Generated.Models.BuiltInGroup>("builtIn", BuiltIn);
             writer.WriteStringValue("externalName", ExternalName);
+            writer.WriteStringValue("homeFolder", HomeFolder);
             writer.WriteIntValue("id", Id);
             writer.WriteCollectionOfPrimitiveValues<int?>("memberIds", MemberIds);
             writer.WriteStringValue("name", Name);

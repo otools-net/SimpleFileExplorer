@@ -7,6 +7,11 @@ scan) is in [docs/upgrading.md](docs/upgrading.md).
 
 ### Added
 
+- **Home folder**: **Home**, at the top of the sidebar, opens your home folder in the space. **Set as home folder**
+  in a folder's menu chooses it; an administrator may give a group's members one (**Home folder** in the group's
+  page, `{user}` for each account's name: `Homes/{user}`). SFE never makes these folders: one not there shows faded.
+  Choices and defaults follow a folder renamed or moved in SFE. New right `account.homeFolder` (Administrators and
+  Users). API: `GET`, `PUT`, `DELETE api/me/home-folder`; groups take `homeFolder`.
 - **Add a connection wizard**: makes a connection step by step: the kind of storage, who uses it (only you, or the
   space's groups you choose, to read only or to change its files too), its name and folder, then the sign-in at the
   provider. The connection and its groups are made together once the sign-in goes through: after Dropbox's page the

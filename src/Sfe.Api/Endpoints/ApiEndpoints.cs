@@ -36,6 +36,7 @@ public static class ApiEndpoints
         api.MapChangeEndpoints();
         api.MapSettingsEndpoints();
         api.MapQuickLinkEndpoints();
+        api.MapHomeFolderEndpoints();
         api.MapSystemEndpoints();
         api.MapLogEndpoints();
         api.MapKeepAliveEndpoints();

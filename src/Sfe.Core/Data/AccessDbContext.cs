@@ -29,6 +29,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
     public DbSet<UserSetting> UserSettings => Set<UserSetting>();
     public DbSet<ServerProperty> ServerProperties => Set<ServerProperty>();
     public DbSet<QuickLink> QuickLinks => Set<QuickLink>();
+    public DbSet<HomeFolder> HomeFolders => Set<HomeFolder>();
     public DbSet<FolderRule> FolderRules => Set<FolderRule>();
     public DbSet<LogEntry> LogEntries => Set<LogEntry>();
     public DbSet<Connection> Connections => Set<Connection>();
@@ -93,6 +94,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.Property(g => g.Name).HasMaxLength(100).IsRequired();
             entity.Property(g => g.BuiltIn).HasConversion<string>().HasMaxLength(16).IsUnicode(false);
             entity.Property(g => g.ExternalName).HasMaxLength(400);
+            entity.Property(g => g.HomeFolder).HasMaxLength(SfeDbContext.MaxPathLength);
             entity.HasIndex(g => new { g.TenantId, g.Name }).IsUnique();
             entity
                 .HasOne(g => g.Tenant)
@@ -178,7 +180,7 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
         });
     }
 
-    /// <summary>Each user's quick links, by library.</summary>
+    /// <summary>Each user's quick links and home folder, by library.</summary>
     private static void ConfigureQuickLinks(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<QuickLink>(entity =>
@@ -191,6 +193,16 @@ public class AccessDbContext(DbContextOptions<AccessDbContext> options) : DbCont
             entity.HasIndex(l => l.TenantId);
             entity.HasOne<UserAccount>().WithMany().HasForeignKey(l => l.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.HasOne<Tenant>().WithMany().HasForeignKey(l => l.TenantId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<HomeFolder>(entity =>
+        {
+            entity.ToTable("HomeFolders");
+            entity.HasKey(h => new { h.UserId, h.TenantId });
+            entity.Property(h => h.Path).HasMaxLength(SfeDbContext.MaxPathLength).IsRequired();
+            entity.HasIndex(h => h.TenantId);
+            entity.HasOne<UserAccount>().WithMany().HasForeignKey(h => h.UserId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Tenant>().WithMany().HasForeignKey(h => h.TenantId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 

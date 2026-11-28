@@ -785,6 +785,7 @@ public sealed class AccessService(
             g.BuiltIn,
             g.ExternalName,
             g.Rights.Select(r => r.Right).Order(StringComparer.Ordinal).ToList(),
-            g.Members.Select(m => m.UserId).Order().ToList()
+            g.Members.Select(m => m.UserId).Order().ToList(),
+            g.HomeFolder
         );
 }

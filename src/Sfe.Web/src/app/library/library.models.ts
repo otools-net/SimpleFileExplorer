@@ -18,6 +18,20 @@ export interface TagSidebar {
 }
 
 /** A folder or file kept in the sidebar's quick links (`api/me/quick-links`). */
+/** The signed-in account's home folder in the library (`api/me/home-folder`). */
+export interface HomeFolder {
+    /** The one in effect; null for none. */
+    path: string | null;
+    name: string | null;
+    /** A folder the account sees: false once moved or deleted, or while not made yet (SFE never makes it). */
+    exists: boolean;
+    /** The account chose it; false for its groups' default. */
+    chosen: boolean;
+    /** The group whose default applies when the account chooses none, and that default. */
+    group: string | null;
+    groupPath: string | null;
+}
+
 export interface QuickLink {
     path: string;
     name: string;

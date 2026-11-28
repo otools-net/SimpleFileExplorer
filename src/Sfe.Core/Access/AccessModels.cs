@@ -37,6 +37,8 @@ public sealed record UserInfo(
     IReadOnlyList<MembershipInfo> Groups
 );
 
+/// <param name="HomeFolder">The home folder of its members who chose none (`{user}`: the account's name); null for
+/// none.</param>
 public sealed record GroupInfo(
     int Id,
     int TenantId,
@@ -44,7 +46,8 @@ public sealed record GroupInfo(
     BuiltInGroup? BuiltIn,
     string? ExternalName,
     IReadOnlyList<string> Rights,
-    IReadOnlyList<int> MemberIds
+    IReadOnlyList<int> MemberIds,
+    string? HomeFolder = null
 );
 
 /// <param name="Password">Required for a new local account; null keeps the current one.</param>
@@ -64,11 +67,14 @@ public sealed record UserInput(
 
 /// <param name="Rights">The group's rights, replacing its current ones; null keeps them.</param>
 /// <param name="MemberIds">The group's members, replacing its current ones; null keeps them.</param>
+/// <param name="HomeFolder">The home folder of its members who chose none, relative to the space's root (`{user}`
+/// stands for the account's name, e.g. `Homes/{user}`); empty for none; null keeps the current one.</param>
 public sealed record GroupInput(
     string? Name,
     string? ExternalName = null,
     IReadOnlyList<string>? Rights = null,
-    IReadOnlyList<int>? MemberIds = null
+    IReadOnlyList<int>? MemberIds = null,
+    string? HomeFolder = null
 );
 
 /// <param name="Slug">Short name for its index and caches; made from the name when empty. Fixed once created.</param>

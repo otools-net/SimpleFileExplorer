@@ -18,6 +18,12 @@ public sealed class UserGroup
     /// </summary>
     public string? ExternalName { get; set; }
 
+    /// <summary>
+    /// The home folder of its members who chose none (<see cref="Data.HomeFolder"/>), relative to the library root;
+    /// <c>{user}</c> in it stands for the account's name. Null = none.
+    /// </summary>
+    public string? HomeFolder { get; set; }
+
     public List<GroupMember> Members { get; set; } = [];
     public List<GroupRight> Rights { get; set; } = [];
 }

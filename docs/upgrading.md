@@ -31,6 +31,14 @@ to the earlier version by installing it again.
 - While the database can't be reached at all (e.g. SQL Server starts after SFE), the page says so and SFE keeps trying.
 - With `Sfe:Database:MigrateOnStartup` set to `false`, you update the schema yourself and SFE doesn't check versions.
 
+## To 1.87
+
+- The accounts' database gets a new table, `HomeFolders` (each account's own [home folder](user-guide/browsing.md#home-folder)),
+  and the groups a new empty column, `HomeFolder` (their members' default), made by the update page; nothing else
+  changes in the databases or the settings file.
+- The groups Administrators and Users of existing spaces get the new right `account.homeFolder` once, at the update;
+  guests don't. Nobody has a home folder until one is chosen or a group is given one.
+
 ## To 1.86
 
 - Each space's index gets new tables for the connections' index (empty until a connection is opened), and their

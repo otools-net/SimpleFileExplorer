@@ -57,7 +57,10 @@ const LAYOUT: readonly { group: string; ids: readonly (ItemCommandId | Submenu)[
     { group: 'open', ids: ['open', 'newTab', 'openFolder', OPEN_AS] },
     { group: 'edit', ids: ['editText', 'editPicture'] },
     { group: 'clipboard', ids: ['cut', 'copy', 'paste'] },
-    { group: 'organise', ids: ['rename', 'moveTo', 'copyTo', 'tags', 'quickLink', 'exclusions', 'folderAccess'] },
+    {
+        group: 'organise',
+        ids: ['rename', 'moveTo', 'copyTo', 'tags', 'quickLink', 'homeFolder', 'exclusions', 'folderAccess'],
+    },
     { group: 'archive', ids: [ARCHIVE] },
     { group: 'save', ids: ['download', 'copyPath'] },
     { group: 'delete', ids: ['delete'] },

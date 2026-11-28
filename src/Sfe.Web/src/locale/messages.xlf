@@ -111,6 +111,7 @@
     <unit id="5878305334612867800">
       <notes>
         <note category="location">src/app/access/account-editor.component.html:34</note>
+        <note category="location">src/app/access/group-editor.component.html:131</note>
         <note category="location">src/app/access/space-editor.component.html:78</note>
         <note category="location">src/app/account/installation-form.component.html:119</note>
         <note category="location">src/app/account/setup-page.component.html:184</note>
@@ -463,7 +464,7 @@
     <unit id="7626757601054221580">
       <notes>
         <note category="location">src/app/access/account-editor.component.html:265,266</note>
-        <note category="location">src/app/access/group-editor.component.html:158,159</note>
+        <note category="location">src/app/access/group-editor.component.html:190,191</note>
         <note category="location">src/app/access/space-editor.component.html:188,189</note>
       </notes>
       <segment>
@@ -474,7 +475,7 @@
       <notes>
         <note category="location">src/app/access/account-editor.component.html:269,270</note>
         <note category="location">src/app/access/folder-access.component.html:138,139</note>
-        <note category="location">src/app/access/group-editor.component.html:162,163</note>
+        <note category="location">src/app/access/group-editor.component.html:194,195</note>
         <note category="location">src/app/access/space-editor.component.html:192,193</note>
         <note category="location">src/app/connections/connect.dialog.html:108,109</note>
         <note category="location">src/app/files/batch-rename.dialog.html:85,86</note>
@@ -510,7 +511,7 @@
     <unit id="5674286808255988565">
       <notes>
         <note category="location">src/app/access/account-editor.component.html:280</note>
-        <note category="location">src/app/access/group-editor.component.html:173</note>
+        <note category="location">src/app/access/group-editor.component.html:205</note>
         <note category="location">src/app/access/space-editor.component.html:203</note>
         <note category="location">src/app/files/name.dialog.ts:93</note>
         <note category="location">src/app/tokens/token-create.component.html:147,148</note>
@@ -522,7 +523,7 @@
     <unit id="3768927257183755959">
       <notes>
         <note category="location">src/app/access/account-editor.component.html:282</note>
-        <note category="location">src/app/access/group-editor.component.html:175</note>
+        <note category="location">src/app/access/group-editor.component.html:207</note>
         <note category="location">src/app/access/space-editor.component.html:205</note>
         <note category="location">src/app/account/account-section.component.html:73,74</note>
         <note category="location">src/app/admin/admin-page.component.html:469,470</note>
@@ -1109,7 +1110,7 @@
       <notes>
         <note category="location">src/app/access/folder-access.component.html:87,88</note>
         <note category="location">src/app/wizards/add-connection/add-connection-draft.ts:112</note>
-        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:24,25</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.html:2,3</note>
       </notes>
       <segment>
         <source>For</source>
@@ -1626,10 +1627,53 @@
         <source>No accounts yet: create one first.</source>
       </segment>
     </unit>
+    <unit id="1430934127885924859">
+      <notes>
+        <note category="location">src/app/access/group-editor.component.html:130</note>
+        <note category="location">src/app/access/group-editor.component.html:132</note>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:58</note>
+      </notes>
+      <segment>
+        <source>Home folder</source>
+      </segment>
+    </unit>
+    <unit id="516591409779681192">
+      <notes>
+        <note category="location">src/app/access/group-editor.component.html:133,137</note>
+      </notes>
+      <segment>
+        <source>The folder that <pc id="0" equivStart="START_TAG_STRONG" equivEnd="CLOSE_TAG_STRONG" type="other" dispStart="&lt;strong&gt;" dispEnd="&lt;/strong&gt;">Home</pc>, at the top of the sidebar, opens for the members of this group, unless they chose their own. Write <pc id="1" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;"><ph id="2" equiv="INTERPOLATION" disp="{{ &apos;{&apos; }}"/>user<ph id="3" equiv="INTERPOLATION_1" disp="{{ &apos;}&apos; }}"/></pc> for each account&apos;s name: <pc id="4" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">Homes/<ph id="5" equiv="INTERPOLATION_2" disp="{{ &apos;{&apos;
+                                }}"/>user<ph id="6" equiv="INTERPOLATION_1" disp="{{ &apos;}&apos; }}"/></pc> gives <pc id="7" equivStart="START_EMPHASISED_TEXT" equivEnd="CLOSE_EMPHASISED_TEXT" type="fmt" dispStart="&lt;em&gt;" dispEnd="&lt;/em&gt;">tom</pc> the folder <pc id="8" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">Homes/tom</pc>.</source>
+      </segment>
+    </unit>
+    <unit id="8727872220599354425">
+      <notes>
+        <note category="location">src/app/access/group-editor.component.html:137,139</note>
+      </notes>
+      <segment>
+        <source>SFE never makes these folders: make them first, and give each account access to its own with folder access. An account in several groups gets the home folder of a group made by hand before that of Administrators or Users.</source>
+      </segment>
+    </unit>
+    <unit id="1922834667292641937">
+      <notes>
+        <note category="location">src/app/access/group-editor.component.html:147,148</note>
+      </notes>
+      <segment>
+        <source>For example Homes/{user}</source>
+      </segment>
+    </unit>
+    <unit id="4203160147338430858">
+      <notes>
+        <note category="location">src/app/access/group-editor.component.html:152,153</note>
+      </notes>
+      <segment>
+        <source>A folder of the space, from its top; empty for none.</source>
+      </segment>
+    </unit>
     <unit id="5032998915197372248">
       <notes>
-        <note category="location">src/app/access/group-editor.component.html:129</note>
-        <note category="location">src/app/access/group-editor.component.html:131</note>
+        <note category="location">src/app/access/group-editor.component.html:161</note>
+        <note category="location">src/app/access/group-editor.component.html:163</note>
       </notes>
       <segment>
         <source>Directory group</source>
@@ -1637,7 +1681,7 @@
     </unit>
     <unit id="8132353648568790883">
       <notes>
-        <note category="location">src/app/access/group-editor.component.html:130</note>
+        <note category="location">src/app/access/group-editor.component.html:162</note>
       </notes>
       <segment>
         <source>(optional, advanced)</source>
@@ -1645,7 +1689,7 @@
     </unit>
     <unit id="8060685748687151671">
       <notes>
-        <note category="location">src/app/access/group-editor.component.html:132,135</note>
+        <note category="location">src/app/access/group-editor.component.html:164,167</note>
       </notes>
       <segment>
         <source>Only for servers that check passwords against a sign-in directory such as LDAP or Active Directory. Name a group of that directory here (for example <pc id="0" equivStart="START_TAG_CODE" equivEnd="CLOSE_TAG_CODE" type="other" dispStart="&lt;code&gt;" dispEnd="&lt;/code&gt;">CN=Media,OU=Groups,DC=home</pc>): its members join this group each time they sign in, and leave it when the directory drops them.</source>
@@ -1653,7 +1697,7 @@
     </unit>
     <unit id="8335853624256155335">
       <notes>
-        <note category="location">src/app/access/group-editor.component.html:136,137</note>
+        <note category="location">src/app/access/group-editor.component.html:168,169</note>
       </notes>
       <segment>
         <source>Leave it empty to choose the members by hand, above.</source>
@@ -1661,7 +1705,7 @@
     </unit>
     <unit id="4647067247889681213">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:54</note>
+        <note category="location">src/app/access/group-editor.component.ts:55</note>
         <note category="description">built-in group</note>
       </notes>
       <segment>
@@ -1670,7 +1714,7 @@
     </unit>
     <unit id="4555457172864212828">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:55</note>
+        <note category="location">src/app/access/group-editor.component.ts:56</note>
         <note category="description">built-in group</note>
       </notes>
       <segment>
@@ -1679,7 +1723,7 @@
     </unit>
     <unit id="7184318772253450841">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:56</note>
+        <note category="location">src/app/access/group-editor.component.ts:57</note>
         <note category="description">built-in group</note>
       </notes>
       <segment>
@@ -1688,7 +1732,7 @@
     </unit>
     <unit id="4296542518018293988">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:61</note>
+        <note category="location">src/app/access/group-editor.component.ts:62</note>
         <note category="location">src/app/access/space-groups.component.html:26,27</note>
       </notes>
       <segment>
@@ -1697,7 +1741,7 @@
     </unit>
     <unit id="315821554178590970">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:61</note>
+        <note category="location">src/app/access/group-editor.component.ts:62</note>
       </notes>
       <segment>
         <source>Edit the group “<ph id="0" equiv="name" disp="this.draft()?.name ?? &apos;&apos;"/>”</source>
@@ -1705,7 +1749,7 @@
     </unit>
     <unit id="2698178352176231234">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:63</note>
+        <note category="location">src/app/access/group-editor.component.ts:64</note>
       </notes>
       <segment>
         <source>In the space <ph id="0" equiv="space" disp="this.spaceName()"/></source>
@@ -1713,7 +1757,7 @@
     </unit>
     <unit id="7068028277996353496">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:64</note>
+        <note category="location">src/app/access/group-editor.component.ts:65</note>
       </notes>
       <segment>
         <source>Create the group</source>
@@ -1721,7 +1765,7 @@
     </unit>
     <unit id="9159809421644454155">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:65</note>
+        <note category="location">src/app/access/group-editor.component.ts:66</note>
       </notes>
       <segment>
         <source>Save the group</source>
@@ -1729,7 +1773,7 @@
     </unit>
     <unit id="2889059908813769630">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:88</note>
+        <note category="location">src/app/access/group-editor.component.ts:90</note>
       </notes>
       <segment>
         <source>Visitors without an account can never have this right.</source>
@@ -1737,7 +1781,7 @@
     </unit>
     <unit id="1043775246277797738">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:90</note>
+        <note category="location">src/app/access/group-editor.component.ts:92</note>
       </notes>
       <segment>
         <source>Switched off for the whole server: nobody gets it.</source>
@@ -1745,7 +1789,7 @@
     </unit>
     <unit id="4344132988019312830">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:92</note>
+        <note category="location">src/app/access/group-editor.component.ts:94</note>
       </notes>
       <segment>
         <source>Switched off in this space: nobody gets it here.</source>
@@ -1753,7 +1797,7 @@
     </unit>
     <unit id="5166446497643441695">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:136</note>
+        <note category="location">src/app/access/group-editor.component.ts:140</note>
       </notes>
       <segment>
         <source>Group “<ph id="0" equiv="name" disp="group.name"/>” created.</source>
@@ -1761,7 +1805,7 @@
     </unit>
     <unit id="5551572280105253">
       <notes>
-        <note category="location">src/app/access/group-editor.component.ts:137</note>
+        <note category="location">src/app/access/group-editor.component.ts:141</note>
       </notes>
       <segment>
         <source>Group “<ph id="0" equiv="name" disp="group.name"/>” saved.</source>
@@ -4896,7 +4940,7 @@ Space “Holiday photos”
     <unit id="3418677553313974490">
       <notes>
         <note category="location">src/app/admin/admin-sections.ts:192</note>
-        <note category="location">src/app/library/sidebar/sidebar.component.html:80</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:81</note>
       </notes>
       <segment>
         <source>Trash</source>
@@ -6117,7 +6161,7 @@ Space “Holiday photos”
     <unit id="7709180100710535745">
       <notes>
         <note category="location">src/app/connections/connect.dialog.html:68,69</note>
-        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:23,24</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.html:3,4</note>
       </notes>
       <segment>
         <source>How to sign in</source>
@@ -9858,7 +9902,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3732296122988145060">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:48</note>
+        <note category="location">src/app/files/organising-commands.ts:51</note>
       </notes>
       <segment>
         <source>Tag its files…</source>
@@ -9866,8 +9910,8 @@ Space “Holiday photos”
     </unit>
     <unit id="7735912362070060981">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:48</note>
-        <note category="location">src/app/files/organising-commands.ts:67</note>
+        <note category="location">src/app/files/organising-commands.ts:51</note>
+        <note category="location">src/app/files/organising-commands.ts:70</note>
       </notes>
       <segment>
         <source>Tags…</source>
@@ -9875,7 +9919,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2262907023411473169">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:51</note>
+        <note category="location">src/app/files/organising-commands.ts:54</note>
       </notes>
       <segment>
         <source>Add or remove tags on all the files of this folder (asks first).</source>
@@ -9883,7 +9927,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8469266716983346359">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:52</note>
+        <note category="location">src/app/files/organising-commands.ts:55</note>
         <note category="location">src/app/library/items/item-parts.ts:131</note>
       </notes>
       <segment>
@@ -9892,7 +9936,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2571039696049191049">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:71</note>
+        <note category="location">src/app/files/organising-commands.ts:74</note>
       </notes>
       <segment>
         <source>Add or remove tags on the selected files (the selected folders are left out).</source>
@@ -9900,7 +9944,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8759474433034893648">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:72</note>
+        <note category="location">src/app/files/organising-commands.ts:75</note>
       </notes>
       <segment>
         <source>Add or remove tags on the selected files.</source>
@@ -9908,8 +9952,8 @@ Space “Holiday photos”
     </unit>
     <unit id="6770258597457401656">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:86</note>
-        <note category="location">src/app/files/organising-commands.ts:94</note>
+        <note category="location">src/app/files/organising-commands.ts:89</note>
+        <note category="location">src/app/files/organising-commands.ts:97</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
       </notes>
       <segment>
@@ -9918,7 +9962,7 @@ Space “Holiday photos”
     </unit>
     <unit id="6221291632365224698">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:88</note>
+        <note category="location">src/app/files/organising-commands.ts:91</note>
       </notes>
       <segment>
         <source>Add the selected items to your quick links (or drag them onto the sidebar).</source>
@@ -9926,7 +9970,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7011082534772609140">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:94</note>
+        <note category="location">src/app/files/organising-commands.ts:97</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:228</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:267</note>
       </notes>
@@ -9936,7 +9980,7 @@ Space “Holiday photos”
     </unit>
     <unit id="8753241111446069199">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:97</note>
+        <note category="location">src/app/files/organising-commands.ts:100</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:270</note>
       </notes>
       <segment>
@@ -9945,16 +9989,57 @@ Space “Holiday photos”
     </unit>
     <unit id="3323091261970520456">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:98</note>
+        <note category="location">src/app/files/organising-commands.ts:101</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:271</note>
       </notes>
       <segment>
         <source>Show “<ph id="0" equiv="name" disp="item.name"/>” in your quick links, in the sidebar.</source>
       </segment>
     </unit>
+    <unit id="8136481600281149921">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:117</note>
+      </notes>
+      <segment>
+        <source>Stop using as home folder</source>
+      </segment>
+    </unit>
+    <unit id="7547408171863200935">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:121</note>
+      </notes>
+      <segment>
+        <source>Make your home folder the one your group gives again.</source>
+      </segment>
+    </unit>
+    <unit id="7649832955264801961">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:122</note>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:135</note>
+      </notes>
+      <segment>
+        <source>Forget your home folder: the sidebar shows no Home until you choose one again.</source>
+      </segment>
+    </unit>
+    <unit id="201717619688254475">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:128</note>
+      </notes>
+      <segment>
+        <source>Set as home folder</source>
+      </segment>
+    </unit>
+    <unit id="5264752258798724424">
+      <notes>
+        <note category="location">src/app/files/organising-commands.ts:130</note>
+      </notes>
+      <segment>
+        <source>Make “<ph id="0" equiv="name" disp="item.name"/>” your home folder: Home, at the top of the sidebar, opens it.</source>
+      </segment>
+    </unit>
     <unit id="8834275305700439126">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:114</note>
+        <note category="location">src/app/files/organising-commands.ts:146</note>
         <note category="location">src/app/library/folder-menu.ts:288</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:134</note>
       </notes>
@@ -9964,7 +10049,7 @@ Space “Holiday photos”
     </unit>
     <unit id="672346442080462723">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:116,117</note>
+        <note category="location">src/app/files/organising-commands.ts:148,149</note>
         <note category="location">src/app/library/folder-menu.ts:290,291</note>
         <note category="location">src/app/library/topbar/main-menu.component.html:130,131</note>
       </notes>
@@ -9974,7 +10059,7 @@ Space “Holiday photos”
     </unit>
     <unit id="995324173596329544">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:132</note>
+        <note category="location">src/app/files/organising-commands.ts:164</note>
       </notes>
       <segment>
         <source>Folder access…</source>
@@ -9982,7 +10067,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5961215801940873068">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:134,135</note>
+        <note category="location">src/app/files/organising-commands.ts:166,167</note>
       </notes>
       <segment>
         <source>Choose who may see “<ph id="0" equiv="name" disp="item.name"/>” and change its files: its folder rules, in the administration.</source>
@@ -9990,7 +10075,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7096568485547149103">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:148</note>
+        <note category="location">src/app/files/organising-commands.ts:180</note>
         <note category="location">src/app/files/properties.dialog.html:188,189</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:192</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:278</note>
@@ -10003,7 +10088,7 @@ Space “Holiday photos”
     </unit>
     <unit id="878836548429609124">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:152</note>
+        <note category="location">src/app/files/organising-commands.ts:184</note>
       </notes>
       <segment>
         <source>Copy where this folder is on the server.</source>
@@ -10011,7 +10096,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2296265600394386378">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:153</note>
+        <note category="location">src/app/files/organising-commands.ts:185</note>
         <note category="location">src/app/files/properties.dialog.html:184,185</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:194</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:280</note>
@@ -10024,7 +10109,7 @@ Space “Holiday photos”
     </unit>
     <unit id="5520395257444457815">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:169</note>
+        <note category="location">src/app/files/organising-commands.ts:201</note>
       </notes>
       <segment>
         <source>Previous versions…</source>
@@ -10032,7 +10117,7 @@ Space “Holiday photos”
     </unit>
     <unit id="375608930933459818">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:171</note>
+        <note category="location">src/app/files/organising-commands.ts:203</note>
       </notes>
       <segment>
         <source>See the versions of “<ph id="0" equiv="name" disp="item.name"/>” kept when it was saved over, and restore one.</source>
@@ -10040,9 +10125,9 @@ Space “Holiday photos”
     </unit>
     <unit id="8721861281513890587">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:180</note>
+        <note category="location">src/app/files/organising-commands.ts:212</note>
         <note category="location">src/app/files/properties.dialog.html:3,4</note>
-        <note category="location">src/app/library/folder-menu.ts:369</note>
+        <note category="location">src/app/library/folder-menu.ts:372</note>
         <note category="location">src/app/library/quick-links/quick-links.component.ts:200</note>
       </notes>
       <segment>
@@ -10051,7 +10136,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2762563923238266996">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:185</note>
+        <note category="location">src/app/files/organising-commands.ts:217</note>
       </notes>
       <segment>
         <source>Show its dates and what it holds (Alt+Enter).</source>
@@ -10059,7 +10144,7 @@ Space “Holiday photos”
     </unit>
     <unit id="2658182095314133227">
       <notes>
-        <note category="location">src/app/files/organising-commands.ts:186</note>
+        <note category="location">src/app/files/organising-commands.ts:218</note>
       </notes>
       <segment>
         <source>Show its size, its dates, what the index knows of it and its checksum (Alt+Enter).</source>
@@ -15701,7 +15786,7 @@ Space “Holiday photos”
     </unit>
     <unit id="3764128397748165735">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:371</note>
+        <note category="location">src/app/library/folder-menu.ts:374</note>
       </notes>
       <segment>
         <source>Show its dates and what it holds.</source>
@@ -15709,7 +15794,7 @@ Space “Holiday photos”
     </unit>
     <unit id="7574993740889368937">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:381</note>
+        <note category="location">src/app/library/folder-menu.ts:384</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:351</note>
         <note category="location">src/app/menus/context-menu.ts:372</note>
         <note category="location">src/app/player/player-page.component.ts:148</note>
@@ -15720,13 +15805,118 @@ Space “Holiday photos”
     </unit>
     <unit id="6318906429616077378">
       <notes>
-        <note category="location">src/app/library/folder-menu.ts:383</note>
+        <note category="location">src/app/library/folder-menu.ts:386</note>
         <note category="location">src/app/library/viewer/viewer.component.ts:353</note>
         <note category="location">src/app/menus/context-menu.ts:374</note>
         <note category="location">src/app/player/player-page.component.ts:150</note>
       </notes>
       <segment>
         <source>Could not copy the link.</source>
+      </segment>
+    </unit>
+    <unit id="8438399809220922698">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-folder.service.ts:37</note>
+      </notes>
+      <segment>
+        <source>“<ph id="0" equiv="name" disp="name"/>” is now your home folder.</source>
+      </segment>
+    </unit>
+    <unit id="4836284754695871423">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-folder.service.ts:48</note>
+      </notes>
+      <segment>
+        <source>Your home folder is your group&apos;s again.</source>
+      </segment>
+    </unit>
+    <unit id="8460988497497679011">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-folder.service.ts:49</note>
+      </notes>
+      <segment>
+        <source>You have no home folder any more.</source>
+      </segment>
+    </unit>
+    <unit id="5714023287101270267">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-folder.service.ts:76,79</note>
+      </notes>
+      <segment>
+        <source>{action, select, load {Could not read your home folder: <ph id="0" equiv="reason"/>} set {Could not change your home folder: <ph id="1" equiv="reason"/>} other {Could not go back to your group&apos;s home folder: <ph id="2" equiv="reason"/>}}</source>
+      </segment>
+    </unit>
+    <unit id="2821179408673282599">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:44,45</note>
+      </notes>
+      <segment>
+        <source>Home</source>
+      </segment>
+    </unit>
+    <unit id="9067326429065781018">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:71</note>
+        <note category="location">src/app/library/quick-links/quick-links.component.ts:106</note>
+      </notes>
+      <segment>
+        <source><ph id="0" equiv="name" disp="home.name"/> (the top of the library)</source>
+      </segment>
+    </unit>
+    <unit id="7658162392907186257">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:73</note>
+      </notes>
+      <segment>
+        <source>Your home folder, <ph id="0" equiv="place" disp="where"/>, is not there: not made yet, moved or deleted.</source>
+      </segment>
+    </unit>
+    <unit id="1191205700086852305">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:75</note>
+      </notes>
+      <segment>
+        <source>Open your home folder, <ph id="0" equiv="place" disp="where"/>.</source>
+      </segment>
+    </unit>
+    <unit id="8445041228146141923">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:76</note>
+      </notes>
+      <segment>
+        <source>Open your home folder, <ph id="0" equiv="place" disp="where"/> (given by the group “<ph id="1" equiv="group" disp="home.group"/>”).</source>
+      </segment>
+    </unit>
+    <unit id="5200637527971772658">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:85</note>
+      </notes>
+      <segment>
+        <source>Your home folder “<ph id="0" equiv="name" disp="home.name"/>” is not there: not made yet, moved or deleted.</source>
+      </segment>
+    </unit>
+    <unit id="2194873361894800648">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:128</note>
+      </notes>
+      <segment>
+        <source>Use your group&apos;s home folder</source>
+      </segment>
+    </unit>
+    <unit id="1765665316801657494">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:129</note>
+      </notes>
+      <segment>
+        <source>Stop using a home folder</source>
+      </segment>
+    </unit>
+    <unit id="805321623761044620">
+      <notes>
+        <note category="location">src/app/library/home-folder/home-link.component.ts:133,134</note>
+      </notes>
+      <segment>
+        <source>Make your home folder the one the group “<ph id="0" equiv="group" disp="home.group"/>” gives, /<ph id="1" equiv="place" disp="home.groupPath"/>, again.</source>
       </segment>
     </unit>
     <unit id="3063921784299844543">
@@ -16539,14 +16729,6 @@ Space “Holiday photos”
       </notes>
       <segment>
         <source>Take “<ph id="0" equiv="name" disp="link.name"/>” out of the quick links. The file stays where it is.</source>
-      </segment>
-    </unit>
-    <unit id="9067326429065781018">
-      <notes>
-        <note category="location">src/app/library/quick-links/quick-links.component.ts:106</note>
-      </notes>
-      <segment>
-        <source><ph id="0" equiv="name" disp="link.name"/> (the top of the library)</source>
       </segment>
     </unit>
     <unit id="9102819389198549610">
@@ -18143,7 +18325,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5387150058760945778">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.html:24,25</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:25,26</note>
       </notes>
       <segment>
         <source>Show other tags, picked at random.</source>
@@ -18151,7 +18333,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5821861467000996904">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.html:26,27</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:27,28</note>
       </notes>
       <segment>
         <source>Other random tags</source>
@@ -18159,7 +18341,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6751725818938938053">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.html:39,40</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:40,41</note>
         <note category="location">src/app/library/viewer/viewer.component.html:20,21</note>
       </notes>
       <segment>
@@ -18168,7 +18350,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2853708828659627510">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.html:61,62</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:62,63</note>
         <note category="location">src/app/tags/file-tags.dialog.html:42,43</note>
         <note category="location">src/app/tags/files-tags.dialog.html:56,57</note>
         <note category="location">src/app/tags/scope-tags.dialog.html:188,189</note>
@@ -18179,7 +18361,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1016881991346034960">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.html:65</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.html:66</note>
         <note category="location">src/app/tags/file-tags.dialog.html:46,47</note>
         <note category="location">src/app/tags/files-tags.dialog.html:60,61</note>
         <note category="location">src/app/tags/scope-tags.dialog.html:192,193</note>
@@ -18190,7 +18372,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4567885301549754909">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:37</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:38</note>
       </notes>
       <segment>
         <source>Most popular</source>
@@ -18198,7 +18380,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6598701202761920370">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:37</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:38</note>
       </notes>
       <segment>
         <source>No file is tagged yet.</source>
@@ -18206,7 +18388,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4359345885548201383">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:40</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:41</note>
       </notes>
       <segment>
         <source>Last searched</source>
@@ -18214,7 +18396,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5345892093755679629">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:41</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:42</note>
       </notes>
       <segment>
         <source>Search with t:name to see the tags here.</source>
@@ -18222,7 +18404,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="3986427785789440498">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:48</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:49</note>
       </notes>
       <segment>
         <source>Last viewed</source>
@@ -18230,7 +18412,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6619670854407107450">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:49</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:50</note>
       </notes>
       <segment>
         <source>Open a tagged file to see its tags here.</source>
@@ -18238,7 +18420,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6220309044029672666">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:54</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:55</note>
       </notes>
       <segment>
         <source>I feel lucky</source>
@@ -18246,7 +18428,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="329102016714354592">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:55</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:56</note>
       </notes>
       <segment>
         <source>No other tags.</source>
@@ -18254,7 +18436,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1420820821452743483">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:98</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:100</note>
       </notes>
       <segment>
         <source>Quick links and tags</source>
@@ -18262,7 +18444,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6566220851744770937">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:120</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:122</note>
       </notes>
       <segment>
         <source>Open the trash.</source>
@@ -18270,7 +18452,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8449486268932741195">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:121</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:123</note>
       </notes>
       <segment>
         <source>Open the trash. It&apos;s empty.</source>
@@ -18278,7 +18460,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8830524108826229557">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:124</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:126</note>
       </notes>
       <segment>
         <source>Open the trash. It holds more than {count, plural, one {# item} other {# items}}.</source>
@@ -18286,7 +18468,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="895952222380713711">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:127</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:129</note>
       </notes>
       <segment>
         <source>Open the trash. It holds {count, plural, one {# item} other {# items}}.</source>
@@ -18294,7 +18476,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="2505292712993436159">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:150</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:152</note>
       </notes>
       <segment>
         <source>Fold the list “<ph id="0" equiv="list" disp="section.title"/>”.</source>
@@ -18302,7 +18484,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5659408281749789575">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:151</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:153</note>
       </notes>
       <segment>
         <source>Show the list “<ph id="0" equiv="list" disp="section.title"/>”.</source>
@@ -18310,7 +18492,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5772995685589083312">
       <notes>
-        <note category="location">src/app/library/sidebar/sidebar.component.ts:156</note>
+        <note category="location">src/app/library/sidebar/sidebar.component.ts:158</note>
       </notes>
       <segment>
         <source>{count, plural, one {# file has this tag} other {# files have this tag}}.</source>
@@ -27300,7 +27482,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="9016426082612921920">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:40,41</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.html:20,22</note>
       </notes>
       <segment>
         <source>Finish takes you to <ph id="0" equiv="INTERPOLATION" disp="{{ kindName() }}"/>: sign in there and allow access, then you come back here and the connection is made.</source>
@@ -27308,7 +27490,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="814837778616542415">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:44,45</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.html:24,26</note>
       </notes>
       <segment>
         <source>Open the sign-in page of <ph id="0" equiv="INTERPOLATION" disp="{{ kindName() }}"/>, sign in and allow access, then paste here the code it shows.</source>
@@ -27316,7 +27498,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="5839200317893048101">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:51,52</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.html:31,32</note>
       </notes>
       <segment>
         <source>Open the provider&apos;s sign-in page in a new tab</source>
@@ -27324,7 +27506,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6853992909709408112">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:57,58</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.html:37,38</note>
       </notes>
       <segment>
         <source>Open the sign-in page</source>
@@ -27332,7 +27514,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="8186013988289067040">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.ts:64,65</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-sign-in.step.html:44,45</note>
       </notes>
       <segment>
         <source>Code</source>
@@ -27340,7 +27522,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6335507621370522035">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:43,44</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.html:21,22</note>
       </notes>
       <segment>
         <source>Groups of this space that use it</source>
@@ -27348,7 +27530,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="7005504919813610565">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:45,46</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.html:23,24</note>
       </notes>
       <segment>
         <source>Could not list the groups: <ph id="0" equiv="INTERPOLATION" disp="{{ reason }}"/></source>
@@ -27356,7 +27538,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4788589243559236463">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:51,52</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.html:29,30</note>
       </notes>
       <segment>
         <source>Doesn&apos;t use it</source>
@@ -27364,7 +27546,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="4198250969938166283">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:60,61</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.html:38,39</note>
       </notes>
       <segment>
         <source>The space&apos;s rights still apply inside it (who may change files). More groups, and other spaces, later on the Connections page.</source>
@@ -27372,7 +27554,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1043561580811554451">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:77</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:32</note>
       </notes>
       <segment>
         <source>Your own storage: nobody else sees it, administrators neither.</source>
@@ -27380,7 +27562,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6948193223943368557">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:78</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:33</note>
       </notes>
       <segment>
         <source>A storage of this space, for the groups you choose.</source>
@@ -27388,7 +27570,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="1497458997799531399">
       <notes>
-        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:79</note>
+        <note category="location">src/app/wizards/add-connection/add-connection-who.step.ts:34</note>
       </notes>
       <segment>
         <source>A storage of the whole server, offered to spaces; here, for the groups you choose.</source>
@@ -27868,7 +28050,7 @@ The search index is updated in the background. This can take a while on large fo
     </unit>
     <unit id="6001674027698896380">
       <notes>
-        <note category="location">src/app/wizards/wizard-registry.ts:51</note>
+        <note category="location">src/app/wizards/wizard-registry.ts:52</note>
       </notes>
       <segment>
         <source>wizard connection storage dropbox cloud external remote sign in groups</source>

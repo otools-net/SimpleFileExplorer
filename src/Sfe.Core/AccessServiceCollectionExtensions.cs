@@ -107,6 +107,7 @@ public static class AccessServiceCollectionExtensions
             sp.GetRequiredService<ILogger<AccountRecovery>>()
         ));
         services.AddSingleton<QuickLinkService>();
+        services.AddSingleton<HomeFolderService>();
         services.AddSingleton<FolderRuleService>();
         services.AddSingleton<AccessTokens>();
         services.AddSingleton<GettingStarted>();

@@ -2,6 +2,7 @@
 #pragma warning disable CS0618
 using Microsoft.Kiota.Abstractions.Extensions;
 using Microsoft.Kiota.Abstractions;
+using Otools.Net.Sfe.Client.Generated.Api.V1.Me.HomeFolder;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Me.Preferences;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Me.QuickLinks;
 using Otools.Net.Sfe.Client.Generated.Api.V1.Me.Tokens;
@@ -17,6 +18,11 @@ namespace Otools.Net.Sfe.Client.Generated.Api.V1.Me
     [global::System.CodeDom.Compiler.GeneratedCode("Kiota", "1.0.0")]
     public partial class MeRequestBuilder : BaseRequestBuilder
     {
+        /// <summary>The homeFolder property</summary>
+        public global::Otools.Net.Sfe.Client.Generated.Api.V1.Me.HomeFolder.HomeFolderRequestBuilder HomeFolder
+        {
+            get => new global::Otools.Net.Sfe.Client.Generated.Api.V1.Me.HomeFolder.HomeFolderRequestBuilder(PathParameters, RequestAdapter);
+        }
         /// <summary>The preferences property</summary>
         public global::Otools.Net.Sfe.Client.Generated.Api.V1.Me.Preferences.PreferencesRequestBuilder Preferences
         {

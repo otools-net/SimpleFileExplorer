@@ -22,6 +22,14 @@ namespace Otools.Net.Sfe.Client.Generated.Models
 #else
         public string ExternalName { get; set; }
 #endif
+        /// <summary>The homeFolder property</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+#nullable enable
+        public string? HomeFolder { get; set; }
+#nullable restore
+#else
+        public string HomeFolder { get; set; }
+#endif
         /// <summary>The memberIds property</summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 #nullable enable
@@ -72,6 +80,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
             return new Dictionary<string, Action<IParseNode>>
             {
                 { "externalName", n => { ExternalName = n.GetStringValue(); } },
+                { "homeFolder", n => { HomeFolder = n.GetStringValue(); } },
                 { "memberIds", n => { MemberIds = n.GetCollectionOfPrimitiveValues<int?>()?.AsList(); } },
                 { "name", n => { Name = n.GetStringValue(); } },
                 { "rights", n => { Rights = n.GetCollectionOfPrimitiveValues<string>()?.AsList(); } },
@@ -85,6 +94,7 @@ namespace Otools.Net.Sfe.Client.Generated.Models
         {
             if(ReferenceEquals(writer, null)) throw new ArgumentNullException(nameof(writer));
             writer.WriteStringValue("externalName", ExternalName);
+            writer.WriteStringValue("homeFolder", HomeFolder);
             writer.WriteCollectionOfPrimitiveValues<int?>("memberIds", MemberIds);
             writer.WriteStringValue("name", Name);
             writer.WriteCollectionOfPrimitiveValues<string>("rights", Rights);

@@ -28,6 +28,7 @@ export type ItemCommandId =
     | 'copyTo'
     | 'tags'
     | 'quickLink'
+    | 'homeFolder'
     | 'exclusions'
     | 'folderAccess'
     | 'extractBeside'

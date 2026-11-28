@@ -53,6 +53,7 @@ export const Rights = {
     ownPreferences: 'account.preferences',
     ownPassword: 'account.password',
     quickLinks: 'account.quickLinks',
+    homeFolder: 'account.homeFolder',
     ownTokens: 'account.tokens',
     manageTokens: 'access.tokens',
     apiDocs: 'system.apiDocs',

@@ -641,9 +641,18 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
     `wizards`, who step, app key set for the shot). OpenAPI baseline and Sfe.Client regenerated. **Not done: the app
     key typed in the wizard** (moved to 6.3, see Decisions). Was: app key for the provider if missing, then sign in,
     test (`check` on Next, tested before saving), who may use it.
-- [ ] **5.4 Home folder** (IDEA-027 part 2, S–M). A home folder per account: default per group set by an
-  administrator, changeable by the user (user setting, [settings-levels](../features/settings-levels.md)); never
-  created automatically. Shown on the dashboard (5.5) and as "Home" in the sidebar. Library folders only.
+- [x] **5.4 Home folder** (IDEA-027 part 2, S–M). Done 2026-11-28: note [home-folder](../features/home-folder.md).
+  Own choice in a new `HomeFolders` table (user, space, path) over `Groups.HomeFolder` (`{user}` = the account's
+  name; hand-made groups before built-in ones); not a user setting (see Decisions). `api/me/home-folder` (GET / PUT /
+  DELETE, right `account.homeFolder`, `since: 15`); groups take `homeFolder` (null keeps). Sidebar **Home** above
+  the quick links (faded when not there), **Set as home folder** / **Stop using as home folder** in folders' menus,
+  the group editor's field (not for Guests); `PathMoves` moves choices and defaults. Refactoring first:
+  `GroupChanges` out of `AccessService`. Screenshots `home-folder.png`, `group-home-folder.png` (scene
+  `homeFolder`, the choice forgotten after so other sidebars stay as they were). OpenAPI baseline and Sfe.Client
+  regenerated. Baselines raised by the added lines: `AccessService.cs` 790 → 791, `RightCatalog.cs` 650 → 661,
+  `api.service.ts` 769 → 773. Not done: the dashboard's widget (5.5). Was: a home folder per account: default per
+  group set by an administrator, changeable by the user; never created automatically. Shown on the dashboard (5.5)
+  and as "Home" in the sidebar. Library folders only.
 - [ ] **5.5 Dashboard as the start page** (IDEA-019, L, split in two). Owner's choice: **dashboard first**.
   **a:** route, widget registry, default layout, start page setting (user can choose dashboard / home / library
   root). **b:** widgets from what exists: home and quick links, recent files (new per-user store, last 50),
@@ -710,8 +719,15 @@ Delete this plan once 2.0 is released, moving what stays true into the feature n
 
 Where the work stands, for a session that picks it up. Update it at the end of every session (or when stopping).
 
-- **Last session (2026-11-28):** **5.3c** (add-a-connection wizard) done, with a framework commit (redirect and
-  resume) and a refactoring before it; 5.3 is complete. Next: **5.4** (home folder), then **5.5** (dashboard).
+- **Last session (2026-11-28):** **5.4** (home folder) done, after a refactoring (`GroupChanges`). Next: **5.5a**
+  (dashboard: route, widget registry, start page setting), then **5.5b** (widgets; Home from `HomeFolderService`).
+- A new right for existing installs: `since: RightCatalog.Revision + 1` (15 after 5.4), and its update test sets
+  `RightsRevision` to the one before and the installed version **below** the current one (the same version: "No
+  update is due").
+- An access-database change: `dotnet ef migrations add <Name> --context AccessDbContext --project src/Sfe.Core
+  --output-dir Data/AccessMigrations`, then LF line endings but **keep the BOM** (the shipped migrations have one);
+  SQLite adds the table and the nullable column by itself (`DatabaseSchema`), tested by dropping them
+  (`ALTER TABLE … DROP COLUMN` works on the bundled SQLite).
 - A wizard reaching another site: `finish` answers `{ redirect }`, `resume` ends it on the way back
   ([wizards](../features/wizards.md)); a server redirect into a wizard names a fixed page (`SignInReturn`), never an
   address from the request.
@@ -809,7 +825,9 @@ Defaults taken (change here if the owner disagrees): UK English; Windows-Explore
 ≤3 clicks; XxHash128; notifications kept in the browser (server events pushed, not stored); undo per tab, 20 steps;
 dashboard fixed columns; home folder never auto-created; the add-a-connection wizard (5.3c) doesn't type a kind's app
 key: it would be Dropbox-only code that 6.3 removes, and a setting saved before Finish; it links to the setup page
-until 6.3 makes app settings generic (2026-11-28); menus (2.9): greyed only for the rights of file actions
+until 6.3 makes app settings generic (2026-11-28); the home folder (5.4) is not a user setting but its own table
+(user, space) with a group column: user settings have no space and a home is a path of one space; a group's default
+may name the account (`{user}`) (2026-11-28); menus (2.9): greyed only for the rights of file actions
 (Scans and previews…, quick links, Copy full path hidden instead), the selection bar never greyed; scan-as-you-go not recursive, 10 minutes; storage bar
 thresholds 85/95 %; sync jobs for administrators only; `AllowedRoots` off (1.5b) means spaces inside `Sfe:Root`
 only, not anywhere on the server (2026-11-27).

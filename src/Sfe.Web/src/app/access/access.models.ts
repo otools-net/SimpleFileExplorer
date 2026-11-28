@@ -73,6 +73,8 @@ export interface GroupInfo {
     externalName: string | null;
     rights: string[];
     memberIds: number[];
+    /** Its members' home folder when they chose none (`{user}`: the account's name); null for none. */
+    homeFolder?: string | null;
 }
 
 export interface TenantDetails {

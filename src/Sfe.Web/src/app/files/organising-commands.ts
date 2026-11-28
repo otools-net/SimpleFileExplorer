@@ -6,19 +6,21 @@ import { Rights } from '../core/rights';
 import { Dialogs } from '../library/dialogs.service';
 import { ListingStore } from '../library/listing.store';
 import { QuickLinksService } from '../library/quick-links/quick-links.service';
+import { HomeFolderService } from '../library/home-folder/home-folder.service';
 import { ItemCommand, ItemCommandId, ItemMenuEntry, ItemScope, namesOf, refused } from './item-scope';
 
 /**
- * The commands about listed items rather than their content (Tags…, quick links, Scans and previews…, Folder access…,
- * Copy full path, Previous versions…, Properties), for `ItemCommands`. Quick links, copying paths, the scans and the
- * rules of a folder are hidden when the session has none (an account's own, a server setting, an administrator's
- * right), not greyed out.
+ * The commands about listed items rather than their content (Tags…, quick links, the home folder, Scans and
+ * previews…, Folder access…, Copy full path, Previous versions…, Properties), for `ItemCommands`. Quick links, the
+ * home folder, copying paths, the scans and the rules of a folder are hidden when the session has none (an account's
+ * own, a server setting, an administrator's right), not greyed out.
  */
 @Injectable({ providedIn: 'root' })
 export class OrganisingCommands {
     private readonly store = inject(ListingStore);
     private readonly dialogs = inject(Dialogs);
     private readonly quickLinks = inject(QuickLinksService);
+    private readonly homes = inject(HomeFolderService);
     private readonly copyPaths = inject(CopyPathService);
     private readonly config = inject(ConfigService);
     private readonly router = inject(Router);
@@ -26,6 +28,7 @@ export class OrganisingCommands {
     readonly commands: Partial<Record<ItemCommandId, ItemCommand>> = {
         tags: (scope) => this.tags(scope),
         quickLink: (scope) => this.quickLink(scope),
+        homeFolder: (scope) => this.homeFolder(scope),
         exclusions: (scope) => this.exclusions(scope),
         folderAccess: (scope) => this.folderAccess(scope),
         copyPath: (scope) => this.copyPath(scope),
@@ -97,6 +100,35 @@ export class OrganisingCommands {
                 ? $localize`Take “${item.name}:name:” out of your quick links.`
                 : $localize`Show “${item.name}:name:” in your quick links, in the sidebar.`,
             run: () => void this.quickLinks.toggle(item.path),
+        };
+    }
+
+    /**
+     * One folder made the home folder; the home folder the account chose: back to its group's (or none). Hidden on the
+     * home folder its groups give (nothing to change there).
+     */
+    private homeFolder({ item, targets }: ItemScope): ItemMenuEntry | null {
+        if (targets.length !== 1 || item.kind !== 'directory' || !this.homes.choosable()) return null;
+        const home = this.homes.home();
+        if (home?.path === item.path) {
+            if (!home.chosen) return null;
+            return {
+                id: 'homeFolder',
+                label: $localize`Stop using as home folder`,
+                icon: 'home',
+                title:
+                    home.groupPath !== null
+                        ? $localize`Make your home folder the one your group gives again.`
+                        : $localize`Forget your home folder: the sidebar shows no Home until you choose one again.`,
+                run: () => void this.homes.clear(),
+            };
+        }
+        return {
+            id: 'homeFolder',
+            label: $localize`Set as home folder`,
+            icon: 'home',
+            title: $localize`Make “${item.name}:name:” your home folder: Home, at the top of the sidebar, opens it.`,
+            run: () => void this.homes.set(item.path, item.name),
         };
     }
 

@@ -4,8 +4,8 @@ using Otools.Net.Sfe.Core.Data;
 namespace Otools.Net.Sfe.Core.Access;
 
 /// <summary>
-/// A group made or changed by <see cref="AccessService"/>: its name, directory group, rights and members checked and
-/// applied to the tracked row (saved by the caller).
+/// A group made or changed by <see cref="AccessService"/>: its name, directory group, home folder, rights and members
+/// checked and applied to the tracked row (saved by the caller).
 /// </summary>
 internal static class GroupChanges
 {
@@ -29,12 +29,20 @@ internal static class GroupChanges
             );
         }
 
+        var home = input.HomeFolder is { } typed ? HomeFolderService.CleanDefault(typed) : null;
+        if (input.HomeFolder is not null && home is null)
+        {
+            return AccessResult<UserGroup>.Invalid(
+                "homeFolder",
+                "Name a folder of the space (no “.” or “..”), of at most 260 characters."
+            );
+        }
+
         if (input.Rights is { } rights && ApplyRights(group, rights) is { } rightsError)
             return rightsError;
         if (
             input.MemberIds is { } memberIds
-            && await ApplyMembersAsync(db, group, memberIds, membersOfTenantOnly, cancellationToken) is
-            { } membersError
+            && await ApplyMembersAsync(db, group, memberIds, membersOfTenantOnly, cancellationToken) is { } membersError
         )
         {
             return membersError;
@@ -44,6 +52,8 @@ internal static class GroupChanges
         if (group.BuiltIn is null)
             group.Name = name!;
         group.ExternalName = string.IsNullOrWhiteSpace(input.ExternalName) ? null : input.ExternalName.Trim();
+        if (input.HomeFolder is not null)
+            group.HomeFolder = home is { Length: > 0 } ? home : null;
         return null;
     }
 

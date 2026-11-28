@@ -1,8 +1,9 @@
 # Data keyed by path following a rename (`PathMoves`)
 
 Code: `src/Sfe.Core/Files/PathMoves.cs`, `DirectoryIndexer.ForgetAsync`/`FolderIdAsync`,
-`SettingsService.MoveFolderPathsAsync`, `QuickLinkService.MovePathsAsync`, `LibraryBrowser.Invalidate`. Tests:
-`FileOperationsTests.ARenamed…`, `FileRouteTests.ARenamedFolderKeepsItsRulesAndQuickLinks`.
+`SettingsService.MoveFolderPathsAsync`, `QuickLinkService.MovePathsAsync`, `HomeFolderService.MovePathsAsync`,
+`LibraryBrowser.Invalidate`. Tests: `FileOperationsTests.ARenamed…`,
+`FileRouteTests.ARenamedFolderKeepsItsRulesAndQuickLinks`, `HomeFolderTests.ChoicesAndDefaultsFollowARenamedFolder`.
 
 - `MoveAsync(fromFull, toFull, isFolder)` runs **after** the disk changed: each part has its own try/catch (logged as
   a warning, left to the next scan or to lazy rebuilding). Never pass it the request's token: the person leaving must
@@ -16,7 +17,8 @@ Code: `src/Sfe.Core/Files/PathMoves.cs`, `DirectoryIndexer.ForgetAsync`/`FolderI
   default tags of the new place they didn't have from the old one.
 - Folders only: `Scan:ExcludedFolders`, `Trickplay:Folders`, `Trickplay:ExcludedFolders`, `Thumbnails:ExcludedFolders`, `Editor:OutputFolder` at or below the folder (saved as
   library rows, or in the server store without levels), `TaskSchedules.Path`. Quick links of every user (needs
-  `QuickLinkService`, handed to each library by `TenantHost`; null in Core tests).
+  `QuickLinkService`, handed to each library by `TenantHost`; null in Core tests). Home folders: the accounts'
+  choices and the groups' defaults ([home-folder.md](home-folder.md); `HomeFolderService`, the same way).
 - Caches: a file's thumbnail and trickplay folder (with its fingerprint) at once; a folder's in the background
   (`CacheMoves`, a chain of tasks that tests await), paging its index rows by id: unindexed files lose theirs.
 - Listings and covers of both parents and both paths are invalidated (`LibraryBrowser.Invalidate`), tag counts too.

@@ -134,6 +134,8 @@ export interface UserInput {
 export interface GroupInput {
     name: string;
     externalName?: string | null;
+    /** Empty for none; null keeps the current one. */
+    homeFolder?: string | null;
     rights?: string[] | null;
     memberIds?: number[] | null;
 }

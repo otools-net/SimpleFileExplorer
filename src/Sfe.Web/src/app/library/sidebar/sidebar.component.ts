@@ -13,6 +13,7 @@ import { TagMenu } from '../../tags/tag-menu';
 import { ChangeFeed } from '../change-feed.service';
 import { Dialogs } from '../dialogs.service';
 import { QuickLinksComponent } from '../quick-links/quick-links.component';
+import { HomeLinkComponent } from '../home-folder/home-link.component';
 import { ConnectionLinksComponent } from './connection-links.component';
 import { StorageBarComponent } from './storage-bar.component';
 import { ListingStore } from '../listing.store';
@@ -69,6 +70,7 @@ const SECTIONS: Section[] = [
     imports: [
         IconComponent,
         TagChipComponent,
+        HomeLinkComponent,
         QuickLinksComponent,
         ConnectionLinksComponent,
         StorageBarComponent,

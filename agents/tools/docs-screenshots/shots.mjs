@@ -134,6 +134,32 @@ const scenes = {
         await phone.shot(OUT + 'phone-quick-links.png');
         await phone.close();
     },
+    /**
+     * Home above the quick links (the administrator's own choice, forgotten after: the other scenes' sidebars have
+     * none), and a group's Home folder field typed but not saved.
+     */
+    async homeFolder() {
+        const b = await session();
+        await b.open('?path=Photos');
+        await b.eval(api('PUT', 'api/v1/me/home-folder', { path: 'Photos/2025 Mountains' }));
+        await b.open('?path=Photos%2F2025%20Mountains');
+        await b.shot(OUT + 'home-folder.png', { x: 0, y: 60, width: 260, height: 250 });
+        await b.eval(api('DELETE', 'api/v1/me/home-folder'));
+        await b.open(admin('access', 'groups'), 2000);
+        await b.clickTitle('Change what Users may do');
+        await sleep(800);
+        await b.eval(`(() => {
+            const input = document.querySelector('#group-home');
+            input.value = 'Homes/{user}';
+            input.dispatchEvent(new Event('input'));
+            input.closest('.field').scrollIntoView({ block: 'center' });
+            return 1;
+        })()`);
+        await sleep(400);
+        const field = await b.rect('#group-home');
+        await b.shot(OUT + 'group-home-folder.png', { x: field.x - 16, y: field.y - 48, width: field.width + 32, height: 124 });
+        await b.close();
+    },
     async menu() {
         const b = await session();
         await b.open('?path=Photos');

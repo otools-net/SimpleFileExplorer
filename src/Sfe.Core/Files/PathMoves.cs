@@ -16,9 +16,9 @@ namespace Otools.Net.Sfe.Core.Files;
 /// <summary>
 /// The one place where what SFE keeps by path follows a file or folder renamed or moved on the disk
 /// (agents/docs/features/path-moves.md): the index rows (so tags stay on their files), the library's settings naming
-/// folders, task schedules, default tags (and those of the new place given to the files), quick links, the thumbnail
-/// and trickplay caches (with the video fingerprints), the listings kept, the tag counts. Folder rules are moved around
-/// the disk step by <see cref="FolderRuleService.BeginMoveAsync"/>.
+/// folders, task schedules, default tags (and those of the new place given to the files), quick links, home folders,
+/// the thumbnail and trickplay caches (with the video fingerprints), the listings kept, the tag counts. Folder rules
+/// are moved around the disk step by <see cref="FolderRuleService.BeginMoveAsync"/>.
 /// </summary>
 /// <remarks>
 /// Called once the disk has changed: nothing here can undo it, so each part is done on its own, and one that fails is
@@ -37,7 +37,8 @@ public sealed class PathMoves(
     SettingsService settings,
     TenantBinding tenant,
     ILogger<PathMoves> logger,
-    QuickLinkService? quickLinks = null
+    QuickLinkService? quickLinks = null,
+    HomeFolderService? homeFolders = null
 )
 {
     /// <summary>Index rows read per round trip when the caches of a folder's files move.</summary>
@@ -107,6 +108,12 @@ public sealed class PathMoves(
         {
             await Step("quick links", () =>
                 quickLinks.MovePathsAsync(tenantId, fromRelative, toRelative, cancellationToken)
+            );
+        }
+        if (isFolder && homeFolders is not null && tenant.TenantId is { } library)
+        {
+            await Step("home folders", () =>
+                homeFolders.MovePathsAsync(library, fromRelative, toRelative, cancellationToken)
             );
         }
 

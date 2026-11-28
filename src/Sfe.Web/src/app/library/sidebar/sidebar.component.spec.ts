@@ -39,7 +39,7 @@ describe('SidebarComponent', () => {
     });
     const section = (title: string) =>
         [...element.querySelectorAll<HTMLElement>('.sidebar-section')].find(
-            (s) => s.querySelector('h2')!.textContent!.trim() === title,
+            (s) => s.querySelector('h2')?.textContent?.trim() === title,
         )!;
     const fold = (title: string) => section(title).querySelector<HTMLButtonElement>('.sidebar-fold')!;
     const folded = (title: string) => section(title).querySelector<HTMLElement>('.sidebar-tags')!.hidden;

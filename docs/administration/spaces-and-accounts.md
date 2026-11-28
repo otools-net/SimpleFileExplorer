@@ -50,9 +50,27 @@ Each space has three built-in groups, and any groups you add:
 A group's page lists every right by area with what it allows, those that only look first; **Changes things** marks a
 right that changes the space (index, tags, settings, accounts) and **Changes files** one that creates, changes or
 deletes files in the library ([kinds of rights](../reference/rights.md)). The **Administrators**, **Users** and
-**Guests** buttons tick the rights a new space gives that group. **Members** lists its accounts. **Directory group** (optional, advanced)
-makes its members those of a group of an external directory ([below](#directories-ldap)). Built-in groups keep their
-name and can't be deleted.
+**Guests** buttons tick the rights a new space gives that group. **Members** lists its accounts. **Home folder** (optional) is
+the folder **Home** opens for its members ([below](#home-folders)). **Directory group** (optional, advanced) makes its
+members those of a group of an external directory ([below](#directories-ldap)). Built-in groups keep their name and
+can't be deleted.
+
+#### Home folders
+
+![A group's home folder](../images/group-home-folder.png)
+
+A group's **Home folder** is the folder that [Home](../user-guide/browsing.md#home-folder), at the top of the
+sidebar, opens for its members who chose none of their own. Write `{user}` for each account's name: `Homes/{user}`
+gives *tom* the folder `Homes/tom` (a `/` or `\` in a name is written `_`). Leave it empty for none.
+
+- SFE never makes these folders: make them, then give each account access to its own with
+  [folder access](#folder-access) (for example, Users hidden on `Homes`, each account Read & write on its folder).
+- An account in several groups gets the home folder of a group made by hand before that of **Administrators** or
+  **Users**, then by name. Its own choice (**Set as home folder** on a folder) goes over all of them.
+- A folder renamed or moved in SFE stays the home folder: the groups' defaults and the accounts' choices follow it.
+  A rename of one account's folder below a default (`Homes/tom` → `Homes/thomas`) doesn't change the default: rename
+  the account too, or let it choose the folder as its own.
+- The Guests group has none: visitors and guest accounts have no home folder.
 
 ### Visitors
 

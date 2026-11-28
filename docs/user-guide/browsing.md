@@ -133,6 +133,23 @@ reported", and one telling only what is used shows no bar. The numbers are read 
 moment after files are copied, moved, uploaded or deleted there through SFE (by you or anyone else), and every few
 minutes while the page is open.
 
+## Home folder
+
+![Home above the quick links](../images/home-folder.png)
+
+**Home**, at the top of the sidebar, opens your home folder in the space: a folder of your own, or the one your group
+gives its members ([set by an administrator](../administration/spaces-and-accounts.md#home-folders)). Without one,
+the sidebar shows no Home. Each account has its own, in each space; visitors without an account have none (right
+`account.homeFolder`).
+
+- **Set as home folder**, in the [menu](managing-files.md#the-item-menu) of a folder (right click or **⋮**, also the
+  menu of the folder you are in), makes it yours, over your group's.
+- **Stop using as home folder** in the same menu, or **Use your group's home folder** in the menu of Home, goes back
+  to the one your group gives (or to none).
+- SFE never makes a home folder: one not made yet, or moved or deleted since, shows faded, and clicking it says so.
+  A folder renamed or moved in SFE stays your home folder under its new name.
+- Home folders are folders of the space, not of a [connection](../administration/connections.md).
+
 ## Folder pictures
 
 ![Folder cards at the top of the library](../images/library-root.png)

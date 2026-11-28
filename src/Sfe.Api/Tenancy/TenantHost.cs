@@ -99,9 +99,11 @@ public sealed class TenantHost : IAsyncDisposable
         services.AddSingleton(application.GetRequiredService<FfmpegLimits>());
         services.AddSingleton(application.GetRequiredService<VideoStreams>());
         services.AddSingleton(application.GetRequiredService<Otools.Net.Sfe.Core.Files.Compression.ArchiveBuildGate>());
-        // File management moves the folder rules and quick links of what it renames (the accounts' database).
+        // File management moves the folder rules, quick links and home folders of what it renames (the accounts'
+        // database).
         services.AddSingleton(application.GetRequiredService<FolderRuleService>());
         services.AddSingleton(application.GetRequiredService<QuickLinkService>());
+        services.AddSingleton(application.GetRequiredService<HomeFolderService>());
         // The index of connections' files: the connections, their gates and what SFE changes in them.
         services.AddSingleton(application.GetRequiredService<Core.Connections.Indexing.ConnectionIndexSources>());
         // The connections' cache: one for the server, whatever library previews their files.

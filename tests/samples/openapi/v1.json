@@ -7917,6 +7917,94 @@
         ]
       }
     },
+    "/api/v1/me/home-folder": {
+      "get": {
+        "tags": [
+          "Home folder"
+        ],
+        "summary": "The signed-in account's home folder in the library, and whether it is there.",
+        "description": "The folder the account chose, else the default of its groups in the library (a group's default may name the\naccount: `Homes/{user}`). Never created by SFE: `exists` is false for a folder not made yet.",
+        "operationId": "GetHomeFolder",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeFolderView"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "account.homeFolder"
+          ]
+        ]
+      },
+      "put": {
+        "tags": [
+          "Home folder"
+        ],
+        "summary": "Makes a folder of the library the account's home folder, over its groups' default.",
+        "operationId": "SetHomeFolder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HomeFolderInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeFolderView"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "account.homeFolder"
+          ]
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Home folder"
+        ],
+        "summary": "Forgets the folder the account chose: its groups' default (if any) is its home again.",
+        "operationId": "ClearHomeFolder",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeFolderView"
+                }
+              }
+            }
+          }
+        },
+        "x-sfe-rights": [
+          [
+            "account.homeFolder"
+          ]
+        ]
+      }
+    },
     "/api/v1/system/info": {
       "get": {
         "tags": [
@@ -14150,6 +14238,12 @@
               ],
               "format": "int32"
             }
+          },
+          "homeFolder": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -14193,6 +14287,12 @@
               ],
               "format": "int32"
             }
+          },
+          "homeFolder": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -14260,6 +14360,63 @@
             "items": {
               "$ref": "#/components/schemas/HelpHeading"
             }
+          }
+        }
+      },
+      "HomeFolderInput": {
+        "required": [
+          "path"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "HomeFolderView": {
+        "required": [
+          "path",
+          "name",
+          "exists",
+          "chosen",
+          "group",
+          "groupPath"
+        ],
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "exists": {
+            "type": "boolean"
+          },
+          "chosen": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "groupPath": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -20218,6 +20375,9 @@
     },
     {
       "name": "Quick links"
+    },
+    {
+      "name": "Home folder"
     },
     {
       "name": "System"

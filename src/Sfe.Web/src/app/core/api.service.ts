@@ -42,6 +42,7 @@ import {
     FolderCover,
     FolderSiblings,
     IndexedFolder,
+    HomeFolder,
     QuickLink,
     RemovedFromIndex,
     ScanStatus,
@@ -267,6 +268,9 @@ export class Api {
     addQuickLinks = (paths: string[], position: number | null = null) =>
         this.post<QuickLink[]>('me/quick-links', { paths, position });
     removeQuickLink = (path: string) => this.delete<QuickLink[]>(withQuery('me/quick-links', { path }));
+    homeFolder = () => this.get<HomeFolder>('me/home-folder');
+    setHomeFolder = (path: string) => this.put<HomeFolder>('me/home-folder', { path });
+    clearHomeFolder = () => this.delete<HomeFolder>('me/home-folder');
 
     /** Trickplay of a video; rejects (404) when it has none yet. */
     trickplay = (path: string) => this.get<TrickplayManifest>(`trickplay/files/${encodePath(path)}`);

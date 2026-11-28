@@ -56,6 +56,9 @@ public static class Rights
     public const string OwnPassword = "account.password";
     public const string QuickLinks = "account.quickLinks";
 
+    /// <summary>Go to one's home folder from the sidebar, and choose it.</summary>
+    public const string HomeFolder = "account.homeFolder";
+
     /// <summary>Make, see and revoke one's own personal access tokens.</summary>
     public const string OwnTokens = "account.tokens";
 

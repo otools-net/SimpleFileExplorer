@@ -534,6 +534,17 @@ public static class RightCatalog
             since: 3
         ),
         Tenant(
+            Rights.HomeFolder,
+            false,
+            Members,
+            W,
+            Readable,
+            "Account",
+            "Use a home folder",
+            "Go to your home folder from the sidebar, and choose which folder it is.",
+            since: 15
+        ),
+        Tenant(
             Rights.ApiDocs,
             false,
             Administrators,

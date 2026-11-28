@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { ApiError } from '../core/api-error';
 import { Rights } from '../core/rights';
 import { builtIns, catalog, group, member, space, user, WORK } from '../../testing/access';
 import {
@@ -204,6 +205,7 @@ describe('SpacePartComponent', () => {
         );
         expect(element.querySelector<HTMLInputElement>('#group-name')!.disabled).toBe(true);
         expect(element.querySelector('.access-choices.members')).toBeNull();
+        expect(element.querySelector('#group-home'), 'visitors have no home folder').toBeNull();
         buttonNamed(element, 'Cancel')!.click();
         await settle();
 
@@ -220,8 +222,47 @@ describe('SpacePartComponent', () => {
         await settle();
 
         expect(api.createGroup).toHaveBeenCalledWith(
-            { name: 'Kids', externalName: null, rights: [Rights.browse, Rights.download], memberIds: [3] },
+            {
+                name: 'Kids',
+                externalName: null,
+                homeFolder: '',
+                rights: [Rights.browse, Rights.download],
+                memberIds: [3],
+            },
             WORK.id,
+        );
+    });
+
+    it("sets the home folder of a group's members, and shows why one is refused", async () => {
+        serverSpaces();
+        api.groups.mockResolvedValue(work);
+        const users = work.find((g) => g.builtIn === 'users')!;
+        api.updateGroup.mockRejectedValueOnce(
+            new ApiError(400, 'Invalid', {
+                homeFolder: ['Name a folder of the space (no “.” or “..”), of at most 260 characters.'],
+            }),
+        );
+        await create('groups', `/?space=${WORK.id}`);
+        const groups = element.querySelector<HTMLElement>('.access-card')!;
+        const row = [...groups.querySelectorAll<HTMLElement>('.access-row')].find((r) =>
+            r.textContent!.includes('Users'),
+        )!;
+        buttonNamed(row, 'Edit')!.click();
+        await settle();
+
+        const home = element.querySelector<HTMLInputElement>('#group-home')!;
+        home.value = ' Homes/{user} ';
+        home.dispatchEvent(new Event('input'));
+        buttonNamed(element, 'Save')!.click();
+        await settle();
+
+        expect(api.updateGroup).toHaveBeenCalledWith(
+            users.id,
+            expect.objectContaining({ homeFolder: 'Homes/{user}' }),
+            WORK.id,
+        );
+        expect(element.querySelector('#group-home')!.parentElement!.textContent).toContain(
+            'Name a folder of the space',
         );
     });
 

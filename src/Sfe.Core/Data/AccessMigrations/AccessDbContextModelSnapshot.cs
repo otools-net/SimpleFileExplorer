@@ -356,6 +356,26 @@ namespace Otools.Net.Sfe.Core.Data.AccessMigrations
                     b.ToTable("GroupRights", "SFE");
                 });
 
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.HomeFolder", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.HasKey("UserId", "TenantId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("HomeFolders", "SFE");
+                });
+
             modelBuilder.Entity("Otools.Net.Sfe.Core.Data.LogEntry", b =>
                 {
                     b.Property<long>("Id")
@@ -620,6 +640,10 @@ namespace Otools.Net.Sfe.Core.Data.AccessMigrations
                         .HasMaxLength(400)
                         .HasColumnType("nvarchar(400)");
 
+                    b.Property<string>("HomeFolder")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -796,6 +820,21 @@ namespace Otools.Net.Sfe.Core.Data.AccessMigrations
                         .IsRequired();
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("Otools.Net.Sfe.Core.Data.HomeFolder", b =>
+                {
+                    b.HasOne("Otools.Net.Sfe.Core.Data.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Otools.Net.Sfe.Core.Data.UserAccount", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Otools.Net.Sfe.Core.Data.QuickLink", b =>

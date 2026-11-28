@@ -124,6 +124,38 @@
                 </fieldset>
             }
 
+            @if (draft.builtIn !== 'guests') {
+                <div class="field">
+                    <div class="help-row">
+                        <label class="field-label" for="group-home"><ng-container i18n>Home folder</ng-container>
+                            <span class="field-hint" i18n>(optional)</span></label>
+                        <sfe-help about="Home folder" i18n-about>
+                            <p i18n>The folder that <strong>Home</strong>, at the top of the sidebar, opens for the
+                                members of this group, unless they chose their own. Write
+                                <code>{{ '{' }}user{{ '}' }}</code> for each account's name: <code>Homes/{{ '{'
+                                }}user{{ '}' }}</code> gives <em>tom</em> the folder <code>Homes/tom</code>.</p>
+                            <p i18n>SFE never makes these folders: make them first, and give each account access to
+                                its own with folder access. An account in several groups gets the home folder of a
+                                group made by hand before that of Administrators or Users.</p>
+                        </sfe-help>
+                    </div>
+                    <input
+                        id="group-home"
+                        type="text"
+                        autocomplete="off"
+                        spellcheck="false"
+                        placeholder="For example Homes/{user}"
+                        i18n-placeholder
+                        [value]="draft.homeFolder"
+                        (input)="change({ homeFolder: valueOf($event) })"
+                    >
+                    <span class="field-hint" i18n>A folder of the space, from its top; empty for none.</span>
+                    @if (errors()['homeFolder']; as error) {
+                        <span class="field-error">{{ error }}</span>
+                    }
+                </div>
+            }
+
             <div class="field">
                 <div class="help-row">
                     <label class="field-label" for="group-external"><ng-container i18n>Directory group</ng-container>

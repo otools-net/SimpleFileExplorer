@@ -131,7 +131,7 @@ describe('Quick links', () => {
 
         rightClick(rows()[0]);
         expect(menu.open()!.target.kind).toBe('folderLink');
-        expect(ids()).toEqual(['open', 'newTab', 'folderAccess', 'moveDown', 'remove']);
+        expect(ids()).toEqual(['open', 'newTab', 'homeFolder', 'folderAccess', 'moveDown', 'remove']);
         entry('moveDown').run!();
         expect(move).toHaveBeenCalledWith('Media', 2);
 
